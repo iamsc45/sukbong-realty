@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>실거래지도 — 석봉 부동산 정보방</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<link rel="stylesheet" href="assets/site.css">
+<style>
+  html,body{height:100%}
+  #wrap{display:flex;flex-direction:column;height:100%}
+  .site-header{flex-wrap:wrap}
+  #bar{background:var(--soft);border-bottom:1px solid var(--hair-soft);padding:7px 16px;
+    display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:12.5px}
+  .chip{border:1px solid var(--navy);color:var(--navy);background:#fff;border-radius:16px;
+    padding:3px 12px;font-size:12.5px;cursor:pointer;font-weight:bold;display:inline-flex;align-items:center;gap:5px;
+    transition:background 150ms ease}
+  .chip.on{background:var(--navy);color:#fff}
+  .chip .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+  .lbl{color:var(--muted);margin-left:6px}
+  select{font:inherit;font-size:12.5px;padding:3px 6px;border:1px solid var(--hair-soft);border-radius:6px;background:#fff;color:var(--text2)}
+  #stat{margin-left:auto;color:var(--muted)}
+  #map{flex:1}
+  .pricetag{color:#fff;border-radius:14px;padding:2px 9px;font-size:12px;font-weight:bold;white-space:nowrap;
+    box-shadow:0 1px 4px rgba(18,38,74,.45);border:1.5px solid #fff;text-align:center}
+  .pricetag .n{font-size:9.5px;font-weight:normal;opacity:.85}
+  .pricetag .nm{display:none;font-size:10px;font-weight:normal;opacity:.95;max-width:150px;overflow:hidden;text-overflow:ellipsis}
+  #map.names .pricetag .nm{display:block}
+  .clus{background:var(--navy);color:#fff;border-radius:50%;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;font-weight:bold;border:2px solid #fff;
+    box-shadow:0 1px 5px rgba(18,38,74,.5);cursor:pointer}
+  .clus .cn{font-size:11px;line-height:1.1}.clus .cc{font-size:10px;font-weight:normal;opacity:.85}
+  .clus.dong{background:#3C67B1}
+  .pop{font-size:13px;line-height:1.55;min-width:250px}
+  .pop h4{margin:0 0 2px;color:var(--navy);font-size:14.5px}
+  .pop .badge{font-size:10.5px;color:#fff;border-radius:8px;padding:1px 7px;vertical-align:2px;margin-left:5px}
+  .pop .meta{color:var(--muted2);font-size:11.5px;margin-bottom:6px}
+  .pop table{border-collapse:collapse;width:100%;font-size:12px}
+  .pop th{background:var(--soft);color:var(--navy);padding:3px 6px;border:1px solid #E2E8F2}
+  .pop td{padding:3px 6px;border:1px solid #E2E8F2;text-align:center}
+  .pop td.pr{font-weight:bold;color:var(--navy)}
+  #legend{position:absolute;bottom:52px;left:10px;z-index:900;background:rgba(255,255,255,.93);
+    border:1px solid var(--hair-soft);border-radius:8px;padding:7px 11px;font-size:11px;color:var(--text2)}
+  #legend .dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:-1px}
+  .site-footer{padding:9px 16px;font-size:11.5px}
+</style></head>
+<body><div id="wrap">
+<header class="site-header">
+  <a class="brand" href="index.html">석봉 부동산 정보방</a>
+  <span style="color:#C9D6EB;font-size:12.5px" id="subtitle">수도권 실거래지도</span>
+  <nav>
+    <a href="index.html">홈</a>
+    <a class="on" href="map.html">실거래지도</a>
+    <a href="reports.html">리포트</a>
+    <a href="channels.html">채널 안내</a>
+  </nav>
+</header>
+<div id="bar">
+  <select id="selSido"></select><select id="selSgg"></select>
+  <span class="lbl">상품:</span><span id="typechips"></span>
+  <span class="lbl">거래:</span><span id="uchips"></span>
+  <span class="lbl">계약:</span><span id="dchips"></span>
+  <span id="stat"></span>
+</div>
+<div id="map"></div>
+<div id="legend"></div>
+<footer class="site-footer">
+  <span>📈 <a href="https://t.me/seokbongnews">텔레그램</a></span> ·
+  <span>💬 <a href="https://open.kakao.com/o/gt8CTUCi">카카오</a></span>
+  <span style="color:#8A93A5;margin-left:auto;float:right">원자료: 국토교통부 실거래가 공개시스템 (해제 건 제외) · ⓒ 2026 석봉 부동산 정보방 · 위치는 지번 기준 개략 · 좌표 확보 지점만 표시(확충 중) · 투자 권유 아님</span>
+</footer>
+</div>
+<script src="data/summary.js"></script>
+<script>
+var TYPE={apt:["아파트","#1B3F7A"],offi:["오피스텔","#3C67B1"],villa:["연립·다세대","#0E7C7B"],
+  house:["단독·다가구","#56637A"],comm:["상업·업무","#B8860B"],land:["토지","#4C7A3F"]};
+var Z_DETAIL=13, Z_POINT=15, Z_NAME=16;
+var curT='all', curU='all', curD='all';
+var map=L.map('map',{minZoom:9}).setView([37.55,126.98],11);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+  {attribution:'&copy; OpenStreetMap &copy; CARTO',maxZoom:19}).addTo(map);
+var layer=L.layerGroup().addTo(map);
+var loading={}, loaded={};
+
+function fmtEok(man){var e=man/10000;return (e>=10?e.toFixed(1):e.toFixed(2)).replace(/\.?0+$/,'')+'억';}
+function priceLabel(tx){
+  if(tx.u==='매매')return fmtEok(tx.p);
+  if(tx.u==='전세')return '전세 '+fmtEok(tx.p);
+  return '월 '+(tx.p>=10000?fmtEok(tx.p):Math.round(tx.p).toLocaleString())+'/'+Math.round(tx.r);
+}
+function txMatch(tx){
+  if(curU!=='all'&&tx.u!==curU)return false;
+  if(curD!=='all'&&tx.cd.indexOf(curD)!==0)return false;
+  return true;
+}
+function ptTxs(pt){
+  if(curT!=='all'&&pt.t!==curT)return [];
+  return pt.txs.filter(txMatch);
+}
+function loadDetail(code,cb){
+  if(loaded[code]||loading[code])return;
+  if(!(SB.summary.regions.find(function(r){return r.code===code&&r.geo>0;})))return;
+  loading[code]=1;
+  var s=document.createElement('script');
+  s.src='data/detail_'+code+'.js';
+  s.onload=function(){loaded[code]=1;delete loading[code];if(cb)cb();};
+  s.onerror=function(){delete loading[code];};
+  document.body.appendChild(s);
+}
+function visibleRegions(){
+  var b=map.getBounds().pad(0.3);
+  return SB.summary.regions.filter(function(r){return r.lat&&b.contains([r.lat,r.lng]);});
+}
+function render(){
+  layer.clearLayers();
+  var z=map.getZoom(), nPt=0, nTx=0;
+  document.getElementById('map').classList.toggle('names',z>=Z_NAME);
+  if(z<Z_DETAIL){
+    SB.summary.regions.forEach(function(r){
+      if(!r.lat)return;
+      var tot=r.n['매매']+r.n['전세']+r.n['월세'];
+      var sz=Math.min(64,Math.max(42,Math.round(14*Math.log(tot||1))));
+      var icon=L.divIcon({className:'',html:'<div class="clus" style="width:'+sz+'px;height:'+sz+'px">'
+        +'<span class="cn">'+r.sgg+'</span><span class="cc">'+tot.toLocaleString()+'</span></div>',
+        iconSize:[sz,sz],iconAnchor:[sz/2,sz/2]});
+      L.marker([r.lat,r.lng],{icon:icon}).on('click',function(){map.flyTo([r.lat,r.lng],Z_DETAIL+1,{duration:.6});}).addTo(layer);
+      nPt++;nTx+=tot;
+    });
+    document.getElementById('stat').textContent='시군구 '+nPt+'곳 · '+nTx.toLocaleString()+'건 (확대하면 상세)';
+    return;
+  }
+  var need=visibleRegions(), pending=0;
+  need.forEach(function(r){if(!loaded[r.code]){pending++;loadDetail(r.code,render);}});
+  var b=map.getBounds().pad(0.1);
+  var pts=[];
+  need.forEach(function(r){
+    var d=SB.d[r.code]; if(!d)return;
+    d.forEach(function(pt){
+      if(!b.contains([pt.lat,pt.lng]))return;
+      var txs=ptTxs(pt); if(!txs.length)return;
+      pts.push({pt:pt,txs:txs});
+    });
+  });
+  if(z<Z_POINT){
+    var dongs={};
+    pts.forEach(function(o){
+      var k=o.pt.dong;
+      var g=dongs[k]=dongs[k]||{lat:0,lng:0,n:0,tx:0};
+      g.lat+=o.pt.lat;g.lng+=o.pt.lng;g.n++;g.tx+=o.txs.length;
+    });
+    Object.keys(dongs).forEach(function(k){
+      var g=dongs[k],sz=Math.min(58,Math.max(38,Math.round(12*Math.log(g.tx+2))));
+      var icon=L.divIcon({className:'',html:'<div class="clus dong" style="width:'+sz+'px;height:'+sz+'px">'
+        +'<span class="cn">'+k+'</span><span class="cc">'+g.tx+'</span></div>',
+        iconSize:[sz,sz],iconAnchor:[sz/2,sz/2]});
+      var la=g.lat/g.n,ln=g.lng/g.n;
+      L.marker([la,ln],{icon:icon}).on('click',function(){map.flyTo([la,ln],Z_POINT,{duration:.5});}).addTo(layer);
+      nPt++;nTx+=g.tx;
+    });
+    document.getElementById('stat').textContent='동 '+nPt+'곳 · '+nTx.toLocaleString()+'건'+(pending?' · 불러오는 중…':'');
+    return;
+  }
+  pts.forEach(function(o){
+    var pt=o.pt,txs=o.txs,col=TYPE[pt.t][1],latest=txs[0];
+    var icon=L.divIcon({className:'',html:'<div class="pricetag" style="background:'+col+'">'
+      +priceLabel(latest)+' <span class="n">'+(latest.a?Math.round(latest.a)+'㎡':'')+'</span>'
+      +'<span class="nm">'+pt.name+'</span></div>',iconSize:null,iconAnchor:[30,12]});
+    var rows=txs.slice(0,12).map(function(t){
+      var u=t.u+(t.k?'·'+t.k.slice(0,2):'');
+      return '<tr><td>'+t.cd.slice(5)+'</td><td>'+u+'</td><td>'+(t.a||'-')+'</td><td>'+t.f+'</td><td class="pr">'+priceLabel(t)+'</td></tr>';
+    }).join('');
+    var more=txs.length>12?'<div style="color:#888;font-size:11px">외 '+(txs.length-12)+'건</div>':'';
+    var pop='<div class="pop"><h4>'+pt.name+'<span class="badge" style="background:'+col+'">'+TYPE[pt.t][0]+'</span></h4>'
+      +'<div class="meta">'+pt.dong+' '+pt.jibun+(pt.extra?' · '+pt.extra:'')+' · '+txs.length+'건</div>'
+      +'<table><tr><th>계약</th><th>거래</th><th>면적㎡</th><th>층</th><th>가격</th></tr>'+rows+'</table>'+more+'</div>';
+    L.marker([pt.lat,pt.lng],{icon:icon}).bindPopup(pop,{maxWidth:320}).addTo(layer);
+    nPt++;nTx+=txs.length;
+  });
+  document.getElementById('stat').textContent='지점 '+nPt+' · '+nTx.toLocaleString()+'건'+(pending?' · 불러오는 중…':'');
+}
+/* 칩 */
+function mkChips(elId,items,cur,setter){
+  var el=document.getElementById(elId);
+  items.forEach(function(it){
+    var b=document.createElement('button');
+    b.className='chip'+(it[0]===cur?' on':'');
+    b.innerHTML=(it[2]?'<span class="dot" style="background:'+it[2]+'"></span>':'')+it[1];
+    b.addEventListener('click',function(){
+      el.querySelectorAll('.chip').forEach(function(x){x.classList.remove('on');});
+      b.classList.add('on');setter(it[0]);render();});
+    el.appendChild(b);
+  });
+}
+mkChips('typechips',[['all','전체',null]].concat(Object.keys(TYPE).map(function(t){return [t,TYPE[t][0],TYPE[t][1]];})),'all',function(v){curT=v;});
+mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월세','월세']],'all',function(v){curU=v;});
+mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',function(v){curD=v;});
+/* 지역 선택 */
+(function(){
+  var sidos=[];
+  SB.summary.regions.forEach(function(r){if(sidos.indexOf(r.sido)<0)sidos.push(r.sido);});
+  var s1=document.getElementById('selSido'),s2=document.getElementById('selSgg');
+  sidos.sort().forEach(function(s){var o=document.createElement('option');o.value=s;o.textContent=s;s1.appendChild(o);});
+  function fill(){
+    s2.innerHTML='';
+    SB.summary.regions.filter(function(r){return r.sido===s1.value;})
+      .sort(function(a,b){return a.sgg<b.sgg?-1:1;})
+      .forEach(function(r){
+        var o=document.createElement('option');o.value=r.code;
+        o.textContent=r.sgg+(r.geo?'':' (준비중)');o.disabled=!r.geo;
+        s2.appendChild(o);
+      });
+  }
+  s1.addEventListener('change',fill);
+  s2.addEventListener('change',function(){
+    var r=SB.summary.regions.find(function(x){return x.code===s2.value;});
+    if(r&&r.lat)map.flyTo([r.lat,r.lng],Z_DETAIL+1,{duration:.6});
+  });
+  s1.value='서울';fill();
+})();
+/* 범례 */
+document.getElementById('legend').innerHTML=Object.keys(TYPE).map(function(t){
+  return '<span style="margin-right:8px"><span class="dot" style="background:'+TYPE[t][1]+'"></span>'+TYPE[t][0]+'</span>';
+}).join('')+'<br>기준일 '+SB.summary.updated+' · 확대할수록 상세(건물명은 최대 확대 시)';
+map.on('moveend zoomend',render);
+render();
+</script>
+</body></html>

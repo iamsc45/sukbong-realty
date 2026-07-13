@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>석봉 부동산 정보방 — 수도권 실거래가 지도·리포트</title>
+<meta name="description" content="국토교통부 실거래가 공개시스템 데이터를 매일 수집해 수도권 아파트·오피스텔·연립·단독·상업·토지 실거래가를 지도로 보여드립니다.">
+<link rel="stylesheet" href="assets/site.css">
+</head><body>
+<header class="site-header">
+  <a class="brand" href="index.html">석봉 부동산 정보방</a>
+  <nav>
+    <a class="on" href="index.html">홈</a>
+    <a href="map.html">실거래지도</a>
+    <a href="reports.html">리포트</a>
+    <a href="channels.html">채널 안내</a>
+  </nav>
+</header>
+<main class="wrap">
+  <section style="text-align:center;padding:56px 0 20px">
+    <img src="assets/logo.png" alt="석봉 부동산 정보방 로고" style="height:110px">
+    <h1 style="font-size:34px;margin:18px 0 10px">수도권 실거래가,<br>지도에서 바로 확인하세요</h1>
+    <p style="color:var(--muted);font-size:15.5px;margin:0 0 26px">
+      국토교통부 실거래 신고 데이터를 매일 수집해<br>
+      아파트 · 오피스텔 · 연립 · 단독 · 상업 · 토지 가격을 지도 위에 올렸습니다.</p>
+    <a class="btn" href="map.html">실거래지도 열기</a>
+    <a class="btn ghost" href="channels.html" style="margin-left:8px">채널 구독</a>
+  </section>
+  <section class="kpi-strip" id="kpis"></section>
+  <section class="cards">
+    <a class="card" href="map.html"><h3>🗺 실거래지도</h3>
+      <p>확대·축소되는 지도 위에서 상품별 실거래가를 확인합니다. 거래유형(매매·전세·월세)과 계약월 필터를 지원합니다.</p>
+      <span class="go">지도 보기 →</span></a>
+    <a class="card" href="reports.html"><h3>📊 주간·월간 리포트</h3>
+      <p>매주·매월 발행하는 시장 결산 리포트를 소개합니다. 데일리 카드뉴스는 채널에서 매일 받아보실 수 있습니다.</p>
+      <span class="go">리포트 안내 →</span></a>
+    <a class="card" href="channels.html"><h3>📮 채널 안내</h3>
+      <p>텔레그램 채널과 카카오 오픈채팅에서 매일 아침 실거래 카드뉴스와 시장 소식을 전해드립니다.</p>
+      <span class="go">구독하기 →</span></a>
+  </section>
+  <div class="notice">본 사이트의 실거래 정보는 국토교통부 실거래가 공개시스템 신고 자료(해제 건 제외)를 그대로 옮긴 것으로,
+    특정 부동산에 대한 투자 권유가 아닙니다. 신고 내용의 정정·해제에 따라 값이 달라질 수 있으며,
+    지도상 위치는 지번 기준의 개략적인 위치입니다.</div>
+</main>
+<footer class="site-footer">
+  <span>📈 <a href="https://t.me/seokbongnews">텔레그램 채널</a></span> ·
+  <span>💬 <a href="https://open.kakao.com/o/gt8CTUCi">카카오 오픈채팅</a></span>
+  <div class="fine">원자료: 국토교통부 실거래가 공개시스템 (해제 건 제외) · 편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 무단 전재·재배포 금지</div>
+</footer>
+<script src="data/summary.js"></script>
+<script>
+(function(){
+  if(!window.SB||!SB.summary) return;
+  var s=SB.summary, tot=0, geo=0, pts=0;
+  s.regions.forEach(function(r){tot+=r.n['매매']+r.n['전세']+r.n['월세'];geo+=r.geo;pts+=r.pts;});
+  var el=document.getElementById('kpis');
+  function kpi(v,l){return '<div class="kpi"><div class="v">'+v+'</div><div class="l">'+l+'</div></div>';}
+  el.innerHTML=kpi(tot.toLocaleString()+'건','수집 거래 (매매+전월세)')
+    +kpi(s.regions.length+'곳','수도권 시군구')
+    +kpi(geo.toLocaleString()+'지점','지도 표시 지점 (확충 중)')
+    +kpi(s.updated,'데이터 기준일');
+})();
+</script>
+</body></html>
