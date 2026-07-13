@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>석봉 부동산 정보방 — 수도권 실거래가 지도·리포트</title>
-<meta name="description" content="국토교통부 실거래가 공개시스템 데이터를 매일 수집해 수도권 아파트·오피스텔·연립·단독·상업·토지 실거래가를 지도로 보여드립니다.">
+<title>석봉 부동산 정보방 — 전국 실거래가 지도·리포트</title>
+<meta name="description" content="국토교통부 실거래가 공개시스템 데이터를 매일 수집해 전국 아파트·오피스텔·연립·단독·상업·토지 실거래가를 지도로 보여드립니다. 전국 순차 오픈 중(현재 서울).">
 <link rel="stylesheet" href="assets/site.css">
 </head><body>
 <header class="site-header">
@@ -17,10 +17,11 @@
 <main class="wrap">
   <section style="text-align:center;padding:56px 0 20px">
     <img src="assets/logo.png" alt="석봉 부동산 정보방 로고" style="height:110px">
-    <h1 style="font-size:34px;margin:18px 0 10px">수도권 실거래가,<br>지도에서 바로 확인하세요</h1>
+    <h1 style="font-size:34px;margin:18px 0 10px">전국 실거래가,<br>지도에서 바로 확인하세요</h1>
     <p style="color:var(--muted);font-size:15.5px;margin:0 0 26px">
       국토교통부 실거래 신고 데이터를 매일 수집해<br>
-      아파트 · 오피스텔 · 연립 · 단독 · 상업 · 토지 가격을 지도 위에 올렸습니다.</p>
+      아파트 · 오피스텔 · 연립 · 단독 · 상업 · 토지 가격을 지도 위에 올렸습니다.<br>
+      <b style="color:#C77A00">전국 데이터 순차 업데이트 중 · 현재 서울 지역 오픈</b></p>
     <a class="btn" href="map.html">실거래지도 열기</a>
     <a class="btn ghost" href="channels.html" style="margin-left:8px">채널 구독</a>
   </section>
@@ -54,7 +55,7 @@
   var el=document.getElementById('kpis');
   function kpi(v,l){return '<div class="kpi"><div class="v">'+v+'</div><div class="l">'+l+'</div></div>';}
   el.innerHTML=kpi(tot.toLocaleString()+'건','수집 거래 (매매+전월세)')
-    +kpi(s.regions.length+'곳','수도권 시군구')
+    +kpi(s.regions.length+'곳','오픈 시군구 (순차 확대)')
     +kpi(geo.toLocaleString()+'지점','지도 표시 지점 (확충 중)')
     +kpi(s.updated,'데이터 기준일');
 })();
