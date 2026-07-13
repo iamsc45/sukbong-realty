@@ -107,8 +107,9 @@ function loadDetail(code,cb){
   document.body.appendChild(s);
 }
 function visibleRegions(){
-  var b=map.getBounds().pad(0.3);
-  return SB.summary.regions.filter(function(r){return r.lat&&b.contains([r.lat,r.lng]);});
+  var b=map.getBounds(), m=0.065;  // 구 중심이 화면 밖이어도 ~7km 여유로 포함 (깊은 줌 대응)
+  var eb=L.latLngBounds([b.getSouth()-m,b.getWest()-m],[b.getNorth()+m,b.getEast()+m]);
+  return SB.summary.regions.filter(function(r){return r.lat&&eb.contains([r.lat,r.lng]);});
 }
 function render(){
   layer.clearLayers();
