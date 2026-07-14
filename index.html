@@ -138,7 +138,7 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
   </div>
   <div class="block">
     <div class="block-in">
-      <div class="blabel">Live Data</div>
+      <div class="blabel" id="blabel">Live Data</div>
       <div class="kpis" id="kpis"></div>
     </div>
     <div class="ticker"><div class="ticker-in"><div class="ticker-track" id="ticker"></div></div></div>
@@ -151,15 +151,15 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
     <div class="grid g-main">
       <div class="panel"><h3>일별 실거래 신고 추이</h3><p class="cap">계약일 기준 최근 30일 · 매매 vs 전월세</p>
         <canvas id="trend" height="118"></canvas></div>
-      <div class="panel"><h3>상품별 거래 비중</h3><p class="cap">수집 데이터 전체</p>
+      <div class="panel"><h3>상품별 거래 비중</h3><p class="cap" id="capProd">수집 데이터 전체</p>
         <canvas id="prod" height="158"></canvas></div>
     </div>
     <div class="grid sido3" id="sido3"></div>
     <div class="grid g-main" style="margin-top:14px">
-      <div class="panel"><h3>서울 구별 거래 랭킹</h3><p class="cap">거래 건수 TOP 10 · 중위가는 아파트 매매</p>
+      <div class="panel"><h3>서울 구별 거래 랭킹</h3><p class="cap" id="capRank">거래 건수 TOP 10 · 중위가는 아파트 매매</p>
         <table class="rank"><thead><tr><th></th><th>지역</th><th>거래량</th><th style="text-align:right">아파트 중위가</th></tr></thead>
         <tbody id="gurank"></tbody></table></div>
-      <div class="panel"><h3>최고가 거래</h3><p class="cap">최근 수집분 · 매매</p><div id="topdeals"></div></div>
+      <div class="panel"><h3>최고가 거래</h3><p class="cap" id="capTop">최근 수집분 · 매매</p><div id="topdeals"></div></div>
     </div>
     <div class="links">
       <a href="map.html"><span class="t">실거래지도</span><span class="s">동네를 확대하면 건물별 가격이 보입니다</span><span class="ar">→</span></a>
@@ -185,9 +185,11 @@ var S=SB.summary, T=SB.stats;
 var TYPE={apt:"아파트",offi:"오피스텔",villa:"연립·다세대",house:"단독·다가구",comm:"상업·업무",land:"토지"};
 function eok(man){var e=man/10000;if(e>=100)return Math.round(e).toLocaleString()+"억";
 return (e>=10?e.toFixed(1):e.toFixed(2)).replace(/\.?0+$/,"")+"억";}
+var P=T.period||{f:"",t:""};
+var PER=P.f.replace(/-/g,".")+" ~ "+(P.t.slice(0,4)===P.f.slice(0,4)?P.t.slice(5):P.t).replace(/-/g,".");
 var tot=0,geo=0;S.regions.forEach(function(r){tot+=r.n["매매"]+r.n["전세"]+r.n["월세"];geo+=r.geo;});
 /* KPI */
-var kdef=[[tot,"건","수집 거래 (매매+전월세)"],[geo,"지점","지도 표시 지점 · 확충 중"],[S.regions.length,"곳","수도권 시군구 커버"],[null,null,"데이터 기준일"]];
+var kdef=[[tot,"건","수집 거래 (매매+전월세) · 계약 "+PER],[geo,"지점","지도 표시 지점 · 확충 중 ("+T.updated+" 기준)"],[S.regions.length,"곳","수도권 시군구 커버"],[null,null,"데이터 기준일"]];
 var kel=document.getElementById("kpis");
 kdef.forEach(function(k){
   var d=document.createElement("div");d.className="kpi";
@@ -200,7 +202,11 @@ function countUp(el){var v=+el.dataset.v,t0=null;
     el.textContent=Math.round(v*p).toLocaleString();if(p<1)requestAnimationFrame(step);}
   requestAnimationFrame(step);}
 document.querySelectorAll(".cnt").forEach(countUp);
-document.getElementById("basis").textContent="기준일 "+T.updated+" · 매일 자동 갱신";
+document.getElementById("basis").textContent="계약일 "+PER+" · 기준일 "+T.updated+" · 매일 자동 갱신";
+document.getElementById("blabel").textContent="Live Data · 계약일 "+PER;
+document.getElementById("capProd").textContent="계약일 "+PER;
+document.getElementById("capRank").textContent="거래 건수 TOP 10 · 계약일 "+PER+" · 중위가는 아파트 매매";
+document.getElementById("capTop").textContent="계약일 "+PER+" · 매매";
 /* 티커 */
 var tks=T.top.map(function(d){return '<span class="tk">'+d.sgg+' '+d.name+' <b>'+eok(d.p)+'</b> '+(TYPE[d.t]||"")+' · '+d.cd.slice(5)+'</span>';}).join("");
 document.getElementById("ticker").innerHTML=tks+tks;
@@ -226,6 +232,7 @@ T.sido.forEach(function(x){
   var d=document.createElement("div");d.className="panel sido";
   d.innerHTML='<div class="head"><span class="nm">'+x.name+'</span><span class="tag'+(x.name==="서울"?"":" off")+'">'+(x.name==="서울"?"지도 오픈":"준비중")+'</span></div>'
    +'<div class="big">'+x.n.toLocaleString()+'<small> 건</small></div>'
+   +'<div style="font-size:10.5px;color:var(--g3);margin-top:2px">계약일 '+PER+'</div>'
    +'<div class="row"><span>아파트 매매 중위가</span><b>'+(x.med?eok(x.med):"—")+'</b></div>';
   s3.appendChild(d);
 });

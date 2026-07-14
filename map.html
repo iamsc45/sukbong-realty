@@ -237,7 +237,7 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
 /* 범례 */
 document.getElementById('legend').innerHTML=Object.keys(TYPE).map(function(t){
   return '<span style="margin-right:8px"><span class="dot" style="background:'+TYPE[t][1]+'"></span>'+TYPE[t][0]+'</span>';
-}).join('')+'<br>기준일 '+SB.summary.updated+' · 확대할수록 상세(건물명은 최대 확대 시)';
+}).join('')+'<br>'+(SB.summary.period?('계약일 '+SB.summary.period.f.replace(/-/g,'.')+' ~ '+SB.summary.period.t.slice(5).replace(/-/g,'.')+' · '):'')+'기준일 '+SB.summary.updated+' · 확대할수록 상세(건물명은 최대 확대 시)';
 map.on('moveend zoomend',render);
 render();
 </script>
