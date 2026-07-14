@@ -4,6 +4,7 @@
 <title>실거래지도 — 석봉 부동산 정보방</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <link rel="stylesheet" href="assets/site.css">
 <style>
   html,body{height:100%}
@@ -24,18 +25,18 @@
     box-shadow:0 1px 4px rgba(18,38,74,.45);border:1.5px solid #fff;text-align:center;
     cursor:pointer;transition:transform 120ms ease,box-shadow 120ms ease,border-color 120ms ease}
   .pricetag:hover{transform:scale(1.15);box-shadow:0 4px 12px rgba(18,38,74,.6)}
-  .pricetag.sel{transform:scale(1.18);border-color:#FFD666;box-shadow:0 4px 14px rgba(18,38,74,.65)}
+  .pricetag.sel{transform:scale(1.18);border-color:#141414;box-shadow:0 4px 14px rgba(20,20,20,.5)}
   .leaflet-marker-icon:hover{z-index:10000!important}
   .clus{transition:transform 120ms ease}
   .clus:hover{transform:scale(1.1)}
   .pricetag .n{font-size:9.5px;font-weight:normal;opacity:.85}
   .pricetag .nm{display:none;font-size:10px;font-weight:normal;opacity:.95;max-width:150px;overflow:hidden;text-overflow:ellipsis}
   #map.names .pricetag .nm{display:block}
-  .clus{background:var(--navy);color:#fff;border-radius:50%;display:flex;flex-direction:column;
+  .clus{background:#141414;color:#fff;border-radius:50%;display:flex;flex-direction:column;
     align-items:center;justify-content:center;font-weight:bold;border:2px solid #fff;
-    box-shadow:0 1px 5px rgba(18,38,74,.5);cursor:pointer}
+    box-shadow:0 1px 5px rgba(20,20,20,.4);cursor:pointer}
   .clus .cn{font-size:11px;line-height:1.1}.clus .cc{font-size:10px;font-weight:normal;opacity:.85}
-  .clus.dong{background:#3C67B1}
+  .clus.dong{background:#2554E0}
   .pop{font-size:13px;line-height:1.55;min-width:250px}
   .pop h4{margin:0 0 2px;color:var(--navy);font-size:14.5px}
   .pop .badge{font-size:10.5px;color:#fff;border-radius:8px;padding:1px 7px;vertical-align:2px;margin-left:5px}
@@ -52,7 +53,7 @@
 <body><div id="wrap">
 <header class="site-header">
   <a class="brand" href="index.html">석봉 부동산 정보방</a>
-  <span style="color:#C9D6EB;font-size:12.5px" id="subtitle">전국 실거래지도 · 순차 오픈 중(현재 서울)</span>
+  <span class="sub" id="subtitle">전국 실거래지도 · 순차 오픈 중(현재 서울)</span>
   <nav>
     <a href="index.html">홈</a>
     <a class="on" href="map.html">실거래지도</a>
@@ -77,8 +78,8 @@
 </div>
 <script src="data/summary.js"></script>
 <script>
-var TYPE={apt:["아파트","#1B3F7A"],offi:["오피스텔","#3C67B1"],villa:["연립·다세대","#0E7C7B"],
-  house:["단독·다가구","#56637A"],comm:["상업·업무","#B8860B"],land:["토지","#4C7A3F"]};
+var TYPE={apt:["아파트","#2554E0"],offi:["오피스텔","#7A5AF8"],villa:["연립·다세대","#0FA98A"],
+  house:["단독·다가구","#6E6E6A"],comm:["상업·업무","#E8A13A"],land:["토지","#4C9A4C"]};
 var Z_DETAIL=13, Z_POINT=15, Z_NAME=16;
 var curT='all', curU='all', curD='all', curSido='all', curSgg='all';
 function regionPass(r){if(curSgg!=='all')return r.code===curSgg;if(curSido!=='all')return r.sido===curSido;return true;}

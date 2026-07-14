@@ -9,6 +9,7 @@
 :root{
   --bg:#F2F2EF; --blk:#141414; --blk2:#1D1D1B; --wh:#FFFFFF;
   --g1:#3B3B39; --g2:#6E6E6A; --g3:#A3A39E; --g4:#D9D9D4; --hair:#E4E4DF;
+  --blue:#2554E0; --teal:#0FA98A; --amber:#E8A13A; --violet:#7A5AF8; --green:#4C9A4C;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -53,6 +54,7 @@ h1 .thin{color:var(--g3)}
 .kpi:first-child{border-left:none;padding-left:0}
 .kpi .v{font-size:clamp(28px,3.2vw,42px);font-weight:800;letter-spacing:-0.03em;
   font-variant-numeric:tabular-nums;line-height:1.1}
+.kpi:nth-child(1) .v{color:#6C9EFF}.kpi:nth-child(2) .v{color:#3BD9B7}.kpi:nth-child(3) .v{color:#FFBC5C}
 .kpi .v small{font-size:15px;font-weight:500;color:#8A8A85;margin-left:2px}
 .kpi .l{font-size:12px;color:#8A8A85;margin-top:4px}
 .ticker{border-top:1px solid #2E2E2B}
@@ -60,7 +62,7 @@ h1 .thin{color:var(--g3)}
 .ticker-track{display:inline-block;animation:mv 70s linear infinite}
 .ticker-in:hover .ticker-track{animation-play-state:paused}
 @keyframes mv{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-.tk{margin:0 28px}.tk b{color:#fff;font-weight:700}
+.tk{margin:0 28px}.tk b{color:#FFBC5C;font-weight:700}
 /* ── 대시보드 ── */
 .dash{padding:76px 0 0}
 .sec{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:8px}
@@ -77,14 +79,14 @@ h1 .thin{color:var(--g3)}
 .sido3{grid-template-columns:repeat(auto-fit,minmax(230px,1fr));margin-top:14px}
 .sido .head{display:flex;justify-content:space-between;align-items:center}
 .sido .nm{font-size:13.5px;font-weight:700}
-.tag{font-size:10px;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--blk);
-  border-radius:100px;padding:3px 10px;font-weight:600}
+.tag{font-size:10px;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--teal);color:var(--teal);
+  border-radius:100px;padding:3px 10px;font-weight:700}
 .tag.off{border-color:var(--g4);color:var(--g3)}
 .sido .big{font-size:34px;font-weight:800;letter-spacing:-0.03em;font-variant-numeric:tabular-nums;margin-top:12px}
 .sido .big small{font-size:13px;color:var(--g2);font-weight:500}
 .sido .row{display:flex;justify-content:space-between;font-size:12.5px;color:var(--g2);
   border-top:1px solid var(--hair);margin-top:14px;padding-top:10px}
-.sido .row b{color:var(--blk);font-size:14px}
+.sido .row b{color:var(--blue);font-size:14px}
 /* 랭킹 */
 table.rank{width:100%;border-collapse:collapse;font-size:13px}
 .rank th{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--g2);
@@ -94,12 +96,12 @@ table.rank{width:100%;border-collapse:collapse;font-size:13px}
 .rank tbody tr:hover{background:var(--bg)}
 .rank .no{color:var(--g3);width:24px}
 .rank .nm{font-weight:700}
-.bar{height:5px;border-radius:3px;background:var(--blk);min-width:5px}
-.rank .med{text-align:right;font-weight:700}
+.bar{height:5px;border-radius:3px;background:linear-gradient(90deg,var(--blue),#6C9EFF);min-width:5px}
+.rank .med{text-align:right;font-weight:700;color:var(--blue)}
 .deal{display:flex;gap:12px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--hair);font-size:12.5px}
 .deal:last-child{border-bottom:none}
 .deal .no{color:var(--g3)}
-.deal .p{margin-left:auto;font-weight:800;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.deal .p{margin-left:auto;font-weight:800;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--blue)}
 /* 하단 링크 3종 — 큰 텍스트 리스트 */
 .links{margin:70px 0 0;border-top:1px solid var(--blk)}
 .links a{display:flex;align-items:baseline;gap:18px;padding:26px 6px;border-bottom:1px solid var(--hair);
@@ -208,15 +210,15 @@ Chart.defaults.color="#6E6E6A";
 new Chart(document.getElementById("trend"),{type:"line",data:{
   labels:T.trend.map(function(x){return x.d.slice(5).replace("-","/");}),
   datasets:[
-   {label:"매매",data:T.trend.map(function(x){return x.s;}),borderColor:"#141414",backgroundColor:"rgba(20,20,20,.05)",fill:true,tension:.35,pointRadius:0,borderWidth:2.2},
-   {label:"전월세",data:T.trend.map(function(x){return x.r;}),borderColor:"#A3A39E",backgroundColor:"rgba(163,163,158,.05)",fill:true,tension:.35,pointRadius:0,borderWidth:1.6}]},
+   {label:"매매",data:T.trend.map(function(x){return x.s;}),borderColor:"#2554E0",backgroundColor:"rgba(37,84,224,.07)",fill:true,tension:.35,pointRadius:0,borderWidth:2.4},
+   {label:"전월세",data:T.trend.map(function(x){return x.r;}),borderColor:"#0FA98A",backgroundColor:"rgba(15,169,138,.06)",fill:true,tension:.35,pointRadius:0,borderWidth:1.8}]},
   options:{responsive:true,interaction:{mode:"index",intersect:false},
    plugins:{legend:{labels:{boxWidth:10,boxHeight:10,usePointStyle:true,pointStyle:"rect"}}},
    scales:{y:{grid:{color:"#EEEEEA"},border:{display:false}},x:{grid:{display:false},ticks:{maxTicksLimit:8}}}}});
 new Chart(document.getElementById("prod"),{type:"doughnut",data:{
   labels:T.prod.map(function(x){return TYPE[x.t];}),
   datasets:[{data:T.prod.map(function(x){return x.n;}),
-   backgroundColor:["#141414","#3B3B39","#6E6E6A","#8F8F8A","#B5B5B0","#D9D9D4"],borderWidth:2,borderColor:"#fff"}]},
+   backgroundColor:["#2554E0","#7A5AF8","#0FA98A","#6E6E6A","#E8A13A","#4C9A4C"],borderWidth:2,borderColor:"#fff"}]},
   options:{cutout:"66%",plugins:{legend:{position:"bottom",labels:{boxWidth:9,boxHeight:9,font:{size:11}}}}}});
 /* 시도 카드 */
 var s3=document.getElementById("sido3");
