@@ -1,63 +1,231 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>석봉 부동산 정보방 — 전국 실거래가 지도·리포트</title>
-<meta name="description" content="국토교통부 실거래가 공개시스템 데이터를 매일 수집해 전국 아파트·오피스텔·연립·단독·상업·토지 실거래가를 지도로 보여드립니다. 전국 순차 오픈 중(현재 서울).">
-<link rel="stylesheet" href="assets/site.css">
-</head><body>
-<header class="site-header">
-  <a class="brand" href="index.html">석봉 부동산 정보방</a>
-  <nav>
-    <a class="on" href="index.html">홈</a>
-    <a href="map.html">실거래지도</a>
-    <a href="reports.html">리포트</a>
-    <a href="channels.html">채널 안내</a>
-  </nav>
-</header>
-<main class="wrap">
-  <section style="text-align:center;padding:56px 0 20px">
-    <img src="assets/logo.png" alt="석봉 부동산 정보방 로고" style="height:110px">
-    <h1 style="font-size:34px;margin:18px 0 10px">전국 실거래가,<br>지도에서 바로 확인하세요</h1>
-    <p style="color:var(--muted);font-size:15.5px;margin:0 0 26px">
-      국토교통부 실거래 신고 데이터를 매일 수집해<br>
-      아파트 · 오피스텔 · 연립 · 단독 · 상업 · 토지 가격을 지도 위에 올렸습니다.<br>
-      <b style="color:#C77A00">전국 데이터 순차 업데이트 중 · 현재 서울 지역 오픈</b></p>
-    <a class="btn" href="map.html">실거래지도 열기</a>
-    <a class="btn ghost" href="channels.html" style="margin-left:8px">채널 구독</a>
+<title>석봉 부동산 정보방 — 전국 실거래가 데이터 플랫폼</title>
+<meta name="description" content="국토교통부 실거래 신고 데이터를 매일 수집해 지도와 대시보드로 보여드립니다. 전국 순차 오픈 중(현재 서울).">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --ink:#0B1526; --navy:#12264A; --navy2:#1B3F7A; --blue:#3C67B1; --gold:#FFD666; --gold-d:#B8860B;
+  --teal:#0E7C7B; --bg:#F6F8FB; --card:#FFFFFF; --line:#E3E9F2; --tx:#1A2333; --mut:#67728A; --up:#1E7A45; --down:#B23A48;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:'Pretendard','Malgun Gothic',sans-serif;color:var(--tx);background:var(--bg);line-height:1.6}
+a{color:inherit}
+.container{max-width:1140px;margin:0 auto;padding:0 24px}
+/* ── 내비게이션 ── */
+.nav{position:sticky;top:0;z-index:1000;background:rgba(11,21,38,.92);backdrop-filter:blur(10px);
+  border-bottom:1px solid rgba(255,255,255,.07)}
+.nav-in{max-width:1140px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:26px}
+.brand{color:#fff;font-weight:800;font-size:17px;letter-spacing:1.5px;text-decoration:none}
+.brand b{color:var(--gold)}
+.nav a.lnk{color:#B9C6DC;text-decoration:none;font-size:14px;padding:6px 2px;transition:color 150ms ease}
+.nav a.lnk:hover{color:#fff}
+.nav a.lnk.on{color:#fff;font-weight:700;border-bottom:2px solid var(--gold)}
+.nav .cta{margin-left:auto;background:var(--gold);color:var(--ink);font-weight:800;font-size:13.5px;
+  padding:9px 18px;border-radius:8px;text-decoration:none;transition:transform 150ms ease,box-shadow 150ms ease}
+.nav .cta:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(255,214,102,.35)}
+/* ── 히어로 ── */
+.hero{background:radial-gradient(1100px 500px at 75% -10%,rgba(60,103,177,.35),transparent 60%),
+  linear-gradient(160deg,#0B1526 0%,#12264A 70%,#16305e 100%);color:#fff;overflow:hidden;position:relative}
+.hero::before{content:"";position:absolute;inset:0;
+  background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);
+  background-size:44px 44px;mask-image:radial-gradient(800px 480px at 60% 20%,#000 40%,transparent 100%)}
+.hero-in{position:relative;max-width:1140px;margin:0 auto;padding:88px 24px 40px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:#AFC2E2;
+  border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:5px 14px;letter-spacing:.4px}
+.eyebrow .live{width:7px;height:7px;border-radius:50%;background:#37D67A;
+  box-shadow:0 0 0 0 rgba(55,214,122,.6);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(55,214,122,.55)}70%{box-shadow:0 0 0 9px rgba(55,214,122,0)}100%{box-shadow:0 0 0 0 rgba(55,214,122,0)}}
+h1{font-size:clamp(30px,4.6vw,52px);line-height:1.16;letter-spacing:-0.03em;margin:22px 0 14px;font-weight:800}
+h1 .g{color:var(--gold)}
+.sub{color:#B9C6DC;font-size:clamp(14px,1.6vw,17px);margin:0 0 30px;max-width:560px}
+.hero-cta{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:46px}
+.btn-p{background:var(--gold);color:var(--ink);font-weight:800;padding:14px 30px;border-radius:10px;
+  text-decoration:none;font-size:15.5px;transition:transform 150ms ease,box-shadow 150ms ease}
+.btn-p:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(255,214,102,.35)}
+.btn-g{border:1px solid rgba(255,255,255,.35);color:#fff;padding:14px 26px;border-radius:10px;
+  text-decoration:none;font-size:15px;transition:background 150ms ease}
+.btn-g:hover{background:rgba(255,255,255,.1)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:26px}
+.kpi{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:14px;
+  padding:18px 20px;transition:transform 150ms ease,background 150ms ease}
+.kpi:hover{transform:translateY(-3px);background:rgba(255,255,255,.09)}
+.kpi .v{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-0.02em}
+.kpi .v small{font-size:16px;font-weight:700;color:#AFC2E2}
+.kpi .l{font-size:12px;color:#8FA2C4;margin-top:2px}
+/* 티커 */
+.ticker{position:relative;background:rgba(0,0,0,.28);border-top:1px solid rgba(255,255,255,.08)}
+.ticker-in{overflow:hidden;white-space:nowrap;padding:11px 0;font-size:13px;color:#C9D6EB}
+.ticker-track{display:inline-block;animation:mv 60s linear infinite}
+.ticker-in:hover .ticker-track{animation-play-state:paused}
+@keyframes mv{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.tk{margin:0 26px}.tk b{color:var(--gold)}.tk .up{color:#37D67A}
+/* ── 대시보드 ── */
+.dash{padding:56px 0 8px}
+.sec-h{display:flex;align-items:baseline;gap:14px;margin-bottom:20px}
+.sec-h h2{font-size:24px;letter-spacing:-0.02em;margin:0;color:var(--navy)}
+.sec-h .d{font-size:12.5px;color:var(--mut)}
+.grid{display:grid;gap:16px}
+.g-main{grid-template-columns:2fr 1fr}
+@media(max-width:860px){.g-main{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;
+  box-shadow:0 1px 3px rgba(18,38,74,.04);transition:box-shadow 150ms ease}
+.panel:hover{box-shadow:0 6px 22px rgba(18,38,74,.08)}
+.panel h3{margin:0 0 4px;font-size:15.5px;color:var(--navy)}
+.panel .cap{font-size:12px;color:var(--mut);margin:0 0 14px}
+.sido3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin-top:16px}
+.sido .nm{font-size:14px;font-weight:700;color:var(--navy)}
+.sido .big{font-size:26px;font-weight:800;letter-spacing:-0.02em;font-variant-numeric:tabular-nums}
+.sido .big small{font-size:13px;color:var(--mut);font-weight:600}
+.sido .row{display:flex;justify-content:space-between;align-items:baseline;margin-top:8px;
+  font-size:13px;color:var(--mut)}
+.sido .row b{color:var(--navy2);font-size:15px}
+.badge{font-size:10.5px;background:#EEF3FA;color:var(--blue);border-radius:6px;padding:2px 8px;font-weight:700}
+/* 랭킹 테이블 */
+table.rank{width:100%;border-collapse:collapse;font-size:13.5px}
+.rank th{font-size:11.5px;color:var(--mut);text-align:left;font-weight:600;padding:6px 8px;border-bottom:1px solid var(--line)}
+.rank td{padding:9px 8px;border-bottom:1px solid #EFF3F9;font-variant-numeric:tabular-nums}
+.rank tr{transition:background 120ms ease}
+.rank tbody tr:hover{background:#F2F6FC;cursor:pointer}
+.rank .no{color:var(--mut);width:26px}
+.rank .nm{font-weight:700;color:var(--navy)}
+.bar{height:7px;border-radius:4px;background:linear-gradient(90deg,var(--navy2),var(--blue));min-width:6px}
+.rank .med{text-align:right;font-weight:700;color:var(--navy2)}
+/* 하단 카드/공지 */
+.more{grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin:26px 0 0}
+.more .panel{text-decoration:none;display:block}
+.more .go{font-size:13px;font-weight:700;color:var(--navy2)}
+.notice{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 20px;
+  font-size:12.5px;color:var(--mut);margin:34px 0 46px}
+footer{background:var(--ink);color:#B9C6DC;font-size:12.5px;padding:22px 0}
+footer a{color:var(--gold);font-weight:700;text-decoration:none}
+footer .fine{color:#6E7C96;margin-top:6px;line-height:1.7}
+</style></head>
+<body>
+<nav class="nav"><div class="nav-in">
+  <a class="brand" href="index.html">석봉 <b>부동산 정보방</b></a>
+  <a class="lnk on" href="index.html">홈</a>
+  <a class="lnk" href="map.html">실거래지도</a>
+  <a class="lnk" href="reports.html">리포트</a>
+  <a class="lnk" href="channels.html">채널 안내</a>
+  <a class="cta" href="map.html">지도 열기 →</a>
+</div></nav>
+
+<section class="hero">
+  <div class="hero-in">
+    <span class="eyebrow"><span class="live"></span>국토교통부 실거래 신고 · 매일 자동 수집 · 전국 순차 업데이트 중(현재 서울 오픈)</span>
+    <h1>대한민국 실거래가,<br><span class="g">데이터</span>로 읽습니다</h1>
+    <p class="sub">아파트 · 오피스텔 · 연립 · 단독 · 상업 · 토지 — 매매부터 전세·월세까지,
+      신고되는 모든 실거래를 지도와 대시보드로 보여드립니다.</p>
+    <div class="hero-cta">
+      <a class="btn-p" href="map.html">🗺 실거래지도 열기</a>
+      <a class="btn-g" href="channels.html">채널 구독</a>
+    </div>
+    <div class="kpis" id="kpis"></div>
+  </div>
+  <div class="ticker"><div class="ticker-in"><div class="ticker-track" id="ticker"></div></div></div>
+</section>
+
+<main class="container">
+  <section class="dash">
+    <div class="sec-h"><h2>마켓 대시보드</h2><span class="d" id="basis"></span></div>
+    <div class="grid g-main">
+      <div class="panel"><h3>일별 실거래 신고 추이</h3><p class="cap">계약일 기준 최근 30일 · 매매 vs 전월세</p>
+        <canvas id="trend" height="120"></canvas></div>
+      <div class="panel"><h3>상품별 거래 비중</h3><p class="cap">수집 데이터 전체</p>
+        <canvas id="prod" height="160"></canvas></div>
+    </div>
+    <div class="grid sido3" id="sido3"></div>
+    <div class="grid g-main" style="margin-top:16px">
+      <div class="panel"><h3>서울 구별 거래 랭킹 TOP 10</h3><p class="cap">거래 건수 기준 · 중위가는 아파트 매매</p>
+        <table class="rank"><thead><tr><th></th><th>지역</th><th>거래량</th><th style="text-align:right">아파트 중위가</th></tr></thead>
+        <tbody id="gurank"></tbody></table></div>
+      <div class="panel"><h3>최고가 거래</h3><p class="cap">최근 수집분 · 매매</p><div id="topdeals"></div></div>
+    </div>
+    <div class="grid more">
+      <a class="panel" href="map.html"><h3>🗺 실거래지도</h3><p class="cap">동네를 확대하면 건물별 가격이 보입니다. 매매·전세·월세 필터 지원.</p><span class="go">지도 보기 →</span></a>
+      <a class="panel" href="reports.html"><h3>📊 주간·월간 리포트</h3><p class="cap">매주·매월 발행하는 시장 결산. 채널에서 받아보세요.</p><span class="go">리포트 안내 →</span></a>
+      <a class="panel" href="channels.html"><h3>📮 채널 안내</h3><p class="cap">매일 아침 실거래 카드뉴스 10장, 무료로 발송됩니다.</p><span class="go">구독하기 →</span></a>
+    </div>
+    <div class="notice">본 사이트의 실거래 정보는 국토교통부 실거래가 공개시스템 신고 자료(해제 건 제외)를 그대로 옮긴 것으로,
+      특정 부동산에 대한 투자 권유가 아닙니다. 신고 내용의 정정·해제에 따라 값이 달라질 수 있으며, 지도상 위치는 지번 기준의 개략적인 위치입니다.</div>
   </section>
-  <section class="kpi-strip" id="kpis"></section>
-  <section class="cards">
-    <a class="card" href="map.html"><h3>🗺 실거래지도</h3>
-      <p>확대·축소되는 지도 위에서 상품별 실거래가를 확인합니다. 거래유형(매매·전세·월세)과 계약월 필터를 지원합니다.</p>
-      <span class="go">지도 보기 →</span></a>
-    <a class="card" href="reports.html"><h3>📊 주간·월간 리포트</h3>
-      <p>매주·매월 발행하는 시장 결산 리포트를 소개합니다. 데일리 카드뉴스는 채널에서 매일 받아보실 수 있습니다.</p>
-      <span class="go">리포트 안내 →</span></a>
-    <a class="card" href="channels.html"><h3>📮 채널 안내</h3>
-      <p>텔레그램 채널과 카카오 오픈채팅에서 매일 아침 실거래 카드뉴스와 시장 소식을 전해드립니다.</p>
-      <span class="go">구독하기 →</span></a>
-  </section>
-  <div class="notice">본 사이트의 실거래 정보는 국토교통부 실거래가 공개시스템 신고 자료(해제 건 제외)를 그대로 옮긴 것으로,
-    특정 부동산에 대한 투자 권유가 아닙니다. 신고 내용의 정정·해제에 따라 값이 달라질 수 있으며,
-    지도상 위치는 지번 기준의 개략적인 위치입니다.</div>
 </main>
-<footer class="site-footer">
+
+<footer><div class="container">
   <span>📈 <a href="https://telegram.me/seokbongnews">텔레그램 채널</a></span> ·
   <span>💬 <a href="https://open.kakao.com/o/gt8CTUCi">카카오 오픈채팅</a></span>
   <div class="fine">원자료: 국토교통부 실거래가 공개시스템 (해제 건 제외) · 편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 무단 전재·재배포 금지</div>
-</footer>
+</div></footer>
+
 <script src="data/summary.js"></script>
+<script src="data/stats.js"></script>
 <script>
 (function(){
-  if(!window.SB||!SB.summary) return;
-  var s=SB.summary, tot=0, geo=0, pts=0;
-  s.regions.forEach(function(r){tot+=r.n['매매']+r.n['전세']+r.n['월세'];geo+=r.geo;pts+=r.pts;});
-  var el=document.getElementById('kpis');
-  function kpi(v,l){return '<div class="kpi"><div class="v">'+v+'</div><div class="l">'+l+'</div></div>';}
-  el.innerHTML=kpi(tot.toLocaleString()+'건','수집 거래 (매매+전월세)')
-    +kpi(s.regions.length+'곳','오픈 시군구 (순차 확대)')
-    +kpi(geo.toLocaleString()+'지점','지도 표시 지점 (확충 중)')
-    +kpi(s.updated,'데이터 기준일');
+if(!window.SB||!SB.summary||!SB.stats)return;
+var S=SB.summary, T=SB.stats;
+var TYPE={apt:"아파트",offi:"오피스텔",villa:"연립·다세대",house:"단독·다가구",comm:"상업·업무",land:"토지"};
+function eok(man){var e=man/10000;return (e>=100?Math.round(e).toLocaleString():e>=10?e.toFixed(1):e.toFixed(2)).replace(/\.?0+$/,"")+"억";}
+var tot=0,geo=0;S.regions.forEach(function(r){tot+=r.n["매매"]+r.n["전세"]+r.n["월세"];geo+=r.geo;});
+/* KPI + 카운트업 */
+var kdef=[[tot,"건","수집 거래 (매매+전월세)"],[geo,"지점","지도 표시 지점 · 확충 중"],[S.regions.length,"곳","수도권 시군구 커버"],[null,null,"데이터 기준일"]];
+var kel=document.getElementById("kpis");
+kdef.forEach(function(k,i){
+  var d=document.createElement("div");d.className="kpi";
+  d.innerHTML=k[0]===null?'<div class="v" style="font-size:24px">'+T.updated+'</div><div class="l">'+k[2]+'</div>'
+    :'<div class="v"><span class="cnt" data-v="'+k[0]+'">0</span><small> '+k[1]+'</small></div><div class="l">'+k[2]+'</div>';
+  kel.appendChild(d);
+});
+function countUp(el){var v=+el.dataset.v,t0=null;
+  function step(ts){if(!t0)t0=ts;var p=Math.min((ts-t0)/1200,1);p=1-Math.pow(1-p,3);
+    el.textContent=Math.round(v*p).toLocaleString();if(p<1)requestAnimationFrame(step);}
+  requestAnimationFrame(step);}
+document.querySelectorAll(".cnt").forEach(countUp);
+document.getElementById("basis").textContent="데이터 기준일 "+T.updated+" · 매일 자동 갱신";
+/* 티커 */
+var tks=T.top.map(function(d){return '<span class="tk">'+d.sgg+' '+d.name+' <b>'+eok(d.p)+'</b> <span class="up">'+(TYPE[d.t]||"")+'</span> '+d.cd.slice(5)+'</span>';}).join("");
+document.getElementById("ticker").innerHTML=tks+tks;
+/* 차트 */
+Chart.defaults.font.family="'Pretendard','Malgun Gothic',sans-serif";
+Chart.defaults.color="#67728A";
+new Chart(document.getElementById("trend"),{type:"line",data:{
+  labels:T.trend.map(function(x){return x.d.slice(5).replace("-","/");}),
+  datasets:[
+   {label:"매매",data:T.trend.map(function(x){return x.s;}),borderColor:"#1B3F7A",backgroundColor:"rgba(27,63,122,.08)",fill:true,tension:.35,pointRadius:0,borderWidth:2.5},
+   {label:"전월세",data:T.trend.map(function(x){return x.r;}),borderColor:"#0E7C7B",backgroundColor:"rgba(14,124,123,.06)",fill:true,tension:.35,pointRadius:0,borderWidth:2}]},
+  options:{responsive:true,interaction:{mode:"index",intersect:false},
+   plugins:{legend:{labels:{boxWidth:12,boxHeight:12}}},
+   scales:{y:{grid:{color:"#EFF3F9"}},x:{grid:{display:false},ticks:{maxTicksLimit:8}}}}});
+new Chart(document.getElementById("prod"),{type:"doughnut",data:{
+  labels:T.prod.map(function(x){return TYPE[x.t];}),
+  datasets:[{data:T.prod.map(function(x){return x.n;}),
+   backgroundColor:["#1B3F7A","#3C67B1","#0E7C7B","#56637A","#B8860B","#4C7A3F"],borderWidth:2,borderColor:"#fff"}]},
+  options:{cutout:"62%",plugins:{legend:{position:"bottom",labels:{boxWidth:10,boxHeight:10,font:{size:11}}}}}});
+/* 시도 카드 */
+var s3=document.getElementById("sido3");
+T.sido.forEach(function(x){
+  var d=document.createElement("div");d.className="panel sido";
+  d.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center"><span class="nm">'+x.name+'</span><span class="badge">'+(x.name==="서울"?"지도 오픈":"지도 준비중")+'</span></div>'
+   +'<div class="big">'+x.n.toLocaleString()+'<small> 건</small></div>'
+   +'<div class="row"><span>아파트 매매 중위가</span><b>'+(x.med?eok(x.med):"—")+'</b></div>';
+  s3.appendChild(d);
+});
+/* 구 랭킹 */
+var maxN=Math.max.apply(null,T.gu.map(function(x){return x.n;}));
+document.getElementById("gurank").innerHTML=T.gu.map(function(x,i){
+  return '<tr onclick="location.href=\'map.html\'"><td class="no">'+(i+1)+'</td><td class="nm">'+x.name+'</td>'
+   +'<td style="width:45%"><div style="display:flex;align-items:center;gap:8px"><div class="bar" style="width:'+Math.round(x.n/maxN*100)+'%"></div><span style="font-size:12px;color:#67728A">'+x.n.toLocaleString()+'</span></div></td>'
+   +'<td class="med">'+(x.med?eok(x.med):"—")+'</td></tr>';}).join("");
+/* 최고가 */
+document.getElementById("topdeals").innerHTML=T.top.slice(0,5).map(function(d,i){
+  return '<div style="display:flex;gap:10px;align-items:baseline;padding:9px 0;border-bottom:1px solid #EFF3F9;font-size:13px">'
+   +'<span style="color:#67728A;width:16px">'+(i+1)+'</span>'
+   +'<span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><b style="color:#12264A">'+d.name+'</b><br><span style="color:#67728A;font-size:11.5px">'+d.sgg+' · '+(TYPE[d.t]||"")+' · '+d.cd+'</span></span>'
+   +'<b style="color:#1B3F7A;font-size:15px;font-variant-numeric:tabular-nums">'+eok(d.p)+'</b></div>';}).join("");
 })();
 </script>
 </body></html>
