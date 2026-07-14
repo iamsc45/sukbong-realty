@@ -21,7 +21,13 @@
   #stat{margin-left:auto;color:var(--muted)}
   #map{flex:1}
   .pricetag{color:#fff;border-radius:14px;padding:2px 9px;font-size:12px;font-weight:bold;white-space:nowrap;
-    box-shadow:0 1px 4px rgba(18,38,74,.45);border:1.5px solid #fff;text-align:center}
+    box-shadow:0 1px 4px rgba(18,38,74,.45);border:1.5px solid #fff;text-align:center;
+    cursor:pointer;transition:transform 120ms ease,box-shadow 120ms ease,border-color 120ms ease}
+  .pricetag:hover{transform:scale(1.15);box-shadow:0 4px 12px rgba(18,38,74,.6)}
+  .pricetag.sel{transform:scale(1.18);border-color:#FFD666;box-shadow:0 4px 14px rgba(18,38,74,.65)}
+  .leaflet-marker-icon:hover{z-index:10000!important}
+  .clus{transition:transform 120ms ease}
+  .clus:hover{transform:scale(1.1)}
   .pricetag .n{font-size:9.5px;font-weight:normal;opacity:.85}
   .pricetag .nm{display:none;font-size:10px;font-weight:normal;opacity:.95;max-width:150px;overflow:hidden;text-overflow:ellipsis}
   #map.names .pricetag .nm{display:block}
@@ -74,7 +80,8 @@
 var TYPE={apt:["아파트","#1B3F7A"],offi:["오피스텔","#3C67B1"],villa:["연립·다세대","#0E7C7B"],
   house:["단독·다가구","#56637A"],comm:["상업·업무","#B8860B"],land:["토지","#4C7A3F"]};
 var Z_DETAIL=13, Z_POINT=15, Z_NAME=16;
-var curT='all', curU='all', curD='all';
+var curT='all', curU='all', curD='all', curSido='all', curSgg='all';
+function regionPass(r){if(curSgg!=='all')return r.code===curSgg;if(curSido!=='all')return r.sido===curSido;return true;}
 var map=L.map('map',{minZoom:9}).setView([37.55,126.98],11);
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
   {attribution:'&copy; OpenStreetMap &copy; CARTO',maxZoom:19}).addTo(map);
@@ -109,7 +116,7 @@ function loadDetail(code,cb){
 function visibleRegions(){
   var b=map.getBounds(), m=0.065;  // 구 중심이 화면 밖이어도 ~7km 여유로 포함 (깊은 줌 대응)
   var eb=L.latLngBounds([b.getSouth()-m,b.getWest()-m],[b.getNorth()+m,b.getEast()+m]);
-  return SB.summary.regions.filter(function(r){return r.lat&&eb.contains([r.lat,r.lng]);});
+  return SB.summary.regions.filter(function(r){return r.lat&&regionPass(r)&&eb.contains([r.lat,r.lng]);});
 }
 function render(){
   layer.clearLayers();
@@ -117,7 +124,7 @@ function render(){
   document.getElementById('map').classList.toggle('names',z>=Z_NAME);
   if(z<Z_DETAIL){
     SB.summary.regions.forEach(function(r){
-      if(!r.lat)return;
+      if(!r.lat||!regionPass(r))return;
       var tot=r.n['매매']+r.n['전세']+r.n['월세'];
       var sz=Math.min(64,Math.max(42,Math.round(14*Math.log(tot||1))));
       var icon=L.divIcon({className:'',html:'<div class="clus" style="width:'+sz+'px;height:'+sz+'px">'
@@ -173,7 +180,10 @@ function render(){
     var pop='<div class="pop"><h4>'+pt.name+'<span class="badge" style="background:'+col+'">'+TYPE[pt.t][0]+'</span></h4>'
       +'<div class="meta">'+pt.dong+' '+pt.jibun+(pt.extra?' · '+pt.extra:'')+' · '+txs.length+'건</div>'
       +'<table><tr><th>계약</th><th>거래</th><th>면적㎡</th><th>층</th><th>가격</th></tr>'+rows+'</table>'+more+'</div>';
-    L.marker([pt.lat,pt.lng],{icon:icon}).bindPopup(pop,{maxWidth:320}).addTo(layer);
+    var mk=L.marker([pt.lat,pt.lng],{icon:icon}).bindPopup(pop,{maxWidth:320});
+    mk.on('popupopen',function(){var el=mk.getElement();if(el){var t=el.querySelector('.pricetag');if(t)t.classList.add('sel');}});
+    mk.on('popupclose',function(){var el=mk.getElement();if(el){var t=el.querySelector('.pricetag');if(t)t.classList.remove('sel');}});
+    mk.addTo(layer);
     nPt++;nTx+=txs.length;
   });
   document.getElementById('stat').textContent='지점 '+nPt+' · '+nTx.toLocaleString()+'건'+(pending?' · 불러오는 중…':'');
@@ -194,28 +204,34 @@ function mkChips(elId,items,cur,setter){
 mkChips('typechips',[['all','전체',null]].concat(Object.keys(TYPE).map(function(t){return [t,TYPE[t][0],TYPE[t][1]];})),'all',function(v){curT=v;});
 mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월세','월세']],'all',function(v){curU=v;});
 mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',function(v){curD=v;});
-/* 지역 선택 */
+/* 지역 선택 (기본 전체 · 선택 시 해당 지역만 표시) */
 (function(){
   var sidos=[];
   SB.summary.regions.forEach(function(r){if(sidos.indexOf(r.sido)<0)sidos.push(r.sido);});
   var s1=document.getElementById('selSido'),s2=document.getElementById('selSgg');
-  sidos.sort().forEach(function(s){var o=document.createElement('option');o.value=s;o.textContent=s;s1.appendChild(o);});
+  function opt(sel,v,label,dis){var o=document.createElement('option');o.value=v;o.textContent=label;o.disabled=!!dis;sel.appendChild(o);}
+  opt(s1,'all','시/도 전체');
+  sidos.sort().forEach(function(s){opt(s1,s,s);});
   function fill(){
-    s2.innerHTML='';
+    s2.innerHTML='';opt(s2,'all','시군구 전체');
+    if(s1.value==='all')return;
     SB.summary.regions.filter(function(r){return r.sido===s1.value;})
       .sort(function(a,b){return a.sgg<b.sgg?-1:1;})
-      .forEach(function(r){
-        var o=document.createElement('option');o.value=r.code;
-        o.textContent=r.sgg+(r.geo?'':' (준비중)');o.disabled=!r.geo;
-        s2.appendChild(o);
-      });
+      .forEach(function(r){opt(s2,r.code,r.sgg+(r.geo?'':' (준비중)'),!r.geo);});
   }
-  s1.addEventListener('change',fill);
-  s2.addEventListener('change',function(){
-    var r=SB.summary.regions.find(function(x){return x.code===s2.value;});
-    if(r&&r.lat)map.flyTo([r.lat,r.lng],Z_DETAIL+1,{duration:.6});
+  s1.addEventListener('change',function(){
+    curSido=s1.value;curSgg='all';fill();
+    var pts=SB.summary.regions.filter(function(r){return r.lat&&regionPass(r);}).map(function(r){return [r.lat,r.lng];});
+    if(curSido!=='all'&&pts.length)map.fitBounds(pts,{padding:[40,40],maxZoom:12});
+    render();
   });
-  s1.value='서울';fill();
+  s2.addEventListener('change',function(){
+    curSgg=s2.value;
+    var r=SB.summary.regions.find(function(x){return x.code===curSgg;});
+    if(r&&r.lat){map.flyTo([r.lat,r.lng],Z_DETAIL+1,{duration:.6});}
+    render();
+  });
+  fill();
 })();
 /* 범례 */
 document.getElementById('legend').innerHTML=Object.keys(TYPE).map(function(t){
