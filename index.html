@@ -150,7 +150,8 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
     <span class="prod"><span class="dot" style="background:#7A5AF8"></span>오피스텔</span>
     <span class="prod"><span class="dot" style="background:#0FA98A"></span>연립·다세대</span>
     <span class="prod"><span class="dot" style="background:#6E6E6A"></span>단독·다가구</span>
-    <span class="prod"><span class="dot" style="background:#E8A13A"></span>상업·업무</span>
+    <span class="prod"><span class="dot" style="background:#D4573F"></span>빌딩</span>
+    <span class="prod"><span class="dot" style="background:#E8A13A"></span>상가·오피스</span>
     <span class="prod"><span class="dot" style="background:#4C9A4C"></span>토지</span>
   </div>
   <div class="hero-foot">
@@ -221,7 +222,7 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
 (function(){
 if(!window.SB||!SB.summary||!SB.stats)return;
 var S=SB.summary, T=SB.stats;
-var TYPE={apt:"아파트",offi:"오피스텔",villa:"연립·다세대",house:"단독·다가구",comm:"상업·업무",land:"토지"};
+var TYPE={apt:"아파트",offi:"오피스텔",villa:"연립·다세대",house:"단독·다가구",bldg:"빌딩",comm:"구분상가·오피스",land:"토지"};
 function eok(man){var e=man/10000;if(e>=100)return Math.round(e).toLocaleString()+"억";
 return (e>=10?e.toFixed(1):e.toFixed(2)).replace(/\.?0+$/,"")+"억";}
 var P=T.period||{f:"",t:""};
@@ -250,7 +251,7 @@ document.getElementById("basis").textContent="계약일 "+PER+" · 기준일 "+T
 document.getElementById("blabel").textContent="Live Data · 계약일 "+PER;
 document.getElementById("capProd").textContent="계약일 "+PER;
 document.getElementById("capRank").textContent="서울 25개 구 전체 · 거래 건수순 · 계약일 "+PER+" · 중위가는 아파트 매매";
-document.getElementById("capTop").textContent="계약일 "+PER+" · 매매 상위 10 · 오피스·꼬마빌딩 등 상업용 빌딩 포함 (고가 거래는 국토부가 지번 일부 비공개)";
+document.getElementById("capTop").textContent="계약일 "+PER+" · 매매 상위 10 · 빌딩 포함 (고가 거래는 국토부가 지번 일부 비공개)";
 /* 티커 */
 var tks=T.top.map(function(d){return '<span class="tk">'+d.sgg+' '+d.name+' <b>'+eok(d.p)+'</b>'+(d.a?' '+Math.round(d.p/d.a).toLocaleString()+'만/㎡':'')+' · '+(TYPE[d.t]||"")+' · '+d.cd.slice(5)+'</span>';}).join("");
 document.getElementById("ticker").innerHTML=tks+tks;
@@ -270,7 +271,7 @@ function pct(n){return (n/prodTot*100).toFixed(1).replace(/\.0$/,"")+"%";}
 new Chart(document.getElementById("prod"),{type:"doughnut",data:{
   labels:T.prod.map(function(x){return TYPE[x.t]+" "+pct(x.n);}),
   datasets:[{data:T.prod.map(function(x){return x.n;}),
-   backgroundColor:["#2554E0","#7A5AF8","#0FA98A","#6E6E6A","#E8A13A","#4C9A4C"],borderWidth:2,borderColor:"#fff"}]},
+   backgroundColor:["#2554E0","#7A5AF8","#0FA98A","#6E6E6A","#D4573F","#E8A13A","#4C9A4C"],borderWidth:2,borderColor:"#fff"}]},
   options:{cutout:"66%",plugins:{legend:{position:"bottom",labels:{boxWidth:9,boxHeight:9,font:{size:11}}},
    tooltip:{callbacks:{label:function(c){return " "+c.parsed.toLocaleString()+"건 ("+pct(c.parsed)+")";}}}}}});
 /* 시도 카드 */
@@ -348,7 +349,7 @@ function dealName(d){
   if(d.t!=="comm")return d.name;
   return d.name.replace("일반 · ","").replace("집합 · ","");
 }
-function dealType(d){return d.t==="comm"?"상업·업무 빌딩":(TYPE[d.t]||"");}
+function dealType(d){return d.t==="bldg"?"빌딩":(TYPE[d.t]||"");}
 document.getElementById("topdeals").innerHTML=T.top.map(function(d,i){
   return '<div class="deal"><span class="no">'+String(i+1).padStart(2,"0")+'</span>'
    +'<span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><b>'+dealName(d)+'</b><br><span style="color:#6E6E6A;font-size:11px">'+d.sgg+' · '+dealType(d)+(d.a?' · '+Math.round(d.a).toLocaleString()+'㎡ · <b style="color:#3B3B39">'+Math.round(d.p/d.a).toLocaleString()+'만/㎡</b>':'')+' · '+d.cd+'</span></span>'
