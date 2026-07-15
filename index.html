@@ -38,7 +38,11 @@ h1{font-size:clamp(46px,8.6vw,118px);line-height:1.0;letter-spacing:-0.045em;fon
 h1 .thin{color:var(--g3)}
 .hero-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:30px;
   margin:34px 0 0;flex-wrap:wrap}
-.hero-sub{max-width:430px;font-size:15px;color:var(--g1);margin:0}
+.hero-sub{max-width:430px;font-size:15px;color:var(--g1);margin:0;word-break:keep-all;line-height:1.7}
+.prods{display:flex;gap:8px;flex-wrap:wrap;margin:28px 0 0}
+.prod{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--hair);background:var(--wh);
+  border-radius:100px;padding:7px 15px;font-size:12.5px;font-weight:600;color:var(--g1)}
+.prod .dot{width:8px;height:8px;border-radius:50%}
 .hero-cta{display:flex;gap:10px}
 .btn{display:inline-block;padding:15px 30px;border-radius:100px;font-size:14.5px;font-weight:700;
   text-decoration:none;transition:opacity 150ms ease,background 150ms ease}
@@ -91,7 +95,7 @@ h1 .thin{color:var(--g3)}
 table.rank{width:100%;border-collapse:collapse;font-size:13px}
 .rank th{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--g2);
   text-align:left;font-weight:600;padding:6px 8px;border-bottom:1px solid var(--blk)}
-.rank td{padding:10px 8px;border-bottom:1px solid var(--hair);font-variant-numeric:tabular-nums}
+.rank td{padding:12.5px 8px;border-bottom:1px solid var(--hair);font-variant-numeric:tabular-nums}
 .rank tbody tr{transition:background 120ms ease;cursor:pointer}
 .rank tbody tr:hover{background:var(--bg)}
 .rank .no{color:var(--g3);width:24px}
@@ -128,9 +132,16 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
 <header class="hero wrap">
   <div class="kicker">국토교통부 실거래 신고 · 매일 자동 수집 · 전국 순차 업데이트 중 — 현재 서울 오픈</div>
   <h1>실거래가를,<br><span class="thin">데이터로</span> 읽다</h1>
+  <div class="prods">
+    <span class="prod"><span class="dot" style="background:#2554E0"></span>아파트</span>
+    <span class="prod"><span class="dot" style="background:#7A5AF8"></span>오피스텔</span>
+    <span class="prod"><span class="dot" style="background:#0FA98A"></span>연립·다세대</span>
+    <span class="prod"><span class="dot" style="background:#6E6E6A"></span>단독·다가구</span>
+    <span class="prod"><span class="dot" style="background:#E8A13A"></span>상업·업무</span>
+    <span class="prod"><span class="dot" style="background:#4C9A4C"></span>토지</span>
+  </div>
   <div class="hero-foot">
-    <p class="hero-sub">아파트 · 오피스텔 · 연립 · 단독 · 상업 · 토지.
-      매매부터 전세·월세까지, 신고되는 모든 실거래를 지도와 대시보드로.</p>
+    <p class="hero-sub">매매부터 전세·월세까지, 신고되는 모든 실거래를<br>지도와 대시보드로 보여드립니다.</p>
     <div class="hero-cta">
       <a class="btn b" href="map.html">실거래지도 열기</a>
       <a class="btn o" href="channels.html">채널 구독</a>
@@ -158,7 +169,8 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
     <div class="grid g-main" style="margin-top:14px">
       <div class="panel"><h3>서울 구별 거래 랭킹</h3><p class="cap" id="capRank">거래 건수 TOP 10 · 중위가는 아파트 매매</p>
         <table class="rank"><thead><tr><th></th><th>지역</th><th>거래량</th><th style="text-align:right">아파트 중위가</th></tr></thead>
-        <tbody id="gurank"></tbody></table></div>
+        <tbody id="gurank"></tbody></table>
+        <p class="cap" id="rankfoot" style="margin:14px 0 0"></p></div>
       <div class="panel"><h3>최고가 거래</h3><p class="cap" id="capTop">최근 수집분 · 매매</p><div id="topdeals"></div></div>
     </div>
     <div class="links">
@@ -245,6 +257,10 @@ document.getElementById("gurank").innerHTML=T.gu.map(function(x,i){
   return '<tr onclick="location.href=\'map.html\'"><td class="no">'+String(i+1).padStart(2,"0")+'</td><td class="nm">'+x.name+'</td>'
    +'<td style="width:45%"><div style="display:flex;align-items:center;gap:8px"><div class="bar" style="width:'+Math.round(x.n/maxN*100)+'%"></div><span style="font-size:11.5px;color:#6E6E6A">'+x.n.toLocaleString()+'</span></div></td>'
    +'<td class="med">'+(x.med?eok(x.med):"—")+'</td></tr>';}).join("");
+var top10sum=T.gu.reduce(function(a,x){return a+x.n;},0);
+var seoulTot=(T.sido.find(function(x){return x.name==="서울";})||{n:0}).n;
+document.getElementById("rankfoot").textContent="상위 10개 구 합계 "+top10sum.toLocaleString()+"건 · 서울 전체 "
+  +seoulTot.toLocaleString()+"건의 "+Math.round(top10sum/seoulTot*100)+"% · 계약일 "+PER;
 /* 최고가 */
 function dealName(d){
   if(d.t!=="comm")return d.name;
