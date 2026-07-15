@@ -38,7 +38,7 @@ h1{font-size:clamp(46px,8.6vw,118px);line-height:1.0;letter-spacing:-0.045em;fon
 h1 .thin{color:var(--g3)}
 .hero-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:30px;
   margin:34px 0 0;flex-wrap:wrap}
-.hero-sub{max-width:430px;font-size:15px;color:var(--g1);margin:0;word-break:keep-all;line-height:1.7}
+.hero-sub{font-size:clamp(16px,1.75vw,21px);font-weight:700;color:var(--g1);margin:0;word-break:keep-all;line-height:1.5;letter-spacing:-0.02em}
 .prods{display:flex;gap:8px;flex-wrap:wrap;margin:28px 0 0}
 .prod{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--hair);background:var(--wh);
   border-radius:100px;padding:7px 15px;font-size:12.5px;font-weight:600;color:var(--g1)}
@@ -95,7 +95,7 @@ h1 .thin{color:var(--g3)}
 table.rank{width:100%;border-collapse:collapse;font-size:13px}
 .rank th{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--g2);
   text-align:left;font-weight:600;padding:6px 8px;border-bottom:1px solid var(--blk)}
-.rank td{padding:12.5px 8px;border-bottom:1px solid var(--hair);font-variant-numeric:tabular-nums}
+.rank td{padding:6.5px 8px;border-bottom:1px solid var(--hair);font-variant-numeric:tabular-nums;font-size:12.5px}
 .rank tbody tr{transition:background 120ms ease;cursor:pointer}
 .rank tbody tr:hover{background:var(--bg)}
 .rank .no{color:var(--g3);width:24px}
@@ -103,6 +103,7 @@ table.rank{width:100%;border-collapse:collapse;font-size:13px}
 .bar{height:5px;border-radius:3px;background:linear-gradient(90deg,var(--blue),#6C9EFF);min-width:5px}
 .rank .med{text-align:right;font-weight:700;color:var(--blue)}
 .deal{display:flex;gap:12px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--hair);font-size:12.5px}
+.dealwrap{display:flex;flex-direction:column;justify-content:space-between;height:calc(100% - 52px)}
 .deal:last-child{border-bottom:none}
 .deal .no{color:var(--g3)}
 .deal .p{margin-left:auto;font-weight:800;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--blue)}
@@ -141,7 +142,7 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
     <span class="prod"><span class="dot" style="background:#4C9A4C"></span>토지</span>
   </div>
   <div class="hero-foot">
-    <p class="hero-sub">매매부터 전세·월세까지, 신고되는 모든 실거래를<br>지도와 대시보드로 보여드립니다.</p>
+    <p class="hero-sub">매매부터 전세·월세까지, 신고되는 모든 실거래를 지도와 대시보드로 보여드립니다.</p>
     <div class="hero-cta">
       <a class="btn b" href="map.html">실거래지도 열기</a>
       <a class="btn o" href="channels.html">채널 구독</a>
@@ -167,11 +168,11 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
     </div>
     <div class="grid sido3" id="sido3"></div>
     <div class="grid g-main" style="margin-top:14px">
-      <div class="panel"><h3>서울 구별 거래 랭킹</h3><p class="cap" id="capRank">거래 건수 TOP 10 · 중위가는 아파트 매매</p>
+      <div class="panel"><h3>서울 구별 거래 랭킹</h3><p class="cap" id="capRank">25개 구 전체 · 중위가는 아파트 매매</p>
         <table class="rank"><thead><tr><th></th><th>지역</th><th>거래량</th><th style="text-align:right">아파트 중위가</th></tr></thead>
         <tbody id="gurank"></tbody></table>
         <p class="cap" id="rankfoot" style="margin:14px 0 0"></p></div>
-      <div class="panel"><h3>최고가 거래</h3><p class="cap" id="capTop">최근 수집분 · 매매</p><div id="topdeals"></div></div>
+      <div class="panel"><h3>최고가 거래</h3><p class="cap" id="capTop">최근 수집분 · 매매</p><div id="topdeals" class="dealwrap"></div></div>
     </div>
     <div class="links">
       <a href="map.html"><span class="t">실거래지도</span><span class="s">동네를 확대하면 건물별 가격이 보입니다</span><span class="ar">→</span></a>
@@ -217,7 +218,7 @@ document.querySelectorAll(".cnt").forEach(countUp);
 document.getElementById("basis").textContent="계약일 "+PER+" · 기준일 "+T.updated+" · 매일 자동 갱신";
 document.getElementById("blabel").textContent="Live Data · 계약일 "+PER;
 document.getElementById("capProd").textContent="계약일 "+PER;
-document.getElementById("capRank").textContent="거래 건수 TOP 10 · 계약일 "+PER+" · 중위가는 아파트 매매";
+document.getElementById("capRank").textContent="서울 25개 구 전체 · 거래 건수순 · 계약일 "+PER+" · 중위가는 아파트 매매";
 document.getElementById("capTop").textContent="계약일 "+PER+" · 매매 상위 10 · 오피스·꼬마빌딩 등 상업용 빌딩 포함 (고가 거래는 국토부가 지번 일부 비공개)";
 /* 티커 */
 var tks=T.top.map(function(d){return '<span class="tk">'+d.sgg+' '+d.name+' <b>'+eok(d.p)+'</b> '+(TYPE[d.t]||"")+' · '+d.cd.slice(5)+'</span>';}).join("");
@@ -259,8 +260,7 @@ document.getElementById("gurank").innerHTML=T.gu.map(function(x,i){
    +'<td class="med">'+(x.med?eok(x.med):"—")+'</td></tr>';}).join("");
 var top10sum=T.gu.reduce(function(a,x){return a+x.n;},0);
 var seoulTot=(T.sido.find(function(x){return x.name==="서울";})||{n:0}).n;
-document.getElementById("rankfoot").textContent="상위 10개 구 합계 "+top10sum.toLocaleString()+"건 · 서울 전체 "
-  +seoulTot.toLocaleString()+"건의 "+Math.round(top10sum/seoulTot*100)+"% · 계약일 "+PER;
+document.getElementById("rankfoot").textContent="서울 전체 합계 "+seoulTot.toLocaleString()+"건 · 계약일 "+PER;
 /* 최고가 */
 function dealName(d){
   if(d.t!=="comm")return d.name;
