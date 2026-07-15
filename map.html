@@ -170,7 +170,7 @@ function render(){
     return;
   }
   pts.forEach(function(o){
-    var pt=o.pt,txs=o.txs,col=TYPE[pt.t][1],latest=txs[0];
+    var pt=o.pt,txs=o.txs,ti=TYPE[pt.t]||["기타","#6E6E6A"],col=ti[1],latest=txs[0];
     var icon=L.divIcon({className:'',html:'<div class="pricetag'+(pt.ax?' apx':'')+'" style="background:'+col+'">'
       +priceLabel(latest)+' <span class="n">'+(latest.a?Math.round(latest.a)+'㎡':'')+'</span>'
       +'<span class="nm">'+pt.name+'</span></div>',iconSize:null,iconAnchor:[30,12]});
@@ -180,7 +180,7 @@ function render(){
       return '<tr><td>'+t.cd.slice(5)+'</td><td>'+u+'</td><td>'+(t.a||'-')+'</td><td>'+t.f+'</td><td class="pr">'+priceLabel(t)+sqm+'</td></tr>';
     }).join('');
     var more=txs.length>12?'<div style="color:#888;font-size:11px">외 '+(txs.length-12)+'건</div>':'';
-    var pop='<div class="pop"><h4>'+pt.name+'<span class="badge" style="background:'+col+'">'+TYPE[pt.t][0]+'</span></h4>'
+    var pop='<div class="pop"><h4>'+pt.name+'<span class="badge" style="background:'+col+'">'+ti[0]+'</span></h4>'
       +'<div class="meta">'+pt.dong+' '+pt.jibun+(pt.extra?' · '+pt.extra:'')+' · '+txs.length+'건'+(pt.ax?' · <b style="color:#D4573F">지번 비공개 — 동 단위 개략 위치</b>':'')+'</div>'
       +'<table><tr><th>계약</th><th>거래</th><th>면적㎡</th><th>층</th><th>가격</th></tr>'+rows+'</table>'+more+'</div>';
     var mk=L.marker([pt.lat,pt.lng],{icon:icon}).bindPopup(pop,{maxWidth:320});
