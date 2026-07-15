@@ -26,6 +26,7 @@
     cursor:pointer;transition:transform 120ms ease,box-shadow 120ms ease,border-color 120ms ease}
   .pricetag:hover{transform:scale(1.15);box-shadow:0 4px 12px rgba(18,38,74,.6)}
   .pricetag.sel{transform:scale(1.18);border-color:#141414;box-shadow:0 4px 14px rgba(20,20,20,.5)}
+  .pricetag.apx{border-style:dashed;opacity:.93}
   .leaflet-marker-icon:hover{z-index:10000!important}
   .clus{transition:transform 120ms ease}
   .clus:hover{transform:scale(1.1)}
@@ -170,7 +171,7 @@ function render(){
   }
   pts.forEach(function(o){
     var pt=o.pt,txs=o.txs,col=TYPE[pt.t][1],latest=txs[0];
-    var icon=L.divIcon({className:'',html:'<div class="pricetag" style="background:'+col+'">'
+    var icon=L.divIcon({className:'',html:'<div class="pricetag'+(pt.ax?' apx':'')+'" style="background:'+col+'">'
       +priceLabel(latest)+' <span class="n">'+(latest.a?Math.round(latest.a)+'㎡':'')+'</span>'
       +'<span class="nm">'+pt.name+'</span></div>',iconSize:null,iconAnchor:[30,12]});
     var rows=txs.slice(0,12).map(function(t){
@@ -180,7 +181,7 @@ function render(){
     }).join('');
     var more=txs.length>12?'<div style="color:#888;font-size:11px">외 '+(txs.length-12)+'건</div>':'';
     var pop='<div class="pop"><h4>'+pt.name+'<span class="badge" style="background:'+col+'">'+TYPE[pt.t][0]+'</span></h4>'
-      +'<div class="meta">'+pt.dong+' '+pt.jibun+(pt.extra?' · '+pt.extra:'')+' · '+txs.length+'건</div>'
+      +'<div class="meta">'+pt.dong+' '+pt.jibun+(pt.extra?' · '+pt.extra:'')+' · '+txs.length+'건'+(pt.ax?' · <b style="color:#D4573F">지번 비공개 — 동 단위 개략 위치</b>':'')+'</div>'
       +'<table><tr><th>계약</th><th>거래</th><th>면적㎡</th><th>층</th><th>가격</th></tr>'+rows+'</table>'+more+'</div>';
     var mk=L.marker([pt.lat,pt.lng],{icon:icon}).bindPopup(pop,{maxWidth:320});
     mk.on('popupopen',function(){var el=mk.getElement();if(el){var t=el.querySelector('.pricetag');if(t)t.classList.add('sel');}});
@@ -238,7 +239,7 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
 /* 범례 */
 document.getElementById('legend').innerHTML=Object.keys(TYPE).map(function(t){
   return '<span style="margin-right:8px"><span class="dot" style="background:'+TYPE[t][1]+'"></span>'+TYPE[t][0]+'</span>';
-}).join('')+'<br>'+(SB.summary.period?('계약일 '+SB.summary.period.f.replace(/-/g,'.')+' ~ '+SB.summary.period.t.slice(5).replace(/-/g,'.')+' · '):'')+'기준일 '+SB.summary.updated+' · 확대할수록 상세(건물명은 최대 확대 시)';
+}).join('')+'<br>'+(SB.summary.period?('계약일 '+SB.summary.period.f.replace(/-/g,'.')+' ~ '+SB.summary.period.t.slice(5).replace(/-/g,'.')+' · '):'')+'기준일 '+SB.summary.updated+' · 확대할수록 상세(건물명은 최대 확대 시) · 점선 마커=지번 비공개(동 단위 개략)';
 map.on('moveend zoomend',render);
 render();
 </script>
