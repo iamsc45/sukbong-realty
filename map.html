@@ -88,6 +88,7 @@ var map=L.map('map',{minZoom:9}).setView([37.55,126.98],11);
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
   {attribution:'&copy; OpenStreetMap &copy; CARTO',maxZoom:19}).addTo(map);
 var layer=L.layerGroup().addTo(map);
+function go(lat,lng,z){try{map.flyTo([lat,lng],z,{duration:.6});}catch(e){try{map.setView([lat,lng],z,{animate:false});}catch(e2){}}}
 var loading={}, loaded={};
 
 function fmtEok(man){var e=man/10000;return (e>=10?e.toFixed(1):e.toFixed(2)).replace(/\.?0+$/,'')+'억';}
@@ -132,7 +133,7 @@ function render(){
       var icon=L.divIcon({className:'',html:'<div class="clus" style="width:'+sz+'px;height:'+sz+'px">'
         +'<span class="cn">'+r.sgg+'</span><span class="cc">'+tot.toLocaleString()+'</span></div>',
         iconSize:[sz,sz],iconAnchor:[sz/2,sz/2]});
-      L.marker([r.lat,r.lng],{icon:icon}).on('click',function(){map.flyTo([r.lat,r.lng],Z_DETAIL+1,{duration:.6});}).addTo(layer);
+      L.marker([r.lat,r.lng],{icon:icon}).on('click',function(){go(r.lat,r.lng,Z_DETAIL+1);}).addTo(layer);
       nPt++;nTx+=tot;
     });
     document.getElementById('stat').textContent='시군구 '+nPt+'곳 · '+nTx.toLocaleString()+'건 (확대하면 상세)';
@@ -163,7 +164,7 @@ function render(){
         +'<span class="cn">'+k+'</span><span class="cc">'+g.tx+'</span></div>',
         iconSize:[sz,sz],iconAnchor:[sz/2,sz/2]});
       var la=g.lat/g.n,ln=g.lng/g.n;
-      L.marker([la,ln],{icon:icon}).on('click',function(){map.flyTo([la,ln],Z_POINT,{duration:.5});}).addTo(layer);
+      L.marker([la,ln],{icon:icon}).on('click',function(){go(la,ln,Z_POINT);}).addTo(layer);
       nPt++;nTx+=g.tx;
     });
     document.getElementById('stat').textContent='동 '+nPt+'곳 · '+nTx.toLocaleString()+'건'+(pending?' · 불러오는 중…':'');
@@ -223,16 +224,14 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
       .forEach(function(r){opt(s2,r.code,r.sgg+(r.geo?'':' (준비중)'),!r.geo);});
   }
   s1.addEventListener('change',function(){
-    curSido=s1.value;curSgg='all';fill();
+    curSido=s1.value;curSgg='all';fill();render();
     var pts=SB.summary.regions.filter(function(r){return r.lat&&regionPass(r);}).map(function(r){return [r.lat,r.lng];});
-    if(curSido!=='all'&&pts.length)map.fitBounds(pts,{padding:[40,40],maxZoom:12});
-    render();
+    if(curSido!=='all'&&pts.length){try{map.fitBounds(pts,{padding:[40,40],maxZoom:12});}catch(e){}}
   });
   s2.addEventListener('change',function(){
-    curSgg=s2.value;
+    curSgg=s2.value;render();
     var r=SB.summary.regions.find(function(x){return x.code===curSgg;});
-    if(r&&r.lat){map.flyTo([r.lat,r.lng],Z_DETAIL+1,{duration:.6});}
-    render();
+    if(r&&r.lat){go(r.lat,r.lng,Z_DETAIL+1);}
   });
   fill();
 })();
