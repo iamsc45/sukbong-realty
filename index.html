@@ -179,6 +179,15 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
         <canvas id="prod" height="158"></canvas></div>
     </div>
     <div class="grid sido3 rv" id="sido3"></div>
+    <div class="grid g-main rv" style="margin-top:14px;grid-template-columns:1fr 1fr">
+      <div class="panel"><h3>아파트 평형대별 매매</h3><p class="cap" id="capPy"></p><div id="pyeong"></div></div>
+      <div class="panel"><h3>아파트 매매 가격대 분포</h3><p class="cap" id="capPb"></p><div id="priceband"></div></div>
+    </div>
+    <div class="grid sido3 rv" style="margin-top:14px">
+      <div class="panel" id="rentPanel"></div>
+      <div class="panel" id="jrPanel"></div>
+      <div class="panel" id="agePanel"></div>
+    </div>
     <div class="grid g-main" style="margin-top:14px">
       <div class="panel rv"><h3>서울 구별 거래 랭킹</h3><p class="cap" id="capRank">25개 구 전체 · 중위가는 아파트 매매</p>
         <table class="rank"><thead><tr><th></th><th>지역</th><th>거래량</th><th style="text-align:right">아파트 중위가</th></tr></thead>
@@ -273,6 +282,42 @@ document.getElementById("gurank").innerHTML=T.gu.map(function(x,i){
   return '<tr onclick="location.href=\'map.html\'"><td class="no">'+String(i+1).padStart(2,"0")+'</td><td class="nm">'+x.name+'</td>'
    +'<td style="width:45%"><div style="display:flex;align-items:center;gap:8px"><div class="bar" style="width:'+Math.round(x.n/maxN*100)+'%"></div><span style="font-size:11.5px;color:#6E6E6A">'+x.n.toLocaleString()+'</span></div></td>'
    +'<td class="med">'+(x.med?eok(x.med):"—")+'</td></tr>';}).join("");
+/* 평형대별 · 가격대 분포 (막대 리스트) */
+function barList(items,maxN,rightFn){
+  return items.map(function(x){
+    return '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--hair);font-size:12.5px">'
+     +'<span style="width:74px;font-weight:700">'+x.b+'</span>'
+     +'<div style="flex:1;display:flex;align-items:center;gap:8px"><div class="bar" style="width:'+Math.max(3,Math.round(x.n/maxN*100))+'%"></div>'
+     +'<span style="color:#6E6E6A;font-size:11.5px">'+x.n.toLocaleString()+'</span></div>'
+     +'<span style="font-weight:700;color:var(--blue);min-width:52px;text-align:right">'+rightFn(x)+'</span></div>';
+  }).join("");
+}
+var maxPy=Math.max.apply(null,T.pyeong.map(function(x){return x.n;}));
+document.getElementById("capPy").textContent="수도권 · 전용면적 기준 · 계약일 "+PER+" · 우측은 중위가";
+document.getElementById("pyeong").innerHTML=barList(T.pyeong,maxPy,function(x){return x.med?eok(x.med):"—";});
+var pbTot=T.prices.reduce(function(a,x){return a+x.n;},0);
+var maxPb=Math.max.apply(null,T.prices.map(function(x){return x.n;}));
+document.getElementById("capPb").textContent="수도권 · 계약일 "+PER+" · 우측은 비중";
+document.getElementById("priceband").innerHTML=barList(T.prices,maxPb,function(x){return (x.n/pbTot*100).toFixed(1)+"%";});
+/* 임대차 구조 · 전세가율 · 신축 프리미엄 */
+function statPanel(el,title,cap,bigV,bigL,rows){
+  document.getElementById(el).innerHTML='<h3>'+title+'</h3><p class="cap">'+cap+'</p>'
+   +'<div class="big" style="font-size:34px;font-weight:800;letter-spacing:-0.03em">'+bigV
+   +'<small style="font-size:13px;color:var(--g2);font-weight:500"> '+bigL+'</small></div>'
+   +rows.map(function(r){return '<div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--g2);border-top:1px solid var(--hair);margin-top:10px;padding-top:8px"><span>'+r[0]+'</span><b style="color:var(--blue)">'+r[1]+'</b></div>';}).join("");
+}
+var R=T.rent;
+statPanel("rentPanel","임대차 구조","수도권 전월세 "+R.n.toLocaleString()+"건 · 계약일 "+PER,
+  Math.round(R.wolse/R.n*100)+"%","월세 비중",
+  [["전세 비중",Math.round((R.n-R.wolse)/R.n*100)+"%"],["갱신계약 비중",Math.round(R.renew/R.kn*100)+"%"]]);
+var J=T.jr;
+statPanel("jrPanel","전세가율 (84㎡)","서울 아파트 전용 82.5~85.5㎡ · 구간 중위가 근사 · 계약일 "+PER,
+  Math.round(J.je/J.sale*100)+"%","전세 중위 ÷ 매매 중위",
+  [["매매 중위가 ("+J.ns+"건)",eok(J.sale)],["전세 중위가 ("+J.nj+"건)",eok(J.je)]]);
+var G=T.age;
+statPanel("agePanel","신축 프리미엄 (84㎡)","서울 아파트 84㎡ 매매 · 준공연도 기준 · 계약일 "+PER,
+  "+"+Math.round((G.new/G.old-1)*100)+"%","신축(5년 내) vs 구축(20년+)",
+  [["신축 중위가 ("+G.nn+"건)",eok(G.new)],["구축 중위가 ("+G.no+"건)",eok(G.old)]]);
 var top10sum=T.gu.reduce(function(a,x){return a+x.n;},0);
 var seoulTot=(T.sido.find(function(x){return x.name==="서울";})||{n:0}).n;
 document.getElementById("rankfoot").textContent="서울 전체 합계 "+seoulTot.toLocaleString()+"건 · 계약일 "+PER;
@@ -289,7 +334,8 @@ document.getElementById("topdeals").innerHTML=T.top.map(function(d,i){
 /* 스크롤 리빌 */
 var rvs=document.querySelectorAll(".rv,.blk-anim");
 var io=new IntersectionObserver(function(es){es.forEach(function(e){
-  if(e.isIntersecting){e.target.classList.add("on");io.unobserve(e.target);}
+  if(e.isIntersecting){e.target.classList.add("on");}
+  else if(e.boundingClientRect.top>0){e.target.classList.remove("on");}
 });},{threshold:.12,rootMargin:"0px 0px -6% 0px"});
 rvs.forEach(function(el,i){el.style.transitionDelay=(i%3)*0.07+"s";io.observe(el);});
 /* 히어로 패럴랙스 (층별 속도차) */
