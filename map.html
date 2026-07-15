@@ -128,7 +128,8 @@ function render(){
   if(z<Z_DETAIL){
     SB.summary.regions.forEach(function(r){
       if(!r.lat||!regionPass(r))return;
-      var tot=r.n['매매']+r.n['전세']+r.n['월세'];
+      var tot=(curT==='all'||!r.nt)?(r.n['매매']+r.n['전세']+r.n['월세']):(r.nt[curT]||0);
+      if(!tot)return;
       var sz=Math.min(64,Math.max(42,Math.round(14*Math.log(tot||1))));
       var icon=L.divIcon({className:'',html:'<div class="clus" style="width:'+sz+'px;height:'+sz+'px">'
         +'<span class="cn">'+r.sgg+'</span><span class="cc">'+tot.toLocaleString()+'</span></div>',
