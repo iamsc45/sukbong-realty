@@ -292,6 +292,7 @@ function barList(items,maxN,rightFn){
      +'<span style="font-weight:700;color:var(--blue);min-width:52px;text-align:right">'+rightFn(x)+'</span></div>';
   }).join("");
 }
+if(T.pyeong&&T.prices&&T.rent&&T.jr&&T.age){
 var maxPy=Math.max.apply(null,T.pyeong.map(function(x){return x.n;}));
 document.getElementById("capPy").textContent="수도권 · 전용면적 기준 · 계약일 "+PER+" · 우측은 중위가";
 document.getElementById("pyeong").innerHTML=barList(T.pyeong,maxPy,function(x){return x.med?eok(x.med):"—";});
@@ -318,6 +319,7 @@ var G=T.age;
 statPanel("agePanel","신축 프리미엄 (84㎡)","서울 아파트 84㎡ 매매 · 준공연도 기준 · 계약일 "+PER,
   "+"+Math.round((G.new/G.old-1)*100)+"%","신축(5년 내) vs 구축(20년+)",
   [["신축 중위가 ("+G.nn+"건)",eok(G.new)],["구축 중위가 ("+G.no+"건)",eok(G.old)]]);
+}
 var top10sum=T.gu.reduce(function(a,x){return a+x.n;},0);
 var seoulTot=(T.sido.find(function(x){return x.name==="서울";})||{n:0}).n;
 document.getElementById("rankfoot").textContent="서울 전체 합계 "+seoulTot.toLocaleString()+"건 · 계약일 "+PER;
