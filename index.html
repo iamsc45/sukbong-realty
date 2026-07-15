@@ -98,7 +98,7 @@ table.rank{width:100%;border-collapse:collapse;font-size:13px}
 .rank .nm{font-weight:700}
 .bar{height:5px;border-radius:3px;background:linear-gradient(90deg,var(--blue),#6C9EFF);min-width:5px}
 .rank .med{text-align:right;font-weight:700;color:var(--blue)}
-.deal{display:flex;gap:12px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--hair);font-size:12.5px}
+.deal{display:flex;gap:12px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--hair);font-size:12.5px}
 .deal:last-child{border-bottom:none}
 .deal .no{color:var(--g3)}
 .deal .p{margin-left:auto;font-weight:800;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--blue)}
@@ -206,7 +206,7 @@ document.getElementById("basis").textContent="계약일 "+PER+" · 기준일 "+T
 document.getElementById("blabel").textContent="Live Data · 계약일 "+PER;
 document.getElementById("capProd").textContent="계약일 "+PER;
 document.getElementById("capRank").textContent="거래 건수 TOP 10 · 계약일 "+PER+" · 중위가는 아파트 매매";
-document.getElementById("capTop").textContent="계약일 "+PER+" · 매매";
+document.getElementById("capTop").textContent="계약일 "+PER+" · 매매 상위 10 · 오피스·꼬마빌딩 등 상업용 빌딩 포함 (고가 거래는 국토부가 지번 일부 비공개)";
 /* 티커 */
 var tks=T.top.map(function(d){return '<span class="tk">'+d.sgg+' '+d.name+' <b>'+eok(d.p)+'</b> '+(TYPE[d.t]||"")+' · '+d.cd.slice(5)+'</span>';}).join("");
 document.getElementById("ticker").innerHTML=tks+tks;
@@ -221,11 +221,14 @@ new Chart(document.getElementById("trend"),{type:"line",data:{
   options:{responsive:true,interaction:{mode:"index",intersect:false},
    plugins:{legend:{labels:{boxWidth:10,boxHeight:10,usePointStyle:true,pointStyle:"rect"}}},
    scales:{y:{grid:{color:"#EEEEEA"},border:{display:false}},x:{grid:{display:false},ticks:{maxTicksLimit:8}}}}});
+var prodTot=T.prod.reduce(function(a,x){return a+x.n;},0);
+function pct(n){return (n/prodTot*100).toFixed(1).replace(/\.0$/,"")+"%";}
 new Chart(document.getElementById("prod"),{type:"doughnut",data:{
-  labels:T.prod.map(function(x){return TYPE[x.t];}),
+  labels:T.prod.map(function(x){return TYPE[x.t]+" "+pct(x.n);}),
   datasets:[{data:T.prod.map(function(x){return x.n;}),
    backgroundColor:["#2554E0","#7A5AF8","#0FA98A","#6E6E6A","#E8A13A","#4C9A4C"],borderWidth:2,borderColor:"#fff"}]},
-  options:{cutout:"66%",plugins:{legend:{position:"bottom",labels:{boxWidth:9,boxHeight:9,font:{size:11}}}}}});
+  options:{cutout:"66%",plugins:{legend:{position:"bottom",labels:{boxWidth:9,boxHeight:9,font:{size:11}}},
+   tooltip:{callbacks:{label:function(c){return " "+c.parsed.toLocaleString()+"건 ("+pct(c.parsed)+")";}}}}}});
 /* 시도 카드 */
 var s3=document.getElementById("sido3");
 T.sido.forEach(function(x){
@@ -243,9 +246,14 @@ document.getElementById("gurank").innerHTML=T.gu.map(function(x,i){
    +'<td style="width:45%"><div style="display:flex;align-items:center;gap:8px"><div class="bar" style="width:'+Math.round(x.n/maxN*100)+'%"></div><span style="font-size:11.5px;color:#6E6E6A">'+x.n.toLocaleString()+'</span></div></td>'
    +'<td class="med">'+(x.med?eok(x.med):"—")+'</td></tr>';}).join("");
 /* 최고가 */
-document.getElementById("topdeals").innerHTML=T.top.slice(0,5).map(function(d,i){
+function dealName(d){
+  if(d.t!=="comm")return d.name;
+  return d.name.replace("일반 · ","").replace("집합 · ","");
+}
+function dealType(d){return d.t==="comm"?"상업·업무 빌딩":(TYPE[d.t]||"");}
+document.getElementById("topdeals").innerHTML=T.top.map(function(d,i){
   return '<div class="deal"><span class="no">'+String(i+1).padStart(2,"0")+'</span>'
-   +'<span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><b>'+d.name+'</b><br><span style="color:#6E6E6A;font-size:11px">'+d.sgg+' · '+(TYPE[d.t]||"")+' · '+d.cd+'</span></span>'
+   +'<span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><b>'+dealName(d)+'</b><br><span style="color:#6E6E6A;font-size:11px">'+d.sgg+' · '+dealType(d)+(d.a?' · '+Math.round(d.a).toLocaleString()+'㎡':'')+' · '+d.cd+'</span></span>'
    +'<span class="p">'+eok(d.p)+'</span></div>';}).join("");
 })();
 </script>
