@@ -188,6 +188,11 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
       <div class="panel" id="jrPanel"></div>
       <div class="panel" id="agePanel"></div>
     </div>
+    <div class="grid sido3 rv" style="margin-top:14px">
+      <div class="panel" id="pdPanel"></div>
+      <div class="panel" id="naPanel"></div>
+      <div class="panel" id="rmPanel"></div>
+    </div>
     <div class="grid g-main" style="margin-top:14px">
       <div class="panel rv"><h3>서울 구별 거래 랭킹</h3><p class="cap" id="capRank">25개 구 전체 · 중위가는 아파트 매매</p>
         <table class="rank"><thead><tr><th></th><th>지역</th><th>거래량</th><th style="text-align:right">아파트 중위가</th></tr></thead>
@@ -223,14 +228,16 @@ var P=T.period||{f:"",t:""};
 var PER=P.f.replace(/-/g,".")+" ~ "+(P.t.slice(0,4)===P.f.slice(0,4)?P.t.slice(5):P.t).replace(/-/g,".");
 var tot=0,geo=0;S.regions.forEach(function(r){tot+=r.n["매매"]+r.n["전세"]+r.n["월세"];geo+=r.geo;});
 /* KPI */
-var kdef=[[tot,"건","수집 거래 (매매+전월세) · 계약 "+PER],[geo,"지점","지도 표시 지점 · 확충 중 ("+T.updated+" 기준)"],[S.regions.length,"곳","수도권 시군구 커버"],[null,null,"데이터 기준일"]];
+var seoulMed=(T.sido.find(function(x){return x.name==="서울";})||{}).med;
+var days=Math.round((new Date(P.t)-new Date(P.f))/86400000)+1;
+var davg=days>0?Math.round(tot/days):0;
 var kel=document.getElementById("kpis");
-kdef.forEach(function(k){
-  var d=document.createElement("div");d.className="kpi";
-  d.innerHTML=k[0]===null?'<div class="v" style="font-size:26px">'+T.updated+'</div><div class="l">'+k[2]+'</div>'
-    :'<div class="v"><span class="cnt" data-v="'+k[0]+'">0</span><small>'+k[1]+'</small></div><div class="l">'+k[2]+'</div>';
-  kel.appendChild(d);
-});
+function kpiCell(inner,label){var d=document.createElement("div");d.className="kpi";
+  d.innerHTML='<div class="v">'+inner+'</div><div class="l">'+label+'</div>';kel.appendChild(d);}
+kpiCell('<span class="cnt" data-v="'+tot+'">0</span><small> 건</small>','수집 거래 (매매+전월세) · 계약 '+PER);
+kpiCell('<span class="cnt" data-v="'+davg+'">0</span><small> 건/일</small>','하루 평균 거래 · 계약일 기준');
+kpiCell(seoulMed?eok(seoulMed):"—",'서울 아파트 매매 중위가 · '+PER);
+kpiCell('<span style="font-size:26px">'+T.updated+'</span>','데이터 기준일');
 function countUp(el){var v=+el.dataset.v,t0=null;
   function step(ts){if(!t0)t0=ts;var p=Math.min((ts-t0)/1100,1);p=1-Math.pow(1-p,3);
     el.textContent=Math.round(v*p).toLocaleString();if(p<1)requestAnimationFrame(step);}
@@ -245,7 +252,7 @@ document.getElementById("capProd").textContent="계약일 "+PER;
 document.getElementById("capRank").textContent="서울 25개 구 전체 · 거래 건수순 · 계약일 "+PER+" · 중위가는 아파트 매매";
 document.getElementById("capTop").textContent="계약일 "+PER+" · 매매 상위 10 · 오피스·꼬마빌딩 등 상업용 빌딩 포함 (고가 거래는 국토부가 지번 일부 비공개)";
 /* 티커 */
-var tks=T.top.map(function(d){return '<span class="tk">'+d.sgg+' '+d.name+' <b>'+eok(d.p)+'</b> '+(TYPE[d.t]||"")+' · '+d.cd.slice(5)+'</span>';}).join("");
+var tks=T.top.map(function(d){return '<span class="tk">'+d.sgg+' '+d.name+' <b>'+eok(d.p)+'</b>'+(d.a?' '+Math.round(d.p/d.a).toLocaleString()+'만/㎡':'')+' · '+(TYPE[d.t]||"")+' · '+d.cd.slice(5)+'</span>';}).join("");
 document.getElementById("ticker").innerHTML=tks+tks;
 /* 차트 — 모노크롬 */
 Chart.defaults.font.family="'Pretendard','Malgun Gothic',sans-serif";
@@ -292,7 +299,8 @@ function barList(items,maxN,rightFn){
      +'<span style="font-weight:700;color:var(--blue);min-width:52px;text-align:right">'+rightFn(x)+'</span></div>';
   }).join("");
 }
-if(T.pyeong&&T.prices&&T.rent&&T.jr&&T.age){
+if(T.pyeong&&T.prices&&T.rent&&T.jr&&T.age&&T.pdang&&T.nonapt&&T.rentmed){
+function man(v){return v>=10000?eok(v):Math.round(v).toLocaleString()+"만";}
 var maxPy=Math.max.apply(null,T.pyeong.map(function(x){return x.n;}));
 document.getElementById("capPy").textContent="수도권 · 전용면적 기준 · 계약일 "+PER+" · 우측은 중위가";
 document.getElementById("pyeong").innerHTML=barList(T.pyeong,maxPy,function(x){return x.med?eok(x.med):"—";});
@@ -319,6 +327,18 @@ var G=T.age;
 statPanel("agePanel","신축 프리미엄 (84㎡)","서울 아파트 84㎡ 매매 · 준공연도 기준 · 계약일 "+PER,
   "+"+Math.round((G.new/G.old-1)*100)+"%","신축(5년 내) vs 구축(20년+)",
   [["신축 중위가 ("+G.nn+"건)",eok(G.new)],["구축 중위가 ("+G.no+"건)",eok(G.old)]]);
+var D=T.pdang;
+statPanel("pdPanel","아파트 평당가","매매 · 3.3㎡ 환산 중위 · 계약일 "+PER,
+  D.seoul.toLocaleString()+"만","/평 · 서울",
+  [["경기",D.gg.toLocaleString()+"만/평"],["인천",D.ic.toLocaleString()+"만/평"]]);
+var NA=T.nonapt;
+statPanel("naPanel","비아파트 매매 중위가","수도권 · 계약일 "+PER,
+  man(NA.offi),"오피스텔",
+  [["연립·다세대",man(NA.villa)]]);
+var RM=T.rentmed;
+statPanel("rmPanel","아파트 임대 중위가","수도권 · 계약일 "+PER,
+  man(RM.je),"전세 보증금",
+  [["월세 보증금",man(RM.wb)],["월세",Math.round(RM.wr)+"만/월"]]);
 }
 var top10sum=T.gu.reduce(function(a,x){return a+x.n;},0);
 var seoulTot=(T.sido.find(function(x){return x.name==="서울";})||{n:0}).n;
@@ -331,7 +351,7 @@ function dealName(d){
 function dealType(d){return d.t==="comm"?"상업·업무 빌딩":(TYPE[d.t]||"");}
 document.getElementById("topdeals").innerHTML=T.top.map(function(d,i){
   return '<div class="deal"><span class="no">'+String(i+1).padStart(2,"0")+'</span>'
-   +'<span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><b>'+dealName(d)+'</b><br><span style="color:#6E6E6A;font-size:11px">'+d.sgg+' · '+dealType(d)+(d.a?' · '+Math.round(d.a).toLocaleString()+'㎡':'')+' · '+d.cd+'</span></span>'
+   +'<span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><b>'+dealName(d)+'</b><br><span style="color:#6E6E6A;font-size:11px">'+d.sgg+' · '+dealType(d)+(d.a?' · '+Math.round(d.a).toLocaleString()+'㎡ · <b style="color:#3B3B39">'+Math.round(d.p/d.a).toLocaleString()+'만/㎡</b>':'')+' · '+d.cd+'</span></span>'
    +'<span class="p">'+eok(d.p)+'</span></div>';}).join("");
 /* 스크롤 리빌 */
 var rvs=document.querySelectorAll(".rv,.blk-anim");

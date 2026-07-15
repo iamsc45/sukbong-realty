@@ -175,7 +175,8 @@ function render(){
       +'<span class="nm">'+pt.name+'</span></div>',iconSize:null,iconAnchor:[30,12]});
     var rows=txs.slice(0,12).map(function(t){
       var u=t.u+(t.k?'·'+t.k.slice(0,2):'');
-      return '<tr><td>'+t.cd.slice(5)+'</td><td>'+u+'</td><td>'+(t.a||'-')+'</td><td>'+t.f+'</td><td class="pr">'+priceLabel(t)+'</td></tr>';
+      var sqm=(t.u==='매매'&&t.a)?'<div style="font-weight:normal;font-size:10px;color:#888">'+Math.round(t.p/t.a).toLocaleString()+'만/㎡</div>':'';
+      return '<tr><td>'+t.cd.slice(5)+'</td><td>'+u+'</td><td>'+(t.a||'-')+'</td><td>'+t.f+'</td><td class="pr">'+priceLabel(t)+sqm+'</td></tr>';
     }).join('');
     var more=txs.length>12?'<div style="color:#888;font-size:11px">외 '+(txs.length-12)+'건</div>':'';
     var pop='<div class="pop"><h4>'+pt.name+'<span class="badge" style="background:'+col+'">'+TYPE[pt.t][0]+'</span></h4>'
