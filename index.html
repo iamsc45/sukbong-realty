@@ -15,7 +15,18 @@
 html{scroll-behavior:smooth}
 html,body{margin:0;padding:0}
 body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:var(--bg);color:var(--blk);
-  line-height:1.55;-webkit-font-smoothing:antialiased}
+  line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background-image:radial-gradient(var(--g4) 1px,transparent 1px);background-size:28px 28px;opacity:.45}
+.bigword{position:absolute;right:-30px;top:10px;z-index:-1;font-size:clamp(130px,24vw,320px);font-weight:800;
+  line-height:1;letter-spacing:-0.04em;color:transparent;-webkit-text-stroke:1.5px var(--g4);
+  pointer-events:none;user-select:none;will-change:transform}
+.rv{opacity:0;transform:translateY(34px);transition:opacity .8s cubic-bezier(.2,.65,.2,1),transform .8s cubic-bezier(.2,.65,.2,1)}
+.rv.on{opacity:1;transform:none}
+.blk-anim{transform:scale(.96) translateY(20px);opacity:.6;transition:transform .9s cubic-bezier(.2,.65,.2,1),opacity .9s ease}
+.blk-anim.on{transform:none;opacity:1}
+h1,.kicker,.prods{will-change:transform}
+@media (prefers-reduced-motion:reduce){.rv,.blk-anim{opacity:1!important;transform:none!important;transition:none!important}}
 a{color:inherit}
 .wrap{max-width:1200px;margin:0 auto;padding:0 20px}
 /* ── 내비 ── */
@@ -29,7 +40,7 @@ a{color:inherit}
   padding:10px 20px;border-radius:100px;text-decoration:none;transition:opacity 150ms ease}
 .nav .cta:hover{opacity:.75}
 /* ── 히어로 ── */
-.hero{padding:96px 0 30px}
+.hero{padding:96px 0 30px;position:relative}
 .kicker{font-size:11.5px;letter-spacing:.18em;color:var(--g2);text-transform:uppercase;
   display:flex;align-items:center;gap:10px}
 .kicker::before{content:"";width:34px;height:1px;background:var(--blk)}
@@ -131,6 +142,7 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
 </div></nav>
 
 <header class="hero wrap">
+  <div class="bigword" aria-hidden="true">DATA</div>
   <div class="kicker">국토교통부 실거래 신고 · 매일 자동 수집 · 전국 순차 업데이트 중 — 현재 서울 오픈</div>
   <h1>실거래가를,<br><span class="thin">데이터로</span> 읽다</h1>
   <div class="prods">
@@ -148,7 +160,7 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
       <a class="btn o" href="channels.html">채널 구독</a>
     </div>
   </div>
-  <div class="block">
+  <div class="block blk-anim">
     <div class="block-in">
       <div class="blabel" id="blabel">Live Data</div>
       <div class="kpis" id="kpis"></div>
@@ -159,27 +171,27 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
 
 <main class="wrap">
   <section class="dash">
-    <div class="sec"><h2>마켓 대시보드</h2><span class="d" id="basis"></span></div>
+    <div class="sec rv"><h2>마켓 대시보드</h2><span class="d" id="basis"></span></div>
     <div class="grid g-main">
-      <div class="panel"><h3>일별 실거래 신고 추이</h3><p class="cap">계약일 기준 최근 30일 · 매매 vs 전월세</p>
+      <div class="panel rv"><h3>일별 실거래 신고 추이</h3><p class="cap">계약일 기준 최근 30일 · 매매 vs 전월세</p>
         <canvas id="trend" height="118"></canvas></div>
-      <div class="panel"><h3>상품별 거래 비중</h3><p class="cap" id="capProd">수집 데이터 전체</p>
+      <div class="panel rv"><h3>상품별 거래 비중</h3><p class="cap" id="capProd">수집 데이터 전체</p>
         <canvas id="prod" height="158"></canvas></div>
     </div>
-    <div class="grid sido3" id="sido3"></div>
+    <div class="grid sido3 rv" id="sido3"></div>
     <div class="grid g-main" style="margin-top:14px">
-      <div class="panel"><h3>서울 구별 거래 랭킹</h3><p class="cap" id="capRank">25개 구 전체 · 중위가는 아파트 매매</p>
+      <div class="panel rv"><h3>서울 구별 거래 랭킹</h3><p class="cap" id="capRank">25개 구 전체 · 중위가는 아파트 매매</p>
         <table class="rank"><thead><tr><th></th><th>지역</th><th>거래량</th><th style="text-align:right">아파트 중위가</th></tr></thead>
         <tbody id="gurank"></tbody></table>
         <p class="cap" id="rankfoot" style="margin:14px 0 0"></p></div>
-      <div class="panel"><h3>최고가 거래</h3><p class="cap" id="capTop">최근 수집분 · 매매</p><div id="topdeals" class="dealwrap"></div></div>
+      <div class="panel rv"><h3>최고가 거래</h3><p class="cap" id="capTop">최근 수집분 · 매매</p><div id="topdeals" class="dealwrap"></div></div>
     </div>
     <div class="links">
-      <a href="map.html"><span class="t">실거래지도</span><span class="s">동네를 확대하면 건물별 가격이 보입니다</span><span class="ar">→</span></a>
-      <a href="reports.html"><span class="t">주간·월간 리포트</span><span class="s">매주·매월 발행하는 시장 결산</span><span class="ar">→</span></a>
-      <a href="channels.html"><span class="t">채널 안내</span><span class="s">매일 아침 카드뉴스 10장, 무료</span><span class="ar">→</span></a>
+      <a class="rv" href="map.html"><span class="t">실거래지도</span><span class="s">동네를 확대하면 건물별 가격이 보입니다</span><span class="ar">→</span></a>
+      <a class="rv" href="reports.html"><span class="t">주간·월간 리포트</span><span class="s">매주·매월 발행하는 시장 결산</span><span class="ar">→</span></a>
+      <a class="rv" href="channels.html"><span class="t">채널 안내</span><span class="s">매일 아침 카드뉴스 10장, 무료</span><span class="ar">→</span></a>
     </div>
-    <p class="notice">본 사이트의 실거래 정보는 국토교통부 실거래가 공개시스템 신고 자료(해제 건 제외)를 그대로 옮긴 것으로,
+    <p class="notice rv">본 사이트의 실거래 정보는 국토교통부 실거래가 공개시스템 신고 자료(해제 건 제외)를 그대로 옮긴 것으로,
       특정 부동산에 대한 투자 권유가 아닙니다. 신고 내용의 정정·해제에 따라 값이 달라질 수 있으며, 지도상 위치는 지번 기준의 개략적인 위치입니다.</p>
   </section>
 </main>
@@ -214,7 +226,10 @@ function countUp(el){var v=+el.dataset.v,t0=null;
   function step(ts){if(!t0)t0=ts;var p=Math.min((ts-t0)/1100,1);p=1-Math.pow(1-p,3);
     el.textContent=Math.round(v*p).toLocaleString();if(p<1)requestAnimationFrame(step);}
   requestAnimationFrame(step);}
-document.querySelectorAll(".cnt").forEach(countUp);
+var cntStarted=false;
+function startCounts(){if(cntStarted)return;cntStarted=true;document.querySelectorAll(".cnt").forEach(countUp);}
+var kio=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){startCounts();kio.disconnect();}});},{threshold:.3});
+kio.observe(document.getElementById("kpis"));
 document.getElementById("basis").textContent="계약일 "+PER+" · 기준일 "+T.updated+" · 매일 자동 갱신";
 document.getElementById("blabel").textContent="Live Data · 계약일 "+PER;
 document.getElementById("capProd").textContent="계약일 "+PER;
@@ -271,6 +286,29 @@ document.getElementById("topdeals").innerHTML=T.top.map(function(d,i){
   return '<div class="deal"><span class="no">'+String(i+1).padStart(2,"0")+'</span>'
    +'<span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><b>'+dealName(d)+'</b><br><span style="color:#6E6E6A;font-size:11px">'+d.sgg+' · '+dealType(d)+(d.a?' · '+Math.round(d.a).toLocaleString()+'㎡':'')+' · '+d.cd+'</span></span>'
    +'<span class="p">'+eok(d.p)+'</span></div>';}).join("");
+/* 스크롤 리빌 */
+var rvs=document.querySelectorAll(".rv,.blk-anim");
+var io=new IntersectionObserver(function(es){es.forEach(function(e){
+  if(e.isIntersecting){e.target.classList.add("on");io.unobserve(e.target);}
+});},{threshold:.12,rootMargin:"0px 0px -6% 0px"});
+rvs.forEach(function(el,i){el.style.transitionDelay=(i%3)*0.07+"s";io.observe(el);});
+/* 히어로 패럴랙스 (층별 속도차) */
+var h1el=document.querySelector("h1"),bw=document.querySelector(".bigword"),
+    kk=document.querySelector(".kicker"),pd=document.querySelector(".prods");
+var ticking=false;
+addEventListener("scroll",function(){
+  if(ticking)return;ticking=true;
+  requestAnimationFrame(function(){
+    var y=window.scrollY;
+    if(y<900){
+      if(h1el)h1el.style.transform="translateY("+(y*0.14)+"px)";
+      if(pd)pd.style.transform="translateY("+(y*0.07)+"px)";
+      if(bw)bw.style.transform="translateY("+(y*0.34)+"px)";
+      if(kk)kk.style.opacity=Math.max(0,1-y/280);
+    }
+    ticking=false;
+  });
+},{passive:true});
 })();
 </script>
 </body></html>
