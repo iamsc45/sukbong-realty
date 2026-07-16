@@ -256,7 +256,7 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
     }
     if(tgt){
       curSido=tgt.sido;curSgg=tgt.code;s1.value=tgt.sido;fill();s2.value=tgt.code;
-      if(tgt.lat)go(tgt.lat,tgt.lng,Z_DETAIL+1);
+      if(tgt.lat)setTimeout(function(){try{map.invalidateSize();map.setView([tgt.lat,tgt.lng],Z_DETAIL+1,{animate:false});}catch(e){}},150);
     }else if(ps){
       var sm=null;sidos.forEach(function(x){if(!sm&&(x===ps||ps.indexOf(x)>=0))sm=x;});
       if(sm){curSido=sm;s1.value=sm;fill();
