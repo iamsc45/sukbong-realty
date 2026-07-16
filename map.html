@@ -43,7 +43,7 @@
   .pop .badge{font-size:10.5px;color:#fff;border-radius:8px;padding:1px 7px;vertical-align:2px;margin-left:5px}
   .pop .meta{color:var(--muted2);font-size:11.5px;margin-bottom:6px}
   .pop table{border-collapse:collapse;width:100%;font-size:12px}
-  .pop th{background:var(--soft);color:var(--navy);padding:3px 6px;border:1px solid #E2E8F2}
+  .pop th{background:var(--soft);color:var(--navy);padding:3px 6px;border:1px solid #E2E8F2;position:sticky;top:-1px;z-index:1}
   .pop td{padding:3px 6px;border:1px solid #E2E8F2;text-align:center}
   .pop td.pr{font-weight:bold;color:var(--navy)}
   #legend{position:absolute;bottom:52px;left:10px;z-index:900;background:rgba(255,255,255,.93);
@@ -176,16 +176,15 @@ function render(){
     var icon=L.divIcon({className:'',html:'<div class="pricetag'+(pt.ax?' apx':'')+'" style="background:'+col+'">'
       +priceLabel(latest)+' <span class="n">'+(latest.a?Math.round(latest.a)+'㎡':'')+'</span>'
       +'<span class="nm">'+pt.name+'</span></div>',iconSize:null,iconAnchor:[30,12]});
-    var rows=txs.slice(0,12).map(function(t){
+    var rows=txs.map(function(t){
       var u=t.u+(t.k?'·'+t.k.slice(0,2):'');
       var sqm=(t.u==='매매'&&t.a)?'<div style="font-weight:normal;font-size:10px;color:#888">'+Math.round(t.p/t.a).toLocaleString()+'만/㎡</div>':'';
       return '<tr><td>'+t.cd.slice(5)+'</td><td>'+u+'</td><td>'+(t.a||'-')+'</td><td>'+t.f+'</td><td class="pr">'+priceLabel(t)+sqm+'</td></tr>';
     }).join('');
-    var more=txs.length>12?'<div style="color:#888;font-size:11px">외 '+(txs.length-12)+'건</div>':'';
     var pop='<div class="pop"><h4>'+pt.name+'<span class="badge" style="background:'+col+'">'+ti[0]+'</span></h4>'
       +'<div class="meta">'+pt.dong+' '+pt.jibun+(pt.extra?' · '+pt.extra:'')+' · '+txs.length+'건'+(pt.ax?' · <b style="color:#D4573F">지번 비공개 — 동 단위 개략 위치</b>':'')+'</div>'
-      +'<table><tr><th>계약</th><th>거래</th><th>면적㎡</th><th>층</th><th>가격</th></tr>'+rows+'</table>'+more+'</div>';
-    var mk=L.marker([pt.lat,pt.lng],{icon:icon}).bindPopup(pop,{maxWidth:320});
+      +'<table><thead><tr><th>계약</th><th>거래</th><th>면적㎡</th><th>층</th><th>가격</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+    var mk=L.marker([pt.lat,pt.lng],{icon:icon}).bindPopup(pop,{maxWidth:320,maxHeight:360});
     mk.on('popupopen',function(){var el=mk.getElement();if(el){var t=el.querySelector('.pricetag');if(t)t.classList.add('sel');}});
     mk.on('popupclose',function(){var el=mk.getElement();if(el){var t=el.querySelector('.pricetag');if(t)t.classList.remove('sel');}});
     mk.addTo(layer);
@@ -240,7 +239,10 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
 document.getElementById('legend').innerHTML=Object.keys(TYPE).map(function(t){
   return '<span style="margin-right:8px"><span class="dot" style="background:'+TYPE[t][1]+'"></span>'+TYPE[t][0]+'</span>';
 }).join('')+'<br>'+(SB.summary.period?('계약일 '+SB.summary.period.f.replace(/-/g,'.')+' ~ '+SB.summary.period.t.slice(5).replace(/-/g,'.')+' · '):'')+'기준일 '+SB.summary.updated+' · 확대할수록 상세(건물명은 최대 확대 시) · 점선 마커=지번 비공개(동 단위 개략)';
-map.on('moveend zoomend',render);
+var popLock=false;
+map.on('popupopen',function(){popLock=true;});
+map.on('popupclose',function(){popLock=false;setTimeout(render,50);});
+map.on('moveend zoomend',function(){if(!popLock)render();});
 render();
 </script>
 </body></html>
