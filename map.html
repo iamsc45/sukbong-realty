@@ -97,8 +97,12 @@ try{var P0=new URLSearchParams(location.search);var t0=P0.get('t');if(t0&&TYPE[t
 var u0=P0.get('u');if(u0==='매매'||u0==='전세'||u0==='월세')curU=u0;}catch(e){}
 function regionPass(r){if(curSgg!=='all')return r.code===curSgg;if(curSido!=='all')return r.sido===curSido;return true;}
 var map=L.map('map',{minZoom:9}).setView([37.55,126.98],11);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-  {attribution:'&copy; OpenStreetMap &copy; CARTO',maxZoom:19}).addTo(map);
+var baseV=L.tileLayer('https://api.vworld.kr/req/wmts/1.0.0/EBC23601-6E41-3269-9ECB-821DEECCF3F0/Base/{z}/{y}/{x}.png',
+  {attribution:'&copy; VWorld(국토교통부)',maxZoom:19,maxNativeZoom:18,minZoom:6}).addTo(map);
+var _te=0;
+baseV.on('tileerror',function(){if(++_te===12){map.removeLayer(baseV);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    {attribution:'&copy; OpenStreetMap &copy; CARTO',maxZoom:19}).addTo(map);}});
 var layer=L.layerGroup().addTo(map);
 function go(lat,lng,z){try{map.flyTo([lat,lng],z,{duration:.6});}catch(e){try{map.setView([lat,lng],z,{animate:false});}catch(e2){}}}
 var loading={}, loaded={};
