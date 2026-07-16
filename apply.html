@@ -50,6 +50,7 @@ h1.pg{font-size:clamp(34px,5.5vw,60px);letter-spacing:-0.045em;font-weight:800;m
   <h1 class="pg">청약</h1>
   <p class="pgsub" id="basis">전국 아파트 분양 공고 · 자료: 한국부동산원 청약홈</p>
   <div class="kpis" id="kpis"></div>
+  <div class="tabs" id="rtabs" style="margin-bottom:8px"></div>
   <div class="tabs" id="tabs">
     <button class="tab on" data-f="all">전체</button>
     <button class="tab" data-f="now">접수중</button>
@@ -89,8 +90,27 @@ document.getElementById("kpis").innerHTML=
 +'<div class="kpi2"><div class="v">'+hh.toLocaleString()+'</div><div class="l">공급 세대 (최근 공고 합계)</div></div>'
 +'<div class="kpi2"><div class="v" style="font-size:22px">'+A.updated+'</div><div class="l">기준일</div></div>';
 var ST={now:["접수중","now"],soon:["접수예정","soon"],done:["접수마감","done"]};
+var curR="all",curF="all";
+var PRI=["서울","경기","인천"];
+var regs=[];
+items.forEach(function(x){if(x.area&&regs.indexOf(x.area)<0)regs.push(x.area);});
+regs.sort(function(a,b){
+  var pa=PRI.indexOf(a),pb=PRI.indexOf(b);
+  if(pa<0)pa=99;if(pb<0)pb=99;
+  return pa-pb||(a<b?-1:1);});
+var rt=document.getElementById("rtabs");
+["all"].concat(regs).forEach(function(r){
+  var b=document.createElement("button");
+  b.className="tab"+(r==="all"?" on":"");
+  b.textContent=r==="all"?"전국":r;
+  b.addEventListener("click",function(){
+    rt.querySelectorAll(".tab").forEach(function(x){x.classList.remove("on");});
+    b.classList.add("on");curR=r;render(curF);});
+  rt.appendChild(b);
+});
 function render(f){
-  var L=items.filter(function(x){return f==="all"||x.state===f;});
+  curF=f;
+  var L=items.filter(function(x){return (f==="all"||x.state===f)&&(curR==="all"||x.area===curR);});
   if(!L.length){document.getElementById("list").innerHTML='<div class="empty">해당 상태의 공고가 없습니다.</div>';return;}
   document.getElementById("list").innerHTML=L.map(function(x){
     var st=ST[x.state];
