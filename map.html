@@ -45,7 +45,8 @@
   .pop .badge{font-size:10.5px;color:#fff;border-radius:8px;padding:1px 7px;vertical-align:2px;margin-left:5px}
   .pop .meta{color:var(--muted2);font-size:11.5px;margin-bottom:6px}
   .pop table{border-collapse:collapse;width:100%;font-size:12px}
-  .pop th{background:var(--soft);color:var(--navy);padding:3px 6px;border:1px solid #E2E8F2;position:sticky;top:-1px;z-index:1}
+  .pop .tw{max-height:264px;overflow-y:auto;border:1px solid #E2E8F2}
+  .pop th{background:var(--soft);color:var(--navy);padding:3px 6px;border:1px solid #E2E8F2;position:sticky;top:0;z-index:1}
   .pop td{padding:3px 6px;border:1px solid #E2E8F2;text-align:center}
   .pop td.pr{font-weight:bold;color:var(--navy)}
   #legend{position:absolute;bottom:52px;left:10px;z-index:900;background:rgba(255,255,255,.93);
@@ -192,8 +193,8 @@ function render(){
     }).join('');
     var pop='<div class="pop"><h4>'+pt.name+'<span class="badge" style="background:'+col+'">'+ti[0]+'</span></h4>'
       +'<div class="meta">'+pt.dong+' '+pt.jibun+(pt.extra?' · '+pt.extra:'')+' · '+txs.length+'건'+(pt.ax?' · <b style="color:#D4573F">지번 비공개 — 동 단위 개략 위치</b>':'')+'</div>'
-      +'<table><thead><tr><th>계약</th><th>거래</th><th>면적㎡</th><th>층</th><th>가격</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
-    var mk=L.marker([pt.lat,pt.lng],{icon:icon}).bindPopup(pop,{maxWidth:320,maxHeight:360});
+      +'<div class="tw"><table><thead><tr><th>계약</th><th>거래</th><th>면적㎡</th><th>층</th><th>가격</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
+    var mk=L.marker([pt.lat,pt.lng],{icon:icon}).bindPopup(pop,{maxWidth:320});
     mk.on('popupopen',function(){var el=mk.getElement();if(el){var t=el.querySelector('.pricetag');if(t)t.classList.add('sel');}});
     mk.on('popupclose',function(){var el=mk.getElement();if(el){var t=el.querySelector('.pricetag');if(t)t.classList.remove('sel');}});
     mk.addTo(layer);
