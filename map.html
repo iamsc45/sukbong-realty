@@ -243,15 +243,20 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
     if(r&&r.lat){go(r.lat,r.lng,Z_DETAIL+1);}
   });
   fill();
-})();
-/* 범례 */
-document.getElementById('legend').innerHTML=Object.keys(TYPE).map(function(t){
-  return '<span style="margin-right:8px"><span class="dot" style="background:'+TYPE[t][1]+'"></span>'+TYPE[t][0]+'</span>';
-}).join('')+'<br>'+(SB.summary.period?('계약일 '+SB.summary.period.f.replace(/-/g,'.')+' ~ '+SB.summary.period.t.slice(5).replace(/-/g,'.')+' · '):'')+'기준일 '+SB.summary.updated+' · 확대할수록 상세(건물명은 최대 확대 시) · 점선 마커=지번 비공개(동 단위 개략)';
-var popLock=false;
-map.on('popupopen',function(){popLock=true;});
-map.on('popupclose',function(){popLock=false;setTimeout(render,50);});
-map.on('moveend zoomend',function(){if(!popLock)render();});
-render();
-</script>
-</body></html>
+  /* 딥링크: ?r=시군구코드 | ?q=주소·지역명 | ?s=시도명 */
+  try{
+    var P=new URLSearchParams(location.search);
+    var pr=P.get('r'),pq=P.get('q'),ps=P.get('s'),tgt=null;
+    if(pr)tgt=SB.summary.regions.find(function(x){return x.code===pr;});
+    if(!tgt&&pq){
+      tgt=SB.summary.regions.find(function(x){
+        if(pq.indexOf(x.sido)<0)return false;
+        return x.sgg.split(/\s+/).every(function(p){return pq.indexOf(p)>=0;});
+      });
+    }
+    if(tgt){
+      curSido=tgt.sido;curSgg=tgt.code;s1.value=tgt.sido;fill();s2.value=tgt.code;
+      if(tgt.lat)go(tgt.lat,tgt.lng,Z_DETAIL+1);
+    }else if(ps){
+      var sm=null;sidos.forEach(function(x){if(!sm&&(x===ps||ps.indexOf(x)>=0))sm=x;});
+      if(sm){curSido=sm;s1.value=sm
