@@ -98,7 +98,9 @@ function render(f){
     return '<div class="ap rv on"><span class="st '+st[1]+'">'+st[0]+'</span>'
      +'<span class="nm">'+(x.url?'<a href="'+x.url+'" style="text-decoration:none;color:inherit">'+x.nm+' ↗</a>':x.nm)+'</span>'
      +'<span class="pr">'+pr+'</span>'
-     +'<span class="meta">'+(x.ad||"")+' · '+(x.n?x.n+"세대":"")+' · 접수 '+(x.s||"?")+' ~ '+(x.e||"?")+' · 발표 '+(x.win||"?")+'</span></div>';
+     +'<span class="meta">'+(x.ad||"")+' · '+(x.n?x.n+"세대":"")+' · 접수 '+(x.s||"?")+' ~ '+(x.e||"?")+' · 발표 '+(x.win||"?")
+     +(x.c1!=null?(' · <b style="color:'+(x.c1>=1?'var(--acc-teal)':'var(--down)')+'">1순위 '+(x.c1>=1?x.c1+':1':'미달('+x.c1+':1)')+'</b>'):'')
+     +'</span></div>';
   }).join("");
 }
 render("all");
