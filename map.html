@@ -259,4 +259,20 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
       if(tgt.lat)go(tgt.lat,tgt.lng,Z_DETAIL+1);
     }else if(ps){
       var sm=null;sidos.forEach(function(x){if(!sm&&(x===ps||ps.indexOf(x)>=0))sm=x;});
-      if(sm){curSido=sm;s1.value=sm
+      if(sm){curSido=sm;s1.value=sm;fill();
+        var pts=SB.summary.regions.filter(function(r){return r.lat&&regionPass(r);}).map(function(r){return [r.lat,r.lng];});
+        if(pts.length){try{map.fitBounds(pts,{padding:[40,40],maxZoom:12});}catch(e){}}}
+    }
+  }catch(e){}
+})();
+/* 범례 */
+document.getElementById('legend').innerHTML=Object.keys(TYPE).map(function(t){
+  return '<span style="margin-right:8px"><span class="dot" style="background:'+TYPE[t][1]+'"></span>'+TYPE[t][0]+'</span>';
+}).join('')+'<br>'+(SB.summary.period?('계약일 '+SB.summary.period.f.replace(/-/g,'.')+' ~ '+SB.summary.period.t.slice(5).replace(/-/g,'.')+' · '):'')+'기준일 '+SB.summary.updated+' · 확대할수록 상세(건물명은 최대 확대 시) · 점선 마커=지번 비공개(동 단위 개략)';
+var popLock=false;
+map.on('popupopen',function(){popLock=true;});
+map.on('popupclose',function(){popLock=false;setTimeout(render,50);});
+map.on('moveend zoomend',function(){if(!popLock)render();});
+render();
+</script>
+</body></html>
