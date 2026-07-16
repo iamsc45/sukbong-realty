@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>청약 — 석봉 부동산 정보방</title>
+<meta name="description" content="전국 아파트 청약 일정·분양가를 실거래 데이터와 함께 확인하세요.">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+.wrap{max-width:1100px}
+h1.pg{font-size:clamp(34px,5.5vw,60px);letter-spacing:-0.045em;font-weight:800;margin:52px 0 6px}
+.pgsub{color:var(--muted);font-size:14px;margin:0 0 26px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:0 0 26px}
+.kpi2{background:var(--soft);border:1px solid var(--hair);border-radius:14px;padding:16px 18px}
+.kpi2 .v{font-size:30px;font-weight:800;letter-spacing:-0.03em;font-variant-numeric:tabular-nums}
+.kpi2 .l{font-size:11.5px;color:var(--muted)}
+.kpi2:nth-child(1) .v{color:var(--acc-blue)}.kpi2:nth-child(2) .v{color:var(--acc-teal)}.kpi2:nth-child(3) .v{color:var(--gold)}
+.tabs{display:flex;gap:8px;margin:0 0 16px;flex-wrap:wrap}
+.tab{border:1px solid var(--text);border-radius:100px;padding:7px 18px;font-size:13px;font-weight:700;cursor:pointer;background:transparent;transition:background 120ms ease}
+.tab.on{background:var(--text);color:#fff}
+.aps{display:grid;gap:12px}
+.ap{background:var(--soft);border:1px solid var(--hair);border-radius:16px;padding:20px 22px;display:flex;gap:18px;align-items:baseline;flex-wrap:wrap;transition:border-color 150ms ease}
+.ap:hover{border-color:var(--muted2)}
+.ap .st{font-size:10.5px;letter-spacing:.1em;font-weight:800;border-radius:100px;padding:4px 12px;white-space:nowrap}
+.st.now{background:var(--acc-teal);color:#fff}
+.st.soon{background:var(--text);color:#fff}
+.st.done{background:var(--hair);color:var(--muted)}
+.ap .nm{font-size:16.5px;font-weight:800;letter-spacing:-0.02em}
+.ap .meta{font-size:12.5px;color:var(--muted);width:100%;line-height:1.7}
+.ap .pr{margin-left:auto;text-align:right;font-variant-numeric:tabular-nums}
+.ap .pr b{font-size:16px;color:var(--acc-blue)}
+.ap .pr small{display:block;color:var(--muted);font-size:11px}
+.notice2{font-size:11.5px;color:var(--muted);margin:30px 0 60px;line-height:1.8}
+.empty{background:var(--soft);border:1px dashed var(--muted2);border-radius:16px;padding:40px;text-align:center;color:var(--muted);font-size:14px}
+.rv{opacity:0;transform:translateY(30px);transition:opacity .8s cubic-bezier(.2,.65,.2,1),transform .8s cubic-bezier(.2,.65,.2,1)}
+.rv.on{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1!important;transform:none!important;transition:none!important}}
+</style></head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html">석봉 부동산 정보방</a>
+  <nav>
+    <a href="index.html">홈</a>
+    <a href="map.html">실거래지도</a>
+    <a class="on" href="apply.html">청약</a>
+    <a href="reports.html">리포트</a>
+    <a href="channels.html">채널</a>
+  </nav>
+</header>
+<main class="wrap" style="margin:0 auto;padding:0 22px">
+  <h1 class="pg">청약</h1>
+  <p class="pgsub" id="basis">전국 아파트 분양 공고 · 자료: 한국부동산원 청약홈</p>
+  <div class="kpis" id="kpis"></div>
+  <div class="tabs" id="tabs">
+    <button class="tab on" data-f="all">전체</button>
+    <button class="tab" data-f="now">접수중</button>
+    <button class="tab" data-f="soon">접수예정</button>
+    <button class="tab" data-f="done">접수마감</button>
+  </div>
+  <div class="aps" id="list"><div class="empty">청약 데이터 연결 대기 중입니다.</div></div>
+  <p class="notice2">※ 자료: 한국부동산원 청약홈 분양정보 (매일 갱신) · 분양가는 주택형별 최고 공급금액 기준이며 ㎡당 단가는 공급면적 기준 중위 근사치입니다.
+    ※ 정확한 자격·일정은 각 공고문(청약홈)을 반드시 확인하세요. 본 정보는 투자 권유가 아닙니다.</p>
+</main>
+<footer class="site-footer">
+  <span>📈 <a href="https://telegram.me/seokbongnews">텔레그램 채널</a></span> ·
+  <span>💬 <a href="https://open.kakao.com/o/gt8CTUCi">카카오 오픈채팅</a> · <a href="https://blog.naver.com/seokbongnews">네이버 블로그</a></span>
+  <div class="fine">원자료: 한국부동산원 청약홈 · 편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 무단 전재·재배포 금지</div>
+</footer>
+<script src="data/apply.js"></script>
+<script>
+(function(){
+function eok(man){var e=man/10000;if(e>=100)return Math.round(e).toLocaleString()+"억";
+return (e>=10?e.toFixed(1):e.toFixed(2)).replace(/\.?0+$/,"")+"억";}
+var A=window.SB&&SB.apply;
+if(!A||!A.items||!A.items.length)return;
+var today=A.updated;
+function stateOf(x){
+  if(x.s&&x.e){if(today<x.s)return "soon";if(today>x.e)return "done";return "now";}
+  return "soon";
+}
+var items=A.items.map(function(x){x.state=stateOf(x);return x;});
+document.getElementById("basis").textContent="전국 아파트 분양 공고 "+items.length+"건 · 기준일 "+A.updated+" · 자료: 한국부동산원 청약홈 · 매일 갱신";
+/* KPI */
+var now=items.filter(function(x){return x.state==="now";}).length;
+var soon=items.filter(function(x){return x.state==="soon";}).length;
+var hh=items.reduce(function(a,x){return a+(+x.n||0);},0);
+document.getElementById("kpis").innerHTML=
+ '<div class="kpi2"><div class="v">'+now+'</div><div class="l">접수중</div></div>'
++'<div class="kpi2"><div class="v">'+soon+'</div><div class="l">접수예정</div></div>'
++'<div class="kpi2"><div class="v">'+hh.toLocaleString()+'</div><div class="l">공급 세대 (최근 공고 합계)</div></div>'
++'<div class="kpi2"><div class="v" style="font-size:22px">'+A.updated+'</div><div class="l">기준일</div></div>';
+var ST={now:["접수중","now"],soon:["접수예정","soon"],done:["접수마감","done"]};
+function render(f){
+  var L=items.filter(function(x){return f==="all"||x.state===f;});
+  if(!L.length){document.getElementById("list").innerHTML='<div class="empty">해당 상태의 공고가 없습니다.</div>';return;}
+  document.getElementById("list").innerHTML=L.map(function(x){
+    var st=ST[x.state];
+    var pr=x.hi?('<b>'+(x.lo&&x.lo!==x.hi?eok(x.lo)+' ~ ':'')+eok(x.hi)+'</b>'+(x.sqm?'<small>'+x.sqm.toLocaleString()+'만/㎡ (공급면적 기준)</small>':'')):'<small>분양가 공고 확인</small>';
+    return '<div class="ap rv on"><span class="st '+st[1]+'">'+st[0]+'</span>'
+     +'<span class="nm">'+(x.url?'<a href="'+x.url+'" style="text-decoration:none;color:inherit">'+x.nm+' ↗</a>':x.nm)+'</span>'
+     +'<span class="pr">'+pr+'</span>'
+     +'<span class="meta">'+(x.ad||"")+' · '+(x.n?x.n+"세대":"")+' · 접수 '+(x.s||"?")+' ~ '+(x.e||"?")+' · 발표 '+(x.win||"?")+'</span></div>';
+  }).join("");
+}
+render("all");
+document.querySelectorAll(".tab").forEach(function(t){
+  t.addEventListener("click",function(){
+    document.querySelectorAll(".tab").forEach(function(x){x.classList.remove("on");});
+    t.classList.add("on");render(t.dataset.f);
+  });
+});
+})();
+</script>
+</body></html>
