@@ -296,7 +296,7 @@ T.sido.forEach(function(x){
 /* 구 랭킹 */
 var maxN=Math.max.apply(null,T.gu.map(function(x){return x.n;}));
 document.getElementById("gurank").innerHTML=T.gu.map(function(x,i){
-  return '<tr onclick="location.href=\'map.html\'"><td class="no">'+String(i+1).padStart(2,"0")+'</td><td class="nm">'+x.name+'</td>'
+  return '<tr onclick="location.href=\'map.html?q=\'+encodeURIComponent(\'서울 '+x.name+'\')"><td class="no">'+String(i+1).padStart(2,"0")+'</td><td class="nm">'+x.name+'</td>'
    +'<td style="width:45%"><div style="display:flex;align-items:center;gap:8px"><div class="bar" style="width:'+Math.round(x.n/maxN*100)+'%"></div><span style="font-size:11.5px;color:#6E6E6A">'+x.n.toLocaleString()+'</span></div></td>'
    +'<td class="med">'+(x.med?eok(x.med):"—")+'</td></tr>';}).join("");
 /* 평형대별 · 가격대 분포 (막대 리스트) */
@@ -386,7 +386,4 @@ addEventListener("scroll",function(){
     }
     ticking=false;
   });
-},{passive:true});
-})();
-</script>
-</body></html>
+},{pa
