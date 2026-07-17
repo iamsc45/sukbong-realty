@@ -455,17 +455,20 @@ document.getElementById("topdeals").innerHTML=T.top.map(function(d,i){
    +'<span class="p">'+eok(d.p)+'</span></div>';}).join("");
 /* 모바일 구글형: 지역 검색 + 인기 지역 + 지표 한 줄 + 대시보드 접기 */
 try{
-  function goMap(v){location.href="map.html?q="+encodeURIComponent(v)+"&t=apt&u=%EB%A7%A4%EB%A7%A4";}
+  function goMap(v,src){
+    try{if(typeof gtag==="function")gtag("event","region_search",{search_term:v,source:src||"input"});}catch(e){}
+    location.href="map.html?q="+encodeURIComponent(v)+"&t=apt&u=%EB%A7%A4%EB%A7%A4";
+  }
   var sf=document.getElementById("mSearch");
   if(sf)sf.addEventListener("submit",function(e){
     e.preventDefault();
     var v=document.getElementById("mQ").value.trim();
-    if(v)goMap(v);else location.href="map.html";
+    if(v)goMap(v,"input");else location.href="map.html";
   });
   var hot=document.getElementById("mHot");
   if(hot)["강남구","송파구","마포구","분당","일산"].forEach(function(r){
     var a=document.createElement("a");a.href="#";a.textContent=r;
-    a.addEventListener("click",function(e){e.preventDefault();goMap(r);});
+    a.addEventListener("click",function(e){e.preventDefault();goMap(r,"chip");});
     hot.appendChild(a);
   });
   var tk=document.getElementById("mTick");
