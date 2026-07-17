@@ -146,35 +146,41 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
   .hero{display:none}
   .dash{display:none;padding:34px 0 0}
   body.showdash .dash{display:block}
-  .m-home{display:block;padding:24px 0 6px}
-  /* 지표 스트립 */
-  .m-strip{display:flex;gap:8px;overflow-x:auto;margin:0 -16px;padding:2px 16px 6px;
-    scroll-snap-type:x mandatory;scrollbar-width:none}
-  .m-strip::-webkit-scrollbar{display:none}
-  .m-stat{flex:0 0 auto;scroll-snap-align:start;background:var(--wh);border:1px solid var(--hair);
-    border-radius:12px;padding:10px 14px 9px;min-width:120px}
-  .m-stat .l{font-size:10px;letter-spacing:.05em;color:var(--g2);font-weight:600}
-  .m-stat .v{font-size:20px;font-weight:800;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;line-height:1.3}
-  .m-stat .s{font-size:10px;color:var(--g3)}
-  /* 목차형 링크 */
-  .m-menu{margin:20px 0 0;border-top:2px solid var(--blk)}
-  .m-menu a{display:flex;align-items:baseline;gap:10px;padding:17px 2px;border-bottom:1px solid var(--hair);
+  /* 구글형: 한 화면 완결 */
+  .m-home{display:flex;flex-direction:column;min-height:calc(100vh - 120px);padding:0 0 6px}
+  .m-hero{text-align:center;padding:44px 0 0}
+  .m-logo{font-size:27px;font-weight:800;letter-spacing:-0.035em;line-height:1.2}
+  .m-logo em{font-style:normal;color:var(--blue)}
+  .m-logo small{display:block;font-size:9.5px;letter-spacing:.22em;color:var(--g3);font-weight:600;margin-top:3px;text-transform:uppercase}
+  .m-search{display:flex;margin:20px 0 0;border:1.5px solid var(--blk);border-radius:100px;
+    background:var(--wh);overflow:hidden}
+  .m-search input{flex:1;border:0;outline:0;background:transparent;font:inherit;font-size:14.5px;
+    padding:13px 4px 13px 18px;min-width:0}
+  .m-search input::placeholder{color:var(--g3)}
+  .m-search button{border:0;background:var(--blk);color:#fff;font:inherit;font-size:13px;font-weight:700;
+    padding:0 20px;border-radius:100px;margin:4px;cursor:pointer}
+  .m-hot{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin:12px 0 0}
+  .m-hot a{font-size:11.5px;color:var(--g2);border:1px solid var(--hair);border-radius:100px;
+    padding:5px 12px;text-decoration:none;background:var(--wh)}
+  .m-tick{font-size:10.5px;color:var(--g3);margin:14px 0 0;text-align:center;line-height:1.6;
+    font-variant-numeric:tabular-nums}
+  .m-tick b{color:var(--g1);font-weight:700}
+  /* 목차형 링크 (컴팩트) */
+  .m-menu{margin:22px 0 0;border-top:2px solid var(--blk)}
+  .m-menu a{display:flex;align-items:baseline;gap:10px;padding:13.5px 2px;border-bottom:1px solid var(--hair);
     text-decoration:none;transition:background 150ms ease}
   .m-menu a:active{background:var(--wh)}
-  .m-menu .t{font-size:22px;font-weight:800;letter-spacing:-0.03em}
-  .m-menu .d{font-size:11.5px;color:var(--g2)}
-  .m-menu .ar{margin-left:auto;font-size:16px;color:var(--g3)}
-  /* 오늘의 헤드라인 */
-  .m-head{display:block;margin:16px 0 0;background:var(--blk);color:#fff;border-radius:14px;
-    padding:13px 16px;text-decoration:none}
-  .m-head .k{display:block;font-size:9.5px;letter-spacing:.16em;color:#8A8A85;text-transform:uppercase;margin-bottom:5px}
-  .m-head .b{font-size:14.5px;font-weight:800;line-height:1.5}
-  .m-head .b b{color:#FFBC5C}
-  .m-head small{color:#8A8A85;font-weight:400;font-size:11px}
-  /* 대시보드 접기 */
-  .m-more{display:block;text-align:center;margin:14px 0 2px;padding:11px;border:1px solid var(--blk);
-    border-radius:100px;font-size:13px;font-weight:700;text-decoration:none}
-  .m-fine{font-size:10px;color:var(--g3);margin:12px 0 0;text-align:center;line-height:1.6}
+  .m-menu .t{font-size:19px;font-weight:800;letter-spacing:-0.03em}
+  .m-menu .d{font-size:11px;color:var(--g2)}
+  .m-menu .ar{margin-left:auto;font-size:15px;color:var(--g3)}
+  /* 채널(외부) 링크 */
+  .m-ch{display:flex;gap:8px;margin:16px 0 0}
+  .m-ch a{flex:1;text-align:center;font-size:12px;font-weight:700;text-decoration:none;
+    border:1px solid var(--hair);border-radius:12px;padding:11px 4px;background:var(--wh)}
+  .m-ch a .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:1px}
+  .m-more{display:block;text-align:center;margin:auto 0 0;padding:12px 0 2px;font-size:11.5px;
+    font-weight:700;color:var(--g2);text-decoration:none}
+  .m-fine{font-size:9.5px;color:var(--g3);margin:8px 0 0;text-align:center;line-height:1.6}
   .sec{margin-bottom:16px}
   .panel{padding:18px 16px}
   /* 최고가: 가로 스와이프 카드덱 */
@@ -239,15 +245,26 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
 </header>
 
 <div class="m-home wrap">
-  <div class="m-strip" id="mStrip"></div>
+  <div class="m-hero">
+    <div class="m-logo">석봉 <em>부동산 정보방</em><small>Real Trade Data</small></div>
+    <form class="m-search" id="mSearch">
+      <input id="mQ" type="search" placeholder="지역·동네 검색 (예: 송파구, 분당)" autocomplete="off">
+      <button type="submit">검색</button>
+    </form>
+    <div class="m-hot" id="mHot"></div>
+    <p class="m-tick" id="mTick"></p>
+  </div>
   <nav class="m-menu">
     <a href="map.html"><span class="t">실거래지도</span><span class="d">건물별 실거래 가격</span><span class="ar">→</span></a>
     <a href="apply.html"><span class="t">청약</span><span class="d">분양 일정·분양가·경쟁률</span><span class="ar">→</span></a>
     <a href="reports.html"><span class="t">리포트</span><span class="d">주간·월간 시장 결산</span><span class="ar">→</span></a>
-    <a href="channels.html"><span class="t">채널</span><span class="d">매일 아침 카드뉴스, 무료</span><span class="ar">→</span></a>
   </nav>
-  <a class="m-head" id="mHead" href="map.html" style="display:none"></a>
-  <a class="m-more" href="#" id="mMore">마켓 대시보드 펼치기 ↓</a>
+  <div class="m-ch">
+    <a href="https://telegram.me/seokbongnews"><span class="dot" style="background:#2AABEE"></span>텔레그램</a>
+    <a href="https://open.kakao.com/o/gt8CTUCi"><span class="dot" style="background:#FEE500"></span>오픈채팅</a>
+    <a href="https://blog.naver.com/seokbongnews"><span class="dot" style="background:#03C75A"></span>블로그</a>
+  </div>
+  <a class="m-more" href="#" id="mMore">마켓 대시보드 보기 ↓</a>
   <p class="m-fine">국토교통부 실거래가 공개시스템 · 매일 자동 갱신 · 투자 권유 아님</p>
 </div>
 
@@ -436,28 +453,28 @@ document.getElementById("topdeals").innerHTML=T.top.map(function(d,i){
   return '<div class="deal"><span class="no">'+String(i+1).padStart(2,"0")+'</span>'
    +'<span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><b>'+dealName(d)+'</b><br><span style="color:#6E6E6A;font-size:11px">'+d.sgg+' · '+dealType(d)+(d.a?' · '+Math.round(d.a).toLocaleString()+'㎡ · <b style="color:#3B3B39">'+Math.round(d.p/d.a).toLocaleString()+'만/㎡</b>':'')+' · '+d.cd+'</span></span>'
    +'<span class="p">'+eok(d.p)+'</span></div>';}).join("");
-/* 모바일 포털: 지표 스트립 + 헤드라인 + 대시보드 접기 */
+/* 모바일 구글형: 지역 검색 + 인기 지역 + 지표 한 줄 + 대시보드 접기 */
 try{
-  var mS=document.getElementById("mStrip");
-  if(mS){
-    var lastD=T.trend[T.trend.length-1], sts=[];
-    if(seoulMed)sts.push(["서울 중위가",eok(seoulMed),"아파트 매매"]);
-    if(T.jr&&T.jr.sale)sts.push(["전세가율",Math.round(T.jr.je/T.jr.sale*100)+"%","서울 84㎡"]);
-    if(T.pdang)sts.push(["평당가",T.pdang.seoul.toLocaleString()+"만","서울 · 3.3㎡"]);
-    if(lastD)sts.push(["실거래 신고",(lastD.s+lastD.r).toLocaleString()+"건","계약 "+lastD.d.slice(5).replace("-","/")]);
-    var AP=window.SB&&SB.apply;
-    if(AP&&AP.items){
-      var an=0,as=0,at=AP.updated;
-      AP.items.forEach(function(x){if(x.s&&x.e){if(at<x.s)as++;else if(at<=x.e)an++;}});
-      sts.push(["청약 접수중",an+"곳","접수예정 "+as+"곳"]);
-    }
-    mS.innerHTML=sts.map(function(x){return '<div class="m-stat"><div class="l">'+x[0]+'</div><div class="v">'+x[1]+'</div><div class="s">'+x[2]+'</div></div>';}).join("");
-  }
-  var mh=document.getElementById("mHead"), top1=T.top&&T.top[0];
-  if(mh&&top1){
-    mh.style.display="";
-    mh.innerHTML='<span class="k">오늘의 최고가</span><span class="b">'+dealName(top1)+' <b>'+eok(top1.p)+'</b><br>'
-      +'<small>'+top1.sgg+' · '+dealType(top1)+(top1.a?' · '+Math.round(top1.p/top1.a).toLocaleString()+'만/㎡':'')+' · '+top1.cd+'</small></span>';
+  function goMap(v){location.href="map.html?q="+encodeURIComponent(v)+"&t=apt&u=%EB%A7%A4%EB%A7%A4";}
+  var sf=document.getElementById("mSearch");
+  if(sf)sf.addEventListener("submit",function(e){
+    e.preventDefault();
+    var v=document.getElementById("mQ").value.trim();
+    if(v)goMap(v);else location.href="map.html";
+  });
+  var hot=document.getElementById("mHot");
+  if(hot)["강남구","송파구","마포구","분당","일산"].forEach(function(r){
+    var a=document.createElement("a");a.href="#";a.textContent=r;
+    a.addEventListener("click",function(e){e.preventDefault();goMap(r);});
+    hot.appendChild(a);
+  });
+  var tk=document.getElementById("mTick");
+  if(tk){
+    var lastD=T.trend[T.trend.length-1], ps=[];
+    if(seoulMed)ps.push("서울 아파트 중위가 <b>"+eok(seoulMed)+"</b>");
+    if(T.jr&&T.jr.sale)ps.push("전세가율 <b>"+Math.round(T.jr.je/T.jr.sale*100)+"%</b>");
+    if(lastD)ps.push(lastD.d.slice(5).replace("-","/")+" 계약 <b>"+(lastD.s+lastD.r).toLocaleString()+"건</b>");
+    tk.innerHTML=ps.join(" · ");
   }
   var mm2=document.getElementById("mMore");
   if(mm2)mm2.addEventListener("click",function(e){
