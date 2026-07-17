@@ -283,6 +283,16 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
       tgt=findR(false)||findR(true);
     }
     if(!tgt&&pq){
+      /* 자유 검색: 시도 없이 "송파구"·"분당"·"남양주"처럼 지역명만 입력해도 매칭 */
+      var qn=pq.replace(/\s+/g,'');
+      if(qn.length>=2){
+        tgt=SB.summary.regions.find(function(x){
+          if(!x.lat)return false;
+          return x.sgg.split(/[\s_]+/).some(function(p){return p.indexOf(qn)===0||qn.indexOf(p)>=0;});
+        });
+      }
+    }
+    if(!tgt&&pq){
       /* 시 단위 그룹 폴백: 주소의 "OO시/군"으로 해당 시 전체 구 범위 이동 */
       var city=null;
       pq.split(/\s+/).forEach(function(w){var m=w.match(/^(.{2,}?)(특례시|시|군)$/);if(!city&&m)city=m[1];});
