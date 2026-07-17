@@ -116,7 +116,7 @@ document.getElementById("kpis").innerHTML=
  '<div class="kpi2"><div class="v">'+now+'</div><div class="l">접수중</div></div>'
 +'<div class="kpi2"><div class="v">'+soon+'</div><div class="l">접수예정</div></div>'
 +'<div class="kpi2"><div class="v">'+hh.toLocaleString()+'</div><div class="l">공급 세대 (최근 공고 합계)</div></div>'
-+'<div class="kpi2"><div class="v" style="font-size:22px">'+A.updated+'</div><div class="l">기준일</div></div>';
++'<div class="kpi2"><div class="v" style="font-size:clamp(15px,4.2vw,22px);white-space:nowrap">'+A.updated+'</div><div class="l">기준일</div></div>';
 var ST={now:["접수중","now"],soon:["접수예정","soon"],done:["접수마감","done"]};
 var curR="all",curF="all";
 var PRI=["서울","경기","인천"];
