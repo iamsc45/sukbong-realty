@@ -47,3 +47,13 @@ h1{font-weight:800}
 .notice{background:var(--soft);border:1px solid var(--hair);border-radius:12px;
   padding:14px 18px;font-size:12px;color:var(--muted);margin:30px 0;line-height:1.7}
 @media (max-width:640px){.site-header{padding:12px 14px}.wrap{padding:0 16px}}
+/* 모바일 헤더: 한 줄 유지 + 메뉴 가로 스크롤 (2026-07-17) */
+@media (max-width:720px){
+  .site-header{gap:12px}
+  .site-header .brand{white-space:nowrap;font-size:14px}
+  .site-header .sub{display:none}
+  .site-header nav{flex-wrap:nowrap;overflow-x:auto;gap:14px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .site-header nav::-webkit-scrollbar{display:none}
+  .site-header nav a{white-space:nowrap;font-size:13px;flex:0 0 auto}
+  .site-footer{font-size:10.5px;padding:12px 14px}
+}
