@@ -102,6 +102,7 @@
 </footer>
 </div>
 <script src="data/summary.js"></script>
+<script src="data/dongs.js"></script>
 <script>
 var TYPE={apt:["아파트","#2554E0"],offi:["오피스텔","#7A5AF8"],villa:["연립·다세대","#0FA98A"],
   house:["단독·다가구","#6E6E6A"],bldg:["빌딩","#D4573F"],comm:["구분상가·오피스","#E8A13A"],land:["토지","#4C9A4C"]};
@@ -282,7 +283,26 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
       };
       tgt=findR(false)||findR(true);
     }
-    if(!tgt&&pq){
+    if(!tgt&&pq&&window.SB&&SB.dongs){
+      /* 동 단위 검색: "답십리동"·"답십리"·주소 속 동명 → 동 중심으로 줌15 */
+      var de=null;
+      pq.split(/\s+/).forEach(function(w){if(!de&&SB.dongs[w])de=SB.dongs[w];});
+      if(!de){
+        var qd=pq.replace(/\s+/g,'');
+        if(qd.length>=2){
+          var dk=Object.keys(SB.dongs).find(function(n){return n===qd||n.indexOf(qd)===0;});
+          if(dk)de=SB.dongs[dk];
+        }
+      }
+      if(de){
+        var rg=SB.summary.regions.find(function(x){return x.code===de[0];});
+        if(rg){
+          curSido=rg.sido;curSgg=rg.code;s1.value=rg.sido;fill();s2.value=rg.code;handled=true;
+          setTimeout(function(){try{map.invalidateSize();map.setView([de[1],de[2]],15,{animate:false});}catch(err){}},150);
+        }
+      }
+    }
+    if(!tgt&&!handled&&pq){
       /* 자유 검색: 시도 없이 "송파구"·"분당"·"남양주"처럼 지역명만 입력해도 매칭 */
       var qn=pq.replace(/\s+/g,'');
       if(qn.length>=2){
