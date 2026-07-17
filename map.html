@@ -260,7 +260,7 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
     if(!tgt&&pq){
       var findR=function(loose){
         return SB.summary.regions.find(function(x){
-          if(pq.indexOf(x.sido)<0)return false;
+          if(!x.lat||pq.indexOf(x.sido)<0)return false;
           return x.sgg.split(/[\s_]+/).every(function(p){
             if(pq.indexOf(p)>=0)return true;
             return loose&&p.length>2&&pq.indexOf(p.slice(0,-1))>=0;
