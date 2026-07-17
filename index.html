@@ -130,6 +130,15 @@ table.rank{width:100%;border-collapse:collapse;font-size:13px}
 .links .s{font-size:13px;color:var(--g2)}
 .links .ar{margin-left:auto;font-size:22px}
 .notice{font-size:11.5px;color:var(--g2);margin:44px 0 60px;max-width:760px;line-height:1.7}
+/* 데스크톱 지역 검색 (블랙 대시보드 위) */
+.d-search{display:flex;max-width:620px;margin:30px 0 0;border:1.5px solid var(--blk);border-radius:100px;
+  background:var(--wh);overflow:hidden}
+.d-search input{flex:1;border:0;outline:0;background:transparent;font:inherit;font-size:15px;
+  padding:14px 6px 14px 22px;min-width:0}
+.d-search input::placeholder{color:var(--g3)}
+.d-search button{border:0;background:var(--blk);color:#fff;font:inherit;font-size:13.5px;font-weight:700;
+  padding:0 26px;margin:5px;border-radius:100px;cursor:pointer;transition:opacity 150ms ease}
+.d-search button:hover{opacity:.8}
 footer{background:var(--blk);color:#8A8A85;font-size:12px;padding:26px 0}
 footer a{color:#fff;text-decoration:none;font-weight:600}
 footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
@@ -142,8 +151,9 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
   .brand{white-space:nowrap;flex:0 0 auto}
   .nav a.lnk{white-space:nowrap;flex:0 0 auto}
   .nav .cta{display:none}
-  /* 포털형: 히어로·대시보드 기본 숨김 */
+  /* 포털형: 히어로·대시보드 기본 숨김 (데스크톱 검색창 포함) */
   .hero{display:none}
+  .d-search{display:none}
   .dash{display:none;padding:34px 0 0}
   body.showdash .dash{display:block}
   /* 구글형: 한 화면 완결 */
@@ -235,6 +245,10 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
       <a class="btn o" href="channels.html">채널 구독</a>
     </div>
   </div>
+  <form class="d-search" id="dSearch">
+    <input id="dQ" type="search" placeholder="지역·동네 검색 — 예: 송파구, 답십리동, 분당" autocomplete="off">
+    <button type="submit">실거래 검색</button>
+  </form>
   <div class="block blk-anim">
     <div class="block-in">
       <div class="blabel" id="blabel">Live Data</div>
@@ -470,6 +484,12 @@ try{
     var a=document.createElement("a");a.href="#";a.textContent=r;
     a.addEventListener("click",function(e){e.preventDefault();goMap(r,"chip");});
     hot.appendChild(a);
+  });
+  var df=document.getElementById("dSearch");
+  if(df)df.addEventListener("submit",function(e){
+    e.preventDefault();
+    var v=document.getElementById("dQ").value.trim();
+    if(v)goMap(v,"desktop");else location.href="map.html";
   });
   var tk=document.getElementById("mTick");
   if(tk){
