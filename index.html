@@ -133,21 +133,63 @@ table.rank{width:100%;border-collapse:collapse;font-size:13px}
 footer{background:var(--blk);color:#8A8A85;font-size:12px;padding:26px 0}
 footer a{color:#fff;text-decoration:none;font-weight:600}
 footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
-/* 모바일 (2026-07-17) */
+/* 모바일 전용 퀵 타일 (데스크톱 숨김) */
+.m-tiles{display:none}
+/* 모바일 (2026-07-17): 1면 헤드라인 + 퀵 타일 + 카드덱 구성 */
 @media(max-width:720px){
   .nav-in{gap:16px;padding:12px 14px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
   .nav-in::-webkit-scrollbar{display:none}
   .brand{white-space:nowrap;flex:0 0 auto}
   .nav a.lnk{white-space:nowrap;flex:0 0 auto}
   .nav .cta{display:none}
-  .hero{padding:56px 0 22px}
-  .bigword{right:-16px;top:0}
-  .hero-cta{width:100%;gap:8px}
-  .hero-cta .btn{flex:1;text-align:center;padding:13px 12px;font-size:13.5px}
-  .block-in{padding:28px 20px 16px}
-  .kpi{padding-left:0;border-left:none;padding-bottom:16px}
-  .links a{gap:10px}
-  .links .s{display:none}
+  /* 히어로: 신문 1면처럼 컴팩트 */
+  .hero{padding:40px 0 18px}
+  h1{font-size:40px}
+  .kicker{font-size:10px;letter-spacing:.13em}
+  .bigword{font-size:130px;right:-12px;top:-4px;-webkit-text-stroke:1px var(--g4)}
+  .hero-sub{font-size:13.5px;color:var(--g2)}
+  .hero-foot{margin:16px 0 0}
+  .hero-cta{display:none}
+  .prods{flex-wrap:nowrap;overflow-x:auto;margin:16px -16px 0;padding:0 16px;scrollbar-width:none}
+  .prods::-webkit-scrollbar{display:none}
+  .prod{flex:0 0 auto;white-space:nowrap;padding:6px 13px;font-size:12px}
+  /* 블랙 KPI: 2×2 */
+  .block{margin:26px 0 0;border-radius:20px}
+  .block-in{padding:24px 20px 12px}
+  .kpis{grid-template-columns:1fr 1fr;gap:16px 18px;margin-top:16px}
+  .kpi{padding:0 0 6px;border-left:none}
+  .kpi .v{font-size:26px}
+  .kpi .l{font-size:10.5px;line-height:1.5}
+  /* 퀵 타일 2×2 */
+  .m-tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:22px 0 0}
+  .m-tile{border:1px solid var(--blk);border-radius:16px;padding:15px 14px 13px;text-decoration:none;
+    background:var(--wh);position:relative;min-height:98px;display:flex;flex-direction:column;
+    justify-content:space-between;gap:8px;transition:background 150ms ease}
+  .m-tile:active{background:var(--bg)}
+  .m-tile .t{font-size:17px;font-weight:800;letter-spacing:-0.02em}
+  .m-tile .c{font-size:11.5px;color:var(--g2);line-height:1.55;font-variant-numeric:tabular-nums}
+  .m-tile .c b{color:var(--blue);font-weight:800}
+  .m-tile .ar{position:absolute;top:11px;right:13px;font-size:14px;color:var(--g3)}
+  .m-tile.dark{background:var(--blk);color:#fff;border-color:var(--blk)}
+  .m-tile.dark .c{color:#8A8A85}
+  .m-tile.dark .c b{color:#6C9EFF}
+  .m-tile.dark .ar{color:#8A8A85}
+  /* 대시보드 간격 */
+  .dash{padding:44px 0 0}
+  .sec{margin-bottom:16px}
+  .panel{padding:18px 16px}
+  /* 최고가: 가로 스와이프 카드덱 */
+  .dealwrap{flex-direction:row;height:auto;overflow-x:auto;gap:10px;scroll-snap-type:x mandatory;
+    margin:0 -16px;padding:4px 16px 8px;scrollbar-width:none}
+  .dealwrap::-webkit-scrollbar{display:none}
+  .deal{flex:0 0 74%;scroll-snap-align:start;flex-direction:column;align-items:flex-start;gap:7px;
+    border:1px solid var(--hair);border-radius:14px;padding:14px;background:var(--bg)}
+  .deal>span{max-width:100%}
+  .deal .no{font-size:24px;font-weight:800;line-height:1;color:transparent;-webkit-text-stroke:1.2px var(--g3)}
+  .deal .p{margin-left:0;font-size:21px}
+  /* 하단 링크 리스트는 퀵 타일과 중복 → 숨김 */
+  .links{display:none}
+  .notice{margin:30px 0 44px}
 }
 </style><meta property="og:title" content="석봉 부동산 정보방">
 <meta property="og:description" content="전국 실거래가를 지도와 대시보드로 — 매일 갱신되는 아파트·오피스텔·빌딩 실거래 데이터, 평당가·전세가율·청약 정보까지 무료.">
@@ -192,6 +234,12 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
       <div class="kpis" id="kpis"></div>
     </div>
     <div class="ticker"><div class="ticker-in"><div class="ticker-track" id="ticker"></div></div></div>
+  </div>
+  <div class="m-tiles">
+    <a class="m-tile dark" href="map.html"><span class="ar">↗</span><span class="t">실거래지도</span><span class="c" id="mMap">동네를 확대하면 건물별 가격</span></a>
+    <a class="m-tile" href="apply.html"><span class="ar">↗</span><span class="t">청약</span><span class="c" id="mApply">전국 분양 일정·분양가</span></a>
+    <a class="m-tile" href="reports.html"><span class="ar">↗</span><span class="t">리포트</span><span class="c">주간·월간 시장 결산</span></a>
+    <a class="m-tile" href="channels.html"><span class="ar">↗</span><span class="t">채널</span><span class="c">매일 아침 카드뉴스, 무료</span></a>
   </div>
 </header>
 
@@ -243,6 +291,7 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
 
 <script src="data/summary.js"></script>
 <script src="data/stats.js"></script>
+<script src="data/apply.js"></script>
 <script>
 (function(){
 if(!window.SB||!SB.summary||!SB.stats)return;
@@ -379,6 +428,17 @@ document.getElementById("topdeals").innerHTML=T.top.map(function(d,i){
   return '<div class="deal"><span class="no">'+String(i+1).padStart(2,"0")+'</span>'
    +'<span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><b>'+dealName(d)+'</b><br><span style="color:#6E6E6A;font-size:11px">'+d.sgg+' · '+dealType(d)+(d.a?' · '+Math.round(d.a).toLocaleString()+'㎡ · <b style="color:#3B3B39">'+Math.round(d.p/d.a).toLocaleString()+'만/㎡</b>':'')+' · '+d.cd+'</span></span>'
    +'<span class="p">'+eok(d.p)+'</span></div>';}).join("");
+/* 모바일 퀵 타일 카운트 */
+try{
+  var lastD=T.trend[T.trend.length-1];
+  if(lastD)document.getElementById("mMap").innerHTML='최근 계약일 <b>'+(lastD.s+lastD.r).toLocaleString()+'건</b> · 건물별 가격 확인';
+  var AP=window.SB&&SB.apply;
+  if(AP&&AP.items){
+    var an=0,as=0,at=AP.updated;
+    AP.items.forEach(function(x){if(x.s&&x.e){if(at<x.s)as++;else if(at<=x.e)an++;}});
+    document.getElementById("mApply").innerHTML='접수중 <b>'+an+'</b> · 접수예정 '+as+'곳';
+  }
+}catch(e){}
 /* 스크롤 리빌 */
 var rvs=document.querySelectorAll(".rv,.blk-anim");
 var io=new IntersectionObserver(function(es){es.forEach(function(e){
