@@ -133,49 +133,48 @@ table.rank{width:100%;border-collapse:collapse;font-size:13px}
 footer{background:var(--blk);color:#8A8A85;font-size:12px;padding:26px 0}
 footer a{color:#fff;text-decoration:none;font-weight:600}
 footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
-/* 모바일 전용 퀵 타일 (데스크톱 숨김) */
-.m-tiles{display:none}
-/* 모바일 (2026-07-17): 1면 헤드라인 + 퀵 타일 + 카드덱 구성 */
+/* 모바일 전용 포털 홈 (데스크톱 숨김) */
+.m-home{display:none}
+/* 모바일 (2026-07-17): 포털형 — 지표 스트립 + 목차 링크 + 헤드라인 */
 @media(max-width:720px){
   .nav-in{gap:16px;padding:12px 14px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
   .nav-in::-webkit-scrollbar{display:none}
   .brand{white-space:nowrap;flex:0 0 auto}
   .nav a.lnk{white-space:nowrap;flex:0 0 auto}
   .nav .cta{display:none}
-  /* 히어로: 신문 1면처럼 컴팩트 */
-  .hero{padding:40px 0 18px}
-  h1{font-size:40px}
-  .kicker{font-size:10px;letter-spacing:.13em}
-  .bigword{font-size:130px;right:-12px;top:-4px;-webkit-text-stroke:1px var(--g4)}
-  .hero-sub{font-size:13.5px;color:var(--g2)}
-  .hero-foot{margin:16px 0 0}
-  .hero-cta{display:none}
-  .prods{flex-wrap:nowrap;overflow-x:auto;margin:16px -16px 0;padding:0 16px;scrollbar-width:none}
-  .prods::-webkit-scrollbar{display:none}
-  .prod{flex:0 0 auto;white-space:nowrap;padding:6px 13px;font-size:12px}
-  /* 블랙 KPI: 2×2 */
-  .block{margin:26px 0 0;border-radius:20px}
-  .block-in{padding:24px 20px 12px}
-  .kpis{grid-template-columns:1fr 1fr;gap:16px 18px;margin-top:16px}
-  .kpi{padding:0 0 6px;border-left:none}
-  .kpi .v{font-size:26px}
-  .kpi .l{font-size:10.5px;line-height:1.5}
-  /* 퀵 타일 2×2 */
-  .m-tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:22px 0 0}
-  .m-tile{border:1px solid var(--blk);border-radius:16px;padding:15px 14px 13px;text-decoration:none;
-    background:var(--wh);position:relative;min-height:98px;display:flex;flex-direction:column;
-    justify-content:space-between;gap:8px;transition:background 150ms ease}
-  .m-tile:active{background:var(--bg)}
-  .m-tile .t{font-size:17px;font-weight:800;letter-spacing:-0.02em}
-  .m-tile .c{font-size:11.5px;color:var(--g2);line-height:1.55;font-variant-numeric:tabular-nums}
-  .m-tile .c b{color:var(--blue);font-weight:800}
-  .m-tile .ar{position:absolute;top:11px;right:13px;font-size:14px;color:var(--g3)}
-  .m-tile.dark{background:var(--blk);color:#fff;border-color:var(--blk)}
-  .m-tile.dark .c{color:#8A8A85}
-  .m-tile.dark .c b{color:#6C9EFF}
-  .m-tile.dark .ar{color:#8A8A85}
-  /* 대시보드 간격 */
-  .dash{padding:44px 0 0}
+  /* 포털형: 히어로·대시보드 기본 숨김 */
+  .hero{display:none}
+  .dash{display:none;padding:34px 0 0}
+  body.showdash .dash{display:block}
+  .m-home{display:block;padding:24px 0 6px}
+  /* 지표 스트립 */
+  .m-strip{display:flex;gap:8px;overflow-x:auto;margin:0 -16px;padding:2px 16px 6px;
+    scroll-snap-type:x mandatory;scrollbar-width:none}
+  .m-strip::-webkit-scrollbar{display:none}
+  .m-stat{flex:0 0 auto;scroll-snap-align:start;background:var(--wh);border:1px solid var(--hair);
+    border-radius:12px;padding:10px 14px 9px;min-width:120px}
+  .m-stat .l{font-size:10px;letter-spacing:.05em;color:var(--g2);font-weight:600}
+  .m-stat .v{font-size:20px;font-weight:800;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;line-height:1.3}
+  .m-stat .s{font-size:10px;color:var(--g3)}
+  /* 목차형 링크 */
+  .m-menu{margin:20px 0 0;border-top:2px solid var(--blk)}
+  .m-menu a{display:flex;align-items:baseline;gap:10px;padding:17px 2px;border-bottom:1px solid var(--hair);
+    text-decoration:none;transition:background 150ms ease}
+  .m-menu a:active{background:var(--wh)}
+  .m-menu .t{font-size:22px;font-weight:800;letter-spacing:-0.03em}
+  .m-menu .d{font-size:11.5px;color:var(--g2)}
+  .m-menu .ar{margin-left:auto;font-size:16px;color:var(--g3)}
+  /* 오늘의 헤드라인 */
+  .m-head{display:block;margin:16px 0 0;background:var(--blk);color:#fff;border-radius:14px;
+    padding:13px 16px;text-decoration:none}
+  .m-head .k{display:block;font-size:9.5px;letter-spacing:.16em;color:#8A8A85;text-transform:uppercase;margin-bottom:5px}
+  .m-head .b{font-size:14.5px;font-weight:800;line-height:1.5}
+  .m-head .b b{color:#FFBC5C}
+  .m-head small{color:#8A8A85;font-weight:400;font-size:11px}
+  /* 대시보드 접기 */
+  .m-more{display:block;text-align:center;margin:14px 0 2px;padding:11px;border:1px solid var(--blk);
+    border-radius:100px;font-size:13px;font-weight:700;text-decoration:none}
+  .m-fine{font-size:10px;color:var(--g3);margin:12px 0 0;text-align:center;line-height:1.6}
   .sec{margin-bottom:16px}
   .panel{padding:18px 16px}
   /* 최고가: 가로 스와이프 카드덱 */
@@ -237,13 +236,20 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
     </div>
     <div class="ticker"><div class="ticker-in"><div class="ticker-track" id="ticker"></div></div></div>
   </div>
-  <div class="m-tiles">
-    <a class="m-tile dark" href="map.html"><span class="ar">↗</span><span class="t">실거래지도</span><span class="c" id="mMap">동네를 확대하면 건물별 가격</span></a>
-    <a class="m-tile" href="apply.html"><span class="ar">↗</span><span class="t">청약</span><span class="c" id="mApply">전국 분양 일정·분양가</span></a>
-    <a class="m-tile" href="reports.html"><span class="ar">↗</span><span class="t">리포트</span><span class="c">주간·월간 시장 결산</span></a>
-    <a class="m-tile" href="channels.html"><span class="ar">↗</span><span class="t">채널</span><span class="c">매일 아침 카드뉴스, 무료</span></a>
-  </div>
 </header>
+
+<div class="m-home wrap">
+  <div class="m-strip" id="mStrip"></div>
+  <nav class="m-menu">
+    <a href="map.html"><span class="t">실거래지도</span><span class="d">건물별 실거래 가격</span><span class="ar">→</span></a>
+    <a href="apply.html"><span class="t">청약</span><span class="d">분양 일정·분양가·경쟁률</span><span class="ar">→</span></a>
+    <a href="reports.html"><span class="t">리포트</span><span class="d">주간·월간 시장 결산</span><span class="ar">→</span></a>
+    <a href="channels.html"><span class="t">채널</span><span class="d">매일 아침 카드뉴스, 무료</span><span class="ar">→</span></a>
+  </nav>
+  <a class="m-head" id="mHead" href="map.html" style="display:none"></a>
+  <a class="m-more" href="#" id="mMore">마켓 대시보드 펼치기 ↓</a>
+  <p class="m-fine">국토교통부 실거래가 공개시스템 · 매일 자동 갱신 · 투자 권유 아님</p>
+</div>
 
 <main class="wrap">
   <section class="dash">
@@ -430,16 +436,34 @@ document.getElementById("topdeals").innerHTML=T.top.map(function(d,i){
   return '<div class="deal"><span class="no">'+String(i+1).padStart(2,"0")+'</span>'
    +'<span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><b>'+dealName(d)+'</b><br><span style="color:#6E6E6A;font-size:11px">'+d.sgg+' · '+dealType(d)+(d.a?' · '+Math.round(d.a).toLocaleString()+'㎡ · <b style="color:#3B3B39">'+Math.round(d.p/d.a).toLocaleString()+'만/㎡</b>':'')+' · '+d.cd+'</span></span>'
    +'<span class="p">'+eok(d.p)+'</span></div>';}).join("");
-/* 모바일 퀵 타일 카운트 */
+/* 모바일 포털: 지표 스트립 + 헤드라인 + 대시보드 접기 */
 try{
-  var lastD=T.trend[T.trend.length-1];
-  if(lastD)document.getElementById("mMap").innerHTML='최근 계약일 <b>'+(lastD.s+lastD.r).toLocaleString()+'건</b> · 건물별 가격 확인';
-  var AP=window.SB&&SB.apply;
-  if(AP&&AP.items){
-    var an=0,as=0,at=AP.updated;
-    AP.items.forEach(function(x){if(x.s&&x.e){if(at<x.s)as++;else if(at<=x.e)an++;}});
-    document.getElementById("mApply").innerHTML='접수중 <b>'+an+'</b> · 접수예정 '+as+'곳';
+  var mS=document.getElementById("mStrip");
+  if(mS){
+    var lastD=T.trend[T.trend.length-1], sts=[];
+    if(seoulMed)sts.push(["서울 중위가",eok(seoulMed),"아파트 매매"]);
+    if(T.jr&&T.jr.sale)sts.push(["전세가율",Math.round(T.jr.je/T.jr.sale*100)+"%","서울 84㎡"]);
+    if(T.pdang)sts.push(["평당가",T.pdang.seoul.toLocaleString()+"만","서울 · 3.3㎡"]);
+    if(lastD)sts.push(["실거래 신고",(lastD.s+lastD.r).toLocaleString()+"건","계약 "+lastD.d.slice(5).replace("-","/")]);
+    var AP=window.SB&&SB.apply;
+    if(AP&&AP.items){
+      var an=0,as=0,at=AP.updated;
+      AP.items.forEach(function(x){if(x.s&&x.e){if(at<x.s)as++;else if(at<=x.e)an++;}});
+      sts.push(["청약 접수중",an+"곳","접수예정 "+as+"곳"]);
+    }
+    mS.innerHTML=sts.map(function(x){return '<div class="m-stat"><div class="l">'+x[0]+'</div><div class="v">'+x[1]+'</div><div class="s">'+x[2]+'</div></div>';}).join("");
   }
+  var mh=document.getElementById("mHead"), top1=T.top&&T.top[0];
+  if(mh&&top1){
+    mh.style.display="";
+    mh.innerHTML='<span class="k">오늘의 최고가</span><span class="b">'+dealName(top1)+' <b>'+eok(top1.p)+'</b><br>'
+      +'<small>'+top1.sgg+' · '+dealType(top1)+(top1.a?' · '+Math.round(top1.p/top1.a).toLocaleString()+'만/㎡':'')+' · '+top1.cd+'</small></span>';
+  }
+  var mm2=document.getElementById("mMore");
+  if(mm2)mm2.addEventListener("click",function(e){
+    e.preventDefault();document.body.classList.add("showdash");mm2.style.display="none";
+    setTimeout(function(){window.dispatchEvent(new Event("resize"));},80);
+  });
 }catch(e){}
 /* 스크롤 리빌 */
 var rvs=document.querySelectorAll(".rv,.blk-anim");
