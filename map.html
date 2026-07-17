@@ -53,7 +53,7 @@
     border:1px solid var(--hair-soft);border-radius:8px;padding:7px 11px;font-size:11px;color:var(--text2)}
   #legend .dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:-1px}
   .site-footer{padding:9px 16px;font-size:11.5px}
-  .leaflet-tile{filter:saturate(.55) grayscale(.2) brightness(1.03)}
+  .leaflet-tile{filter:saturate(.75) grayscale(.12) brightness(1.02)}
 </style><meta name="description" content="지도를 확대하면 건물별 실거래 가격이 보입니다. 매매·전세·월세, ㎡당 단가, 계약월 필터까지.">
 <meta property="og:title" content="실거래지도 — 석봉 부동산 정보방">
 <meta property="og:description" content="지도를 확대하면 건물별 실거래 가격이 보입니다. 매매·전세·월세, ㎡당 단가, 계약월 필터까지.">
@@ -256,17 +256,39 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
     var P=new URLSearchParams(location.search);
     var pr=P.get('r'),pq=P.get('q'),ps=P.get('s'),tgt=null;
     if(pr)tgt=SB.summary.regions.find(function(x){return x.code===pr;});
+    var handled=false;
     if(!tgt&&pq){
-      tgt=SB.summary.regions.find(function(x){
-        if(pq.indexOf(x.sido)<0)return false;
-        return x.sgg.split(/[\s_]+/).every(function(p){return pq.indexOf(p)>=0;});
-      });
+      var findR=function(loose){
+        return SB.summary.regions.find(function(x){
+          if(pq.indexOf(x.sido)<0)return false;
+          return x.sgg.split(/[\s_]+/).every(function(p){
+            if(pq.indexOf(p)>=0)return true;
+            return loose&&p.length>2&&pq.indexOf(p.slice(0,-1))>=0;
+          });
+        });
+      };
+      tgt=findR(false)||findR(true);
     }
-    if(!tgt&&pq&&!ps){sidos.forEach(function(x){if(!ps&&pq.indexOf(x)>=0)ps=x;});}
+    if(!tgt&&pq){
+      /* 시 단위 그룹 폴백: 주소의 "OO시/군"으로 해당 시 전체 구 범위 이동 */
+      var city=null;
+      pq.split(/\s+/).forEach(function(w){var m=w.match(/^(.{2,}?)(특례시|시|군)$/);if(!city&&m)city=m[1];});
+      if(city){
+        var grp=SB.summary.regions.filter(function(x){
+          return pq.indexOf(x.sido)>=0&&x.lat&&x.sgg.split(/[\s_]+/)[0].indexOf(city)===0;});
+        if(grp.length===1)tgt=grp[0];
+        else if(grp.length>1){
+          curSido=grp[0].sido;s1.value=curSido;fill();handled=true;
+          setTimeout(function(){try{map.invalidateSize();
+            map.fitBounds(grp.map(function(r){return [r.lat,r.lng];}),{padding:[40,40],maxZoom:13});}catch(e){}},150);
+        }
+      }
+    }
+    if(!tgt&&!handled&&pq&&!ps){sidos.forEach(function(x){if(!ps&&pq.indexOf(x)>=0)ps=x;});}
     if(tgt){
       curSido=tgt.sido;curSgg=tgt.code;s1.value=tgt.sido;fill();s2.value=tgt.code;
       if(tgt.lat)setTimeout(function(){try{map.invalidateSize();map.setView([tgt.lat,tgt.lng],Z_DETAIL+1,{animate:false});}catch(e){}},150);
-    }else if(ps){
+    }else if(!handled&&ps){
       var sm=null;sidos.forEach(function(x){if(!sm&&(x===ps||ps.indexOf(x)>=0))sm=x;});
       if(sm){curSido=sm;s1.value=sm;fill();
         var pts=SB.summary.regions.filter(function(r){return r.lat&&regionPass(r);}).map(function(r){return [r.lat,r.lng];});
