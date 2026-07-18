@@ -112,7 +112,9 @@
   <span id="stat"></span>
 </div>
 <div id="fpanel">
-  <div class="frow"><span class="flbl">가격(보증금)</span><span class="fgrp" id="fpP"></span></div>
+  <div class="frow"><span class="flbl">매매가</span><span class="fgrp" id="fpS"></span></div>
+  <div class="frow"><span class="flbl">보증금(전·월세)</span><span class="fgrp" id="fpB"></span></div>
+  <div class="frow"><span class="flbl">월세액</span><span class="fgrp" id="fpW"></span></div>
   <div class="frow"><span class="flbl">전용면적</span><span class="fgrp" id="fpA"></span></div>
   <div class="frow"><span class="flbl">준공</span><span class="fgrp" id="fpY"></span></div>
   <div class="frow"><span class="flbl">층</span><span class="fgrp" id="fpF"></span></div>
@@ -135,9 +137,11 @@ var Z_DETAIL=13, Z_POINT=15, Z_NAME=16;
 var curT='all', curU='all', curD='all', curSido='all', curSgg='all';
 try{var P0=new URLSearchParams(location.search);var t0=P0.get('t');if(t0&&TYPE[t0])curT=t0;
 var u0=P0.get('u');if(u0==='매매'||u0==='전세'||u0==='월세')curU=u0;}catch(e){}
-/* 상세 필터 상태 (가격·면적·연식·층) */
-var fP='all', fA='all', fY='all', fF='all';
-var FPR={p1:[0,50000],p2:[50000,100000],p3:[100000,200000],p4:[200000,1e15]};
+/* 상세 필터 상태 (매매가·보증금·월세·면적·연식·층) */
+var fS='all', fB='all', fW='all', fA='all', fY='all', fF='all';
+var FSR={s1:[0,50000],s2:[50000,100000],s3:[100000,200000],s4:[200000,1e15]};
+var FBR={b1:[0,10000],b2:[10000,30000],b3:[30000,60000],b4:[60000,1e15]};
+var FWR={w1:[0,50],w2:[50,100],w3:[100,200],w4:[200,1e9]};
 var FAR={a1:[0,60],a2:[60,85],a3:[85,115],a4:[115,1e9]};
 var CURY=new Date().getFullYear();
 function ptYear(pt){if(pt._y===undefined){var m=/(19|20)\d{2}/.exec(pt.extra||'');pt._y=m?+m[0]:null;}return pt._y;}
@@ -162,7 +166,9 @@ function priceLabel(tx){
 function txMatch(tx){
   if(curU!=='all'&&tx.u!==curU)return false;
   if(curD!=='all'&&tx.cd.indexOf(curD)!==0)return false;
-  if(fP!=='all'){var pr=FPR[fP];if(tx.p<pr[0]||tx.p>=pr[1])return false;}
+  if(fS!=='all'&&tx.u==='매매'){var r1=FSR[fS];if(tx.p<r1[0]||tx.p>=r1[1])return false;}
+  if(fB!=='all'&&(tx.u==='전세'||tx.u==='월세')){var r2=FBR[fB];if(tx.p<r2[0]||tx.p>=r2[1])return false;}
+  if(fW!=='all'&&tx.u==='월세'){var r3=FWR[fW];var wr=tx.r||0;if(wr<r3[0]||wr>=r3[1])return false;}
   if(fA!=='all'){var ar=FAR[fA];if(tx.a==null||tx.a<ar[0]||tx.a>=ar[1])return false;}
   if(fF!=='all'){var fl=+tx.f;if(!fl||fl<(fF==='f5'?5:15))return false;}
   return true;
@@ -288,7 +294,7 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
 (function(){
   var pn=document.getElementById('fpanel'),bt=document.getElementById('fbtn');
   function mark(){
-    var n=(fP!=='all'?1:0)+(fA!=='all'?1:0)+(fY!=='all'?1:0)+(fF!=='all'?1:0);
+    var n=(fS!=='all'?1:0)+(fB!=='all'?1:0)+(fW!=='all'?1:0)+(fA!=='all'?1:0)+(fY!=='all'?1:0)+(fF!=='all'?1:0);
     bt.textContent='필터'+(n?' '+n:'');
     bt.classList.toggle('on',n>0||pn.classList.contains('open'));
   }
@@ -305,7 +311,9 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
       box.appendChild(b);
     });
   }
-  grp('fpP',[['all','전체'],['p1','5억 이하'],['p2','5~10억'],['p3','10~20억'],['p4','20억 이상']],function(){return fP;},function(v){fP=v;});
+  grp('fpS',[['all','전체'],['s1','5억 이하'],['s2','5~10억'],['s3','10~20억'],['s4','20억 이상']],function(){return fS;},function(v){fS=v;});
+  grp('fpB',[['all','전체'],['b1','1억 이하'],['b2','1~3억'],['b3','3~6억'],['b4','6억 이상']],function(){return fB;},function(v){fB=v;});
+  grp('fpW',[['all','전체'],['w1','50만 이하'],['w2','50~100만'],['w3','100~200만'],['w4','200만 이상']],function(){return fW;},function(v){fW=v;});
   grp('fpA',[['all','전체'],['a1','60㎡ 미만'],['a2','60~85㎡'],['a3','85~115㎡'],['a4','115㎡ 이상']],function(){return fA;},function(v){fA=v;});
   grp('fpY',[['all','전체'],['y5','5년 내 신축'],['y10','10년 내'],['y20','20년 이상']],function(){return fY;},function(v){fY=v;});
   grp('fpF',[['all','전체'],['f5','5층 이상'],['f15','15층 이상']],function(){return fF;},function(v){fF=v;});
@@ -314,8 +322,8 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
     setTimeout(function(){try{map.invalidateSize();}catch(e){}},180);
   });
   document.getElementById('freset').addEventListener('click',function(){
-    fP=fA=fY=fF='all';
-    ['fpP','fpA','fpY','fpF'].forEach(function(id){
+    fS=fB=fW=fA=fY=fF='all';
+    ['fpS','fpB','fpW','fpA','fpY','fpF'].forEach(function(id){
       document.getElementById(id).querySelectorAll('.chip').forEach(function(x,i){x.classList.toggle('on',i===0);});
     });
     mark();render();
