@@ -126,7 +126,7 @@
   <span id="stat"></span>
 </div>
 <div id="fpanel">
-  <div class="frow"><span class="flbl">매매가</span><span class="fgrp" id="fpS"></span>
+  <div class="frow"><span class="flbl">가격(전체)</span><span class="fgrp" id="fpS"></span>
     <span class="fcustom"><input class="fnum" id="fSmin" type="number" min="0" step="0.1" placeholder="최소">~<input class="fnum" id="fSmax" type="number" min="0" step="0.1" placeholder="최대"><span class="funit">억 (직접 입력)</span></span></div>
   <div class="frow"><span class="flbl">보증금(전·월세)</span><span class="fgrp" id="fpB"></span>
     <span class="fcustom"><input class="fnum" id="fBmin" type="number" min="0" step="0.1" placeholder="최소">~<input class="fnum" id="fBmax" type="number" min="0" step="0.1" placeholder="최대"><span class="funit">억 (직접 입력)</span></span></div>
@@ -185,7 +185,7 @@ function txMatch(tx){
   if(curU!=='all'&&tx.u!==curU)return false;
   if(curD!=='all'&&tx.cd.indexOf(curD)!==0)return false;
   var r1=fSc||(fS!=='all'?FSR[fS]:null);
-  if(r1&&tx.u==='매매'&&(tx.p<r1[0]||tx.p>=r1[1]))return false;
+  if(r1&&(tx.p<r1[0]||tx.p>=r1[1]))return false;   /* 가격(전체): 매매가·전월세 보증금 공통 적용 */
   var r2=fBc||(fB!=='all'?FBR[fB]:null);
   if(r2&&(tx.u==='전세'||tx.u==='월세')&&(tx.p<r2[0]||tx.p>=r2[1]))return false;
   var r3=fWc||(fW!=='all'?FWR[fW]:null);
