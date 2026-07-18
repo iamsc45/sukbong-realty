@@ -126,7 +126,7 @@
   <span id="stat"></span>
 </div>
 <div id="fpanel">
-  <div class="frow"><span class="flbl">가격(전체)</span><span class="fgrp" id="fpS"></span>
+  <div class="frow"><span class="flbl">매매가</span><span class="fgrp" id="fpS"></span>
     <span class="fcustom"><input class="fnum" id="fSmin" type="number" min="0" step="0.1" placeholder="최소">~<input class="fnum" id="fSmax" type="number" min="0" step="0.1" placeholder="최대"><span class="funit">억 (직접 입력)</span></span></div>
   <div class="frow"><span class="flbl">보증금(전·월세)</span><span class="fgrp" id="fpB"></span>
     <span class="fcustom"><input class="fnum" id="fBmin" type="number" min="0" step="0.1" placeholder="최소">~<input class="fnum" id="fBmax" type="number" min="0" step="0.1" placeholder="최대"><span class="funit">억 (직접 입력)</span></span></div>
@@ -181,20 +181,18 @@ function priceLabel(tx){
   if(tx.u==='전세')return '전세 '+fmtEok(tx.p);
   return '월 '+(tx.p>=10000?fmtEok(tx.p):Math.round(tx.p).toLocaleString())+'/'+Math.round(tx.r);
 }
-function txMatch(tx){
-  if(curU!=='all'&&tx.u!==curU)return false;
+function txBase(tx){
+  /* 가격 외 공통 조건 (계약월·면적·층) — 거래 칩(curU)은 표시 단계에서 적용 */
   if(curD!=='all'&&tx.cd.indexOf(curD)!==0)return false;
-  var r1=fSc||(fS!=='all'?FSR[fS]:null);
-  if(r1&&(tx.p<r1[0]||tx.p>=r1[1]))return false;   /* 가격(전체): 매매가·전월세 보증금 공통 적용 */
-  var r2=fBc||(fB!=='all'?FBR[fB]:null);
-  if(r2&&(tx.u==='전세'||tx.u==='월세')&&(tx.p<r2[0]||tx.p>=r2[1]))return false;
-  var r3=fWc||(fW!=='all'?FWR[fW]:null);
-  if(r3&&tx.u==='월세'){var wr=tx.r||0;if(wr<r3[0]||wr>=r3[1])return false;}
   if(fA!=='all'){var ar=FAR[fA];if(tx.a==null||tx.a<ar[0]||tx.a>=ar[1])return false;}
   if(fF!=='all'){var fl=+tx.f;if(!fl||fl<(fF==='f5'?5:15))return false;}
   return true;
 }
+function inR(v,r){return v>=r[0]&&v<r[1];}
 function ptTxs(pt){
+  /* 맞춤 검색: 설정된 가격 필터 프로파일을 "같은 지점"이 전부 충족해야 표시.
+     매매가 → 해당 범위 매매 거래 보유 / 보증금(+월세액) → 해당 조건 전·월세 거래 보유.
+     매매가+보증금 조합 = 매매가 X이면서 전세(보증금) Y인 매물(갭 검색). */
   if(curT!=='all'&&pt.t!==curT)return [];
   if(fY!=='all'){
     var y=ptYear(pt);if(!y)return [];
@@ -203,7 +201,25 @@ function ptTxs(pt){
     if(fY==='y10'&&ag>10)return [];
     if(fY==='y20'&&ag<20)return [];
   }
-  return pt.txs.filter(txMatch);
+  var base=pt.txs.filter(txBase);
+  var S=fSc||(fS!=='all'?FSR[fS]:null);
+  var B=fBc||(fB!=='all'?FBR[fB]:null);
+  var W=fWc||(fW!=='all'?FWR[fW]:null);
+  var out;
+  if(!S&&!B&&!W){
+    out=base;
+  }else{
+    var sale=S?base.filter(function(t){return t.u==='매매'&&inR(t.p,S);}):[];
+    var rent=[];
+    if(W)rent=base.filter(function(t){return t.u==='월세'&&inR(t.r||0,W)&&(!B||inR(t.p,B));});
+    else if(B)rent=base.filter(function(t){return (t.u==='전세'||t.u==='월세')&&inR(t.p,B);});
+    if(S&&!sale.length)return [];
+    if((B||W)&&!rent.length)return [];
+    out=sale.concat(rent);
+    out.sort(function(a,b){return a.cd<b.cd?1:-1;});
+  }
+  if(curU!=='all')out=out.filter(function(t){return t.u===curU;});
+  return out;
 }
 function setFcount(msg){var fc=document.getElementById('fcount');if(fc)fc.textContent=msg;}
 function loadDetail(code,cb){
