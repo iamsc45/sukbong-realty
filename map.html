@@ -53,7 +53,18 @@
     border:1px solid var(--hair-soft);border-radius:8px;padding:7px 11px;font-size:11px;color:var(--text2)}
   #legend .dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:-1px}
   .site-footer{padding:9px 16px;font-size:11.5px}
-  #sform{display:inline-flex}
+  #sform{display:inline-flex;gap:5px;align-items:center}
+  .sbtn{border:0;background:var(--navy);color:#fff;font:inherit;font-size:12px;font-weight:bold;
+    border-radius:14px;padding:5px 13px;cursor:pointer;transition:opacity 150ms ease}
+  .sbtn:hover{opacity:.8}
+  #fbtn{border:0;background:var(--navy);color:#fff;font:inherit;font-size:12.5px;font-weight:bold;
+    border-radius:16px;padding:5px 15px;cursor:pointer;transition:opacity 150ms ease;white-space:nowrap}
+  #fbtn:hover{opacity:.85}
+  .fcustom{display:inline-flex;gap:4px;align-items:center;margin-left:8px}
+  .fnum{width:62px;font:inherit;font-size:12px;padding:3px 8px;border:1px solid var(--hair-soft);
+    border-radius:8px;outline:none;background:#fff}
+  .fnum:focus{border-color:var(--navy)}
+  .funit{color:var(--muted);font-size:11px;white-space:nowrap}
   #sq{width:136px;font:inherit;font-size:12.5px;padding:4px 12px;border:1px solid var(--navy);
     border-radius:16px;background:#fff;outline:none;color:var(--text2)}
   #sq::placeholder{color:var(--muted2)}
@@ -76,8 +87,10 @@
     #typechips,#uchips,#dchips{display:flex;gap:6px;flex:0 0 auto;align-items:center}
     select{max-width:104px;flex:0 0 auto}
     #sq{width:104px;flex:0 0 auto}
+    #sform,#fbtn{flex:0 0 auto}
     #fpanel{padding:4px 10px 8px}
     .flbl{width:64px;font-size:10.5px}
+    .fnum{width:52px}
     #fcount{display:inline}
     #legend{font-size:10px;padding:5px 8px;bottom:40px;max-width:calc(100vw - 16px);line-height:1.5}
     .site-footer{font-size:9.5px;padding:7px 10px}
@@ -103,18 +116,21 @@
   </nav>
 </header>
 <div id="bar">
-  <form id="sform"><input id="sq" type="search" placeholder="지역·동 검색" autocomplete="off"></form>
+  <form id="sform"><input id="sq" type="search" placeholder="지역·동 검색" autocomplete="off"><button type="submit" class="sbtn">검색</button></form>
+  <button id="fbtn" type="button">필터 ▾</button>
   <select id="selSido"></select><select id="selSgg"></select>
   <span class="lbl">상품:</span><span id="typechips"></span>
   <span class="lbl">거래:</span><span id="uchips"></span>
   <span class="lbl">계약:</span><span id="dchips"></span>
-  <button class="chip" id="fbtn" type="button">필터</button>
   <span id="stat"></span>
 </div>
 <div id="fpanel">
-  <div class="frow"><span class="flbl">매매가</span><span class="fgrp" id="fpS"></span></div>
-  <div class="frow"><span class="flbl">보증금(전·월세)</span><span class="fgrp" id="fpB"></span></div>
-  <div class="frow"><span class="flbl">월세액</span><span class="fgrp" id="fpW"></span></div>
+  <div class="frow"><span class="flbl">매매가</span><span class="fgrp" id="fpS"></span>
+    <span class="fcustom"><input class="fnum" id="fSmin" type="number" min="0" step="0.1" placeholder="최소">~<input class="fnum" id="fSmax" type="number" min="0" step="0.1" placeholder="최대"><span class="funit">억 (직접 입력)</span></span></div>
+  <div class="frow"><span class="flbl">보증금(전·월세)</span><span class="fgrp" id="fpB"></span>
+    <span class="fcustom"><input class="fnum" id="fBmin" type="number" min="0" step="0.1" placeholder="최소">~<input class="fnum" id="fBmax" type="number" min="0" step="0.1" placeholder="최대"><span class="funit">억 (직접 입력)</span></span></div>
+  <div class="frow"><span class="flbl">월세액</span><span class="fgrp" id="fpW"></span>
+    <span class="fcustom"><input class="fnum" id="fWmin" type="number" min="0" step="1" placeholder="최소">~<input class="fnum" id="fWmax" type="number" min="0" step="1" placeholder="최대"><span class="funit">만원 (직접 입력)</span></span></div>
   <div class="frow"><span class="flbl">전용면적</span><span class="fgrp" id="fpA"></span></div>
   <div class="frow"><span class="flbl">준공</span><span class="fgrp" id="fpY"></span></div>
   <div class="frow"><span class="flbl">층</span><span class="fgrp" id="fpF"></span></div>
@@ -137,8 +153,9 @@ var Z_DETAIL=13, Z_POINT=15, Z_NAME=16;
 var curT='all', curU='all', curD='all', curSido='all', curSgg='all';
 try{var P0=new URLSearchParams(location.search);var t0=P0.get('t');if(t0&&TYPE[t0])curT=t0;
 var u0=P0.get('u');if(u0==='매매'||u0==='전세'||u0==='월세')curU=u0;}catch(e){}
-/* 상세 필터 상태 (매매가·보증금·월세·면적·연식·층) */
+/* 상세 필터 상태 (매매가·보증금·월세·면적·연식·층) — fXc는 직접 입력 [최소,최대+1) 만원 */
 var fS='all', fB='all', fW='all', fA='all', fY='all', fF='all';
+var fSc=null, fBc=null, fWc=null;
 var FSR={s1:[0,50000],s2:[50000,100000],s3:[100000,200000],s4:[200000,1e15]};
 var FBR={b1:[0,10000],b2:[10000,30000],b3:[30000,60000],b4:[60000,1e15]};
 var FWR={w1:[0,50],w2:[50,100],w3:[100,200],w4:[200,1e9]};
@@ -166,9 +183,12 @@ function priceLabel(tx){
 function txMatch(tx){
   if(curU!=='all'&&tx.u!==curU)return false;
   if(curD!=='all'&&tx.cd.indexOf(curD)!==0)return false;
-  if(fS!=='all'&&tx.u==='매매'){var r1=FSR[fS];if(tx.p<r1[0]||tx.p>=r1[1])return false;}
-  if(fB!=='all'&&(tx.u==='전세'||tx.u==='월세')){var r2=FBR[fB];if(tx.p<r2[0]||tx.p>=r2[1])return false;}
-  if(fW!=='all'&&tx.u==='월세'){var r3=FWR[fW];var wr=tx.r||0;if(wr<r3[0]||wr>=r3[1])return false;}
+  var r1=fSc||(fS!=='all'?FSR[fS]:null);
+  if(r1&&tx.u==='매매'&&(tx.p<r1[0]||tx.p>=r1[1]))return false;
+  var r2=fBc||(fB!=='all'?FBR[fB]:null);
+  if(r2&&(tx.u==='전세'||tx.u==='월세')&&(tx.p<r2[0]||tx.p>=r2[1]))return false;
+  var r3=fWc||(fW!=='all'?FWR[fW]:null);
+  if(r3&&tx.u==='월세'){var wr=tx.r||0;if(wr<r3[0]||wr>=r3[1])return false;}
   if(fA!=='all'){var ar=FAR[fA];if(tx.a==null||tx.a<ar[0]||tx.a>=ar[1])return false;}
   if(fF!=='all'){var fl=+tx.f;if(!fl||fl<(fF==='f5'?5:15))return false;}
   return true;
@@ -294,9 +314,9 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
 (function(){
   var pn=document.getElementById('fpanel'),bt=document.getElementById('fbtn');
   function mark(){
-    var n=(fS!=='all'?1:0)+(fB!=='all'?1:0)+(fW!=='all'?1:0)+(fA!=='all'?1:0)+(fY!=='all'?1:0)+(fF!=='all'?1:0);
-    bt.textContent='필터'+(n?' '+n:'');
-    bt.classList.toggle('on',n>0||pn.classList.contains('open'));
+    var n=((fSc||fS!=='all')?1:0)+((fBc||fB!=='all')?1:0)+((fWc||fW!=='all')?1:0)
+      +(fA!=='all'?1:0)+(fY!=='all'?1:0)+(fF!=='all'?1:0);
+    bt.textContent='필터'+(n?' '+n:'')+(pn.classList.contains('open')?' ▴':' ▾');
   }
   function grp(el,items,get,set){
     var box=document.getElementById(el);
@@ -317,12 +337,32 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
   grp('fpA',[['all','전체'],['a1','60㎡ 미만'],['a2','60~85㎡'],['a3','85~115㎡'],['a4','115㎡ 이상']],function(){return fA;},function(v){fA=v;});
   grp('fpY',[['all','전체'],['y5','5년 내 신축'],['y10','10년 내'],['y20','20년 이상']],function(){return fY;},function(v){fY=v;});
   grp('fpF',[['all','전체'],['f5','5층 이상'],['f15','15층 이상']],function(){return fF;},function(v){fF=v;});
+  /* 직접 입력 (설정 시 해당 줄 프리셋 해제, 칩 클릭 시 직접 입력 해제) */
+  function wireCustom(boxId,minId,maxId,mult,setC){
+    var mi=document.getElementById(minId),ma=document.getElementById(maxId);
+    function upd(){
+      var lo=parseFloat(mi.value),hi=parseFloat(ma.value);
+      var has=!(isNaN(lo)&&isNaN(hi));
+      setC(has?[isNaN(lo)?0:Math.round(lo*mult),isNaN(hi)?1e15:Math.round(hi*mult)+1]:null);
+      document.getElementById(boxId).querySelectorAll('.chip').forEach(function(x,i){
+        x.classList.toggle('on',!has&&i===0);});
+      mark();render();
+    }
+    mi.addEventListener('change',upd);ma.addEventListener('change',upd);
+    document.getElementById(boxId).addEventListener('click',function(e){
+      if(e.target.classList.contains('chip')){mi.value='';ma.value='';setC(null);}
+    },true);
+  }
+  wireCustom('fpS','fSmin','fSmax',10000,function(v){fSc=v;if(v)fS='all';});
+  wireCustom('fpB','fBmin','fBmax',10000,function(v){fBc=v;if(v)fB='all';});
+  wireCustom('fpW','fWmin','fWmax',1,function(v){fWc=v;if(v)fW='all';});
   bt.addEventListener('click',function(){
     pn.classList.toggle('open');mark();
     setTimeout(function(){try{map.invalidateSize();}catch(e){}},180);
   });
   document.getElementById('freset').addEventListener('click',function(){
-    fS=fB=fW=fA=fY=fF='all';
+    fS=fB=fW=fA=fY=fF='all';fSc=fBc=fWc=null;
+    ['fSmin','fSmax','fBmin','fBmax','fWmin','fWmax'].forEach(function(id){document.getElementById(id).value='';});
     ['fpS','fpB','fpW','fpA','fpY','fpF'].forEach(function(id){
       document.getElementById(id).querySelectorAll('.chip').forEach(function(x,i){x.classList.toggle('on',i===0);});
     });
