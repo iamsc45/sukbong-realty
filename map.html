@@ -53,6 +53,18 @@
     border:1px solid var(--hair-soft);border-radius:8px;padding:7px 11px;font-size:11px;color:var(--text2)}
   #legend .dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:-1px}
   .site-footer{padding:9px 16px;font-size:11.5px}
+  #sform{display:inline-flex}
+  #sq{width:136px;font:inherit;font-size:12.5px;padding:4px 12px;border:1px solid var(--navy);
+    border-radius:16px;background:#fff;outline:none;color:var(--text2)}
+  #sq::placeholder{color:var(--muted2)}
+  #sq:focus{box-shadow:0 0 0 2px rgba(20,20,20,.12)}
+  #fbtn.on{background:var(--navy);color:#fff}
+  #fpanel{display:none;background:#fff;border-bottom:1px solid var(--hair-soft);padding:5px 16px 9px;font-size:12.5px}
+  #fpanel.open{display:block}
+  .frow{display:flex;gap:6px;align-items:center;padding:5px 0;border-bottom:1px dashed var(--hair);flex-wrap:wrap}
+  .flbl{color:var(--muted);font-size:11.5px;width:78px;flex:0 0 auto}
+  .fgrp{display:flex;gap:6px;flex-wrap:wrap}
+  #fcount{color:var(--muted);font-size:12px;margin-right:auto}
   .leaflet-tile{filter:saturate(.75) grayscale(.12) brightness(1.02)}
   /* 모바일: 필터바 한 줄 가로 스크롤 + 화면 확보 (2026-07-17) */
   @media (max-width:720px){
@@ -63,6 +75,10 @@
     .chip{white-space:nowrap;flex:0 0 auto;padding:5px 12px}
     #typechips,#uchips,#dchips{display:flex;gap:6px;flex:0 0 auto;align-items:center}
     select{max-width:104px;flex:0 0 auto}
+    #sq{width:104px;flex:0 0 auto}
+    #fpanel{padding:4px 10px 8px}
+    .flbl{width:64px;font-size:10.5px}
+    #fcount{display:inline}
     #legend{font-size:10px;padding:5px 8px;bottom:40px;max-width:calc(100vw - 16px);line-height:1.5}
     .site-footer{font-size:9.5px;padding:7px 10px}
     .site-footer span{float:none!important;margin-left:0!important}
@@ -87,11 +103,20 @@
   </nav>
 </header>
 <div id="bar">
+  <form id="sform"><input id="sq" type="search" placeholder="지역·동 검색" autocomplete="off"></form>
   <select id="selSido"></select><select id="selSgg"></select>
   <span class="lbl">상품:</span><span id="typechips"></span>
   <span class="lbl">거래:</span><span id="uchips"></span>
   <span class="lbl">계약:</span><span id="dchips"></span>
+  <button class="chip" id="fbtn" type="button">필터</button>
   <span id="stat"></span>
+</div>
+<div id="fpanel">
+  <div class="frow"><span class="flbl">가격(보증금)</span><span class="fgrp" id="fpP"></span></div>
+  <div class="frow"><span class="flbl">전용면적</span><span class="fgrp" id="fpA"></span></div>
+  <div class="frow"><span class="flbl">준공</span><span class="fgrp" id="fpY"></span></div>
+  <div class="frow"><span class="flbl">층</span><span class="fgrp" id="fpF"></span></div>
+  <div class="frow" style="border:0"><span id="fcount"></span><button class="chip" id="freset" type="button">초기화</button></div>
 </div>
 <div id="map"></div>
 <div id="legend"></div>
@@ -110,6 +135,12 @@ var Z_DETAIL=13, Z_POINT=15, Z_NAME=16;
 var curT='all', curU='all', curD='all', curSido='all', curSgg='all';
 try{var P0=new URLSearchParams(location.search);var t0=P0.get('t');if(t0&&TYPE[t0])curT=t0;
 var u0=P0.get('u');if(u0==='매매'||u0==='전세'||u0==='월세')curU=u0;}catch(e){}
+/* 상세 필터 상태 (가격·면적·연식·층) */
+var fP='all', fA='all', fY='all', fF='all';
+var FPR={p1:[0,50000],p2:[50000,100000],p3:[100000,200000],p4:[200000,1e15]};
+var FAR={a1:[0,60],a2:[60,85],a3:[85,115],a4:[115,1e9]};
+var CURY=new Date().getFullYear();
+function ptYear(pt){if(pt._y===undefined){var m=/(19|20)\d{2}/.exec(pt.extra||'');pt._y=m?+m[0]:null;}return pt._y;}
 function regionPass(r){if(curSgg!=='all')return r.code===curSgg;if(curSido!=='all')return r.sido===curSido;return true;}
 var map=L.map('map',{minZoom:9}).setView([37.55,126.98],11);
 var baseV=L.tileLayer('https://api.vworld.kr/req/wmts/1.0.0/EBC23601-6E41-3269-9ECB-821DEECCF3F0/Base/{z}/{y}/{x}.png',
@@ -131,12 +162,23 @@ function priceLabel(tx){
 function txMatch(tx){
   if(curU!=='all'&&tx.u!==curU)return false;
   if(curD!=='all'&&tx.cd.indexOf(curD)!==0)return false;
+  if(fP!=='all'){var pr=FPR[fP];if(tx.p<pr[0]||tx.p>=pr[1])return false;}
+  if(fA!=='all'){var ar=FAR[fA];if(tx.a==null||tx.a<ar[0]||tx.a>=ar[1])return false;}
+  if(fF!=='all'){var fl=+tx.f;if(!fl||fl<(fF==='f5'?5:15))return false;}
   return true;
 }
 function ptTxs(pt){
   if(curT!=='all'&&pt.t!==curT)return [];
+  if(fY!=='all'){
+    var y=ptYear(pt);if(!y)return [];
+    var ag=CURY-y;
+    if(fY==='y5'&&ag>5)return [];
+    if(fY==='y10'&&ag>10)return [];
+    if(fY==='y20'&&ag<20)return [];
+  }
   return pt.txs.filter(txMatch);
 }
+function setFcount(msg){var fc=document.getElementById('fcount');if(fc)fc.textContent=msg;}
 function loadDetail(code,cb){
   if(loaded[code]||loading[code])return;
   if(!(SB.summary.regions.find(function(r){return r.code===code&&r.geo>0;})))return;
@@ -169,6 +211,7 @@ function render(){
       nPt++;nTx+=tot;
     });
     document.getElementById('stat').textContent='시군구 '+nPt+'곳 · '+nTx.toLocaleString()+'건 (확대하면 상세)';
+    setFcount('상세 필터는 지도를 확대하면 적용됩니다');
     return;
   }
   var need=visibleRegions(), pending=0;
@@ -200,6 +243,7 @@ function render(){
       nPt++;nTx+=g.tx;
     });
     document.getElementById('stat').textContent='동 '+nPt+'곳 · '+nTx.toLocaleString()+'건'+(pending?' · 불러오는 중…':'');
+    setFcount('화면 내 조건 일치 '+nTx.toLocaleString()+'건');
     return;
   }
   pts.forEach(function(o){
@@ -222,6 +266,7 @@ function render(){
     nPt++;nTx+=txs.length;
   });
   document.getElementById('stat').textContent='지점 '+nPt+' · '+nTx.toLocaleString()+'건'+(pending?' · 불러오는 중…':'');
+  setFcount('화면 내 조건 일치 '+nTx.toLocaleString()+'건');
 }
 /* 칩 */
 function mkChips(elId,items,cur,setter){
@@ -239,6 +284,44 @@ function mkChips(elId,items,cur,setter){
 mkChips('typechips',[['all','전체',null]].concat(Object.keys(TYPE).map(function(t){return [t,TYPE[t][0],TYPE[t][1]];})),curT,function(v){curT=v;});
 mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월세','월세']],curU,function(v){curU=v;});
 mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',function(v){curD=v;});
+/* 상세 필터 패널 */
+(function(){
+  var pn=document.getElementById('fpanel'),bt=document.getElementById('fbtn');
+  function mark(){
+    var n=(fP!=='all'?1:0)+(fA!=='all'?1:0)+(fY!=='all'?1:0)+(fF!=='all'?1:0);
+    bt.textContent='필터'+(n?' '+n:'');
+    bt.classList.toggle('on',n>0||pn.classList.contains('open'));
+  }
+  function grp(el,items,get,set){
+    var box=document.getElementById(el);
+    items.forEach(function(it){
+      var b=document.createElement('button');b.type='button';
+      b.className='chip'+(get()===it[0]?' on':'');b.textContent=it[1];
+      b.addEventListener('click',function(){
+        set(it[0]);
+        box.querySelectorAll('.chip').forEach(function(x){x.classList.remove('on');});
+        b.classList.add('on');mark();render();
+      });
+      box.appendChild(b);
+    });
+  }
+  grp('fpP',[['all','전체'],['p1','5억 이하'],['p2','5~10억'],['p3','10~20억'],['p4','20억 이상']],function(){return fP;},function(v){fP=v;});
+  grp('fpA',[['all','전체'],['a1','60㎡ 미만'],['a2','60~85㎡'],['a3','85~115㎡'],['a4','115㎡ 이상']],function(){return fA;},function(v){fA=v;});
+  grp('fpY',[['all','전체'],['y5','5년 내 신축'],['y10','10년 내'],['y20','20년 이상']],function(){return fY;},function(v){fY=v;});
+  grp('fpF',[['all','전체'],['f5','5층 이상'],['f15','15층 이상']],function(){return fF;},function(v){fF=v;});
+  bt.addEventListener('click',function(){
+    pn.classList.toggle('open');mark();
+    setTimeout(function(){try{map.invalidateSize();}catch(e){}},180);
+  });
+  document.getElementById('freset').addEventListener('click',function(){
+    fP=fA=fY=fF='all';
+    ['fpP','fpA','fpY','fpF'].forEach(function(id){
+      document.getElementById(id).querySelectorAll('.chip').forEach(function(x,i){x.classList.toggle('on',i===0);});
+    });
+    mark();render();
+  });
+  mark();
+})();
 /* 지역 선택 (기본 전체 · 선택 시 해당 지역만 표시) */
 (function(){
   var sidos=[];
@@ -265,26 +348,27 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
     if(r&&r.lat){go(r.lat,r.lng,Z_DETAIL+1);}
   });
   fill();
-  /* 딥링크: ?r=시군구코드 | ?q=주소·지역명 | ?s=시도명 */
-  try{
-    var P=new URLSearchParams(location.search);
-    var pr=P.get('r'),pq=P.get('q'),ps=P.get('s'),tgt=null;
-    if(pr)tgt=SB.summary.regions.find(function(x){return x.code===pr;});
-    var handled=false;
-    if(!tgt&&pq){
-      var findR=function(loose){
-        return SB.summary.regions.find(function(x){
-          if(!x.lat||pq.indexOf(x.sido)<0)return false;
-          return x.sgg.split(/[\s_]+/).every(function(p){
-            if(pq.indexOf(p)>=0)return true;
-            return loose&&p.length>2&&pq.indexOf(p.slice(0,-1))>=0;
-          });
+  /* 지역·동 검색 매칭 — URL 딥링크와 지도 상단 검색창이 공용 */
+  function fitSido(sd){
+    curSido=sd;curSgg='all';s1.value=sd;fill();
+    setTimeout(function(){try{map.invalidateSize();
+      var pts=SB.summary.regions.filter(function(r){return r.lat&&regionPass(r);}).map(function(r){return [r.lat,r.lng];});
+      if(pts.length)map.fitBounds(pts,{padding:[40,40],maxZoom:12});}catch(e){}},150);
+  }
+  function findAndGo(pq){
+    var tgt=null,handled=false;
+    var findR=function(loose){
+      return SB.summary.regions.find(function(x){
+        if(!x.lat||pq.indexOf(x.sido)<0)return false;
+        return x.sgg.split(/[\s_]+/).every(function(p){
+          if(pq.indexOf(p)>=0)return true;
+          return loose&&p.length>2&&pq.indexOf(p.slice(0,-1))>=0;
         });
-      };
-      tgt=findR(false)||findR(true);
-    }
-    if(!tgt&&pq&&window.SB&&SB.dongs){
-      /* 동 단위 검색: "답십리동"·"답십리"·주소 속 동명 → 동 중심으로 줌15 */
+      });
+    };
+    tgt=findR(false)||findR(true);
+    if(!tgt&&window.SB&&SB.dongs){
+      /* 동 단위: "답십리동"·"답십리"·주소 속 동명 → 동 중심 줌15 */
       var de=null;
       pq.split(/\s+/).forEach(function(w){if(!de&&SB.dongs[w])de=SB.dongs[w];});
       if(!de){
@@ -302,8 +386,8 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
         }
       }
     }
-    if(!tgt&&!handled&&pq){
-      /* 자유 검색: 시도 없이 "송파구"·"분당"·"남양주"처럼 지역명만 입력해도 매칭 */
+    if(!tgt&&!handled){
+      /* 자유 검색: 시도 없이 "송파구"·"분당"·"남양주" 매칭 */
       var qn=pq.replace(/\s+/g,'');
       if(qn.length>=2){
         tgt=SB.summary.regions.find(function(x){
@@ -312,32 +396,64 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
         });
       }
     }
-    if(!tgt&&pq){
-      /* 시 단위 그룹 폴백: 주소의 "OO시/군"으로 해당 시 전체 구 범위 이동 */
+    if(!tgt&&!handled){
+      /* 시 단위 그룹: "OO시/군" → 해당 시 전체 구 범위 */
       var city=null;
       pq.split(/\s+/).forEach(function(w){var m=w.match(/^(.{2,}?)(특례시|시|군)$/);if(!city&&m)city=m[1];});
       if(city){
         var grp=SB.summary.regions.filter(function(x){
           return pq.indexOf(x.sido)>=0&&x.lat&&x.sgg.split(/[\s_]+/)[0].indexOf(city)===0;});
         if(grp.length){
-          curSido=grp[0].sido;s1.value=curSido;fill();handled=true;
+          curSido=grp[0].sido;curSgg='all';s1.value=curSido;fill();handled=true;
           setTimeout(function(){try{map.invalidateSize();
             if(grp.length===1)map.setView([grp[0].lat,grp[0].lng],Z_DETAIL,{animate:false});
             else map.fitBounds(grp.map(function(r){return [r.lat,r.lng];}),{padding:[40,40],maxZoom:13});}catch(e){}},150);
         }
       }
     }
-    if(!tgt&&!handled&&pq&&!ps){sidos.forEach(function(x){if(!ps&&pq.indexOf(x)>=0)ps=x;});}
+    if(!tgt&&!handled){
+      /* 시도 폴백 */
+      var ps=null;
+      sidos.forEach(function(x){if(!ps&&pq.indexOf(x)>=0)ps=x;});
+      if(ps){fitSido(ps);handled=true;}
+    }
     if(tgt){
-      curSido=tgt.sido;curSgg=tgt.code;s1.value=tgt.sido;fill();s2.value=tgt.code;
+      curSido=tgt.sido;curSgg=tgt.code;s1.value=tgt.sido;fill();s2.value=tgt.code;handled=true;
       if(tgt.lat)setTimeout(function(){try{map.invalidateSize();map.setView([tgt.lat,tgt.lng],Z_DETAIL+1,{animate:false});}catch(e){}},150);
-    }else if(!handled&&ps){
-      var sm=null;sidos.forEach(function(x){if(!sm&&(x===ps||ps.indexOf(x)>=0))sm=x;});
-      if(sm){curSido=sm;s1.value=sm;fill();
-        var pts=SB.summary.regions.filter(function(r){return r.lat&&regionPass(r);}).map(function(r){return [r.lat,r.lng];});
-        if(pts.length){try{map.fitBounds(pts,{padding:[40,40],maxZoom:12});}catch(e){}}}
+    }
+    if(handled)render();
+    return handled;
+  }
+  /* 딥링크: ?r=시군구코드 | ?q=주소·지역명 | ?s=시도명 */
+  try{
+    var P=new URLSearchParams(location.search);
+    var pr=P.get('r'),pq=P.get('q'),psp=P.get('s');
+    if(pr){
+      var t0=SB.summary.regions.find(function(x){return x.code===pr;});
+      if(t0){
+        curSido=t0.sido;curSgg=t0.code;s1.value=t0.sido;fill();s2.value=t0.code;
+        if(t0.lat)setTimeout(function(){try{map.invalidateSize();map.setView([t0.lat,t0.lng],Z_DETAIL+1,{animate:false});}catch(e){}},150);
+      }
+    }else if(pq){
+      findAndGo(pq);
+    }else if(psp){
+      var sm=null;sidos.forEach(function(x){if(!sm&&(x===psp||psp.indexOf(x)>=0))sm=x;});
+      if(sm)fitSido(sm);
     }
   }catch(e){}
+  /* 지도 상단 검색창 */
+  var sfm=document.getElementById('sform');
+  if(sfm)sfm.addEventListener('submit',function(e){
+    e.preventDefault();
+    var v=document.getElementById('sq').value.trim();
+    if(!v)return;
+    try{if(typeof gtag==='function')gtag('event','region_search',{search_term:v,source:'map'});}catch(_e){}
+    if(!findAndGo(v)){
+      var st=document.getElementById('stat');
+      if(st)st.textContent='"'+v+'" 지역을 찾지 못했습니다 (데이터 확충 중)';
+      setFcount('"'+v+'" 지역을 찾지 못했습니다');
+    }
+  });
 })();
 /* 범례 */
 document.getElementById('legend').innerHTML=Object.keys(TYPE).map(function(t){
