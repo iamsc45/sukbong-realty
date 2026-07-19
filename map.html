@@ -70,7 +70,7 @@
   #sq::placeholder{color:var(--muted2)}
   #sq:focus{box-shadow:0 0 0 2px rgba(20,20,20,.12)}
   #bar{position:relative}
-  #fpanel{display:none;position:absolute;top:100%;left:8px;z-index:1200;background:#fff;
+  #fpanel{display:none;position:fixed;left:8px;z-index:1400;background:#fff;
     border:1px solid var(--hair-soft);border-radius:12px;box-shadow:0 10px 26px rgba(20,20,20,.14);
     padding:3px 13px 7px;max-width:660px;font-size:12.5px}
   #fpanel.open{display:block}
@@ -377,8 +377,10 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
   wireCustom('fpB','fBmin','fBmax',10000,function(v){fBc=v;if(v)fB='all';});
   wireCustom('fpW','fWmin','fWmax',1,function(v){fWc=v;if(v)fW='all';});
   bt.addEventListener('click',function(){
-    pn.classList.toggle('open');mark();
-    setTimeout(function(){try{map.invalidateSize();}catch(e){}},180);
+    pn.classList.toggle('open');
+    if(pn.classList.contains('open'))
+      pn.style.top=(document.getElementById('bar').getBoundingClientRect().bottom+4)+'px';
+    mark();
   });
   document.getElementById('freset').addEventListener('click',function(){
     fS=fB=fW=fA=fY=fF='all';fSc=fBc=fWc=null;
