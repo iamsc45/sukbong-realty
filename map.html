@@ -60,23 +60,26 @@
   #fbtn{border:0;background:var(--navy);color:#fff;font:inherit;font-size:12.5px;font-weight:bold;
     border-radius:16px;padding:5px 15px;cursor:pointer;transition:opacity 150ms ease;white-space:nowrap}
   #fbtn:hover{opacity:.85}
-  .fcustom{display:inline-flex;gap:4px;align-items:center;margin-left:8px}
-  .fnum{width:62px;font:inherit;font-size:12px;padding:3px 8px;border:1px solid var(--hair-soft);
+  .fcustom{display:inline-flex;gap:3px;align-items:center;margin-left:6px}
+  .fnum{width:54px;font:inherit;font-size:11.5px;padding:2px 7px;border:1px solid var(--hair-soft);
     border-radius:8px;outline:none;background:#fff}
   .fnum:focus{border-color:var(--navy)}
-  .funit{color:var(--muted);font-size:11px;white-space:nowrap}
+  .funit{color:var(--muted);font-size:10.5px;white-space:nowrap}
   #sq{width:136px;font:inherit;font-size:12.5px;padding:4px 12px;border:1px solid var(--navy);
     border-radius:16px;background:#fff;outline:none;color:var(--text2)}
   #sq::placeholder{color:var(--muted2)}
   #sq:focus{box-shadow:0 0 0 2px rgba(20,20,20,.12)}
-  #fbtn.on{background:var(--navy);color:#fff}
-  #fpanel{display:none;background:#fff;border-bottom:1px solid var(--hair-soft);padding:5px 16px 9px;font-size:12.5px}
+  #bar{position:relative}
+  #fpanel{display:none;position:absolute;top:100%;left:8px;z-index:1200;background:#fff;
+    border:1px solid var(--hair-soft);border-radius:12px;box-shadow:0 10px 26px rgba(20,20,20,.14);
+    padding:3px 13px 7px;max-width:660px;font-size:12.5px}
   #fpanel.open{display:block}
-  #fpanel.open~#legend{display:none}
-  .frow{display:flex;gap:6px;align-items:center;padding:5px 0;border-bottom:1px dashed var(--hair);flex-wrap:wrap}
-  .flbl{color:var(--muted);font-size:11.5px;width:78px;flex:0 0 auto}
-  .fgrp{display:flex;gap:6px;flex-wrap:wrap}
-  #fcount{color:var(--muted);font-size:12px;margin-right:auto}
+  .frow{display:flex;gap:5px;align-items:center;padding:4px 0;border-bottom:1px dashed var(--hair);flex-wrap:wrap}
+  .frow:last-child{border-bottom:0}
+  .flbl{color:var(--muted);font-size:11px;width:66px;flex:0 0 auto}
+  .fgrp{display:flex;gap:5px;flex-wrap:wrap}
+  #fpanel .chip{padding:3px 10px;font-size:11.5px}
+  #fcount{color:var(--muted);font-size:11.5px;margin-right:auto}
   .leaflet-tile{filter:saturate(.75) grayscale(.12) brightness(1.02)}
   /* 모바일: 필터바 한 줄 가로 스크롤 + 화면 확보 (2026-07-17) */
   @media (max-width:720px){
@@ -89,9 +92,9 @@
     select{max-width:104px;flex:0 0 auto}
     #sq{width:104px;flex:0 0 auto}
     #sform,#fbtn{flex:0 0 auto}
-    #fpanel{padding:4px 10px 8px}
-    .flbl{width:64px;font-size:10.5px}
-    .fnum{width:52px}
+    #fpanel{left:6px;right:6px;max-width:none;padding:3px 10px 7px}
+    .flbl{width:60px;font-size:10.5px}
+    .fnum{width:48px}
     #fcount{display:inline}
     #legend{font-size:10px;padding:5px 8px;bottom:40px;max-width:calc(100vw - 16px);line-height:1.5}
     .site-footer{font-size:9.5px;padding:7px 10px}
@@ -124,18 +127,18 @@
   <span class="lbl">거래:</span><span id="uchips"></span>
   <span class="lbl">계약:</span><span id="dchips"></span>
   <span id="stat"></span>
-</div>
-<div id="fpanel">
-  <div class="frow"><span class="flbl">매매가</span><span class="fgrp" id="fpS"></span>
-    <span class="fcustom"><input class="fnum" id="fSmin" type="number" min="0" step="0.1" placeholder="최소">~<input class="fnum" id="fSmax" type="number" min="0" step="0.1" placeholder="최대"><span class="funit">억 (직접 입력)</span></span></div>
-  <div class="frow"><span class="flbl">보증금(전·월세)</span><span class="fgrp" id="fpB"></span>
-    <span class="fcustom"><input class="fnum" id="fBmin" type="number" min="0" step="0.1" placeholder="최소">~<input class="fnum" id="fBmax" type="number" min="0" step="0.1" placeholder="최대"><span class="funit">억 (직접 입력)</span></span></div>
-  <div class="frow"><span class="flbl">월세액</span><span class="fgrp" id="fpW"></span>
-    <span class="fcustom"><input class="fnum" id="fWmin" type="number" min="0" step="1" placeholder="최소">~<input class="fnum" id="fWmax" type="number" min="0" step="1" placeholder="최대"><span class="funit">만원 (직접 입력)</span></span></div>
-  <div class="frow"><span class="flbl">전용면적</span><span class="fgrp" id="fpA"></span></div>
-  <div class="frow"><span class="flbl">준공</span><span class="fgrp" id="fpY"></span></div>
-  <div class="frow"><span class="flbl">층</span><span class="fgrp" id="fpF"></span></div>
-  <div class="frow" style="border:0"><span id="fcount"></span><button class="chip" id="freset" type="button">초기화</button></div>
+  <div id="fpanel">
+    <div class="frow"><span class="flbl">매매가</span><span class="fgrp" id="fpS"></span>
+      <span class="fcustom"><input class="fnum" id="fSmin" type="number" min="0" step="0.1" placeholder="최소">~<input class="fnum" id="fSmax" type="number" min="0" step="0.1" placeholder="최대"><span class="funit">억</span></span></div>
+    <div class="frow"><span class="flbl">보증금(전·월세)</span><span class="fgrp" id="fpB"></span>
+      <span class="fcustom"><input class="fnum" id="fBmin" type="number" min="0" step="0.1" placeholder="최소">~<input class="fnum" id="fBmax" type="number" min="0" step="0.1" placeholder="최대"><span class="funit">억</span></span></div>
+    <div class="frow"><span class="flbl">월세액</span><span class="fgrp" id="fpW"></span>
+      <span class="fcustom"><input class="fnum" id="fWmin" type="number" min="0" step="1" placeholder="최소">~<input class="fnum" id="fWmax" type="number" min="0" step="1" placeholder="최대"><span class="funit">만원</span></span></div>
+    <div class="frow"><span class="flbl">전용면적</span><span class="fgrp" id="fpA"></span></div>
+    <div class="frow"><span class="flbl">준공</span><span class="fgrp" id="fpY"></span></div>
+    <div class="frow"><span class="flbl">층</span><span class="fgrp" id="fpF"></span></div>
+    <div class="frow" style="border:0"><span id="fcount"></span><button class="chip" id="freset" type="button">초기화</button></div>
+  </div>
 </div>
 <div id="map"></div>
 <div id="legend"></div>
