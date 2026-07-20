@@ -391,7 +391,7 @@ new Chart(document.getElementById("prod"),{type:"doughnut",data:{
 var s3=document.getElementById("sido3");
 T.sido.forEach(function(x){
   var d=document.createElement("div");d.className="panel sido";
-  d.innerHTML='<div class="head"><span class="nm">'+x.name+'</span><span class="tag'+(x.name==="서울"?"":" off")+'">'+(x.name==="서울"?"지도 오픈":"준비중")+'</span></div>'
+  d.innerHTML='<div class="head"><span class="nm">'+x.name+'</span><span class="tag">지도 오픈</span></div>'
    +'<div class="big">'+x.n.toLocaleString()+'<small> 건</small></div>'
    +'<div style="font-size:10.5px;color:var(--g3);margin-top:2px">계약일 '+PER+'</div>'
    +'<div class="row"><span>아파트 매매 중위가</span><b>'+(x.med?eok(x.med):"—")+'</b></div>';
@@ -416,11 +416,11 @@ function barList(items,maxN,rightFn){
 if(T.pyeong&&T.prices&&T.rent&&T.jr&&T.age&&T.pdang&&T.nonapt&&T.rentmed){
 function man(v){return v>=10000?eok(v):Math.round(v).toLocaleString()+"만";}
 var maxPy=Math.max.apply(null,T.pyeong.map(function(x){return x.n;}));
-document.getElementById("capPy").textContent="수도권 · 전용면적 기준 · 계약일 "+PER+" · 우측은 중위가";
+document.getElementById("capPy").textContent="수도권·광역시 · 전용면적 기준 · 계약일 "+PER+" · 우측은 중위가";
 document.getElementById("pyeong").innerHTML=barList(T.pyeong,maxPy,function(x){return x.med?eok(x.med):"—";});
 var pbTot=T.prices.reduce(function(a,x){return a+x.n;},0);
 var maxPb=Math.max.apply(null,T.prices.map(function(x){return x.n;}));
-document.getElementById("capPb").textContent="수도권 · 계약일 "+PER+" · 우측은 비중";
+document.getElementById("capPb").textContent="수도권·광역시 · 계약일 "+PER+" · 우측은 비중";
 document.getElementById("priceband").innerHTML=barList(T.prices,maxPb,function(x){return (x.n/pbTot*100).toFixed(1)+"%";});
 /* 임대차 구조 · 전세가율 · 신축 프리미엄 */
 function statPanel(el,title,cap,bigV,bigL,rows){
@@ -430,7 +430,7 @@ function statPanel(el,title,cap,bigV,bigL,rows){
    +rows.map(function(r){return '<div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--g2);border-top:1px solid var(--hair);margin-top:10px;padding-top:8px"><span>'+r[0]+'</span><b style="color:var(--blue)">'+r[1]+'</b></div>';}).join("");
 }
 var R=T.rent;
-statPanel("rentPanel","임대차 구조","수도권 전월세 "+R.n.toLocaleString()+"건 · 계약일 "+PER,
+statPanel("rentPanel","임대차 구조","수도권·광역시 전월세 "+R.n.toLocaleString()+"건 · 계약일 "+PER,
   Math.round(R.wolse/R.n*100)+"%","월세 비중",
   [["전세 비중",Math.round((R.n-R.wolse)/R.n*100)+"%"],["갱신계약 비중",Math.round(R.renew/R.kn*100)+"%"]]);
 var J=T.jr;
@@ -446,11 +446,11 @@ statPanel("pdPanel","아파트 평당가","매매 · 3.3㎡ 환산 중위 · 계
   D.seoul.toLocaleString()+"만","/평 · 서울",
   [["경기",D.gg.toLocaleString()+"만/평"],["인천",D.ic.toLocaleString()+"만/평"]]);
 var NA=T.nonapt;
-statPanel("naPanel","비아파트 매매 중위가","수도권 · 계약일 "+PER,
+statPanel("naPanel","비아파트 매매 중위가","수도권·광역시 · 계약일 "+PER,
   man(NA.offi),"오피스텔",
   [["연립·다세대",man(NA.villa)]]);
 var RM=T.rentmed;
-statPanel("rmPanel","아파트 임대 중위가","수도권 · 계약일 "+PER,
+statPanel("rmPanel","아파트 임대 중위가","수도권·광역시 · 계약일 "+PER,
   man(RM.je),"전세 보증금",
   [["월세 보증금",man(RM.wb)],["월세",Math.round(RM.wr)+"만/월"]]);
 }
