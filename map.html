@@ -252,7 +252,7 @@ function render(){
       if(!tot)return;
       var sz=Math.min(64,Math.max(42,Math.round(14*Math.log(tot||1))));
       var icon=L.divIcon({className:'',html:'<div class="clus" style="width:'+sz+'px;height:'+sz+'px">'
-        +'<span class="cn">'+r.sgg+'</span><span class="cc">'+tot.toLocaleString()+'</span></div>',
+        +'<span class="cn">'+r.sgg.replace(/_/g,' ')+'</span><span class="cc">'+tot.toLocaleString()+'</span></div>',
         iconSize:[sz,sz],iconAnchor:[sz/2,sz/2]});
       L.marker([r.lat,r.lng],{icon:icon}).on('click',function(){go(r.lat,r.lng,Z_DETAIL+1);}).addTo(layer);
       nPt++;nTx+=tot;
@@ -406,7 +406,7 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
     if(s1.value==='all')return;
     SB.summary.regions.filter(function(r){return r.sido===s1.value;})
       .sort(function(a,b){return a.sgg<b.sgg?-1:1;})
-      .forEach(function(r){opt(s2,r.code,r.sgg+(r.geo?'':' (준비중)'),!r.geo);});
+      .forEach(function(r){opt(s2,r.code,r.sgg.replace(/_/g,' ')+(r.geo?'':' (준비중)'),!r.geo);});
   }
   s1.addEventListener('change',function(){
     curSido=s1.value;curSgg='all';fill();render();
