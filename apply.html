@@ -31,6 +31,14 @@ h1.pg{font-size:clamp(34px,5.5vw,60px);letter-spacing:-0.045em;font-weight:800;m
 .ap .pr{margin-left:auto;text-align:right;font-variant-numeric:tabular-nums}
 .ap .pr b{font-size:16px;color:var(--acc-blue)}
 .ap .pr small{display:block;color:var(--muted);font-size:11px}
+.ap-search{display:flex;gap:4px;margin:0 0 12px;max-width:430px;border:1.5px solid var(--text);
+  border-radius:100px;background:#fff;overflow:hidden;align-items:center}
+.ap-search input{flex:1;border:0;outline:0;background:transparent;font:inherit;font-size:13.5px;
+  padding:10px 4px 10px 17px;min-width:0}
+.ap-search input::placeholder{color:var(--muted2)}
+.ap-search button{border:0;background:var(--text);color:#fff;font:inherit;font-size:12px;font-weight:700;
+  padding:7px 17px;margin:4px;border-radius:100px;cursor:pointer;transition:opacity 120ms ease}
+.ap-search button:hover{opacity:.8}
 .notice2{font-size:11.5px;color:var(--muted);margin:30px 0 60px;line-height:1.8}
 .empty{background:var(--soft);border:1px dashed var(--muted2);border-radius:16px;padding:40px;text-align:center;color:var(--muted);font-size:14px}
 #rtabs{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px;margin:0 0 20px}
@@ -55,6 +63,7 @@ h1.pg{font-size:clamp(34px,5.5vw,60px);letter-spacing:-0.045em;font-weight:800;m
   .ap{padding:15px 16px;gap:10px}
   .ap .nm{font-size:15px}
   .ap .pr{text-align:left}
+  .ap-search{max-width:none}
 }
 </style><meta property="og:title" content="청약 · 석봉 부동산 정보방">
 <meta property="og:description" content="전국 아파트 청약 일정·분양가(㎡당)·1순위 경쟁률을 한 화면에서. 자료: 한국부동산원 청약홈.">
@@ -77,6 +86,10 @@ h1.pg{font-size:clamp(34px,5.5vw,60px);letter-spacing:-0.045em;font-weight:800;m
   <h1 class="pg">청약</h1>
   <p class="pgsub" id="basis">전국 아파트 분양 공고 · 자료: 한국부동산원 청약홈</p>
   <div class="kpis" id="kpis"></div>
+  <form class="ap-search" id="apSearch">
+    <input id="apQ" type="search" placeholder="지역·단지 검색 (예: 화성, 검단, 자이)" autocomplete="off">
+    <button type="submit">검색</button>
+  </form>
   <div class="tabs" id="tabs">
     <button class="tab on" data-f="all">전체</button>
     <button class="tab" data-f="now">접수중</button>
@@ -133,10 +146,21 @@ var rt=document.getElementById("rtabs");
     b.classList.add("on");curR=o[0];render(curF);});
   rt.appendChild(b);
 });
+var curQ="",rawQ="";
+function norm(s){return (s||"").replace(/\s+/g,"");}
 function render(f){
   curF=f;
-  var L=items.filter(function(x){return (f==="all"||x.state===f)&&(curR==="all"||x.area===curR);});
-  if(!L.length){document.getElementById("list").innerHTML='<div class="empty">해당 상태의 공고가 없습니다.</div>';return;}
+  var L=items.filter(function(x){
+    if(f!=="all"&&x.state!==f)return false;
+    if(curR!=="all"&&x.area!==curR)return false;
+    if(curQ&&norm((x.ad||"")+(x.nm||"")).indexOf(curQ)<0)return false;
+    return true;
+  });
+  if(!L.length){
+    document.getElementById("list").innerHTML='<div class="empty">'
+      +(rawQ?'"'+rawQ+'" 조건에 맞는 공고가 없습니다.':'해당 상태의 공고가 없습니다.')+'</div>';
+    return;
+  }
   document.getElementById("list").innerHTML=L.map(function(x){
     var st=ST[x.state];
     var pr=x.hi?('<b>'+(x.lo&&x.lo!==x.hi?eok(x.lo)+' ~ ':'')+eok(x.hi)+'</b>'+(x.sqm?'<small>'+x.sqm.toLocaleString()+'만/㎡ (공급면적 기준)</small>':'')):'<small>분양가 공고 확인</small>';
@@ -154,6 +178,15 @@ function render(f){
   }).join("");
 }
 render("all");
+/* 지역·단지 검색 (입력 즉시 필터, 엔터 시 GA 수집) */
+var aq=document.getElementById("apQ"),af=document.getElementById("apSearch");
+if(aq){
+  aq.addEventListener("input",function(){rawQ=aq.value.trim();curQ=norm(rawQ);render(curF);});
+  af.addEventListener("submit",function(e){
+    e.preventDefault();aq.blur();
+    try{if(rawQ&&typeof gtag==="function")gtag("event","region_search",{search_term:rawQ,source:"apply"});}catch(_e){}
+  });
+}
 document.querySelectorAll("#tabs .tab").forEach(function(t){
   t.addEventListener("click",function(){
     document.querySelectorAll("#tabs .tab").forEach(function(x){x.classList.remove("on");});
