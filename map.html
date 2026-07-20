@@ -20,6 +20,7 @@
   .chip.on{background:var(--navy);color:#fff}
   .chip .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
   .lbl{color:var(--muted);margin-left:6px}
+  .bargrp{display:flex;align-items:center;gap:6px;flex:0 0 auto}  /* 라벨+칩 한 묶음으로 줄바꿈 (2026-07-20 정렬 수정) */
   select{font:inherit;font-size:12.5px;padding:3px 6px;border:1px solid var(--hair-soft);border-radius:6px;background:#fff;color:var(--text2)}
   #stat{margin-left:auto;color:var(--muted)}
   #map{flex:1}
@@ -123,9 +124,9 @@
   <form id="sform"><input id="sq" type="search" placeholder="지역·동 검색" autocomplete="off"><button type="submit" class="sbtn">검색</button></form>
   <button id="fbtn" type="button">필터 ▾</button>
   <select id="selSido"></select><select id="selSgg"></select>
-  <span class="lbl">상품:</span><span id="typechips"></span>
-  <span class="lbl">거래:</span><span id="uchips"></span>
-  <span class="lbl">계약:</span><span id="dchips"></span>
+  <span class="bargrp"><span class="lbl">상품:</span><span id="typechips"></span></span>
+  <span class="bargrp"><span class="lbl">거래:</span><span id="uchips"></span></span>
+  <span class="bargrp"><span class="lbl">계약:</span><span id="dchips"></span></span>
   <span id="stat"></span>
   <div id="fpanel">
     <div class="frow"><span class="flbl">매매가</span><span class="fgrp" id="fpS"></span>
