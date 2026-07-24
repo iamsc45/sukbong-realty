@@ -645,11 +645,15 @@ function rcNearTx(p){
   var near=window._PTS.map(function(o){return {pt:o.pt,code:o.code,tx:o.txs[0],d:Math.round(_hav(clat,clon,o.pt.lat,o.pt.lng))};})
     .filter(function(o){return o.d<=1200;}).sort(function(a,b){return a.d-b.d;}).slice(0,6);
   if(!near.length)return '';
-  var rows=near.map(function(o){var t=o.tx;
+  var SN={apt:'아파트',offi:'오피스텔',villa:'연립',house:'단독',bldg:'빌딩',comm:'상가',land:'토지'};
+  var ORD={apt:0,offi:1,villa:2,house:3,comm:4,bldg:5,land:6};
+  near.sort(function(a,b){return (ORD[a.pt.t]||9)-(ORD[b.pt.t]||9)||a.d-b.d;});
+  var rows=near.map(function(o){var t=o.tx;var tp=TYPE[o.pt.t]||['기타','#8a8071'];
     var py=(t.u==='매매'&&t.a)?(' <span style="color:#8a8071;font-weight:400">'+Math.round(t.p/t.a*3.305785).toLocaleString()+'만/평</span>'):'';
     var href='단지상세.html?code='+(o.code||'')+'&nm='+encodeURIComponent(o.pt.name)+'&dong='+encodeURIComponent(o.pt.dong||'');
-    return '<a class="rc-dl" style="text-decoration:none;color:inherit" href="'+href+'"><span style="color:#6b6355">'+o.pt.name+' <span style="color:#8a8071">'+o.d+'m</span> <span class="arw" style="color:#b6ad9c">→</span></span><b>'+priceLabel(t)+py+'</b></a>';}).join('');
-  return '<div class="rc-sec"><div class="rc-lab">인근 단지 실거래 · 누르면 단지 상세</div>'+rows+'</div>';
+    var chip='<span style="background:'+tp[1]+';color:#fff;font-size:9px;padding:1px 5px;border-radius:20px;font-weight:700;margin-right:5px">'+(SN[o.pt.t]||'기타')+'</span>';
+    return '<a class="rc-dl" style="text-decoration:none;color:inherit" href="'+href+'"><span style="color:#6b6355">'+chip+o.pt.name+' <span style="color:#8a8071">'+o.d+'m</span> <span class="arw" style="color:#b6ad9c">→</span></span><b>'+priceLabel(t)+py+'</b></a>';}).join('');
+  return '<div class="rc-sec"><div class="rc-lab">인근 실거래 · 상품별 · 누르면 상세</div>'+rows+'</div>';
 }
 function showRcard(p){
   var c=RCOL[rcatKo(p.cat)];

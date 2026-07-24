@@ -44,6 +44,9 @@ body{margin:0;background:var(--paper);color:var(--ink);font-family:'Malgun Gothi
 .cta.dark{background:linear-gradient(180deg,#1c2b45,#12203a);color:#f7f5f0}
 .cta.line{background:linear-gradient(180deg,#fff,#f1ebdf);border:1px solid #cfc7b6;color:#1a1a1a}
 .pend{background:var(--tint);border-radius:10px;padding:16px;font-size:14px;color:#5c5344}
+.soon{border:1.5px dashed #cfc7b6;border-radius:11px;padding:18px 16px;text-align:center;color:#8a8071;font-size:12.5px;line-height:1.6;background:repeating-linear-gradient(135deg,#f8f6f1,#f8f6f1 11px,#f2ede2 11px,#f2ede2 22px)}
+.soon .tag{display:inline-block;background:var(--brass);color:#fff;font-size:11px;font-weight:800;padding:3px 11px;border-radius:20px;margin-bottom:9px;letter-spacing:.03em}
+.soon svg{opacity:.55;margin-bottom:6px}
 .foot{margin-top:34px;padding-top:14px;border-top:1px solid var(--line);font-size:11.5px;color:var(--warm)}
 @media(max-width:520px){.grid{grid-template-columns:1fr}.mast h1{font-size:22px}}
 </style>
@@ -119,6 +122,10 @@ function render(){
   }else{
     h+='<div class="sec"><div class="lab">정비계획</div><div class="pend">정비계획 확정 전입니다. 용적률·세대수·면적 등 세부 계획은 사업시행계획이 확정·고시되는 시점에 채워집니다. 지금 단계에서는 추진 단계와 사업 구분까지 확인됩니다.</div></div>';
   }
+  h+='<div class="sec"><div class="lab">구역 시세 추이 · 단계별 상승률</div><div class="soon">'
+    +'<svg viewBox="0 0 48 28" width="54" height="31" fill="none" stroke="#a8792c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,24 12,16 22,19 32,9 46,3"/><circle cx="46" cy="3" r="2.6" fill="#a8792c" stroke="none"/></svg>'
+    +'<div class="tag">업데이트 예정</div>'
+    +'<div>실거래 과거 데이터(백필) 반영 후, 구역지정·조합설립·관리처분 단계별 상승률과 연도별 시세 그래프가 여기에 표시됩니다.</div></div></div>';
   h+='<div class="sec" id="nearTxSec"></div>';
   h+='<div class="sec"><div class="lab">더 보기</div>'
     +'<a class="cta dark" href="map_재개발_staging.html?mode=redev">지도(재개발)로 가기 →</a>'
@@ -141,16 +148,21 @@ function loadNearTx(nm,gu){
   var s=document.createElement('script');s.src='data/detail_'+code+'.js';
   s.onload=function(){fillNearTx(co,code);};s.onerror=function(){};document.body.appendChild(s);
 }
+var TYPE={apt:['아파트','#2554E0'],offi:['오피스텔','#7A5AF8'],villa:['연립·다세대','#0FA98A'],house:['단독·다가구','#6E6E6A'],bldg:['빌딩','#D4573F'],comm:['구분상가·오피스','#E8A13A'],land:['토지','#4C9A4C']};
+var SN={apt:'아파트',offi:'오피스텔',villa:'연립',house:'단독',bldg:'빌딩',comm:'상가',land:'토지'};
+var ORD={apt:0,offi:1,villa:2,house:3,comm:4,bldg:5,land:6};
 function fillNearTx(co,code){
   var arr=(window.SB&&SB.d&&SB.d[code])||[];
   var near=arr.filter(function(p){return p.lat;}).map(function(p){return {p:p,d:Math.round(hav(co[0],co[1],p.lat,p.lng))};})
-    .filter(function(o){return o.d<=1200;}).sort(function(a,b){return a.d-b.d;}).slice(0,8);
+    .filter(function(o){return o.d<=1200;}).sort(function(a,b){return a.d-b.d;}).slice(0,10);
   if(!near.length)return;
-  var rows=near.map(function(o){var t=(o.p.txs||[])[0];if(!t)return '';
+  near.sort(function(a,b){return (ORD[a.p.t]||9)-(ORD[b.p.t]||9)||a.d-b.d;});
+  var rows=near.map(function(o){var t=(o.p.txs||[])[0];if(!t)return '';var tp=TYPE[o.p.t]||['기타','#8a8071'];
     var py=(t.u==='매매'&&t.a)?(' <span style="color:#8a8071;font-weight:400">'+Number(Math.round(t.p/t.a*3.305785)).toLocaleString()+'만/평</span>'):'';
     var pr=t.u==='월세'?(eok(t.p)+' / '+t.r+'만'):eok(t.p);
-    return '<a href="단지상세.html?code='+code+'&nm='+encodeURIComponent(o.p.name)+'&dong='+encodeURIComponent(o.p.dong||'')+'" style="display:flex;justify-content:space-between;text-decoration:none;color:inherit;padding:7px 2px;border-bottom:1px dotted #e7e1d4;font-size:13px"><span style="color:#6b6355">'+esc(o.p.name)+' <span style="color:#8a8071">'+o.d+'m</span> <span style="color:#b6ad9c">→</span></span><b>'+pr+py+'</b></a>';}).join('');
-  document.getElementById('nearTxSec').innerHTML='<div class="lab">인근 단지 실거래 · 누르면 단지 상세</div>'+rows;
+    var chip='<span style="background:'+tp[1]+';color:#fff;font-size:9.5px;padding:1px 6px;border-radius:20px;font-weight:700;margin-right:6px">'+(SN[o.p.t]||'기타')+'</span>';
+    return '<a href="단지상세.html?code='+code+'&nm='+encodeURIComponent(o.p.name)+'&dong='+encodeURIComponent(o.p.dong||'')+'" style="display:flex;justify-content:space-between;align-items:center;text-decoration:none;color:inherit;padding:7px 2px;border-bottom:1px dotted #e7e1d4;font-size:13px"><span style="color:#6b6355">'+chip+esc(o.p.name)+' <span style="color:#8a8071">'+o.d+'m</span> <span style="color:#b6ad9c">→</span></span><b style="white-space:nowrap">'+pr+py+'</b></a>';}).join('');
+  document.getElementById('nearTxSec').innerHTML='<div class="lab">인근 실거래 · 상품별 · 누르면 단지 상세</div>'+rows;
 }
 function kv(k,v){return v?'<div class="kv"><span>'+k+'</span><span class="v">'+esc(String(v))+'</span></div>':'';}
 render();

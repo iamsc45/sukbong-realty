@@ -42,6 +42,9 @@
 .loan .lt{font-size:12px;color:#6b6355;margin-bottom:7px}
 .lrow{display:flex;justify-content:space-between;padding:4px 0;font-size:13px;border-bottom:1px dotted #e3ddd0}.lrow:last-child{border:0}.lrow .lv{font-weight:700;font-variant-numeric:tabular-nums}
 .note{font-size:11px;color:#8a8071;margin-top:8px;line-height:1.5}
+.soon{border:1.5px dashed #cfc7b6;border-radius:11px;padding:18px 16px;text-align:center;color:#8a8071;font-size:12.5px;line-height:1.6;background:repeating-linear-gradient(135deg,#f8f6f1,#f8f6f1 11px,#f2ede2 11px,#f2ede2 22px)}
+.soon .tag{display:inline-block;background:var(--brass);color:#fff;font-size:11px;font-weight:800;padding:3px 11px;border-radius:20px;margin-bottom:9px}
+.soon svg{opacity:.55;margin-bottom:6px}
 .links{margin-top:20px;display:flex;gap:12px;flex-wrap:wrap}
 .links a{display:inline-block;padding:12px 20px;border-radius:11px;text-decoration:none;font-weight:700;font-size:13.5px;box-shadow:0 2px 0 rgba(0,0,0,.22),0 4px 10px rgba(0,0,0,.13);transition:transform .09s ease,box-shadow .09s ease}
 .links a:hover{transform:translateY(-1px);box-shadow:0 3px 0 rgba(0,0,0,.22),0 8px 16px rgba(0,0,0,.17)}
@@ -149,6 +152,10 @@ function render(pt,code){
     +'<div class="note">2026.04 시행 규제(작성 2026.07.25). 소득(DSR)·은행별로 더 낮아질 수 있고 비규제는 다릅니다. 대출 권유·한도 보장 아님. <a href="재개발_기초상식.html#loan-limit" style="color:var(--brass)">자세히 →</a></div></div>';
   h+='<div class="grid2"><div class="sec"><div class="lab">평형별 시세 (전용)</div>'+(pyr||'<div style="color:#8a8071;padding:8px 2px">최근 매매 표본 부족</div>')+'</div>'
     +'<div class="sec"><div class="lab">은행 대출 한도 (규제지역 기준)</div>'+loan+'</div></div>';
+  h+='<div class="sec"><div class="lab">시세 추이 (평당·연도별)</div><div class="soon">'
+    +'<svg viewBox="0 0 48 28" width="54" height="31" fill="none" stroke="#a8792c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,24 12,16 22,19 32,9 46,3"/><circle cx="46" cy="3" r="2.6" fill="#a8792c" stroke="none"/></svg>'
+    +'<div class="tag">업데이트 예정</div>'
+    +'<div>실거래 과거 데이터(백필)가 쌓이면 연도별 매매 평당가 추이 그래프가 여기에 표시됩니다.</div></div></div>';
   // 인근 정비구역
   var near=nearZones(pt.lat,pt.lng);
   h+='<div class="sec"><div class="lab">인근 정비구역 (재개발·재건축)</div>'+(near||'<div style="color:#8a8071;padding:8px 2px">반경 1.5km 내 진행중 정비구역 없음</div>')
