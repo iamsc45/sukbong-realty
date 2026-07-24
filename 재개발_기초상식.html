@@ -44,11 +44,14 @@ dl{margin:4px 0}dt{font-weight:700;margin-top:12px}dd{margin:2px 0 0;color:#4038
 .warn b{color:#8a6416}
 .law{background:#f6e9e4;border:1px solid #e6c9bd;border-left:4px solid var(--redev);border-radius:9px;padding:12px 16px;margin:10px 0;font-size:14.5px}
 .law b{color:#a5381f}
-.cta{display:block;margin:12px 0 2px;padding:12px 15px;background:var(--ink);color:var(--paper);border-radius:10px;text-decoration:none;font-weight:600;font-size:14.5px}
+.cta{display:block;margin:12px 0 2px;padding:13px 16px;background:linear-gradient(180deg,#2a2a2a,var(--ink));color:var(--paper);border-radius:11px;text-decoration:none;font-weight:700;font-size:14.5px;box-shadow:0 2px 0 rgba(0,0,0,.3),0 5px 12px rgba(0,0,0,.2);transition:transform .09s ease,box-shadow .09s ease}
+.cta:active{transform:translateY(2px);box-shadow:0 0 0 rgba(0,0,0,.3)}
 .cta span{color:#e7c9a0}
 .tip{font-size:13.5px;color:#6b6355;margin-top:22px;border-top:1px solid var(--line);padding-top:14px}
 .src{font-size:12px;color:#8a8071;margin-top:26px}
-a.back{display:inline-block;margin-top:6px;color:var(--brass);text-decoration:none;font-weight:600;font-size:14px}
+a.back{display:inline-block;margin-top:14px;padding:12px 20px;border-radius:11px;background:linear-gradient(180deg,#1c2b45,#12203a);color:#f7f5f0;text-decoration:none;font-weight:700;font-size:13.5px;box-shadow:0 2px 0 rgba(0,0,0,.22),0 4px 10px rgba(0,0,0,.13);transition:transform .09s ease,box-shadow .09s ease}
+a.back:hover{transform:translateY(-1px);box-shadow:0 3px 0 rgba(0,0,0,.22),0 8px 16px rgba(0,0,0,.17)}
+a.back:active{transform:translateY(2px);box-shadow:0 0 0 rgba(0,0,0,.22)}
 @media(max-width:600px){.mast h1{font-size:27px}.two{grid-template-columns:1fr}body{font-size:15px}.tl .tp{flex-basis:98px}}
 </style></head><body>
 <div class="wrap">
@@ -192,7 +195,7 @@ a.back{display:inline-block;margin-top:6px;color:var(--brass);text-decoration:no
 </div></details>
 
 <p class="src">자료: 국가정보포털 공공 DB 등 · 석봉 부동산 정보방</p>
-<a class="back" href="javascript:history.back()">← 지도로 돌아가기</a>
+<a class="back" href="map_재개발_staging.html?mode=redev">지도(재개발)로 가기 →</a>
 </div>
 <script>
 function openHash(){var h=location.hash;if(!h)return;var el;try{el=document.querySelector(h);}catch(e){return;}if(el&&el.tagName==='DETAILS'){el.open=true;el.scrollIntoView({behavior:'smooth',block:'start'});}}

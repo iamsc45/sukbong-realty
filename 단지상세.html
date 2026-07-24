@@ -42,14 +42,19 @@
 .loan .lt{font-size:12px;color:#6b6355;margin-bottom:7px}
 .lrow{display:flex;justify-content:space-between;padding:4px 0;font-size:13px;border-bottom:1px dotted #e3ddd0}.lrow:last-child{border:0}.lrow .lv{font-weight:700;font-variant-numeric:tabular-nums}
 .note{font-size:11px;color:#8a8071;margin-top:8px;line-height:1.5}
-.links{margin-top:22px;display:flex;gap:14px;flex-wrap:wrap}.links a{color:var(--brass);text-decoration:none;font-weight:600;font-size:14px}
+.links{margin-top:20px;display:flex;gap:12px;flex-wrap:wrap}
+.links a{display:inline-block;padding:12px 20px;border-radius:11px;text-decoration:none;font-weight:700;font-size:13.5px;box-shadow:0 2px 0 rgba(0,0,0,.22),0 4px 10px rgba(0,0,0,.13);transition:transform .09s ease,box-shadow .09s ease}
+.links a:hover{transform:translateY(-1px);box-shadow:0 3px 0 rgba(0,0,0,.22),0 8px 16px rgba(0,0,0,.17)}
+.links a:active{transform:translateY(2px);box-shadow:0 0 0 rgba(0,0,0,.22)}
+.links a.map{background:linear-gradient(180deg,#1c2b45,#12203a);color:#f7f5f0}
+.links a.info{background:linear-gradient(180deg,#fff,#f1ebdf);border:1px solid #cfc7b6;color:#1a1a1a}
 .src{font-size:11.5px;color:#8a8071;margin-top:18px;border-top:1px solid var(--line);padding-top:11px}
 @media(max-width:720px){.top{flex-direction:column}#map{flex:none;width:100%;height:180px}.grid2{grid-template-columns:1fr}.mast h1{font-size:23px}}
 </style></head><body>
 <div class="wrap">
 <div class="mast"><div class="k" id="kk">단지 상세</div><h1 id="nm">불러오는 중…</h1><div class="loc" id="loc"></div></div>
 <div id="body"></div>
-<div class="links"><a href="javascript:history.back()">← 지도로 돌아가기</a><a href="재개발_기초상식.html">재개발·재건축 기초상식</a></div>
+<div class="links"><a class="map" href="map_재개발_staging.html?mode=redev">지도(재개발)로 가기 →</a><a class="info" href="재개발_기초상식.html">재개발·재건축 기초상식 →</a></div>
 <div class="src">자료: 국토교통부 실거래가(해제 건 제외) · 석봉 부동산 정보방 · 참고용, 법적효력 없음. 세대수·시공사·교통·학교 등 단지 정보는 순차 추가됩니다.</div>
 </div>
 <script src="data/jeongbi_seoul.js"></script>

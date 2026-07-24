@@ -132,7 +132,9 @@
 .rc-row:hover{background:#efe9dc}
 .rc-row .arw{color:#b6ad9c;margin-left:4px}
 .rc-badge{color:#fff;font-size:10.5px;padding:1px 8px;border-radius:20px;white-space:nowrap;font-weight:700}
-.rc-cta{display:block;margin:12px 16px 4px;padding:10px;background:#12203a;color:#f7f5f0;border-radius:9px;text-decoration:none;font-weight:600;font-size:13px;text-align:center}
+.rc-cta{display:block;margin:12px 16px 4px;padding:11px;background:#12203a;color:#f7f5f0;border-radius:10px;text-decoration:none;font-weight:700;font-size:13px;text-align:center;box-shadow:0 2px 0 rgba(0,0,0,.28),0 4px 10px rgba(0,0,0,.18);transition:transform .08s ease,box-shadow .08s ease}
+.rc-cta:hover{transform:translateY(-1px);box-shadow:0 3px 0 rgba(0,0,0,.28),0 7px 14px rgba(0,0,0,.22)}
+.rc-cta:active{transform:translateY(2px);box-shadow:0 0 0 rgba(0,0,0,.28)}
 .rc-note{font-size:11px;color:#8a8071;padding:2px 16px 16px;line-height:1.45}
 </style><meta name="description" content="지도를 확대하면 건물별 실거래 가격이 보입니다. 매매·전세·월세, ㎡당 단가, 계약월 필터까지.">
 <meta property="og:title" content="실거래지도 · 석봉 부동산 정보방">
@@ -742,6 +744,7 @@ function setMode(m){
   }
 }
 document.querySelectorAll('#modes button').forEach(function(b){b.addEventListener('click',function(){setMode(b.dataset.m);});});
+try{if((new URLSearchParams(location.search)).get('mode')==='redev'){setMode('redev');}}catch(e){}
 
 render();
 </script>
