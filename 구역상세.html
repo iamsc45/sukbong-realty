@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>정비구역 상세 · 석봉 부동산 정보방</title>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Y7P41Z09PV"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-Y7P41Z09PV');</script>
+<style>
+:root{--ink:#1a1a1a;--paper:#faf8f3;--warm:#8a8071;--line:#ded8cc;--tint:#f2ede2;--brass:#a8792c}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;line-height:1.5}
+.wrap{max-width:760px;margin:0 auto;padding:0 18px 60px}
+.top{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:2px solid var(--ink);margin-bottom:18px}
+.top .bi{font-weight:800;font-size:15px}
+.top a{color:var(--warm);text-decoration:none;font-size:13px}
+.mast .k{font-size:11px;letter-spacing:.14em;color:var(--warm);text-transform:uppercase}
+.mast h1{font-family:Georgia,'Bookman',serif;font-size:26px;margin:4px 0 6px;line-height:1.25}
+.pill{display:inline-block;padding:3px 12px;border-radius:20px;color:#fff;font-size:12px;font-weight:700}
+.loc{color:var(--warm);font-size:13px;margin-top:6px}
+.sec{margin-top:22px;padding-top:14px;border-top:1px solid var(--line)}
+.lab{font-size:11px;letter-spacing:.12em;color:var(--warm);text-transform:uppercase;margin-bottom:10px}
+.stage{display:flex;margin:2px 0 6px}
+.st{flex:1;text-align:center;position:relative}
+.st .dot{width:12px;height:12px;border-radius:50%;background:#d3ccbe;margin:0 auto 5px;border:2px solid var(--paper);position:relative;z-index:2}
+.st.done .dot{background:var(--brass)}
+.st.now .dot{background:#c0562e;box-shadow:0 0 0 4px rgba(192,86,46,.18)}
+.st .t{font-size:9.5px;color:var(--warm);line-height:1.15}
+.st.done .t{color:var(--ink);font-weight:700}.st.now .t{color:#c0562e;font-weight:800}
+.st:not(:last-child):after{content:"";position:absolute;top:5px;left:50%;width:100%;height:2px;background:#d3ccbe;z-index:1}
+.st.done:not(:last-child):after{background:var(--brass)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:0 26px}
+.kv{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dotted #e7e1d4;font-size:14px}
+.kv .v{font-weight:700;text-align:right}
+.big{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 2px}
+.stat{flex:1;min-width:120px;background:var(--tint);border-radius:10px;padding:12px 14px}
+.stat .n{font-family:Georgia,serif;font-size:24px;font-weight:700;line-height:1}
+.stat .l{font-size:11px;color:var(--warm);margin-top:5px}
+.note{font-size:12.5px;color:var(--warm);line-height:1.55;margin-top:8px}
+.cta{display:inline-block;margin:8px 8px 0 0;padding:11px 16px;border-radius:9px;text-decoration:none;font-weight:700;font-size:13.5px}
+.cta.dark{background:#12203a;color:#f7f5f0}
+.cta.line{border:1.5px solid var(--ink);color:var(--ink)}
+.pend{background:var(--tint);border-radius:10px;padding:16px;font-size:14px;color:#5c5344}
+.foot{margin-top:34px;padding-top:14px;border-top:1px solid var(--line);font-size:11.5px;color:var(--warm)}
+@media(max-width:520px){.grid{grid-template-columns:1fr}.mast h1{font-size:22px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><span class="bi">석봉 부동산 정보방</span><a href="javascript:history.back()">← 지도로 돌아가기</a></div>
+  <div id="app"><p style="color:var(--warm)">불러오는 중…</p></div>
+  <div class="foot">추진단계·정비계획은 정비몽땅(서울시 정비사업 정보공개) 공개자료 기준이며 시점에 따라 달라질 수 있습니다. 구역계·단계는 참고용이며 법적 효력이 없습니다. 자료 출처: 국가정보포털 공공 DB 등.</div>
+</div>
+<script src="data/jeongbi_detail.js"></script>
+<script src="data/jeongbi_seoul.js"></script>
+<script src="data/jeongbi_markers.js"></script>
+<script>
+var RCOL={'재개발':'#c0562e','재건축':'#2f5d86','주거환경':'#4c7a4a'};
+function catKo(c){return RCOL[c]?c:'정비구역';}
+var STAGEIDX={'정비구역지정':0,'정비계획 수립':0,'재정비촉진지구수립':0,'안전진단':0,'안전진단(1차)':0,
+'추진위원회승인':1,'추진위구성':1,'조합원 모집신고':1,'주민대표회의구성통지':1,
+'조합설립인가':2,'사업시행인가':3,'사업시행계획인가':3,'사업시행자(LH) 지정':3,
+'관리처분인가':4,'착공':5,'분양':5,'철거':5,'이주':5,'준공':6,'준공인가':6};
+function stageBar(stage){
+  var order=['구역지정','추진위','조합설립','사업시행','관리처분','착공','준공'];
+  var cur=(stage in STAGEIDX)?STAGEIDX[stage]:-1;
+  return '<div class="stage">'+order.map(function(nm,i){
+    var cls=i<cur?'done':(i===cur?'now':'');
+    return '<div class="st '+cls+'"><div class="dot"></div><div class="t">'+nm+'</div></div>';}).join('')+'</div>';
+}
+function num(v){return v?Number(v).toLocaleString():'';}
+function qs(k){var m=new RegExp('[?&]'+k+'=([^&]*)').exec(location.search);return m?decodeURIComponent(m[1].replace(/\+/g,' ')):'';}
+function esc(s){return (s||'').replace(/[<>&]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c];});}
+
+function render(){
+  var nm=qs('nm');
+  var D=window.REDEVDETAIL||{};
+  var d=D[nm];
+  var app=document.getElementById('app');
+  if(!nm||!d){app.innerHTML='<div class="pend">구역 정보를 찾지 못했습니다. 지도에서 구역을 눌러 다시 열어주세요.</div>';document.title='정비구역 상세';return;}
+  document.title=nm+' · 정비구역 상세';
+  var cat=catKo(d.cat|| (d.gubun&&d.gubun.indexOf('재개발')>=0?'재개발':(d.gubun&&d.gubun.indexOf('주거환경')>=0?'주거환경':'재건축')));
+  var col=RCOL[cat];
+  var h='<div class="mast"><div class="k">서울 '+esc(d.gu||'')+' · '+cat+' · 정비구역</div>'
+    +'<h1>'+esc(nm)+'</h1>'
+    +'<span class="pill" style="background:'+col+'">'+esc(d.stage||'확인중')+'</span>'
+    +'<div class="loc">'+esc(d.gubun||'')+'</div></div>';
+  h+='<div class="sec"><div class="lab">추진 단계 · 정비몽땅 최신</div>'+stageBar(d.stage)+'</div>';
+
+  if(d.fixed){
+    h+='<div class="sec"><div class="lab">정비계획 핵심 · 정비몽땅 사업개요</div><div class="big">'
+      +(d.far?'<div class="stat"><div class="n">'+d.far+'%</div><div class="l">용적률</div></div>':'')
+      +(d.bcr?'<div class="stat"><div class="n">'+d.bcr+'%</div><div class="l">건폐율</div></div>':'')
+      +(d.units?'<div class="stat"><div class="n">'+num(d.units)+'</div><div class="l">계획 세대수</div></div>':'')
+      +'</div></div>';
+    h+='<div class="sec"><div class="lab">규모 · 면적</div><div class="grid">'
+      +kv('용도지역',d.usezone)
+      +kv('정비구역 면적',d.zone_area?num(Math.round(d.zone_area))+'㎡':'')
+      +kv('대지면적',d.site_area?num(Math.round(d.site_area))+'㎡':'')
+      +kv('연면적',d.floor_area?num(Math.round(d.floor_area))+'㎡':'')
+      +kv('건축면적',d.height_area)
+      +kv('최고층수',d.floors)
+      +kv('최고높이',d.height?num(d.height)+'m':'')
+      +'</div></div>';
+    var seh=(d.u60||d.u6085||d.u85)?('<div class="sec"><div class="lab">전용면적별 계획 세대</div><div class="grid">'
+      +kv('60㎡ 이하',d.u60?num(d.u60)+'세대':'')
+      +kv('60~85㎡',d.u6085?num(d.u6085)+'세대':'')
+      +kv('85㎡ 초과',d.u85?num(d.u85)+'세대':'')
+      +kv('총 세대',d.units?num(d.units)+'세대':'')
+      +'</div></div>'):'';
+    h+=seh;
+    h+='<div class="sec"><div class="lab">권리 관계</div><div class="grid">'
+      +kv('조합원 수',d.members?num(d.members)+'명':'')
+      +kv('토지등소유자 수',d.owners?num(d.owners)+'명':'')
+      +'</div></div>';
+  }else{
+    h+='<div class="sec"><div class="lab">정비계획</div><div class="pend">정비계획 확정 전입니다. 용적률·세대수·면적 등 세부 계획은 사업시행계획이 확정·고시되는 시점에 채워집니다. 지금 단계에서는 추진 단계와 사업 구분까지 확인됩니다.</div></div>';
+  }
+  h+='<div class="sec"><div class="lab">더 보기</div>'
+    +'<a class="cta line" href="재개발_기초상식.html">재개발·재건축 기초상식 →</a>'
+    +'<a class="cta dark" href="javascript:history.back()">지도에서 인근 실거래 보기 →</a>'
+    +'<div class="note">인근 아파트 실거래·시세는 지도 카드에서 반경 기준으로 확인할 수 있습니다.</div></div>';
+  app.innerHTML=h;
+}
+function kv(k,v){return v?'<div class="kv"><span>'+k+'</span><span class="v">'+esc(String(v))+'</span></div>':'';}
+render();
+</script>
+</body>
+</html>

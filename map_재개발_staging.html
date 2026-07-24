@@ -661,7 +661,8 @@ function showRcard(p){
       +'</div></div>'
     +rcDetailSec(p)
     +rcNearTx(p)
-    +'<a class="rc-cta" href="재개발_기초상식.html">재개발·재건축 기초상식 →</a>'
+    +'<a class="rc-cta" href="구역상세.html?nm='+encodeURIComponent(p.biz||p.nm)+'" style="background:#7a3b12">구역 상세 · 정비계획 전체 보기 →</a>'
+    +'<a class="rc-cta" href="재개발_기초상식.html" style="background:#3a4658">재개발·재건축 기초상식 →</a>'
     +'<div class="rc-note">추진단계는 정비몽땅 공개자료 기준이라 시점에 따라 다를 수 있습니다. 구역계·단계는 참고용, 법적효력 없음.</div>';
   var rc=document.getElementById('rcard');rc.innerHTML=html;rc.classList.add('open');
   document.getElementById('rcClose').onclick=function(){rc.classList.remove('open');};
