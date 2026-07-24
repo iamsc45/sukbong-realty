@@ -1,0 +1,121 @@
+<!doctype html><html lang="ko"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<title>단지 상세 · 석봉 부동산 정보방</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root{--ink:#1a1a1a;--paper:#f7f5f0;--line:#ded8cc;--brass:#a8792c;--redev:#c0562e;--ivory:#efe9dc}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:'Pretendard','Malgun Gothic',system-ui,sans-serif;font-size:14px;line-height:1.5}
+.wrap{max-width:900px;margin:0 auto;padding:0 16px 60px}
+.mast{border-bottom:2px solid var(--ink);padding:18px 0 12px}
+.mast .k{font-size:11px;letter-spacing:.14em;color:var(--brass);font-weight:700}
+.mast h1{font-family:'Bookman','Georgia',serif;font-size:27px;margin:5px 0 3px;letter-spacing:-.5px}
+.mast .loc{margin:0;color:#6b6355;font-size:13px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.mast .loc .sub{display:inline-flex;align-items:center;gap:3px;color:var(--brass);font-weight:600}
+.top{display:flex;gap:14px;margin:16px 0}
+#map{flex:0 0 42%;height:210px;border:1px solid var(--line);border-radius:12px}
+.kpis{flex:1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;align-content:start}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 10px}
+.kpi .n{font-family:'Bookman','Georgia',serif;font-size:19px;line-height:1}
+.kpi .u{font-size:10px;color:#8a8071;margin-top:4px}
+.sec{margin:16px 0}
+.lab{font-size:11px;letter-spacing:.11em;color:#8a8071;text-transform:uppercase;margin-bottom:9px;border-bottom:1px solid var(--line);padding-bottom:5px}
+.ov{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px 14px}
+.f{display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px dotted #e3ddd0;font-size:13px}
+.f .ic{color:var(--brass);flex:0 0 auto;display:inline-flex}
+.f .fl{color:#6b6355}.f .fv{margin-left:auto;font-weight:700;text-align:right}
+.living{display:grid;grid-template-columns:1fr;gap:2px}
+.lr{display:flex;gap:9px;padding:7px 0;border-bottom:1px dotted #e3ddd0;font-size:14px;align-items:flex-start}
+.lr .ic{color:var(--brass);flex:0 0 auto;margin-top:2px}
+.lr b{color:var(--ink)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.pyr,.deal{display:flex;justify-content:space-between;align-items:baseline;padding:6px 2px;border-bottom:1px dotted #e3ddd0;font-size:13px}
+.pyr .pb{font-weight:700}.pyr .pm,.deal .meta{font-size:11px;color:#8a8071;margin-left:6px}
+.pyr .pv,.deal .pr{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pyr .pv .s,.deal .pr .s{display:block;font-size:10.5px;color:#8a8071;font-weight:600}
+.tabs{display:flex;gap:5px;margin-bottom:8px}
+.tabs b{flex:1;text-align:center;font-size:12.5px;padding:6px 0;border:1px solid var(--line);border-radius:7px;color:#8a8071;font-weight:600;cursor:pointer;background:#fff}
+.tabs b.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.list{border:1px solid var(--line);border-radius:10px;background:#fff;max-height:250px;overflow-y:auto;padding:0 12px}
+.loan{background:var(--ivory);border:1px solid var(--line);border-radius:10px;padding:11px 13px}
+.loan .lt{font-size:12px;color:#6b6355;margin-bottom:7px}
+.lrow{display:flex;justify-content:space-between;padding:4px 0;font-size:13px;border-bottom:1px dotted #e3ddd0}.lrow:last-child{border:0}.lrow .lv{font-weight:700;font-variant-numeric:tabular-nums}
+.cta{display:block;margin-top:9px;padding:10px;background:var(--ink);color:var(--paper);border-radius:9px;text-decoration:none;font-weight:600;font-size:13px;text-align:center}.cta span{color:#e7c9a0}
+.links{margin-top:22px;display:flex;gap:14px;flex-wrap:wrap}.links a{color:var(--brass);text-decoration:none;font-weight:600;font-size:14px}
+.src{font-size:11.5px;color:#8a8071;margin-top:18px;border-top:1px solid var(--line);padding-top:11px}
+@media(max-width:720px){.top{flex-direction:column}#map{flex:none;width:100%;height:180px}.kpis{grid-template-columns:1fr 1fr 1fr}.ov{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.mast h1{font-size:23px}}
+</style></head><body>
+<div class="wrap">
+<div class="mast"><div class="k">단지 상세 · 동작구 흑석동</div><h1 id="nm"></h1><div class="loc" id="loc"></div></div>
+<div class="top"><div id="map"></div>
+ <div class="kpis" id="kpis"></div></div>
+<div class="sec"><div class="lab">단지 개요</div><div class="ov" id="ov"></div></div>
+<div class="sec"><div class="lab">교통 · 생활 · 교육</div><div class="living" id="living"></div></div>
+<div class="sec"><div class="lab">인근 정비구역 (재개발·재건축)</div><div id="nearzones"></div><div style="font-size:10.5px;color:#8a8071;margin-top:6px">반경 1.5km 진행중 구역 · 단계=정비몽땅 최신</div></div>
+<div class="grid2">
+ <div class="sec"><div class="lab">평형별 시세 (전용)</div><div id="pyeong"></div></div>
+ <div class="sec"><div class="lab">은행 대출 한도 (규제지역 기준)</div>
+  <div class="loan"><div class="lt" id="loanbase"></div>
+   <div class="lrow"><span>집값 구간 상한</span><span class="lv" id="lcap"></span></div>
+   <div class="lrow"><span>LTV 40% 기준</span><span class="lv" id="lltv"></span></div>
+   <div class="lrow" style="border-top:1px solid #ded8cc;margin-top:3px;padding-top:6px;font-weight:700"><span>은행 예상 한도 (낮은 값)</span><span class="lv" id="lfinal"></span></div>
+   <div style="font-size:10.5px;color:#8a8071;margin-top:7px;line-height:1.4">2026.04 시행 규제(작성 2026.07.24). 소득(DSR)·은행별로 더 낮아질 수 있고 비규제는 다름. 대출 권유·한도 보장 아님. <a href="재개발_기초상식.html#loan-limit" style="color:var(--brass)">자세히 →</a></div></div></div>
+</div>
+<div class="sec"><div class="lab">실거래 이력</div>
+ <div class="tabs"><b class="on" data-t="mm">매매 <span id="cmm"></span></b><b data-t="je">전세 <span id="cje"></span></b><b data-t="wo">월세 <span id="cwo"></span></b></div>
+ <div class="list" id="dlist"></div></div>
+<div class="links"><a href="javascript:history.back()">← 지도로 돌아가기</a><a href="재개발_기초상식.html">재개발·재건축 기초상식</a></div>
+<div class="src">자료: 국가정보포털 공공 DB 등 · 석봉 부동산 정보방 실거래 · 참고용, 법적효력 없음</div>
+</div>
+<script>
+var I={"disp": "흑석리버파크자이", "nm": "흑석자이", "addr": "서울특별시 동작구 흑석동 253-89 흑석자이", "code": "A10023350", "se": null, "dong": "26", "ymd": "2023", "builder": "GS건설", "dev": "흑석3재개발정비조합", "area": 167797.88, "heat": "개별난방", "sale": "혼합", "mgr": "위탁관리", "park": "2269", "cctv": "656", "subway": "9호선", "welfare": "관리사무소, 노인정, 문고, 주민공동시설, 어린이놀이터, 휴게시설, 유치원, 커뮤니티공간, 자전거보관소, 기타", "conv": "병원(중앙대학교부속병원)", "edu": "초등학교(온로초등학교, 중대부속초등학교) 중학교(중대부속중학교) 대학교(중앙대학교)", "lon": 126.9689, "lat": 37.5048, "mm": [{"a": 60, "py": 11860, "amt": 215000, "f": "10", "d": "26.06.04"}], "je": [{"a": 85, "bo": 120000, "w": 0, "f": "2", "d": "26.06.22"}, {"a": 60, "bo": 100500, "w": 0, "f": "8", "d": "26.07.11"}, {"a": 60, "bo": 99900, "w": 0, "f": "10", "d": "26.07.19"}, {"a": 85, "bo": 90000, "w": 0, "f": "11", "d": "26.07.10"}, {"a": 85, "bo": 89250, "w": 0, "f": "1", "d": "26.07.11"}, {"a": 85, "bo": 87150, "w": 0, "f": "4", "d": "26.06.05"}, {"a": 85, "bo": 85000, "w": 0, "f": "9", "d": "26.06.20"}, {"a": 85, "bo": 78750, "w": 0, "f": "10", "d": "26.06.12"}, {"a": 85, "bo": 30000, "w": 0, "f": "8", "d": "26.06.03"}], "wo": [{"a": 85, "bo": 40000, "w": 300, "f": "8", "d": "26.06.16"}, {"a": 60, "bo": 20000, "w": 300, "f": "18", "d": "26.07.17"}, {"a": 60, "bo": 70000, "w": 140, "f": "18", "d": "26.07.02"}, {"a": 121, "bo": 3000, "w": 130, "f": "9", "d": "26.06.12"}, {"a": 85, "bo": 2000, "w": 120, "f": "14", "d": "26.07.10"}, {"a": 60, "bo": 60000, "w": 110, "f": "5", "d": "26.06.17"}, {"a": 39, "bo": 3433, "w": 22, "f": "2", "d": "26.06.29"}, {"a": 39, "bo": 4009, "w": 19, "f": "8", "d": "26.06.25"}, {"a": 39, "bo": 5714, "w": 9, "f": "8", "d": "26.06.02"}, {"a": 39, "bo": 5802, "w": 9, "f": "18", "d": "26.06.22"}, {"a": 39, "bo": 5802, "w": 9, "f": "9", "d": "26.06.30"}], "mm_py": 11860, "mm_amt": 215000, "je_med": 89250, "near": [], "pyeong": [{"b": "60~85㎡", "n": 1, "amt": 215000, "py": 11860}], "jr": 42};
+var IC={subway:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="14" rx="3"/><path d="M4 11h16M8 21l2-3M16 21l-2-3"/><circle cx="8.5" cy="14" r="1"/><circle cx="15.5" cy="14" r="1"/></svg>',
+edu:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1 3 3 6 3s6-2 6-3v-5"/></svg>',
+conv:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-7-10a7 7 0 0114 0c0 5.5-7 10-7 10z"/><circle cx="12" cy="11" r="2.5"/></svg>',
+park:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M9 17V7h4a3 3 0 010 6H9"/></svg>',
+cctv:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7l15-3 1 4-15 3zM4 11l12-2M8 13v4a2 2 0 002 2h1"/></svg>',
+home:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10l9-7 9 7v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 21v-6h6v6"/></svg>',
+cal:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>',
+build:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 22V4a1 1 0 011-1h6a1 1 0 011 1v18M14 9h4a1 1 0 011 1v12M9 7h2M9 11h2M9 15h2"/></svg>',
+heat:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2s5 4 5 9a5 5 0 01-10 0c0-2 1-3 1-3s2 2 4 1c1-2 0-4 0-7z"/></svg>'};
+function eok(m){var v=m/10000;return (v>=100?Math.round(v):(''+v.toFixed(1)).replace(/\.0$/,''))+'억';}
+function comma(n){return Number(n).toLocaleString();}
+document.getElementById('nm').textContent=I.disp;
+document.getElementById('loc').innerHTML=I.addr+(I.subway?' <span class="sub">'+IC.subway+' '+I.subway+'역</span>':'');
+var kp=[['n1',comma(I.mm_py)+'<small style="font-size:11px">만</small>','매매 평당(전용)'],
+['n2',I.mm_amt?eok(I.mm_amt):'·','매매 중위 총액'],['n3',I.je_med?eok(I.je_med):'·','전세 보증금 중위'],
+['n4',(I.jr?I.jr+'%':'·'),'전세가율'],['n5',(I.se?comma(I.se):'·'),'세대수'],['n6',(I.ymd||'·'),'준공']];
+document.getElementById('kpis').innerHTML=kp.map(function(x){return '<div class="kpi"><div class="n">'+x[1]+'</div><div class="u">'+x[2]+'</div></div>';}).join('');
+function f(ic,l,v){return v?'<div class="f"><span class="ic">'+ic+'</span><span class="fl">'+l+'</span><span class="fv">'+v+'</span></div>':'';}
+document.getElementById('ov').innerHTML=[
+ f(IC.home,'세대/동',(I.se?comma(I.se)+'세대':'·')+(I.dong?' · '+I.dong+'동':'')),
+ f(IC.cal,'준공',I.ymd?I.ymd+'년':''),
+ f(IC.build,'시공사',I.builder),
+ f(IC.build,'시행사',I.dev),
+ f(IC.home,'연면적',I.area?comma(Math.round(I.area))+'㎡':''),
+ f(IC.heat,'난방',I.heat),
+ f(IC.home,'분양형태',I.sale),
+ f(IC.home,'관리',I.mgr),
+ f(IC.park,'지하주차',I.park?comma(I.park)+'대':''),
+ f(IC.cctv,'CCTV',I.cctv?comma(I.cctv)+'대':'')].join('');
+function lr(ic,l,v){return v?'<div class="lr"><span class="ic">'+ic+'</span><div><b>'+l+'</b> '+v+'</div></div>':'';}
+document.getElementById('living').innerHTML=
+ lr(IC.subway,'교통',I.subway?I.subway+'역 인접':'')+
+ lr(IC.conv,'생활편의',I.conv)+lr(IC.edu,'교육',I.edu)+lr(IC.home,'단지시설',I.welfare);
+document.getElementById('pyeong').innerHTML=(I.pyeong&&I.pyeong.length)?I.pyeong.map(function(p){
+ return '<div class="pyr"><div><span class="pb">전용 '+p.b+'</span><span class="pm">'+p.n+'건</span></div><div class="pv">'+eok(p.amt)+'<span class="s">'+comma(p.py)+'만/평</span></div></div>';}).join(''):'<div style="color:#8a8071;font-size:13px;padding:8px 2px">최근 매매 표본 부족</div>';
+var base=I.mm_amt||0;
+document.getElementById('loanbase').textContent=base?('매매 중위 '+eok(base)+' 기준 (규제지역 가정)'):'시세 표본 부족';
+var cap=base<=150000?60000:base<=250000?40000:20000;document.getElementById('lcap').textContent=base?eok(cap):'·';document.getElementById('lltv').textContent=base?eok(Math.round(base*0.4)):'·';document.getElementById('lfinal').textContent=base?eok(Math.min(cap,Math.round(base*0.4))):'·';
+function rMM(x){return '<div class="deal"><div><b>'+x.a+'㎡</b><span class="meta">'+x.f+'층 · '+x.d+'</span></div><div class="pr">'+eok(x.amt)+'<span class="s">'+comma(x.py)+'만/평</span></div></div>';}
+function rJE(x){return '<div class="deal"><div><b>'+x.a+'㎡</b><span class="meta">'+x.f+'층 · '+x.d+'</span></div><div class="pr">'+eok(x.bo)+'<span class="s">전세</span></div></div>';}
+function rWO(x){return '<div class="deal"><div><b>'+x.a+'㎡</b><span class="meta">'+x.f+'층 · '+x.d+'</span></div><div class="pr">'+eok(x.bo)+' / '+x.w+'만<span class="s">월세</span></div></div>';}
+document.getElementById('cmm').textContent=I.mm.length;document.getElementById('cje').textContent=I.je.length;document.getElementById('cwo').textContent=I.wo.length;
+function rd(t){var el=document.getElementById('dlist');var a=t=='mm'?I.mm.map(rMM):t=='je'?I.je.map(rJE):I.wo.map(rWO);el.innerHTML=a.length?a.join(''):'<div class="deal">해당 유형 최근 거래 없음</div>';}
+rd('mm');
+document.getElementById('nearzones').innerHTML=(I.near&&I.near.length)?I.near.map(function(z){var col=z.cat==='재건축'?'#2f5d86':z.cat==='주거환경'?'#4c7a4a':'#c0562e';return '<div class="deal"><div><b>'+z.nm+'</b><span class="meta">'+z.d+'m</span></div><div class="pr"><span style="background:'+col+';color:#fff;font-size:11px;padding:1px 8px;border-radius:20px;font-weight:700">'+z.stage+'</span></div></div>';}).join(''):'<div style="color:#8a8071;font-size:13px;padding:8px 2px">반경 1.5km 내 진행중 정비구역 없음</div>';
+document.querySelectorAll('.tabs b').forEach(function(b){b.onclick=function(){document.querySelectorAll('.tabs b').forEach(function(x){x.classList.remove('on')});b.classList.add('on');rd(b.dataset.t);};});
+var m=L.map('map',{zoomControl:true}).setView([I.lat,I.lon],16);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OSM'}).addTo(m);
+L.marker([I.lat,I.lon]).addTo(m).bindPopup('<b>'+I.disp+'</b>').openPopup();
+</script></body></html>
