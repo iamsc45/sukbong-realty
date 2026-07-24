@@ -1,0 +1,140 @@
+<!doctype html><html lang="ko"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<title>단지 상세 · 석봉 부동산 정보방</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Y7P41Z09PV"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-Y7P41Z09PV');</script>
+<style>
+:root{--ink:#1a1a1a;--paper:#f7f5f0;--line:#ded8cc;--brass:#a8792c;--redev:#c0562e;--ivory:#efe9dc}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:'Pretendard','Malgun Gothic',system-ui,sans-serif;font-size:14px;line-height:1.5}
+.wrap{max-width:900px;margin:0 auto;padding:0 16px 60px}
+.mast{border-bottom:2px solid var(--ink);padding:18px 0 12px}
+.mast .k{font-size:11px;letter-spacing:.14em;color:var(--brass);font-weight:700}
+.mast h1{font-family:'Bookman','Georgia',serif;font-size:27px;margin:5px 0 3px;letter-spacing:-.5px}
+.mast .loc{margin:0;color:#6b6355;font-size:13px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.top{display:flex;gap:14px;margin:16px 0}
+#map{flex:0 0 42%;height:210px;border:1px solid var(--line);border-radius:12px}
+.kpis{flex:1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;align-content:start}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 10px}
+.kpi .n{font-family:'Bookman','Georgia',serif;font-size:19px;line-height:1}
+.kpi .u{font-size:10px;color:#8a8071;margin-top:4px}
+.sec{margin:16px 0}
+.lab{font-size:11px;letter-spacing:.11em;color:#8a8071;text-transform:uppercase;margin-bottom:9px;border-bottom:1px solid var(--line);padding-bottom:5px}
+.pyr,.deal{display:flex;justify-content:space-between;align-items:baseline;padding:6px 2px;border-bottom:1px dotted #e3ddd0;font-size:13px}
+.pyr .pb{font-weight:700}.pyr .pm,.deal .meta{font-size:11px;color:#8a8071;margin-left:6px}
+.pyr .pv,.deal .pr{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pyr .pv .s,.deal .pr .s{display:block;font-size:10.5px;color:#8a8071;font-weight:600}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.tabs{display:flex;gap:5px;margin-bottom:8px}
+.tabs b{flex:1;text-align:center;font-size:12.5px;padding:6px 0;border:1px solid var(--line);border-radius:7px;color:#8a8071;font-weight:600;cursor:pointer;background:#fff}
+.tabs b.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.list{border:1px solid var(--line);border-radius:10px;background:#fff;max-height:260px;overflow-y:auto;padding:0 12px}
+.loan{background:var(--ivory);border:1px solid var(--line);border-radius:10px;padding:11px 13px}
+.loan .lt{font-size:12px;color:#6b6355;margin-bottom:7px}
+.lrow{display:flex;justify-content:space-between;padding:4px 0;font-size:13px;border-bottom:1px dotted #e3ddd0}.lrow:last-child{border:0}.lrow .lv{font-weight:700;font-variant-numeric:tabular-nums}
+.note{font-size:11px;color:#8a8071;margin-top:8px;line-height:1.5}
+.links{margin-top:22px;display:flex;gap:14px;flex-wrap:wrap}.links a{color:var(--brass);text-decoration:none;font-weight:600;font-size:14px}
+.src{font-size:11.5px;color:#8a8071;margin-top:18px;border-top:1px solid var(--line);padding-top:11px}
+@media(max-width:720px){.top{flex-direction:column}#map{flex:none;width:100%;height:180px}.grid2{grid-template-columns:1fr}.mast h1{font-size:23px}}
+</style></head><body>
+<div class="wrap">
+<div class="mast"><div class="k" id="kk">단지 상세</div><h1 id="nm">불러오는 중…</h1><div class="loc" id="loc"></div></div>
+<div id="body"></div>
+<div class="links"><a href="javascript:history.back()">← 지도로 돌아가기</a><a href="재개발_기초상식.html">재개발·재건축 기초상식</a></div>
+<div class="src">자료: 국토교통부 실거래가(해제 건 제외) · 석봉 부동산 정보방 · 참고용, 법적효력 없음. 세대수·시공사·교통·학교 등 단지 정보는 순차 추가됩니다.</div>
+</div>
+<script src="data/jeongbi_seoul.js"></script>
+<script src="data/jeongbi_markers.js"></script>
+<script>
+function qs(k){var m=new RegExp('[?&]'+k+'=([^&]*)').exec(location.search);return m?decodeURIComponent(m[1].replace(/\+/g,' ')):'';}
+function eok(m){if(!m)return '·';var v=m/10000;return (v>=100?Math.round(v):(''+v.toFixed(1)).replace(/\.0$/,''))+'억';}
+function comma(n){return Number(n).toLocaleString();}
+function med(a){if(!a.length)return 0;var s=a.slice().sort(function(x,y){return x-y;});return s[Math.floor(s.length/2)];}
+function hav(a,b,c,d){var R=6371000,r=Math.PI/180,x=Math.sin((c-a)*r/2),y=Math.sin((d-b)*r/2);return 2*R*Math.asin(Math.sqrt(x*x+Math.cos(a*r)*Math.cos(c*r)*y*y));}
+function esc(s){return (s||'').replace(/[<>&]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;'}[c];});}
+var RCOL={'재개발':'#c0562e','재건축':'#2f5d86','주거환경':'#4c7a4a'};
+
+function boot(){
+  var code=qs('code'),nm=qs('nm'),dong=qs('dong');
+  if(!code||!nm){fail();return;}
+  var s=document.createElement('script');s.src='data/detail_'+code+'.js';
+  s.onload=function(){go(code,nm,dong);};s.onerror=fail;document.body.appendChild(s);
+}
+function fail(){document.getElementById('nm').textContent='단지 정보를 찾지 못했습니다';document.getElementById('body').innerHTML='<p style="color:#8a8071">지도 카드에서 단지를 눌러 다시 열어주세요.</p>';}
+function go(code,nm,dong){
+  var arr=(window.SB&&SB.d&&SB.d[code])||[];
+  var pt=null;
+  for(var i=0;i<arr.length;i++){if(arr[i].name===nm&&(!dong||arr[i].dong===dong)){pt=arr[i];break;}}
+  if(!pt){for(i=0;i<arr.length;i++){if(arr[i].name===nm){pt=arr[i];break;}}}
+  if(!pt){fail();return;}
+  render(pt);
+}
+function band(a){return a<=60?'60㎡ 이하':a<=85?'60~85㎡':a<=110?'85~110㎡':'110㎡ 이상';}
+function render(pt){
+  document.title=pt.name+' · 단지 상세';
+  var txs=pt.txs||[];
+  var mm=txs.filter(function(t){return t.u==='매매';}),
+      je=txs.filter(function(t){return t.u==='전세';}),
+      wo=txs.filter(function(t){return t.u==='월세';});
+  var mmpy=med(mm.filter(function(t){return t.a;}).map(function(t){return Math.round(t.p/t.a*3.305785);}));
+  var mmamt=med(mm.map(function(t){return t.p;}));
+  var jemed=med(je.map(function(t){return t.p;}));
+  var jr=(mmamt&&jemed)?Math.round(jemed/mmamt*100):0;
+  document.getElementById('kk').textContent='단지 상세 · '+esc(pt.dong||'');
+  document.getElementById('nm').textContent=pt.name;
+  document.getElementById('loc').textContent=(pt.dong||'')+' '+(pt.jibun||'')+(pt.extra?' · '+pt.extra:'');
+  var kp=[[mmpy?comma(mmpy)+'<small style="font-size:11px">만</small>':'·','매매 평당(전용)'],
+    [eok(mmamt),'매매 중위 총액'],[eok(jemed),'전세 보증금 중위'],
+    [jr?jr+'%':'·','전세가율'],[mm.length+'건','매매 표본'],[(je.length+wo.length)+'건','전월세 표본']];
+  var h='<div class="top"><div id="map"></div><div class="kpis">'
+    +kp.map(function(x){return '<div class="kpi"><div class="n">'+x[0]+'</div><div class="u">'+x[1]+'</div></div>';}).join('')+'</div></div>';
+  // 평형별
+  var bmap={};mm.forEach(function(t){if(!t.a)return;var b=band(t.a);(bmap[b]=bmap[b]||[]).push(t);});
+  var border=['60㎡ 이하','60~85㎡','85~110㎡','110㎡ 이상'];
+  var pyr=border.filter(function(b){return bmap[b];}).map(function(b){
+    var g=bmap[b],am=med(g.map(function(t){return t.p;})),py=med(g.map(function(t){return Math.round(t.p/t.a*3.305785);}));
+    return '<div class="pyr"><div><span class="pb">전용 '+b+'</span><span class="pm">'+g.length+'건</span></div><div class="pv">'+eok(am)+'<span class="s">'+comma(py)+'만/평</span></div></div>';}).join('');
+  // 대출
+  var base=mmamt||0,cap=base<=150000?60000:base<=250000?40000:20000;
+  var loan='<div class="loan"><div class="lt">'+(base?'매매 중위 '+eok(base)+' 기준 (규제지역 가정)':'시세 표본 부족')+'</div>'
+    +'<div class="lrow"><span>집값 구간 상한</span><span class="lv">'+(base?eok(cap):'·')+'</span></div>'
+    +'<div class="lrow"><span>LTV 40% 기준</span><span class="lv">'+(base?eok(Math.round(base*0.4)):'·')+'</span></div>'
+    +'<div class="lrow" style="border-top:1px solid #ded8cc;margin-top:3px;padding-top:6px;font-weight:700"><span>은행 예상 한도 (낮은 값)</span><span class="lv">'+(base?eok(Math.min(cap,Math.round(base*0.4))):'·')+'</span></div>'
+    +'<div class="note">2026.04 시행 규제(작성 2026.07.25). 소득(DSR)·은행별로 더 낮아질 수 있고 비규제는 다릅니다. 대출 권유·한도 보장 아님. <a href="재개발_기초상식.html#loan-limit" style="color:var(--brass)">자세히 →</a></div></div>';
+  h+='<div class="grid2"><div class="sec"><div class="lab">평형별 시세 (전용)</div>'+(pyr||'<div style="color:#8a8071;padding:8px 2px">최근 매매 표본 부족</div>')+'</div>'
+    +'<div class="sec"><div class="lab">은행 대출 한도 (규제지역 기준)</div>'+loan+'</div></div>';
+  // 인근 정비구역
+  var near=nearZones(pt.lat,pt.lng);
+  h+='<div class="sec"><div class="lab">인근 정비구역 (재개발·재건축)</div>'+(near||'<div style="color:#8a8071;padding:8px 2px">반경 1.5km 내 진행중 정비구역 없음</div>')
+    +'<div class="note">반경 1.5km 진행중 구역 · 단계=정비몽땅 최신 · 누르면 구역 상세</div></div>';
+  // 실거래 이력
+  h+='<div class="sec"><div class="lab">실거래 이력</div>'
+    +'<div class="tabs"><b class="on" data-t="mm">매매 '+mm.length+'</b><b data-t="je">전세 '+je.length+'</b><b data-t="wo">월세 '+wo.length+'</b></div>'
+    +'<div class="list" id="dlist"></div></div>';
+  document.getElementById('body').innerHTML=h;
+  // 실거래 렌더
+  function rMM(x){return '<div class="deal"><div><b>'+x.a+'㎡</b><span class="meta">'+x.f+'층 · '+x.cd.slice(2).replace(/-/g,'.')+'</span></div><div class="pr">'+eok(x.p)+'<span class="s">'+(x.a?comma(Math.round(x.p/x.a*3.305785))+'만/평':'')+'</span></div></div>';}
+  function rJE(x){return '<div class="deal"><div><b>'+x.a+'㎡</b><span class="meta">'+x.f+'층 · '+x.cd.slice(2).replace(/-/g,'.')+'</span></div><div class="pr">'+eok(x.p)+'<span class="s">전세</span></div></div>';}
+  function rWO(x){return '<div class="deal"><div><b>'+x.a+'㎡</b><span class="meta">'+x.f+'층 · '+x.cd.slice(2).replace(/-/g,'.')+'</span></div><div class="pr">'+eok(x.p)+' / '+x.r+'만<span class="s">월세</span></div></div>';}
+  function rd(t){var a=t==='mm'?mm.map(rMM):t==='je'?je.map(rJE):wo.map(rWO);document.getElementById('dlist').innerHTML=a.length?a.join(''):'<div class="deal">해당 유형 최근 거래 없음</div>';}
+  rd('mm');
+  document.querySelectorAll('.tabs b').forEach(function(b){b.onclick=function(){document.querySelectorAll('.tabs b').forEach(function(x){x.classList.remove('on');});b.classList.add('on');rd(b.dataset.t);};});
+  if(pt.lat&&pt.lng){var m=L.map('map',{zoomControl:true}).setView([pt.lat,pt.lng],16);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OSM'}).addTo(m);
+    L.marker([pt.lat,pt.lng]).addTo(m).bindPopup('<b>'+esc(pt.name)+'</b>').openPopup();}
+}
+var DONE={'준공인가':1,'이전고시':1,'조합해산':1,'조합청산':1,'해산':1,'청산':1,'사업완료':1,'철거':1};
+function nearZones(la,ln){
+  if(!la)return '';
+  var out=[];
+  var R=(window.REDEV&&REDEV.features)||[];
+  R.forEach(function(f){var r0=f.geometry.coordinates[0],cx=0,cy=0;for(var i=0;i<r0.length;i++){cx+=r0[i][0];cy+=r0[i][1];}cx/=r0.length;cy/=r0.length;
+    var d=Math.round(hav(la,ln,cy,cx));if(d<=1500&&!DONE[f.properties.stage])out.push({nm:f.properties.biz||f.properties.nm,stage:f.properties.stage,cat:f.properties.cat,key:f.properties.biz||f.properties.nm,d:d});});
+  ((window.REDEVMARK)||[]).forEach(function(mm){var d=Math.round(hav(la,ln,mm.lat,mm.lon));if(d<=1500&&!DONE[mm.stage])out.push({nm:mm.nm,stage:mm.stage,cat:mm.cat,key:mm.nm,d:d});});
+  out.sort(function(a,b){return a.d-b.d;});out=out.slice(0,6);
+  return out.map(function(z){var col=RCOL[z.cat]||'#c0562e';
+    return '<a class="deal" style="text-decoration:none;color:inherit" href="구역상세.html?nm='+encodeURIComponent(z.key)+'"><div><b>'+esc(z.nm)+'</b><span class="meta">'+z.d+'m</span></div><div class="pr"><span style="background:'+col+';color:#fff;font-size:11px;padding:1px 8px;border-radius:20px;font-weight:700">'+esc(z.stage)+'</span></div></a>';}).join('');
+}
+boot();
+</script></body></html>

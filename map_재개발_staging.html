@@ -306,7 +306,7 @@ function render(){
     d.forEach(function(pt){
       if(!b.contains([pt.lat,pt.lng]))return;
       var txs=ptTxs(pt); if(!txs.length)return;
-      pts.push({pt:pt,txs:txs});
+      pts.push({pt:pt,txs:txs,code:r.code});
     });
   });
   window._PTS=pts;
@@ -639,13 +639,14 @@ function rcDetailSec(p){
 function rcNearTx(p){
   var clat=p._lat||p.lat, clon=p._lon||p.lon;
   if(!clat||!clon||!window._PTS||!window._PTS.length)return '';
-  var near=window._PTS.map(function(o){return {pt:o.pt,tx:o.txs[0],d:Math.round(_hav(clat,clon,o.pt.lat,o.pt.lng))};})
+  var near=window._PTS.map(function(o){return {pt:o.pt,code:o.code,tx:o.txs[0],d:Math.round(_hav(clat,clon,o.pt.lat,o.pt.lng))};})
     .filter(function(o){return o.d<=1200;}).sort(function(a,b){return a.d-b.d;}).slice(0,6);
   if(!near.length)return '';
   var rows=near.map(function(o){var t=o.tx;
     var py=(t.u==='매매'&&t.a)?(' <span style="color:#8a8071;font-weight:400">'+Math.round(t.p/t.a*3.305785).toLocaleString()+'만/평</span>'):'';
-    return '<div class="rc-dl"><span style="color:#6b6355">'+o.pt.name+' <span style="color:#8a8071">'+o.d+'m</span></span><b>'+priceLabel(t)+py+'</b></div>';}).join('');
-  return '<div class="rc-sec"><div class="rc-lab">인근 단지 실거래 · 평당 전용기준</div>'+rows+'</div>';
+    var href='단지상세.html?code='+(o.code||'')+'&nm='+encodeURIComponent(o.pt.name)+'&dong='+encodeURIComponent(o.pt.dong||'');
+    return '<a class="rc-dl" style="text-decoration:none;color:inherit" href="'+href+'"><span style="color:#6b6355">'+o.pt.name+' <span style="color:#8a8071">'+o.d+'m</span> <span class="arw" style="color:#b6ad9c">→</span></span><b>'+priceLabel(t)+py+'</b></a>';}).join('');
+  return '<div class="rc-sec"><div class="rc-lab">인근 단지 실거래 · 누르면 단지 상세</div>'+rows+'</div>';
 }
 function showRcard(p){
   var c=RCOL[rcatKo(p.cat)];
@@ -719,6 +720,7 @@ function showAptCard(pt, txs){
     +'<div class="rc-h" style="background:'+col+'"><div class="k">'+ti[0]+' · 실거래</div><h2>'+pt.name+'</h2><div class="loc">'+pt.dong+' '+(pt.jibun||'')+'</div></div>'
     +'<div class="rc-sec"><div class="rc-lab">최근 실거래 · 평당 전용기준</div>'+(rows||'<div style="color:#8a8071;font-size:13px">거래 없음</div>')+'</div>'
     +(near?'<div class="rc-sec"><div class="rc-lab">인근 정비구역 (누르면 이동)</div>'+near+'</div>':'')
+    +'<a class="rc-cta" href="단지상세.html?code='+((window.SB&&SB.dongs&&SB.dongs[pt.dong])?SB.dongs[pt.dong][0]:'')+'&nm='+encodeURIComponent(pt.name)+'&dong='+encodeURIComponent(pt.dong||'')+'" style="background:#12203a">이 단지 실거래·평형별 상세 →</a>'
     +'<div class="rc-note">실시간 호가는 수집 후 실거래와 병기 예정입니다.</div>';
   var rc=document.getElementById('rcard');rc.innerHTML=html;rc.classList.add('open');
   document.getElementById('rcClose').onclick=function(){rc.classList.remove('open');};
