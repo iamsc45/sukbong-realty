@@ -59,7 +59,8 @@ function boot(){
   var code=qs('code'),nm=qs('nm'),dong=qs('dong');
   if(!code||!nm){fail();return;}
   var s=document.createElement('script');s.src='data/detail_'+code+'.js';
-  s.onload=function(){go(code,nm,dong);};s.onerror=fail;document.body.appendChild(s);
+  s.onload=function(){var a=document.createElement('script');a.src='data/apt_info_'+code+'.js';a.onload=function(){go(code,nm,dong);};a.onerror=function(){go(code,nm,dong);};document.body.appendChild(a);};
+  s.onerror=fail;document.body.appendChild(s);
 }
 function fail(){document.getElementById('nm').textContent='단지 정보를 찾지 못했습니다';document.getElementById('body').innerHTML='<p style="color:#8a8071">지도 카드에서 단지를 눌러 다시 열어주세요.</p>';}
 function go(code,nm,dong){
@@ -68,12 +69,13 @@ function go(code,nm,dong){
   for(var i=0;i<arr.length;i++){if(arr[i].name===nm&&(!dong||arr[i].dong===dong)){pt=arr[i];break;}}
   if(!pt){for(i=0;i<arr.length;i++){if(arr[i].name===nm){pt=arr[i];break;}}}
   if(!pt){fail();return;}
-  render(pt);
+  render(pt,code);
 }
 function band(a){return a<=60?'60㎡ 이하':a<=85?'60~85㎡':a<=110?'85~110㎡':'110㎡ 이상';}
-function render(pt){
+function render(pt,code){
   document.title=pt.name+' · 단지 상세';
   var txs=pt.txs||[];
+  var info=(window.APTINFO&&window.APTINFO[code]&&window.APTINFO[code][pt.name])||null;
   var mm=txs.filter(function(t){return t.u==='매매';}),
       je=txs.filter(function(t){return t.u==='전세';}),
       wo=txs.filter(function(t){return t.u==='월세';});
@@ -83,12 +85,25 @@ function render(pt){
   var jr=(mmamt&&jemed)?Math.round(jemed/mmamt*100):0;
   document.getElementById('kk').textContent='단지 상세 · '+esc(pt.dong||'');
   document.getElementById('nm').textContent=pt.name;
-  document.getElementById('loc').textContent=(pt.dong||'')+' '+(pt.jibun||'')+(pt.extra?' · '+pt.extra:'');
+  document.getElementById('loc').innerHTML=esc((pt.dong||'')+' '+(pt.jibun||''))+(info&&info.subway?' · <b style="color:var(--brass)">'+esc(info.subway)+'역</b>':'')+((info&&info.ymd)?' · '+info.ymd+'년 준공':(pt.extra?' · '+esc(pt.extra):''));
   var kp=[[mmpy?comma(mmpy)+'<small style="font-size:11px">만</small>':'·','매매 평당(전용)'],
     [eok(mmamt),'매매 중위 총액'],[eok(jemed),'전세 보증금 중위'],
-    [jr?jr+'%':'·','전세가율'],[mm.length+'건','매매 표본'],[(je.length+wo.length)+'건','전월세 표본']];
+    [jr?jr+'%':'·','전세가율'],
+    [(info&&info.se)?comma(info.se):(mm.length+'건'),(info&&info.se)?'세대수':'매매 표본'],
+    [(info&&info.ymd)?info.ymd:((je.length+wo.length)+'건'),(info&&info.ymd)?'준공':'전월세 표본']];
   var h='<div class="top"><div id="map"></div><div class="kpis">'
     +kp.map(function(x){return '<div class="kpi"><div class="n">'+x[0]+'</div><div class="u">'+x[1]+'</div></div>';}).join('')+'</div></div>';
+  if(info){
+    var ov=[['세대/동',(info.se?comma(info.se)+'세대':'')+(info.dongCnt?' · '+info.dongCnt+'동':'')],['준공',info.ymd?info.ymd+'년':''],
+      ['시공사',info.builder],['시행사',info.dev],['연면적',info.area?comma(info.area)+'㎡':''],['난방',info.heat],
+      ['지하주차',info.park?comma(info.park)+'대':''],['CCTV',info.cctv?comma(info.cctv)+'대':'']]
+      .filter(function(x){return x[1];}).map(function(x){return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dotted #e3ddd0;font-size:13px"><span style="color:#6b6355">'+x[0]+'</span><b style="text-align:right">'+esc(String(x[1]))+'</b></div>';}).join('');
+    var live=[['교통',info.subway?esc(info.subway)+'역'+(info.subT?' · 도보 '+esc(info.subT):''):(info.busT?'버스 '+esc(info.busT):'')],
+      ['교육',esc(info.edu)],['생활편의',esc(info.conv)],['단지시설',esc(info.welfare)]]
+      .filter(function(x){return x[1];}).map(function(x){return '<div style="padding:7px 0;border-bottom:1px dotted #e3ddd0;font-size:13px;line-height:1.5"><b>'+x[0]+'</b> <span style="color:#4a4238">'+x[1]+'</span></div>';}).join('');
+    h+='<div class="grid2"><div class="sec"><div class="lab">단지 개요</div>'+ov+'</div>'
+      +'<div class="sec"><div class="lab">교통 · 생활 · 교육</div>'+(live||'<div style="color:#8a8071;padding:6px 2px">등록된 정보 없음</div>')+'</div></div>';
+  }
   // 평형별
   var bmap={};mm.forEach(function(t){if(!t.a)return;var b=band(t.a);(bmap[b]=bmap[b]||[]).push(t);});
   var border=['60㎡ 이하','60~85㎡','85~110㎡','110㎡ 이상'];
