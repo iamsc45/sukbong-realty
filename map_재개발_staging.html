@@ -772,7 +772,7 @@ function showAptCard(pt, txs){
     +'<div class="rc-sec"><div class="rc-lab">최근 실거래 · 평당 전용기준</div>'+(rows||'<div style="color:#8a8071;font-size:13px">거래 없음</div>')+'</div>'
     +(near?'<div class="rc-sec"><div class="rc-lab">인근 정비구역 (누르면 이동)</div>'+near+'</div>':'')
     +'<a class="rc-cta" href="단지상세.html?code='+code+'&nm='+encodeURIComponent(pt.name)+'&dong='+encodeURIComponent(pt.dong||'')+'" style="background:#12203a">이 단지 실거래·평형별 상세 →</a>'
-    +(A?'':'<div class="rc-note">실시간 호가는 수집된 지역만 표시됩니다.</div>');
+    +'<div class="rc-note">실거래 기준일 '+((window.SB&&SB.summary&&SB.summary.updated)||'-')+' · 호가 수집일 '+(window.APTASKDAY||(A?'-':'미수집 지역'))+'</div>';
   var rc=document.getElementById('rcard');rc.innerHTML=html;rc.classList.add('open');
   document.getElementById('rcClose').onclick=function(){rc.classList.remove('open');};
 }
