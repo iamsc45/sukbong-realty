@@ -42,6 +42,17 @@
 .loan .lt{font-size:12px;color:#6b6355;margin-bottom:7px}
 .lrow{display:flex;justify-content:space-between;padding:4px 0;font-size:13px;border-bottom:1px dotted #e3ddd0}.lrow:last-child{border:0}.lrow .lv{font-weight:700;font-variant-numeric:tabular-nums}
 .note{font-size:11px;color:#8a8071;margin-top:8px;line-height:1.5}
+.cmp{border:1px solid var(--line);border-radius:11px;overflow:hidden;background:#fff}
+.cmph,.cmpr{display:grid;grid-template-columns:58px 1fr 1fr}
+.cmph{background:#f2ede2;font-size:11px;color:#6b6355;font-weight:700}
+.cmph span{padding:7px 12px;text-align:right}.cmph span:first-child{text-align:left}
+.cmph small{display:block;font-size:9.5px;color:#8a8071;font-weight:400}
+.cmpr{border-top:1px solid #e7e1d4;font-size:14.5px;align-items:center}
+.cmpr b{padding:9px 12px;font-weight:700;color:#6b6355;font-size:13px;text-align:left}
+.cmpr span{padding:9px 12px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.cmpr span.ho{color:#c0562e}
+.cmpr small{display:block;font-size:10px;color:#8a8071;font-weight:400}
+.cmpr span.ho small{color:#cf8a5c}
 .soon{border:1.5px dashed #cfc7b6;border-radius:11px;padding:18px 16px;text-align:center;color:#8a8071;font-size:12.5px;line-height:1.6;background:repeating-linear-gradient(135deg,#f8f6f1,#f8f6f1 11px,#f2ede2 11px,#f2ede2 22px)}
 .soon .tag{display:inline-block;background:var(--brass);color:#fff;font-size:11px;font-weight:800;padding:3px 11px;border-radius:20px;margin-bottom:9px}
 .soon svg{opacity:.55;margin-bottom:6px}
@@ -127,6 +138,17 @@ function render(pt,code){
     [(info&&info.ymd)?info.ymd:((je.length+wo.length)+'건'),(info&&info.ymd)?'준공':'전월세 표본']];
   var h='<div class="top"><div id="map"></div><div class="kpis">'
     +kp.map(function(x){return '<div class="kpi"><div class="n">'+x[0]+'</div><div class="u">'+x[1]+'</div></div>';}).join('')+'</div></div>';
+  var womed=med(wo.map(function(t){return t.p;})),womedw=med(wo.map(function(t){return t.r;}));
+  var A=(window.APTASK&&window.APTASK[code]&&window.APTASK[code][pt.name])||null;
+  function cmpr(l,rv,hv){return '<div class="cmpr"><b>'+l+'</b><span>'+(rv||'·')+'</span><span class="ho">'+(hv||'·')+'</span></div>';}
+  var mmR=mmamt?(eok(mmamt)+(mmpy?'<small>'+comma(mmpy)+'만/평</small>':'')):'';
+  var mmH=(A&&A.mm)?(eok(A.mm.med)+(A.mm.py?'<small>'+comma(A.mm.py)+'만/평 · '+A.mm.n+'건</small>':'')):'';
+  var jeR=jemed?eok(jemed):'',jeH=(A&&A.je)?(eok(A.je.med)+'<small>'+A.je.n+'건</small>'):'';
+  var woR=wo.length?(eok(womed)+' / '+womedw+'만'):'',woH=(A&&A.wo)?(eok(A.wo.bo)+' / '+A.wo.wol+'만<small>'+A.wo.n+'건</small>'):'';
+  h+='<div class="sec"><div class="lab">실거래 vs 호가 · 매매·전세·월세</div><div class="cmp">'
+    +'<div class="cmph"><span></span><span>실거래<small>체결가·중위</small></span><span>호가<small>협상 전·중위</small></span></div>'
+    +cmpr('매매',mmR,mmH)+cmpr('전세',jeR,jeH)+cmpr('월세',woR,woH)+'</div>'
+    +'<div class="note">실거래=국토부 체결가 중위 · 호가=네이버 매물 협상 전 제시가 중위(건수). 수집일 '+(window.APTASKDAY||'-')+'. 호가는 실제 체결가와 다를 수 있습니다.</div></div>';
   if(info){
     h+='<div class="sec"><div class="lab">단지 개요</div><div class="ov">'
       +frow(IC.home,'세대/동',(info.se?comma(info.se)+'세대':'')+(info.dongCnt?' · '+info.dongCnt+'동':''))
@@ -159,16 +181,6 @@ function render(pt,code){
     +'<div class="note">2026.04 시행 규제(작성 2026.07.25). 소득(DSR)·은행별로 더 낮아질 수 있고 비규제는 다릅니다. 대출 권유·한도 보장 아님. <a href="재개발_기초상식.html#loan-limit" style="color:var(--brass)">자세히 →</a></div></div>';
   h+='<div class="grid2"><div class="sec"><div class="lab">평형별 시세 (전용)</div>'+(pyr||'<div style="color:#8a8071;padding:8px 2px">최근 매매 표본 부족</div>')+'</div>'
     +'<div class="sec"><div class="lab">은행 대출 한도 (규제지역 기준)</div>'+loan+'</div></div>';
-  var ask=(window.APTASK&&window.APTASK[code]&&window.APTASK[code][pt.name])||null;
-  if(ask){
-    function hrow(l,v,n){return '<div class="deal"><div><b>'+l+' 호가</b><span class="meta">매물 '+n+'건</span></div><div class="pr">'+v+'</div></div>';}
-    var hr='';
-    if(ask.mm)hr+=hrow('매매',eok(ask.mm.med)+(ask.mm.py?' <span style="color:#8a8071;font-weight:400;font-size:10.5px">'+comma(ask.mm.py)+'만/평</span>':''),ask.mm.n);
-    if(ask.je)hr+=hrow('전세',eok(ask.je.med),ask.je.n);
-    if(ask.wo)hr+=hrow('월세',eok(ask.wo.bo)+' / '+ask.wo.wol+'만',ask.wo.n);
-    h+='<div class="sec"><div class="lab">실시간 호가 · 협상 전 (네이버 매물)</div>'+hr
-      +'<div class="note">호가는 매물로 올라온 협상 전 제시가입니다. 위 실거래(실제 체결가)와 다를 수 있습니다. 수집일 '+(window.APTASKDAY||'-')+'.</div></div>';
-  }
   h+='<div class="sec"><div class="lab">시세 추이 (평당·연도별)</div><div class="soon">'
     +'<svg viewBox="0 0 48 28" width="54" height="31" fill="none" stroke="#a8792c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,24 12,16 22,19 32,9 46,3"/><circle cx="46" cy="3" r="2.6" fill="#a8792c" stroke="none"/></svg>'
     +'<div class="tag">업데이트 예정</div>'

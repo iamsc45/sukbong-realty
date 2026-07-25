@@ -745,12 +745,34 @@ function showAptCard(pt, txs){
   nz.sort(function(a,b){return a.d-b.d;}); nz=nz.slice(0,6); window._NZ=nz;
   var near=nz.map(function(z,i){var cc=(RCOL[z.cat]||'#8a8071');
     return '<div class="rc-row" onclick="focusZone(window._NZ['+i+'])"><span>'+z.nm+' <span style="color:#8a8071">'+z.d+'m</span><span class="arw">→</span></span><span class="rc-badge" style="background:'+cc+'">'+(z.stage||'확인중')+'</span></div>';}).join('');
+  var code=(window.SB&&SB.dongs&&SB.dongs[pt.dong])?SB.dongs[pt.dong][0]:'';
+  if(code&&(!window.APTASK||window.APTASK[code]===undefined)){
+    showAptCard._pend=showAptCard._pend||{};
+    if(!showAptCard._pend[code]){showAptCard._pend[code]=1;
+      var sc=document.createElement('script');sc.src='data/apt_asking_'+code+'.js';
+      sc.onload=function(){showAptCard(pt,txs);};sc.onerror=function(){window.APTASK=window.APTASK||{};window.APTASK[code]={};};document.body.appendChild(sc);}
+  }
+  var A=(code&&window.APTASK&&window.APTASK[code]&&window.APTASK[code][pt.name])||null;
+  var hoSec='';
+  if(A){
+    function eok2(m){if(!m)return '';var v=m/10000;return (v>=100?Math.round(v):(''+v.toFixed(1)).replace(/\.0$/,''))+'억';}
+    function md(a){if(!a.length)return 0;var s=a.slice().sort(function(x,y){return x-y;});return s[Math.floor(s.length/2)];}
+    var mmT=txs.filter(function(t){return t.u==='매매';}),jeT=txs.filter(function(t){return t.u==='전세';}),woT=txs.filter(function(t){return t.u==='월세';});
+    function rrow(l,rv,hv){return '<div style="display:grid;grid-template-columns:40px 1fr 1fr;font-size:12.5px;padding:5px 0;border-bottom:1px dotted #e7e1d4"><b style="color:#6b6355;font-weight:700">'+l+'</b><span style="text-align:right;font-weight:700">'+(rv||'·')+'</span><span style="text-align:right;font-weight:700;color:#c0562e">'+(hv||'·')+'</span></div>';}
+    hoSec='<div class="rc-sec"><div class="rc-lab">실거래 vs 호가 · 중위</div>'
+      +'<div style="display:grid;grid-template-columns:40px 1fr 1fr;font-size:10px;color:#8a8071;font-weight:700;padding-bottom:2px"><span></span><span style="text-align:right">실거래</span><span style="text-align:right">호가</span></div>'
+      +rrow('매매',eok2(md(mmT.map(function(t){return t.p;}))),A.mm?eok2(A.mm.med):'')
+      +rrow('전세',eok2(md(jeT.map(function(t){return t.p;}))),A.je?eok2(A.je.med):'')
+      +rrow('월세',woT.length?(eok2(md(woT.map(function(t){return t.p;})))+'/'+md(woT.map(function(t){return t.r;}))+'만'):'',A.wo?(eok2(A.wo.bo)+'/'+A.wo.wol+'만'):'')
+      +'<div class="rc-note" style="padding:4px 0 0">호가=협상 전 매물가(중위). 실거래(체결가)와 다를 수 있음.</div></div>';
+  }
   var html='<button id="rcClose" style="position:absolute;top:8px;right:10px;border:0;background:rgba(255,255,255,.28);color:#fff;font-size:18px;width:28px;height:28px;border-radius:50%;cursor:pointer;z-index:2">×</button>'
     +'<div class="rc-h" style="background:'+col+'"><div class="k">'+ti[0]+' · 실거래</div><h2>'+pt.name+'</h2><div class="loc">'+pt.dong+' '+(pt.jibun||'')+'</div></div>'
+    +hoSec
     +'<div class="rc-sec"><div class="rc-lab">최근 실거래 · 평당 전용기준</div>'+(rows||'<div style="color:#8a8071;font-size:13px">거래 없음</div>')+'</div>'
     +(near?'<div class="rc-sec"><div class="rc-lab">인근 정비구역 (누르면 이동)</div>'+near+'</div>':'')
-    +'<a class="rc-cta" href="단지상세.html?code='+((window.SB&&SB.dongs&&SB.dongs[pt.dong])?SB.dongs[pt.dong][0]:'')+'&nm='+encodeURIComponent(pt.name)+'&dong='+encodeURIComponent(pt.dong||'')+'" style="background:#12203a">이 단지 실거래·평형별 상세 →</a>'
-    +'<div class="rc-note">실시간 호가는 수집 후 실거래와 병기 예정입니다.</div>';
+    +'<a class="rc-cta" href="단지상세.html?code='+code+'&nm='+encodeURIComponent(pt.name)+'&dong='+encodeURIComponent(pt.dong||'')+'" style="background:#12203a">이 단지 실거래·평형별 상세 →</a>'
+    +(A?'':'<div class="rc-note">실시간 호가는 수집된 지역만 표시됩니다.</div>');
   var rc=document.getElementById('rcard');rc.innerHTML=html;rc.classList.add('open');
   document.getElementById('rcClose').onclick=function(){rc.classList.remove('open');};
 }
