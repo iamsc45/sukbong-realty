@@ -47,6 +47,8 @@ body{margin:0;background:var(--paper);color:var(--ink);font-family:'Malgun Gothi
 .soon{border:1.5px dashed #cfc7b6;border-radius:11px;padding:18px 16px;text-align:center;color:#8a8071;font-size:12.5px;line-height:1.6;background:repeating-linear-gradient(135deg,#f8f6f1,#f8f6f1 11px,#f2ede2 11px,#f2ede2 22px)}
 .soon .tag{display:inline-block;background:var(--brass);color:#fff;font-size:11px;font-weight:800;padding:3px 11px;border-radius:20px;margin-bottom:9px;letter-spacing:.03em}
 .soon svg{opacity:.55;margin-bottom:6px}
+.trbtn{border:1px solid #d8d0c0;background:#fff;color:#6b6355;font-size:11.5px;font-weight:700;padding:4px 12px;border-radius:14px;cursor:pointer}
+.trbtn.on{background:var(--brass);color:#fff;border-color:var(--brass)}
 .foot{margin-top:34px;padding-top:14px;border-top:1px solid var(--line);font-size:11.5px;color:var(--warm)}
 @media(max-width:520px){.grid{grid-template-columns:1fr}.mast h1{font-size:22px}}
 </style>
@@ -129,7 +131,7 @@ function render(){
   }
   var tr=(window.REDEVTREND||{})[nm];
   h+='<div class="sec"><div class="lab">구역 시세 추이 · 법정동 매매 평당(전용)</div>'
-    +(tr?trendBox(tr,d.gu):'<div class="soon">'
+    +(tr?trendSection(tr,d.gu):'<div class="soon">'
       +'<svg viewBox="0 0 48 28" width="54" height="31" fill="none" stroke="#a8792c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,24 12,16 22,19 32,9 46,3"/><circle cx="46" cy="3" r="2.6" fill="#a8792c" stroke="none"/></svg>'
       +'<div class="tag">업데이트 예정</div>'
       +'<div>이 구역 법정동의 과거 실거래 표본이 부족합니다. 데이터가 쌓이면 연도별 시세 그래프가 표시됩니다.</div></div>')+'</div>';
@@ -138,6 +140,7 @@ function render(){
     +'<a class="cta dark" href="map_재개발_staging.html?mode=redev">지도(재개발)로 가기 →</a>'
     +'<a class="cta line" href="재개발_기초상식.html">재개발·재건축 기초상식 →</a></div>';
   app.innerHTML=h;
+  if(tr)drawTrend(99);
   loadNearTx(nm,d.gu);
 }
 var GUCODE={'종로구':'11110','중구':'11140','용산구':'11170','성동구':'11200','광진구':'11215','동대문구':'11230','중랑구':'11260','성북구':'11290','강북구':'11305','도봉구':'11320','노원구':'11350','은평구':'11380','서대문구':'11410','마포구':'11440','양천구':'11470','강서구':'11500','구로구':'11530','금천구':'11545','영등포구':'11560','동작구':'11590','관악구':'11620','서초구':'11650','강남구':'11680','송파구':'11710','강동구':'11740'};
@@ -149,21 +152,43 @@ function zoneCoords(nm){
   if(!c&&window.REDEV&&REDEV.features)REDEV.features.forEach(function(f){if(c)return;if((f.properties.biz||f.properties.nm)===nm){var r0=f.geometry.coordinates[0],cx=0,cy=0;for(var i=0;i<r0.length;i++){cx+=r0[i][0];cy+=r0[i][1];}c=[cy/r0.length,cx/r0.length];}});
   return c;
 }
-function trendBox(s,gu){
-  var W=600,H=150,padL=8,padR=8,padT=22,padB=24;
+var _TREND=null,_TRENDGU='';
+function trendSection(s,gu){
+  _TREND=s;_TRENDGU=gu;
+  var btns=[['전체',99],['최근5년',5],['최근3년',3]].map(function(b){
+    return '<button class="trbtn'+(b[1]===99?' on':'')+'" onclick="drawTrend('+b[1]+',this)">'+b[0]+'</button>';}).join('');
+  return '<div style="border:1px solid #ded8cc;border-radius:11px;padding:12px 14px;background:#fff">'
+    +'<div style="display:flex;gap:5px;margin-bottom:9px">'+btns+'</div><div id="trendchart"></div></div>';
+}
+function drawTrend(ny,btn){
+  if(btn){var ps=btn.parentNode.querySelectorAll('.trbtn');for(var i=0;i<ps.length;i++)ps[i].classList.remove('on');btn.classList.add('on');}
+  var s=_TREND||[]; if(ny<99&&s.length>ny)s=s.slice(s.length-ny);
+  var el=document.getElementById('trendchart'); if(el)el.innerHTML=trendSvg(s,_TRENDGU);
+}
+function trendSvg(s,gu){
+  if(!s||s.length<2)return '<div style="color:#8a8071;padding:10px 2px;font-size:13px">해당 기간 표본이 부족합니다.</div>';
+  var W=600,H=182,padL=54,padR=16,padT=26,padB=28;
   var ys=s.map(function(d){return d.py;}),mn=Math.min.apply(null,ys),mx=Math.max.apply(null,ys);
   var x0=s[0].y,x1=s[s.length-1].y,sp=(x1-x0)||1;
   function X(y){return padL+(y-x0)/sp*(W-padL-padR);}
   function Y(v){return padT+(1-(v-mn)/((mx-mn)||1))*(H-padT-padB);}
+  var grid='';[mx,(mn+mx)/2,mn].forEach(function(v){var yy=Y(v).toFixed(1);
+    grid+='<line x1="'+padL+'" y1="'+yy+'" x2="'+(W-padR)+'" y2="'+yy+'" stroke="#efe8da" stroke-width="1"/>'
+      +'<text x="'+(padL-7)+'" y="'+(parseFloat(yy)+3.5)+'" font-size="10" fill="#8a8071" text-anchor="end">'+Math.round(v).toLocaleString()+'</text>';});
   var line=s.map(function(d){return X(d.y).toFixed(1)+','+Y(d.py).toFixed(1);}).join(' ');
-  var area='M'+X(s[0].y).toFixed(1)+','+(H-padB)+' L'+line.split(' ').join(' L')+' L'+X(x1).toFixed(1)+','+(H-padB)+' Z';
+  var area='M'+X(x0).toFixed(1)+','+(H-padB)+' L'+line.split(' ').join(' L')+' L'+X(x1).toFixed(1)+','+(H-padB)+' Z';
   var dots=s.map(function(d){return '<circle cx="'+X(d.y).toFixed(1)+'" cy="'+Y(d.py).toFixed(1)+'" r="3" fill="#a8792c"/>';}).join('');
-  var labs=s.map(function(d,i){return (i===0||i===s.length-1||i%2===0)?'<text x="'+X(d.y).toFixed(1)+'" y="'+(H-8)+'" font-size="10" fill="#8a8071" text-anchor="middle">'+String(d.y).slice(2)+'</text>':'';}).join('');
+  var xlabs=s.map(function(d,i){return (s.length<=7||i===0||i===s.length-1||i%2===0)?'<text x="'+X(d.y).toFixed(1)+'" y="'+(H-9)+'" font-size="10" fill="#8a8071" text-anchor="middle">'+d.y+'</text>':'';}).join('');
   var first=s[0],last=s[s.length-1],rise=Math.round((last.py/first.py-1)*100);
-  var head='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><span style="font-size:12.5px;color:#6b6355">'+esc(gu)+' 법정동 · '+first.y+'→'+last.y+'</span><b style="font-size:16px;color:'+(rise>=0?'#c0562e':'#2b6cb0')+'">'+(rise>=0?'+':'')+rise+'%</b></div>';
-  var svg='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="display:block;overflow:visible"><path d="'+area+'" fill="rgba(168,121,44,.12)"/><polyline points="'+line+'" fill="none" stroke="#a8792c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'+dots+labs
-    +'<text x="'+X(last.y).toFixed(1)+'" y="'+(Y(last.py)-9).toFixed(1)+'" font-size="12.5" font-weight="700" fill="#1a1a1a" text-anchor="end">'+last.py.toLocaleString()+'만/평</text></svg>';
-  return '<div style="border:1px solid #ded8cc;border-radius:11px;padding:12px 14px;background:#fff">'+head+svg+'<div class="note" style="margin-top:4px">해당 구역 법정동의 아파트 매매 실거래 연도별 중위 평당가(전용면적, 해제 제외). 구역 단지가 아닌 동 단위 참고치입니다.</div></div>';
+  var head='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><span style="font-size:12.5px;color:#6b6355">'+esc(gu)+' 법정동 · '+first.y+'~'+last.y+'</span><b style="font-size:16px;color:'+(rise>=0?'#c0562e':'#2b6cb0')+'">'+(rise>=0?'+':'')+rise+'%</b></div>';
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="display:block;overflow:visible">'
+    +'<text x="6" y="13" font-size="10" fill="#8a8071">만원/평(전용)</text>'
+    +grid
+    +'<path d="'+area+'" fill="rgba(168,121,44,.12)"/><polyline points="'+line+'" fill="none" stroke="#a8792c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'+dots+xlabs
+    +'<text x="'+X(last.y).toFixed(1)+'" y="'+(Y(last.py)-9).toFixed(1)+'" font-size="12" font-weight="700" fill="#1a1a1a" text-anchor="end">'+last.py.toLocaleString()+'</text>'
+    +'<text x="'+(W-padR)+'" y="'+(H-9)+'" font-size="10" fill="#8a8071" text-anchor="end">연도 →</text>'
+    +'</svg>';
+  return head+svg+'<div class="note" style="margin-top:4px">Y축=평당 만원(전용) · X축=연도 · 법정동 아파트 매매 실거래 연도별 중위값(해제 제외). 구역 단지가 아닌 동 단위 참고치.</div>';
 }
 function loadNearTx(nm,gu){
   var co=zoneCoords(nm),code=GUCODE[gu];
