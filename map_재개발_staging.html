@@ -106,6 +106,15 @@
 #modes{display:flex;gap:6px;margin-right:8px}
 #modes button{border:1px solid #d5d9e0;background:#fff;color:#5b6473;font-size:13px;font-weight:700;padding:5px 13px;border-radius:20px;cursor:pointer;white-space:nowrap}
 #modes button.on{background:#12203a;color:#fff;border-color:#12203a}
+#rfbar{display:none;gap:5px;align-items:center;flex-wrap:wrap;margin-right:6px}
+body.redev #rfbar{display:flex}
+.rflbl{color:var(--muted);font-size:11px;margin:0 2px}
+.rfc{border:1px solid #cdd3db;background:#fff;color:#5b6473;font-size:12px;font-weight:700;padding:4px 11px;border-radius:16px;cursor:pointer;white-space:nowrap;transition:background .12s ease}
+.rfc.on{background:#12203a;color:#fff;border-color:#12203a}
+.rfc[data-rf="신통"].on{background:#d6336c;border-color:#d6336c}
+.rfc[data-rf="모아"].on{background:#2b8a3e;border-color:#2b8a3e}
+.rfc.trade{margin-left:8px;border-style:dashed}
+@media (max-width:720px){#rfbar{flex-wrap:nowrap}.rfc{padding:4px 9px;font-size:11px}}
 #rcard{display:none;position:fixed;top:0;right:0;width:358px;height:100%;z-index:1600;background:#f7f5f0;border-left:1.5px solid #1a1a1a;overflow-y:auto;box-shadow:-4px 0 18px rgba(0,0,0,.12);font-family:'Pretendard','Malgun Gothic',system-ui,sans-serif}
 #rcard.open{display:block}
 @media (max-width:720px){#rcard{width:100%;height:58%;top:auto;bottom:0;border-left:0;border-top:1.5px solid #1a1a1a}}
@@ -157,6 +166,7 @@
 </header>
 <div id="bar">
   <div id="modes"><button data-m="trade" class="on">실거래</button><button data-m="redev">재개발·재건축</button></div>
+  <div id="rfbar"><span class="rflbl">유형</span><button class="rfc on" data-rf="재개발">재개발</button><button class="rfc on" data-rf="재건축">재건축·주거환경</button><button class="rfc on" data-rf="신통">신속통합기획</button><button class="rfc on" data-rf="모아">모아주택</button><button class="rfc trade" data-rf="trade">실거래 겹쳐보기</button></div>
   <form id="sform"><input id="sq" type="search" placeholder="지역·동 검색" autocomplete="off"><button type="submit" class="sbtn">검색</button></form>
   <button id="fbtn" type="button">필터 ▾</button>
   <select id="selSido"></select><select id="selSgg"></select>
@@ -195,6 +205,12 @@ var Z_DETAIL=13, Z_POINT=15, Z_NAME=16;
 var curU='all', curD='all', curSido='all', curSgg='all';
 var curTset=null;
 var curMode='trade';
+var curRF={'재개발':true,'재건축':true,'신통':true,'모아':true};
+var redevShowTrade=false;
+function matchRF(cat,tag){
+  return (curRF['재개발']&&cat==='재개발') || (curRF['재건축']&&(cat==='재건축'||cat==='주거환경'))
+    || (curRF['신통']&&(tag==='신통'||cat==='신통')) || (curRF['모아']&&tag==='모아');
+}
 try{var P0=new URLSearchParams(location.search);var t0=P0.get('t');if(t0&&TYPE[t0]){curTset={};curTset[t0]=true;}
 var u0=P0.get('u');if(u0==='매매'||u0==='전세'||u0==='월세')curU=u0;}catch(e){}
 /* 상세 필터 상태 (매매가·보증금·월세·면적·연식·층) — fXc는 직접 입력 [최소,최대+1) 만원 */
@@ -282,6 +298,7 @@ function visibleRegions(){
 }
 function render(){
   layer.clearLayers();
+  if(curMode==='redev'&&!redevShowTrade)return;
   var z=map.getZoom(), nPt=0, nTx=0;
   document.getElementById('map').classList.toggle('names',z>=Z_NAME);
   if(z<Z_DETAIL){
@@ -687,6 +704,7 @@ function renderRedev(){
     var r0=f.geometry.coordinates[0],mnx=1e9,mxx=-1e9,mny=1e9,mxy=-1e9;
     for(var i=0;i<r0.length;i++){var x=r0[i][0],y=r0[i][1];if(x<mnx)mnx=x;if(x>mxx)mxx=x;if(y<mny)mny=y;if(y>mxy)mxy=y;}
     if(mxx<W||mnx>E||mxy<S||mny>N)return;
+    if(!matchRF(f.properties.cat,redevTag(f.properties)))return;
     var c=(RCOL[f.properties.cat]||'#8a8071');
     var ll=f.geometry.coordinates.map(function(r){return r.map(function(pt){return [pt[1],pt[0]];});});
     var _cy=(mny+mxy)/2,_cx=(mnx+mxx)/2;
@@ -695,6 +713,7 @@ function renderRedev(){
   });
   (redevMarks||[]).forEach(function(m){
     if(m.lon<W||m.lon>E||m.lat<S||m.lat>N)return;
+    if(!matchRF(m.cat,m.tag||redevTag(m)))return;
     var c=(RCOL[m.cat]||'#8a8071');
     L.circleMarker([m.lat,m.lon],{renderer:redevRenderer,radius:6,color:'#fff',weight:1.5,fillColor:c,fillOpacity:1}).on('click',function(){showRcard(m);}).addTo(redevLayer);
     n++;
@@ -751,6 +770,11 @@ function setMode(m){
   }
 }
 document.querySelectorAll('#modes button').forEach(function(b){b.addEventListener('click',function(){setMode(b.dataset.m);});});
+document.querySelectorAll('#rfbar button').forEach(function(b){b.addEventListener('click',function(){
+  var rf=b.dataset.rf;
+  if(rf==='trade'){redevShowTrade=!redevShowTrade;b.classList.toggle('on',redevShowTrade);render();}
+  else{curRF[rf]=!curRF[rf];b.classList.toggle('on',curRF[rf]);renderRedev();}
+});});
 try{if((new URLSearchParams(location.search)).get('mode')==='redev'){setMode('redev');}}catch(e){}
 
 render();
