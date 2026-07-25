@@ -61,6 +61,7 @@ body{margin:0;background:var(--paper);color:var(--ink);font-family:'Malgun Gothi
 <script src="data/jeongbi_seoul.js"></script>
 <script src="data/jeongbi_markers.js"></script>
 <script src="data/jeongbi_tag.js"></script>
+<script src="data/jeongbi_trend.js"></script>
 <script>
 var RCOL={'재개발':'#c0562e','재건축':'#2f5d86','주거환경':'#4c7a4a'};
 function catKo(c){return RCOL[c]?c:'정비구역';}
@@ -126,10 +127,12 @@ function render(){
   }else{
     h+='<div class="sec"><div class="lab">정비계획</div><div class="pend">정비계획 확정 전입니다. 용적률·세대수·면적 등 세부 계획은 사업시행계획이 확정·고시되는 시점에 채워집니다. 지금 단계에서는 추진 단계와 사업 구분까지 확인됩니다.</div></div>';
   }
-  h+='<div class="sec"><div class="lab">구역 시세 추이 · 단계별 상승률</div><div class="soon">'
-    +'<svg viewBox="0 0 48 28" width="54" height="31" fill="none" stroke="#a8792c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,24 12,16 22,19 32,9 46,3"/><circle cx="46" cy="3" r="2.6" fill="#a8792c" stroke="none"/></svg>'
-    +'<div class="tag">업데이트 예정</div>'
-    +'<div>실거래 과거 데이터(백필) 반영 후, 구역지정·조합설립·관리처분 단계별 상승률과 연도별 시세 그래프가 여기에 표시됩니다.</div></div></div>';
+  var tr=(window.REDEVTREND||{})[nm];
+  h+='<div class="sec"><div class="lab">구역 시세 추이 · 법정동 매매 평당(전용)</div>'
+    +(tr?trendBox(tr,d.gu):'<div class="soon">'
+      +'<svg viewBox="0 0 48 28" width="54" height="31" fill="none" stroke="#a8792c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,24 12,16 22,19 32,9 46,3"/><circle cx="46" cy="3" r="2.6" fill="#a8792c" stroke="none"/></svg>'
+      +'<div class="tag">업데이트 예정</div>'
+      +'<div>이 구역 법정동의 과거 실거래 표본이 부족합니다. 데이터가 쌓이면 연도별 시세 그래프가 표시됩니다.</div></div>')+'</div>';
   h+='<div class="sec" id="nearTxSec"></div>';
   h+='<div class="sec"><div class="lab">더 보기</div>'
     +'<a class="cta dark" href="map_재개발_staging.html?mode=redev">지도(재개발)로 가기 →</a>'
@@ -145,6 +148,22 @@ function zoneCoords(nm){
   (window.REDEVMARK||[]).forEach(function(m){if(!c&&m.nm===nm)c=[m.lat,m.lon];});
   if(!c&&window.REDEV&&REDEV.features)REDEV.features.forEach(function(f){if(c)return;if((f.properties.biz||f.properties.nm)===nm){var r0=f.geometry.coordinates[0],cx=0,cy=0;for(var i=0;i<r0.length;i++){cx+=r0[i][0];cy+=r0[i][1];}c=[cy/r0.length,cx/r0.length];}});
   return c;
+}
+function trendBox(s,gu){
+  var W=600,H=150,padL=8,padR=8,padT=22,padB=24;
+  var ys=s.map(function(d){return d.py;}),mn=Math.min.apply(null,ys),mx=Math.max.apply(null,ys);
+  var x0=s[0].y,x1=s[s.length-1].y,sp=(x1-x0)||1;
+  function X(y){return padL+(y-x0)/sp*(W-padL-padR);}
+  function Y(v){return padT+(1-(v-mn)/((mx-mn)||1))*(H-padT-padB);}
+  var line=s.map(function(d){return X(d.y).toFixed(1)+','+Y(d.py).toFixed(1);}).join(' ');
+  var area='M'+X(s[0].y).toFixed(1)+','+(H-padB)+' L'+line.split(' ').join(' L')+' L'+X(x1).toFixed(1)+','+(H-padB)+' Z';
+  var dots=s.map(function(d){return '<circle cx="'+X(d.y).toFixed(1)+'" cy="'+Y(d.py).toFixed(1)+'" r="3" fill="#a8792c"/>';}).join('');
+  var labs=s.map(function(d,i){return (i===0||i===s.length-1||i%2===0)?'<text x="'+X(d.y).toFixed(1)+'" y="'+(H-8)+'" font-size="10" fill="#8a8071" text-anchor="middle">'+String(d.y).slice(2)+'</text>':'';}).join('');
+  var first=s[0],last=s[s.length-1],rise=Math.round((last.py/first.py-1)*100);
+  var head='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><span style="font-size:12.5px;color:#6b6355">'+esc(gu)+' 법정동 · '+first.y+'→'+last.y+'</span><b style="font-size:16px;color:'+(rise>=0?'#c0562e':'#2b6cb0')+'">'+(rise>=0?'+':'')+rise+'%</b></div>';
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="display:block;overflow:visible"><path d="'+area+'" fill="rgba(168,121,44,.12)"/><polyline points="'+line+'" fill="none" stroke="#a8792c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'+dots+labs
+    +'<text x="'+X(last.y).toFixed(1)+'" y="'+(Y(last.py)-9).toFixed(1)+'" font-size="12.5" font-weight="700" fill="#1a1a1a" text-anchor="end">'+last.py.toLocaleString()+'만/평</text></svg>';
+  return '<div style="border:1px solid #ded8cc;border-radius:11px;padding:12px 14px;background:#fff">'+head+svg+'<div class="note" style="margin-top:4px">해당 구역 법정동의 아파트 매매 실거래 연도별 중위 평당가(전용면적, 해제 제외). 구역 단지가 아닌 동 단위 참고치입니다.</div></div>';
 }
 function loadNearTx(nm,gu){
   var co=zoneCoords(nm),code=GUCODE[gu];
