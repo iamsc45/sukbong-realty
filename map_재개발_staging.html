@@ -70,6 +70,16 @@
     border-radius:16px;background:#fff;outline:none;color:var(--text2)}
   #sq::placeholder{color:var(--muted2)}
   #sq:focus{box-shadow:0 0 0 2px rgba(20,20,20,.12)}
+  #sform{position:relative}
+  #sac{display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:1600;width:290px;max-height:340px;
+    overflow-y:auto;background:#fff;border:1px solid var(--hair-soft);border-radius:12px;box-shadow:0 12px 28px rgba(20,20,20,.18)}
+  #sac.open{display:block}
+  #sac .sach{padding:6px 12px;font-size:10.5px;color:var(--muted);border-bottom:1px solid var(--hair);position:sticky;top:0;background:#fff}
+  #sac .sitem{display:flex;justify-content:space-between;gap:8px;align-items:baseline;padding:7px 12px;cursor:pointer;border-bottom:1px solid var(--hair)}
+  #sac .sitem:last-child{border-bottom:0}
+  #sac .sitem:hover{background:#f3eee1}
+  #sac .sitem b{font-size:12.5px;font-weight:700;color:var(--text2)}
+  #sac .sitem span{font-size:11px;color:var(--muted);white-space:nowrap}
   #bar{position:relative}
   #fpanel{display:none;position:fixed;left:8px;z-index:1400;background:#fff;
     border:1px solid var(--hair-soft);border-radius:12px;box-shadow:0 10px 26px rgba(20,20,20,.14);
@@ -167,7 +177,7 @@ body.redev #rfbar{display:flex}
 <div id="bar">
   <div id="modes"><button data-m="trade" class="on">실거래</button><button data-m="redev">재개발·재건축</button></div>
   <div id="rfbar"><span class="rflbl">유형</span><button class="rfc on" data-rf="재개발">재개발</button><button class="rfc on" data-rf="재건축">재건축·주거환경</button><button class="rfc on" data-rf="신통">신속통합기획</button><button class="rfc on" data-rf="모아">모아주택</button><button class="rfc trade" data-rf="trade">실거래 겹쳐보기</button></div>
-  <form id="sform"><input id="sq" type="search" placeholder="지역·동 검색" autocomplete="off"><button type="submit" class="sbtn">검색</button></form>
+  <form id="sform"><input id="sq" type="search" placeholder="지역·동·단지 검색" autocomplete="off"><button type="submit" class="sbtn">검색</button><div id="sac"></div></form>
   <button id="fbtn" type="button">필터 ▾</button>
   <select id="selSido"></select><select id="selSgg"></select>
   <span class="bargrp"><span class="lbl">상품:</span><span id="typechips"></span></span>
@@ -586,7 +596,9 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
     e.preventDefault();
     var v=document.getElementById('sq').value.trim();
     if(!v)return;
+    if(window.closeSac)window.closeSac();
     try{if(typeof gtag==='function')gtag('event','region_search',{search_term:v,source:'map'});}catch(_e){}
+    if(window._trySelectApt&&window._trySelectApt(v))return;
     if(!findAndGo(v)){
       var st=document.getElementById('stat');
       if(st)st.textContent='"'+v+'" 지역을 찾지 못했습니다 (데이터 확충 중)';
@@ -602,6 +614,66 @@ var popLock=false;
 map.on('popupopen',function(){popLock=true;});
 map.on('popupclose',function(){popLock=false;setTimeout(render,50);});
 map.on('moveend zoomend',function(){if(popLock)return;render();if(curMode==='redev')renderRedev();});
+/* ===== 단지 검색 (검색창 자동완성 → 지도 이동 + 카드, 2026-07-25) ===== */
+(function(){
+  var idxLoading=false,idxReady=false;
+  var sq=document.getElementById('sq'), sac=document.getElementById('sac');
+  if(!sq||!sac)return;
+  function norm(s){return (s||'').toLowerCase().replace(/[\s·().,\-]/g,'');}
+  function esc(s){return (s||'').replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
+  window.closeSac=function(){sac.classList.remove('open');sac.innerHTML='';};
+  function sggName(code){var rs=(window.SB&&SB.summary&&SB.summary.regions)||[];for(var i=0;i<rs.length;i++){if(rs[i].code===code)return (rs[i].sgg||'').replace(/_/g,' ');}return '';}
+  function loadIdx(cb){
+    if(idxReady){cb&&cb();return;}
+    if(idxLoading){setTimeout(function(){loadIdx(cb);},180);return;}
+    idxLoading=true;
+    var s=document.createElement('script');s.src='data/apt_index.js';
+    s.onload=function(){idxReady=true;idxLoading=false;cb&&cb();};
+    s.onerror=function(){idxLoading=false;};
+    document.body.appendChild(s);
+  }
+  function matches(q,limit){
+    var n=norm(q); if(n.length<2||!window.SB||!SB.aptIdx)return [];
+    var pre=[],inc=[];
+    for(var i=0;i<SB.aptIdx.length;i++){var r=SB.aptIdx[i];var p=norm(r[0]).indexOf(n);
+      if(p<0)continue; if(p===0){pre.push(r);}else{if(inc.length<limit)inc.push(r);}
+      if(pre.length>=limit)break;}
+    return pre.concat(inc).slice(0,limit);
+  }
+  function jumpApt(r){   /* r=[name,lat,lng,code,dong] */
+    window.closeSac(); sq.value=r[0]; sq.blur();
+    go(r[1],r[2],17);
+    var code=r[3];
+    function open(){var d=window.SB&&SB.d&&SB.d[code];if(!d)return;
+      var pt=null,best=1e9;
+      for(var i=0;i<d.length;i++){if(d[i].name===r[0]){var dd=Math.abs(d[i].lat-r[1])+Math.abs(d[i].lng-r[2]);if(dd<best){best=dd;pt=d[i];}}}
+      if(pt){showAptCard(pt,(pt.txs||[]).slice());}
+    }
+    if(loaded[code]){open();}else{loadDetail(code,open);setTimeout(open,900);}
+  }
+  window._jumpApt=jumpApt;
+  function render(q){
+    var list=matches(q,12);
+    if(!list.length){window.closeSac();return;}
+    window._sacList=list;
+    sac.innerHTML='<div class="sach">단지 '+list.length+'곳 · 누르면 지도 이동·카드</div>'+list.map(function(r,i){
+      return '<div class="sitem" data-i="'+i+'"><b>'+esc(r[0])+'</b><span>'+esc(r[4]||'')+' · '+esc(sggName(r[3]))+'</span></div>';}).join('');
+    sac.classList.add('open');
+    Array.prototype.forEach.call(sac.querySelectorAll('.sitem'),function(el){
+      el.addEventListener('mousedown',function(ev){ev.preventDefault();jumpApt(window._sacList[+el.getAttribute('data-i')]);});
+    });
+  }
+  window._trySelectApt=function(v){
+    if(!idxReady||!window.SB||!SB.aptIdx)return false;
+    var n=norm(v);
+    for(var i=0;i<SB.aptIdx.length;i++){if(norm(SB.aptIdx[i][0])===n){jumpApt(SB.aptIdx[i]);return true;}}
+    return false;
+  };
+  sq.addEventListener('focus',function(){loadIdx(function(){var v=sq.value.trim();if(v)render(v);});});
+  sq.addEventListener('input',function(){var v=sq.value.trim();if(!v){window.closeSac();return;}if(!idxReady){loadIdx(function(){render(v);});return;}render(v);});
+  sq.addEventListener('keydown',function(e){if(e.key==='Escape')window.closeSac();});
+  document.addEventListener('click',function(e){if(!sac.contains(e.target)&&e.target!==sq)window.closeSac();});
+})();
 /* ===== 재개발·재건축 모드 (스테이징, 2026-07-24) ===== */
 var redevLayer=L.layerGroup();
 var redevRenderer=L.canvas();
@@ -721,8 +793,17 @@ function renderRedev(){
   setFcount('화면 내 정비구역 '+n.toLocaleString()+'곳 · 구역/마커 클릭 시 상세');
 }
 function redevLegend(){
-  document.getElementById('legend').innerHTML=[['재개발','재개발'],['재건축','재건축'],['주거환경','주거환경'],['신속통합기획','신통']].map(function(k){
-    return '<span style="margin-right:10px"><span class="dot" style="background:'+RCOL[k[1]]+'"></span>'+k[0]+'</span>';}).join('')+'<br>폴리곤=재개발 구역계 · 점=재건축·신통 후보지 등 · 신통기획/모아주택은 카드에 뱃지 · 추진단계=정비몽땅 최신 · 출처: 국가정보포털 공공 DB 등 · 참고용';
+  var dt=function(c){return '<span class="dot" style="background:'+c+'"></span>';};
+  var bar=function(c){return '<span style="display:inline-block;width:16px;height:9px;border-radius:2px;background:'+c+';opacity:.55;vertical-align:0;margin-right:4px"></span>';};
+  document.getElementById('legend').innerHTML=
+    '<b style="color:#4a4438">유형(색)</b> '
+    +dt(RCOL['재개발'])+'재개발 &nbsp;'
+    +dt(RCOL['재건축'])+'재건축 &nbsp;'
+    +dt(RCOL['주거환경'])+'주거환경 &nbsp;'
+    +dt('#d6336c')+'신속통합기획 &nbsp;'
+    +dt('#2b8a3e')+'모아주택'
+    +'<br><b style="color:#4a4438">모양</b> '+bar('#9a8f7a')+'채워진 <b>구역(면)</b>=정비구역 경계 &nbsp; '+dt('#9a8f7a')+'<b>점</b>=위치 마커(구역계 없는 재건축·신통 후보지 등)'
+    +'<br>신통기획·모아주택은 카드에 뱃지 · 추진단계=정비몽땅 최신 · 출처: 국가정보포털 공공 DB 등 · 참고용';
 }
 function tradeLegend(){
   document.getElementById('legend').innerHTML=Object.keys(TYPE).map(function(t){return '<span style="margin-right:8px"><span class="dot" style="background:'+TYPE[t][1]+'"></span>'+TYPE[t][0]+'</span>';}).join('')+'<br>'+(SB.summary.period?('계약일 '+SB.summary.period.f.replace(/-/g,'.')+' ~ '+SB.summary.period.t.slice(5).replace(/-/g,'.')+' · '):'')+'기준일 '+SB.summary.updated;
