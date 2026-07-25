@@ -86,7 +86,14 @@ function boot(){
   var code=qs('code'),nm=qs('nm'),dong=qs('dong');
   if(!code||!nm){fail();return;}
   var s=document.createElement('script');s.src='data/detail_'+code+'.js';
-  s.onload=function(){var a=document.createElement('script');a.src='data/apt_info_'+code+'.js';a.onload=function(){go(code,nm,dong);};a.onerror=function(){go(code,nm,dong);};document.body.appendChild(a);};
+  s.onload=function(){
+    var a=document.createElement('script');a.src='data/apt_info_'+code+'.js';
+    a.onload=a.onerror=function(){
+      var k=document.createElement('script');k.src='data/apt_asking_'+code+'.js';
+      k.onload=k.onerror=function(){go(code,nm,dong);};document.body.appendChild(k);
+    };
+    document.body.appendChild(a);
+  };
   s.onerror=fail;document.body.appendChild(s);
 }
 function fail(){document.getElementById('nm').textContent='단지 정보를 찾지 못했습니다';document.getElementById('body').innerHTML='<p style="color:#8a8071">지도 카드에서 단지를 눌러 다시 열어주세요.</p>';}
@@ -152,6 +159,16 @@ function render(pt,code){
     +'<div class="note">2026.04 시행 규제(작성 2026.07.25). 소득(DSR)·은행별로 더 낮아질 수 있고 비규제는 다릅니다. 대출 권유·한도 보장 아님. <a href="재개발_기초상식.html#loan-limit" style="color:var(--brass)">자세히 →</a></div></div>';
   h+='<div class="grid2"><div class="sec"><div class="lab">평형별 시세 (전용)</div>'+(pyr||'<div style="color:#8a8071;padding:8px 2px">최근 매매 표본 부족</div>')+'</div>'
     +'<div class="sec"><div class="lab">은행 대출 한도 (규제지역 기준)</div>'+loan+'</div></div>';
+  var ask=(window.APTASK&&window.APTASK[code]&&window.APTASK[code][pt.name])||null;
+  if(ask){
+    function hrow(l,v,n){return '<div class="deal"><div><b>'+l+' 호가</b><span class="meta">매물 '+n+'건</span></div><div class="pr">'+v+'</div></div>';}
+    var hr='';
+    if(ask.mm)hr+=hrow('매매',eok(ask.mm.med)+(ask.mm.py?' <span style="color:#8a8071;font-weight:400;font-size:10.5px">'+comma(ask.mm.py)+'만/평</span>':''),ask.mm.n);
+    if(ask.je)hr+=hrow('전세',eok(ask.je.med),ask.je.n);
+    if(ask.wo)hr+=hrow('월세',eok(ask.wo.bo)+' / '+ask.wo.wol+'만',ask.wo.n);
+    h+='<div class="sec"><div class="lab">실시간 호가 · 협상 전 (네이버 매물)</div>'+hr
+      +'<div class="note">호가는 매물로 올라온 협상 전 제시가입니다. 위 실거래(실제 체결가)와 다를 수 있습니다. 수집일 '+(window.APTASKDAY||'-')+'.</div></div>';
+  }
   h+='<div class="sec"><div class="lab">시세 추이 (평당·연도별)</div><div class="soon">'
     +'<svg viewBox="0 0 48 28" width="54" height="31" fill="none" stroke="#a8792c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,24 12,16 22,19 32,9 46,3"/><circle cx="46" cy="3" r="2.6" fill="#a8792c" stroke="none"/></svg>'
     +'<div class="tag">업데이트 예정</div>'
