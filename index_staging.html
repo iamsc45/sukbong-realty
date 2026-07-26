@@ -44,16 +44,16 @@ a{color:inherit}
   padding:10px 20px;border-radius:100px;text-decoration:none;transition:opacity 150ms ease}
 .nav .cta:hover{opacity:.75}
 /* ── 히어로 ── */
-.hero{padding:96px 0 30px;position:relative}
+.hero{padding:48px 0 20px;position:relative}
 .kicker{font-size:11.5px;letter-spacing:.18em;color:var(--g2);text-transform:uppercase;
   display:flex;align-items:center;gap:10px}
 .kicker::before{content:"";width:34px;height:1px;background:var(--blk)}
-h1{font-size:clamp(46px,8.6vw,118px);line-height:1.0;letter-spacing:-0.045em;font-weight:800;
-  margin:22px 0 0}
+h1{font-size:clamp(31px,5vw,60px);line-height:1.05;letter-spacing:-0.04em;font-weight:800;
+  margin:15px 0 0}
 h1 .thin{color:var(--g3)}
 .hero-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:30px;
   margin:34px 0 0;flex-wrap:wrap}
-.hero-sub{font-size:clamp(16px,1.75vw,21px);font-weight:700;color:var(--g1);margin:0;word-break:keep-all;line-height:1.5;letter-spacing:-0.02em}
+.hero-sub{font-size:clamp(15px,1.5vw,18px);font-weight:600;color:var(--g1);margin:14px 0 0;word-break:keep-all;line-height:1.5;letter-spacing:-0.02em}
 .prods{display:flex;gap:8px;flex-wrap:wrap;margin:28px 0 0}
 .prod{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--hair);background:var(--wh);
   border-radius:100px;padding:7px 15px;font-size:12.5px;font-weight:600;color:var(--g1)}
@@ -83,7 +83,7 @@ h1 .thin{color:var(--g3)}
 @keyframes mv{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 .tk{margin:0 28px}.tk b{color:#FFBC5C;font-weight:700}
 /* ── 대시보드 ── */
-.dash{padding:76px 0 0}
+.dash{padding:40px 0 0}
 .sec{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:8px}
 .sec h2{font-size:clamp(24px,3vw,34px);letter-spacing:-0.03em;margin:0;font-weight:800}
 .sec .d{font-size:12px;color:var(--g2)}
@@ -132,13 +132,13 @@ table.rank{width:100%;border-collapse:collapse;font-size:13px}
 .links .ar{margin-left:auto;font-size:22px}
 .notice{font-size:11.5px;color:var(--g2);margin:44px 0 60px;max-width:760px;line-height:1.7}
 /* 데스크톱 지역 검색 (블랙 대시보드 위) */
-.d-search{display:flex;max-width:620px;margin:30px 0 0;border:1.5px solid var(--blk);border-radius:100px;
-  background:var(--wh);overflow:hidden}
-.d-search input{flex:1;border:0;outline:0;background:transparent;font:inherit;font-size:15px;
-  padding:14px 6px 14px 22px;min-width:0}
+.d-search{display:flex;max-width:780px;margin:22px 0 0;border:2px solid var(--blk);border-radius:100px;
+  background:var(--wh);overflow:hidden;box-shadow:0 10px 30px rgba(20,20,20,.10)}
+.d-search input{flex:1;border:0;outline:0;background:transparent;font:inherit;font-size:16.5px;
+  padding:18px 6px 18px 26px;min-width:0}
 .d-search input::placeholder{color:var(--g3)}
-.d-search button{border:0;background:var(--blk);color:#fff;font:inherit;font-size:13.5px;font-weight:700;
-  padding:0 26px;margin:5px;border-radius:100px;cursor:pointer;transition:opacity 150ms ease}
+.d-search button{border:0;background:var(--blk);color:#fff;font:inherit;font-size:14.5px;font-weight:700;
+  padding:0 30px;margin:6px;border-radius:100px;cursor:pointer;transition:opacity 150ms ease}
 .d-search button:hover{opacity:.8}
 footer{background:var(--blk);color:#8A8A85;font-size:12px;padding:26px 0}
 footer a{color:#fff;text-decoration:none;font-weight:600}
@@ -211,14 +211,14 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
   .rv,.blk-anim{opacity:1!important;transform:none!important;transition:none!important}
 }
 /* ── 앱형 메뉴 허브 (2026-07-26) ── */
-.hub{padding:44px 0 0}
-.hub-h{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px}
+.hub{padding:32px 0 0}
+.hub-h{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
 .hub-h h2{font-size:clamp(22px,2.6vw,30px);letter-spacing:-0.03em;margin:0;font-weight:800}
 .hub-h .d{font-size:12px;color:var(--g2)}
-.hubgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.hubgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
 @media(max-width:900px){.hubgrid{grid-template-columns:repeat(3,1fr)}}
-.tile{position:relative;display:flex;flex-direction:column;gap:9px;padding:20px 16px;background:var(--wh);
-  border:1px solid var(--hair);border-radius:16px;text-decoration:none;color:var(--blk);
+.tile{position:relative;display:flex;flex-direction:column;gap:7px;padding:15px 14px;background:var(--wh);
+  border:1px solid var(--hair);border-radius:14px;text-decoration:none;color:var(--blk);
   transition:border-color .15s ease,transform .15s ease}
 .tile:hover{border-color:var(--blk);transform:translateY(-2px)}
 .tile .ic{font-size:27px;line-height:1;color:var(--blue)}
@@ -230,9 +230,12 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
 .tile.soon .ic{color:var(--g3)}
 .tile .badge{position:absolute;top:12px;right:12px;font-size:9px;font-weight:800;letter-spacing:.04em;
   background:var(--bg);color:var(--g2);border:1px solid var(--hair);border-radius:100px;padding:2px 7px}
-.ad-slot{margin:22px 0 0;border:1px dashed var(--g4);border-radius:14px;min-height:90px;background:var(--wh);
-  display:flex;align-items:center;justify-content:center;color:var(--g3);font-size:11.5px;letter-spacing:.02em}
-.op-strip{display:flex;align-items:center;gap:13px;margin:34px 0 0;padding:16px 22px;background:var(--blk);
+.ad-slot{margin:18px 0 0;border:1.5px solid var(--blue);border-radius:14px;min-height:74px;
+  background:rgba(37,84,224,.055);display:flex;align-items:center;justify-content:center;gap:9px;
+  color:var(--blue);font-size:13.5px;font-weight:700;letter-spacing:.01em}
+.ad-slot i{font-size:19px}
+.ad-slot .sub{color:var(--g2);font-weight:500;font-size:11.5px}
+.op-strip{display:flex;align-items:center;gap:13px;margin:20px 0 0;padding:15px 22px;background:var(--blk);
   color:#fff;border-radius:18px;flex-wrap:wrap}
 .op-strip .oi{width:42px;height:42px;border-radius:50%;background:#fff;color:var(--blk);display:flex;
   align-items:center;justify-content:center;font-weight:800;font-size:16px;flex:0 0 auto}
@@ -260,17 +263,22 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
 <nav class="nav"><div class="nav-in">
   <a class="brand" href="index.html">석봉 부동산 정보방</a>
   <a class="lnk on" href="index.html">홈</a>
-  <a class="lnk" href="map.html">실거래지도</a>
+  <a class="lnk" href="map_재개발_staging.html">실거래지도</a>
   <a class="lnk" href="apply.html">청약</a>
-  <a class="lnk" href="reports.html">리포트</a>
+  <a class="lnk" href="https://blog.naver.com/seokbongnews" target="_blank" rel="noopener">리포트</a>
   <a class="lnk" href="channels.html">채널</a>
-  <a class="cta" href="map.html">지도 열기</a>
+  <a class="cta" href="map_재개발_staging.html">지도 열기</a>
 </div></nav>
 
 <header class="hero wrap">
   <div class="bigword" aria-hidden="true">DATA</div>
   <div class="kicker">국토교통부 실거래 신고 · 매일 자동 수집 · 전국 17개 시도</div>
-  <h1>실거래가를,<br><span class="thin">데이터로</span> 읽다</h1>
+  <h1>전국 부동산,<br><span class="thin">데이터로</span> 읽다</h1>
+  <p class="hero-sub">실거래·재개발·경매·청약까지, 흩어진 부동산 정보를 한 곳에서 무료로.</p>
+  <form class="d-search" id="dSearch">
+    <input id="dQ" type="search" placeholder="단지·지역·동·재개발 구역 검색 (예: 헬리오시티, 송파구, 흑석11)" autocomplete="off">
+    <button type="submit">검색</button>
+  </form>
   <div class="prods">
     <span class="prod"><span class="dot" style="background:#2554E0"></span>아파트</span>
     <span class="prod"><span class="dot" style="background:#7A5AF8"></span>오피스텔</span>
@@ -279,18 +287,10 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
     <span class="prod"><span class="dot" style="background:#D4573F"></span>빌딩</span>
     <span class="prod"><span class="dot" style="background:#E8A13A"></span>상가·오피스</span>
     <span class="prod"><span class="dot" style="background:#4C9A4C"></span>토지</span>
+    <span class="prod"><span class="dot" style="background:#c0562e"></span>재개발·재건축</span>
+    <span class="prod"><span class="dot" style="background:#0F6E56"></span>경매·공매</span>
+    <span class="prod"><span class="dot" style="background:#185FA5"></span>청약·분양</span>
   </div>
-  <div class="hero-foot">
-    <p class="hero-sub">매매부터 전세·월세까지, 신고되는 모든 실거래를 지도와 대시보드로 보여드립니다.</p>
-    <div class="hero-cta">
-      <a class="btn b" href="map.html">실거래지도 열기</a>
-      <a class="btn o" href="channels.html">채널 구독</a>
-    </div>
-  </div>
-  <form class="d-search" id="dSearch">
-    <input id="dQ" type="search" placeholder="지역·동네 검색 (예: 송파구, 답십리동, 분당)" autocomplete="off">
-    <button type="submit">검색</button>
-  </form>
   <div class="block blk-anim">
     <div class="block-in">
       <div class="blabel" id="blabel">Live Data</div>
@@ -303,7 +303,7 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
 <section class="hub wrap">
   <div class="hub-h"><h2>부동산, 필요한 정보 한 곳에서</h2><span class="d">전부 무료 · 매일 자동 갱신 · 잠금 없음</span></div>
   <div class="hubgrid" id="hubDesk"></div>
-  <div class="ad-slot" id="adDesk">제휴 · 광고 문의 자리</div>
+  <div class="ad-slot" id="adDesk"><i class="ti ti-speakerphone" aria-hidden="true"></i>이 자리에 브랜드를 노출하세요<span class="sub">청약·분양·중개업소 배너 제휴 문의</span></div>
   <div class="op-strip">
     <span class="oi">석</span>
     <div><div class="ot">석봉 부동산 정보방</div><div class="os">부동산 시행·빌딩 중개·담보대출 전문가가 직접 운영합니다. 국토부·공공 데이터 기반, 전부 무료로 제공합니다.</div></div>
@@ -340,6 +340,11 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
       <div class="panel rv"><h3>상품별 거래 비중</h3><p class="cap" id="capProd">수집 데이터 전체</p>
         <canvas id="prod" height="158"></canvas></div>
     </div>
+    <div class="grid g-main rv" style="margin-top:14px">
+      <div class="panel"><h3>다가오는 청약 일정</h3><p class="cap" id="capApply">한국부동산원 청약홈</p><div id="applyList"></div></div>
+      <div class="panel"><h3>청약 한눈에</h3><p class="cap" id="capApply2"></p><div id="applyStat"></div>
+        <a href="apply.html" style="display:inline-block;margin-top:14px;font-size:12.5px;font-weight:700;color:var(--blue);text-decoration:none">전체 청약 일정 보기 →</a></div>
+    </div>
     <div class="grid sido3 rv" id="sido3"></div>
     <div class="grid g-main rv" style="margin-top:14px;grid-template-columns:1fr 1fr">
       <div class="panel"><h3>아파트 평형대별 매매</h3><p class="cap" id="capPy"></p><div id="pyeong"></div></div>
@@ -363,8 +368,8 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
       <div class="panel rv"><h3>최고가 거래</h3><p class="cap" id="capTop">최근 수집분 · 매매</p><div id="topdeals" class="dealwrap"></div></div>
     </div>
     <div class="links">
-      <a class="rv" href="map.html"><span class="t">실거래지도</span><span class="s">동네를 확대하면 건물별 가격이 보입니다</span><span class="ar">→</span></a>
-      <a class="rv" href="reports.html"><span class="t">주간·월간 리포트</span><span class="s">매주·매월 발행하는 시장 결산</span><span class="ar">→</span></a>
+      <a class="rv" href="map_재개발_staging.html"><span class="t">실거래지도</span><span class="s">동네를 확대하면 건물별 가격이 보입니다</span><span class="ar">→</span></a>
+      <a class="rv" href="https://blog.naver.com/seokbongnews" target="_blank" rel="noopener"><span class="t">주간·월간 리포트</span><span class="s">매주·매월 발행하는 시장 결산 (블로그)</span><span class="ar">→</span></a>
       <a class="rv" href="channels.html"><span class="t">채널 안내</span><span class="s">매일 아침 카드뉴스 10장, 무료</span><span class="ar">→</span></a>
     </div>
     <p class="notice rv">본 사이트의 실거래 정보는 국토교통부 실거래가 공개시스템 신고 자료(해제 건 제외)를 그대로 옮긴 것으로,
@@ -380,14 +385,14 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
 <script>
 (function(){
   var HUB=[
-    {n:'실거래지도',d:'건물별 실거래가',i:'map-2',h:'map.html'},
+    {n:'실거래지도',d:'건물별 실거래가',i:'map-2',h:'map_재개발_staging.html'},
     {n:'재개발·재건축',d:'정비구역·시세추이',i:'building-community',h:'map_재개발_staging.html?mode=redev'},
     {n:'실시간 인기',d:'거래 급증·가격 급등',i:'flame',cls:'hot',soon:true},
     {n:'경매·공매',d:'낙찰가율·물건',i:'gavel',soon:true},
     {n:'청약',d:'분양 일정·경쟁률',i:'ticket',h:'apply.html'},
     {n:'시세·통계',d:'평당가·전세가율',i:'chart-histogram',h:'#dash'},
-    {n:'상가·빌딩',d:'상업용 실거래',i:'building-store',h:'map.html?t=comm'},
-    {n:'리포트',d:'주간·월간 결산',i:'file-text',h:'reports.html'},
+    {n:'상가·빌딩',d:'상업용 실거래',i:'building-store',h:'map_재개발_staging.html?t=comm'},
+    {n:'리포트',d:'주간·월간 결산',i:'file-text',h:'https://blog.naver.com/seokbongnews',blank:true},
     {n:'관심단지',d:'저장·알림',i:'star',soon:true},
     {n:'커뮤니티',d:'동네 이야기',i:'messages',soon:true}
   ];
@@ -396,9 +401,9 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
     var inner='<i class="ti ti-'+t.i+' ic" aria-hidden="true"></i><span class="tn">'+t.n+'</span>'
       +(mob?'':'<span class="td">'+t.d+'</span>')
       +(t.soon?'<span class="badge">'+(mob?'':'준비중')+'</span>':'');
-    return t.soon
-      ? '<a class="'+cls+'" href="#" onclick="return false" title="준비 중입니다">'+inner+'</a>'
-      : '<a class="'+cls+'" href="'+t.h+'">'+inner+'</a>';
+    if(t.soon)return '<a class="'+cls+'" href="#" onclick="return false" title="준비 중입니다">'+inner+'</a>';
+    var tgt=t.blank?' target="_blank" rel="noopener"':'';
+    return '<a class="'+cls+'" href="'+t.h+'"'+tgt+'>'+inner+'</a>';
   }
   var hd=document.getElementById('hubDesk'); if(hd)hd.innerHTML=HUB.map(function(t){return tile(t,false);}).join('');
   var hm=document.getElementById('hubMob'); if(hm)hm.innerHTML=HUB.map(function(t){return tile(t,true);}).join('');
@@ -427,6 +432,8 @@ function kpiCell(inner,label){var d=document.createElement("div");d.className="k
 kpiCell('<span class="cnt" data-v="'+tot+'">0</span><small> 건</small>','수집 거래 (매매+전월세) · 계약 '+PER);
 kpiCell('<span class="cnt" data-v="'+davg+'">0</span><small> 건/일</small>','하루 평균 거래 · 계약일 기준');
 kpiCell(seoulMed?eok(seoulMed):"—",'서울 아파트 매매 중위가 · '+PER);
+if(T.jr&&T.jr.sale)kpiCell(Math.round(T.jr.je/T.jr.sale*100)+'<small> %</small>','서울 아파트 전세가율 · 84㎡');
+if(T.pdang&&T.pdang.seoul)kpiCell(T.pdang.seoul.toLocaleString()+'<small> 만/평</small>','서울 아파트 평당가 · 전용');
 kpiCell('<span style="font-size:26px">'+T.updated+'</span>','데이터 기준일');
 function countUp(el){var v=+el.dataset.v,t0=null;
   function step(ts){if(!t0)t0=ts;var p=Math.min((ts-t0)/1100,1);p=1-Math.pow(1-p,3);
@@ -476,7 +483,7 @@ T.sido.forEach(function(x){
 /* 구 랭킹 */
 var maxN=Math.max.apply(null,T.gu.map(function(x){return x.n;}));
 document.getElementById("gurank").innerHTML=T.gu.map(function(x,i){
-  return '<tr onclick="location.href=\'map.html?q=\'+encodeURIComponent(\'서울 '+x.name+'\')"><td class="no">'+String(i+1).padStart(2,"0")+'</td><td class="nm">'+x.name+'</td>'
+  return '<tr onclick="location.href=\'map_재개발_staging.html?q=\'+encodeURIComponent(\'서울 '+x.name+'\')"><td class="no">'+String(i+1).padStart(2,"0")+'</td><td class="nm">'+x.name+'</td>'
    +'<td style="width:45%"><div style="display:flex;align-items:center;gap:8px"><div class="bar" style="width:'+Math.round(x.n/maxN*100)+'%"></div><span style="font-size:11.5px;color:#6E6E6A">'+x.n.toLocaleString()+'</span></div></td>'
    +'<td class="med">'+(x.med?eok(x.med):"—")+'</td></tr>';}).join("");
 /* 평형대별 · 가격대 분포 (막대 리스트) */
@@ -543,17 +550,35 @@ document.getElementById("topdeals").innerHTML=T.top.map(function(d,i){
   return '<div class="deal"><span class="no">'+String(i+1).padStart(2,"0")+'</span>'
    +'<span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><b>'+dealName(d)+'</b><br><span style="color:#6E6E6A;font-size:11px">'+d.sgg+' · '+dealType(d)+(d.a?' · '+Math.round(d.a).toLocaleString()+'㎡ · <b style="color:#3B3B39">'+Math.round(d.p/d.a).toLocaleString()+'만/㎡</b>':'')+' · '+d.cd+'</span></span>'
    +'<span class="p">'+eok(d.p)+'</span></div>';}).join("");
+/* 청약 섹션 (실거래 외 자료 — 대시보드 다양화) */
+if(window.SB&&SB.apply&&SB.apply.items&&SB.apply.items.length){
+  var AP=SB.apply, today=new Date().toISOString().slice(0,10);
+  var up=AP.items.filter(function(x){return (x.e||"")>=today;}).sort(function(a,b){return (a.s||"").localeCompare(b.s||"");});
+  if(!up.length)up=AP.items.slice();
+  up=up.slice(0,6);
+  document.getElementById("applyList").innerHTML=up.map(function(x){
+    return '<div style="display:flex;gap:10px;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--hair);font-size:12.5px">'
+     +'<b style="min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+x.nm+'</b>'
+     +'<span style="color:var(--g2);font-size:11px;white-space:nowrap">'+(x.area||"")+(x.n?" · "+x.n.toLocaleString()+"세대":"")+'</span>'
+     +'<span style="font-weight:700;color:var(--blue);white-space:nowrap;min-width:66px;text-align:right">'+(x.s?x.s.slice(5).replace("-","/")+" 접수":"일정 미정")+'</span></div>';
+  }).join("");
+  document.getElementById("capApply").textContent="한국부동산원 청약홈 · 접수 임박순 · 기준일 "+AP.updated;
+  var totN=AP.items.length, totU=AP.items.reduce(function(a,x){return a+(x.n||0);},0);
+  document.getElementById("capApply2").textContent="최근 "+(AP.mkdays||30)+"일 분양 공고 · 기준일 "+AP.updated;
+  document.getElementById("applyStat").innerHTML='<div class="big" style="font-size:34px;font-weight:800;letter-spacing:-0.03em">'+totN+'<small style="font-size:13px;color:var(--g2);font-weight:500"> 건 공고</small></div>'
+    +'<div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--g2);border-top:1px solid var(--hair);margin-top:10px;padding-top:8px"><span>총 공급 세대</span><b style="color:var(--blue)">'+totU.toLocaleString()+'세대</b></div>';
+}
 /* 모바일 구글형: 지역 검색 + 인기 지역 + 지표 한 줄 + 대시보드 접기 */
 try{
   function goMap(v,src){
     try{if(typeof gtag==="function")gtag("event","region_search",{search_term:v,source:src||"input"});}catch(e){}
-    location.href="map.html?q="+encodeURIComponent(v)+"&t=apt&u=%EB%A7%A4%EB%A7%A4";
+    location.href="map_재개발_staging.html?q="+encodeURIComponent(v)+"&t=apt&u=%EB%A7%A4%EB%A7%A4";
   }
   var sf=document.getElementById("mSearch");
   if(sf)sf.addEventListener("submit",function(e){
     e.preventDefault();
     var v=document.getElementById("mQ").value.trim();
-    if(v)goMap(v,"input");else location.href="map.html";
+    if(v)goMap(v,"input");else location.href="map_재개발_staging.html";
   });
   var hot=document.getElementById("mHot");
   if(hot)["강남구","송파구","마포구","분당","일산"].forEach(function(r){
@@ -565,7 +590,7 @@ try{
   if(df)df.addEventListener("submit",function(e){
     e.preventDefault();
     var v=document.getElementById("dQ").value.trim();
-    if(v)goMap(v,"desktop");else location.href="map.html";
+    if(v)goMap(v,"desktop");else location.href="map_재개발_staging.html";
   });
   var tk=document.getElementById("mTick");
   if(tk){

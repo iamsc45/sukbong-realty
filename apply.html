@@ -166,7 +166,7 @@ function render(f){
     var pr=x.hi?('<b>'+(x.lo&&x.lo!==x.hi?eok(x.lo)+' ~ ':'')+eok(x.hi)+'</b>'+(x.sqm?'<small>'+x.sqm.toLocaleString()+'만/㎡ (공급면적 기준)</small>':'')):'<small>분양가 공고 확인</small>';
     var mapLink=(PRI.indexOf(x.area)>=0&&x.ad)?' <a class="mapgo" href="map.html?q='+encodeURIComponent(x.ad+' '+(x.nm||''))+'&t=apt&u=%EB%A7%A4%EB%A7%A4">주변 실거래지도 ↗</a>':'';
     return '<div class="ap rv on"><span class="st '+st[1]+'">'+st[0]+'</span>'
-     +'<span class="nm">'+(x.url?'<a href="'+x.url+'" style="text-decoration:none;color:inherit">'+x.nm+' ↗</a>':x.nm)+'</span>'
+     +'<span class="nm">'+(x.url?'<a href="'+x.url+'" target="_blank" rel="noopener" style="text-decoration:none;color:inherit">'+x.nm+' ↗</a>':x.nm)+'</span>'
      +'<span class="pr">'+pr+'</span>'
      +'<span class="meta">'+(x.ad||"")+mapLink+' · '+(x.n?x.n+"세대":"")+' · 접수 '+(x.s||"?")+' ~ '+(x.e||"?")+' · 발표 '+(x.win||"?")
      +(x.c1!=null?(' · <b style="color:'+(x.c1>=1?'var(--acc-teal)':'var(--down)')+'">1순위 '+(x.c1>=1?x.c1+':1':'미달('+x.c1+':1)')+'</b>'):'')
