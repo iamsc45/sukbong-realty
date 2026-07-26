@@ -40,14 +40,16 @@ a{color:inherit}
 .brand{font-weight:800;font-size:15px;letter-spacing:.08em;text-decoration:none}
 .nav a.lnk{font-size:13.5px;color:var(--g2);text-decoration:none;transition:color 150ms ease}
 .nav a.lnk:hover,.nav a.lnk.on{color:var(--blk)}
-.nav .cta{margin-left:auto;background:var(--blk);color:#fff;font-size:13px;font-weight:600;
-  padding:10px 20px;border-radius:100px;text-decoration:none;transition:opacity 150ms ease}
-.nav .cta:hover{opacity:.75}
+.nav .cta{margin-left:auto;background:var(--blue);color:#fff;font-size:14.5px;font-weight:700;
+  padding:12px 26px;border-radius:100px;text-decoration:none;display:inline-flex;align-items:center;gap:7px;
+  box-shadow:0 6px 18px rgba(37,84,224,.28);transition:opacity 150ms ease,transform 150ms ease}
+.nav .cta i{font-size:18px}
+.nav .cta:hover{opacity:.9;transform:translateY(-1px)}
 /* ── 히어로 ── */
 .hero{padding:48px 0 20px;position:relative}
-.kicker{font-size:11.5px;letter-spacing:.18em;color:var(--g2);text-transform:uppercase;
+.kicker{font-size:13px;letter-spacing:.12em;color:var(--blk2);text-transform:uppercase;font-weight:700;
   display:flex;align-items:center;gap:10px}
-.kicker::before{content:"";width:34px;height:1px;background:var(--blk)}
+.kicker::before{content:"";width:34px;height:2px;background:var(--blue)}
 h1{font-size:clamp(31px,5vw,60px);line-height:1.05;letter-spacing:-0.04em;font-weight:800;
   margin:15px 0 0}
 h1 .thin{color:var(--g3)}
@@ -269,7 +271,7 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
   <a class="lnk" href="apply.html">청약</a>
   <a class="lnk" href="https://blog.naver.com/seokbongnews" target="_blank" rel="noopener">리포트</a>
   <a class="lnk" href="channels.html">채널</a>
-  <a class="cta" href="map_재개발_staging.html">지도 열기</a>
+  <a class="cta" href="map_재개발_staging.html"><i class="ti ti-map-2" aria-hidden="true"></i>지도 열기</a>
 </div></nav>
 
 <header class="hero wrap">
@@ -442,7 +444,6 @@ kpiCell('<span class="cnt" data-v="'+davg+'">0</span><small> 건/일</small>','�
 kpiCell(seoulMed?eok(seoulMed):"—",'서울 아파트 매매 중위가 · '+PER);
 if(T.jr&&T.jr.sale)kpiCell(Math.round(T.jr.je/T.jr.sale*100)+'<small> %</small>','서울 아파트 전세가율 · 84㎡');
 if(T.pdang&&T.pdang.seoul)kpiCell(T.pdang.seoul.toLocaleString()+'<small> 만/평</small>','서울 아파트 평당가 · 전용');
-kpiCell('<span style="font-size:26px">'+T.updated+'</span>','데이터 기준일');
 function countUp(el){var v=+el.dataset.v,t0=null;
   function step(ts){if(!t0)t0=ts;var p=Math.min((ts-t0)/1100,1);p=1-Math.pow(1-p,3);
     el.textContent=Math.round(v*p).toLocaleString();if(p<1)requestAnimationFrame(step);}
@@ -452,7 +453,7 @@ function startCounts(){if(cntStarted)return;cntStarted=true;document.querySelect
 var kio=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){startCounts();kio.disconnect();}});},{threshold:.3});
 kio.observe(document.getElementById("kpis"));
 document.getElementById("basis").textContent="계약일 "+PER+" · 기준일 "+T.updated+" · 매일 자동 갱신";
-document.getElementById("blabel").textContent="Live Data · 계약일 "+PER;
+document.getElementById("blabel").textContent="Live Data · 계약일 "+PER+" · 기준일 "+T.updated;
 document.getElementById("capProd").textContent="계약일 "+PER;
 document.getElementById("capRank").textContent="서울 25개 구 전체 · 거래 건수순 · 계약일 "+PER+" · 중위가는 아파트 매매";
 document.getElementById("capTop").textContent="계약일 "+PER+" · 매매 상위 10 · 빌딩 포함 (고가 거래는 국토부가 지번 일부 비공개)";
@@ -565,16 +566,26 @@ if(window.SB&&SB.apply&&SB.apply.items&&SB.apply.items.length){
   if(!up.length)up=AP.items.slice();
   up=up.slice(0,6);
   document.getElementById("applyList").innerHTML=up.map(function(x){
-    return '<div style="display:flex;gap:10px;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--hair);font-size:12.5px">'
-     +'<b style="min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+x.nm+'</b>'
-     +'<span style="color:var(--g2);font-size:11px;white-space:nowrap">'+(x.area||"")+(x.n?" · "+x.n.toLocaleString()+"세대":"")+'</span>'
-     +'<span style="font-weight:700;color:var(--blue);white-space:nowrap;min-width:66px;text-align:right">'+(x.s?x.s.slice(5).replace("-","/")+" 접수":"일정 미정")+'</span></div>';
+    var nm=x.url?'<a href="'+x.url+'" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">'+x.nm+' ↗</a>':x.nm;
+    var price=(x.lo&&x.hi)?(eok(x.lo)+"~"+eok(x.hi)):(x.lo?eok(x.lo)+"~":"");
+    return '<div style="padding:9px 0;border-bottom:1px solid var(--hair)">'
+     +'<div style="display:flex;gap:8px;align-items:baseline">'
+       +'<b style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px">'+nm+'</b>'
+       +'<span style="font-weight:700;color:var(--blue);white-space:nowrap;font-size:12px">'+(x.s?x.s.slice(5).replace("-","/"):"?")+" 접수</span></div>"
+     +'<div style="display:flex;gap:8px;font-size:11px;color:var(--g2);margin-top:3px">'
+       +'<span>'+(x.area||"")+(x.n?" · "+x.n.toLocaleString()+"세대":"")+(x.win?" · 발표 "+x.win.slice(5).replace("-","/"):"")+"</span>"
+       +(price?'<span style="margin-left:auto;color:var(--g1);font-weight:700;white-space:nowrap">분양가 '+price+"</span>":"")+"</div></div>";
   }).join("");
-  document.getElementById("capApply").textContent="한국부동산원 청약홈 · 접수 임박순 · 기준일 "+AP.updated;
+  document.getElementById("capApply").textContent="한국부동산원 청약홈 · 접수 임박순 · 단지명을 누르면 청약홈으로 · 기준일 "+AP.updated;
   var totN=AP.items.length, totU=AP.items.reduce(function(a,x){return a+(x.n||0);},0);
+  var nowMs=Date.now();
+  var soon7=AP.items.filter(function(x){if(!x.s)return false;var d=+new Date(x.s);return d>=nowMs&&d<=nowMs+7*864e5;}).length;
+  var maxHi=Math.max.apply(null,AP.items.map(function(x){return x.hi||0;}));
   document.getElementById("capApply2").textContent="최근 "+(AP.mkdays||30)+"일 분양 공고 · 기준일 "+AP.updated;
   document.getElementById("applyStat").innerHTML='<div class="big" style="font-size:34px;font-weight:800;letter-spacing:-0.03em">'+totN+'<small style="font-size:13px;color:var(--g2);font-weight:500"> 건 공고</small></div>'
-    +'<div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--g2);border-top:1px solid var(--hair);margin-top:10px;padding-top:8px"><span>총 공급 세대</span><b style="color:var(--blue)">'+totU.toLocaleString()+'세대</b></div>';
+    +'<div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--g2);border-top:1px solid var(--hair);margin-top:10px;padding-top:8px"><span>총 공급 세대</span><b style="color:var(--blue)">'+totU.toLocaleString()+'세대</b></div>'
+    +'<div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--g2);border-top:1px solid var(--hair);margin-top:8px;padding-top:8px"><span>이번 주 접수</span><b style="color:var(--blue)">'+soon7+'건</b></div>'
+    +(maxHi?'<div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--g2);border-top:1px solid var(--hair);margin-top:8px;padding-top:8px"><span>최고 분양가</span><b style="color:var(--blue)">'+eok(maxHi)+'</b></div>':"");
 }
 /* 모바일 구글형: 지역 검색 + 인기 지역 + 지표 한 줄 + 대시보드 접기 */
 try{

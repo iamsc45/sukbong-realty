@@ -573,6 +573,22 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
     if(handled)render();
     return handled;
   }
+  /* 검색어 라우팅: 단지 → 재개발 구역 → 지역 */
+  function _normz(s){return (s||'').toLowerCase().replace(/[\s·()\-]/g,'');}
+  function tryRedevZone(v,onNo){
+    loadRedev(function(){
+      var n=_normz(v),hit=null;
+      (redevMarks||[]).forEach(function(m){if(!hit&&m.nm&&_normz(m.nm).indexOf(n)>=0)hit={nm:m.nm,lat:m.lat,lon:m.lon,cat:m.cat,stage:m.stage,gubun:m.gubun,biz:m.nm};});
+      if(!hit&&redevData&&redevData.features){redevData.features.forEach(function(f){if(hit)return;var p=f.properties||{},nm=p.nm||'',bz=p.biz||'';if((nm&&_normz(nm).indexOf(n)>=0)||(bz&&_normz(bz).indexOf(n)>=0)){var r0=f.geometry.coordinates[0],cx=0,cy=0,i;for(i=0;i<r0.length;i++){cx+=r0[i][0];cy+=r0[i][1];}cx/=r0.length;cy/=r0.length;hit={nm:nm||bz,lat:cy,lon:cx,cat:p.cat,stage:p.stage,gubun:p.gubun,area:p.area,biz:bz||nm};}});}
+      if(hit){focusZone(hit);}else if(onNo){onNo();}
+    });
+  }
+  function routeQ(v){
+    if(window._trySelectApt&&window._trySelectApt(v))return;
+    tryRedevZone(v,function(){
+      if(!findAndGo(v)){var st=document.getElementById('stat');if(st)st.textContent='"'+v+'" 검색 결과를 찾지 못했습니다';setFcount('"'+v+'" 검색 결과 없음');}
+    });
+  }
   /* 딥링크: ?r=시군구코드 | ?q=주소·지역명 | ?s=시도명 */
   try{
     var P=new URLSearchParams(location.search);
@@ -584,7 +600,7 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
         if(t0.lat)setTimeout(function(){try{map.invalidateSize();map.setView([t0.lat,t0.lng],Z_DETAIL+1,{animate:false});}catch(e){}},150);
       }
     }else if(pq){
-      findAndGo(pq);
+      routeQ(pq);
     }else if(psp){
       var sm=null;sidos.forEach(function(x){if(!sm&&(x===psp||psp.indexOf(x)>=0))sm=x;});
       if(sm)fitSido(sm);
@@ -598,12 +614,7 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
     if(!v)return;
     if(window.closeSac)window.closeSac();
     try{if(typeof gtag==='function')gtag('event','region_search',{search_term:v,source:'map'});}catch(_e){}
-    if(window._trySelectApt&&window._trySelectApt(v))return;
-    if(!findAndGo(v)){
-      var st=document.getElementById('stat');
-      if(st)st.textContent='"'+v+'" 지역을 찾지 못했습니다 (데이터 확충 중)';
-      setFcount('"'+v+'" 지역을 찾지 못했습니다');
-    }
+    routeQ(v);
   });
 })();
 /* 범례 */
