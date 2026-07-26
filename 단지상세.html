@@ -131,6 +131,25 @@ function render(pt,code){
   var jr=(mmamt&&jemed)?Math.round(jemed/mmamt*100):0;
   document.getElementById('kk').textContent='단지 상세 · '+esc(pt.dong||'');
   document.getElementById('nm').textContent=pt.name;
+  /* 관심단지 등록 버튼 (이 기기 브라우저에 저장) */
+  (function(){
+    function fl(){try{return JSON.parse(localStorage.getItem('sb_fav')||'[]');}catch(e){return [];}}
+    function fs(l){try{localStorage.setItem('sb_fav',JSON.stringify(l));}catch(e){}}
+    var fid=code+'|'+pt.name;
+    var b=document.getElementById('favBtn');
+    if(!b){b=document.createElement('button');b.id='favBtn';
+      b.style.cssText='display:block;margin:10px 0 0;border:1.5px solid #b08434;border-radius:100px;padding:9px 20px;font:inherit;font-size:13.5px;font-weight:800;cursor:pointer;background:#fff;color:#5c4300';
+      document.querySelector('.mast').appendChild(b);}
+    function paint(on){b.textContent=on?'★ 관심단지 등록됨 (목록 보기)':'☆ 관심단지 등록';
+      b.style.background=on?'#ffd24d':'#fff';}
+    var on=fl().some(function(f){return f.id===fid;});paint(on);
+    b.onclick=function(){
+      var l=fl(),i=-1;for(var k=0;k<l.length;k++){if(l[k].id===fid){i=k;break;}}
+      if(i>=0){if(confirm('관심단지 목록으로 이동할까요? (취소=등록 해제)')){location.href='favorites.html';return;}l.splice(i,1);fs(l);paint(false);return;}
+      l.push({id:fid,nm:pt.name,code:code,dong:pt.dong||''});fs(l);paint(true);
+      try{if(typeof gtag==='function')gtag('event','favorite_toggle',{item_name:pt.name,on:1});}catch(e){}
+    };
+  })();
   document.getElementById('loc').innerHTML=esc((pt.dong||'')+' '+(pt.jibun||''))+(info&&info.subway?' · <b style="color:var(--brass)">'+esc(info.subway)+'역</b>':'')+((info&&info.ymd)?' · '+info.ymd+'년 준공':(pt.extra?' · '+esc(pt.extra):''));
   var kp=[[mmpy?comma(mmpy)+'<small style="font-size:11px">만</small>':'·','매매 평당(전용)'],
     [eok(mmamt),'매매 중위 총액'],[eok(jemed),'전세 보증금 중위'],

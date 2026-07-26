@@ -266,6 +266,12 @@ var loading={}, loaded={};
 
 function fmtEok(man){var e=man/10000;return (e>=10?e.toFixed(1):e.toFixed(2)).replace(/\.?0+$/,'')+'억';}
 function PY(m){m=+m;if(!m)return '';var p=m/3.305785;return (p<100?p.toFixed(1):Math.round(p))+'평';}
+/* 관심단지 (이 기기 브라우저에 저장) */
+function favList(){try{return JSON.parse(localStorage.getItem('sb_fav')||'[]');}catch(e){return [];}}
+function favSave(l){try{localStorage.setItem('sb_fav',JSON.stringify(l));}catch(e){}}
+function favHas(id){return favList().some(function(f){return f.id===id;});}
+function favToggle(item){var l=favList(),i=-1;for(var k=0;k<l.length;k++){if(l[k].id===item.id){i=k;break;}}
+  if(i>=0){l.splice(i,1);favSave(l);return false;}l.push(item);favSave(l);return true;}
 function priceLabel(tx){
   if(tx.u==='매매')return fmtEok(tx.p);
   if(tx.u==='전세')return '전세 '+fmtEok(tx.p);
@@ -1012,8 +1018,12 @@ function showAptCard(pt, txs){
       +rrow('월세',woT.length?(eok2(md(woT.map(function(t){return t.p;})))+'/'+md(woT.map(function(t){return t.r;}))+'만'):'',(A&&A.wo)?(eok2(A.wo.bo)+'/'+A.wo.wol+'만'):'')
       +'<div class="rc-note" style="padding:4px 0 0">호가=협상 전 매물가(중위, 주황). '+(A?'실거래(체결가)와 다를 수 있음.':'이 단지 현재 호가 매물 없음.')+'</div></div>';
   }
+  var favId=code+'|'+pt.name, isFav=favHas(favId);
   var html='<button id="rcClose" style="position:absolute;top:8px;right:10px;border:0;background:rgba(255,255,255,.28);color:#fff;font-size:18px;width:28px;height:28px;border-radius:50%;cursor:pointer;z-index:2">×</button>'
-    +'<div class="rc-h" style="background:'+col+'"><div class="k">'+ti[0]+' · 실거래</div><h2>'+pt.name+'</h2><div class="loc">'+pt.dong+' '+(pt.jibun||'')+'</div></div>'
+    +'<div class="rc-h" style="background:'+col+'"><div class="k">'+ti[0]+' · 실거래</div><h2>'+pt.name+'</h2><div class="loc">'+pt.dong+' '+(pt.jibun||'')+'</div>'
+    +'<button id="rcFav" style="margin-top:9px;border:0;border-radius:100px;padding:8px 16px;font:inherit;font-size:12.5px;font-weight:800;cursor:pointer;'
+      +(isFav?'background:#ffd24d;color:#5c4300':'background:rgba(255,255,255,.92);color:#1a1a1a')+'">'
+    +(isFav?'★ 관심단지 등록됨':'☆ 관심단지 등록')+'</button></div>'
     +hoSec
     +'<div class="rc-sec"><div class="rc-lab">최근 실거래 · 평당 전용기준</div>'+(rows||'<div style="color:#8a8071;font-size:13px">거래 없음</div>')+'</div>'
     +(near?'<div class="rc-sec"><div class="rc-lab">인근 정비구역 (누르면 이동)</div>'+near+'</div>':'')
@@ -1021,6 +1031,13 @@ function showAptCard(pt, txs){
     +'<div class="rc-note">실거래 기준일 '+((window.SB&&SB.summary&&SB.summary.updated)||'-')+' · 호가 수집일 '+(window.APTASKDAY||(A?'-':'미수집 지역'))+'</div>';
   var rc=document.getElementById('rcard');rc.innerHTML=html;rc.classList.add('open');
   document.getElementById('rcClose').onclick=function(){rc.classList.remove('open');};
+  var fb=document.getElementById('rcFav');
+  if(fb)fb.onclick=function(){
+    var on=favToggle({id:favId,nm:pt.name,code:code,dong:pt.dong||''});
+    fb.textContent=on?'★ 관심단지 등록됨':'☆ 관심단지 등록';
+    fb.style.background=on?'#ffd24d':'rgba(255,255,255,.92)';fb.style.color=on?'#5c4300':'#1a1a1a';
+    try{if(typeof gtag==='function')gtag('event','favorite_toggle',{item_name:pt.name,on:on?1:0});}catch(e){}
+  };
 }
 
 function setMode(m){
