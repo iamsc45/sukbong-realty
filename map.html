@@ -680,7 +680,7 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
         if(t0.lat)setTimeout(function(){try{map.invalidateSize();map.setView([t0.lat,t0.lng],Z_DETAIL+1,{animate:false});}catch(e){}},150);
       }
     }else if(pq){
-      routeQ(pq);
+      setTimeout(function(){routeQ(pq);},60);
     }else if(psp){
       var sm=null;sidos.forEach(function(x){if(!sm&&(x===psp||psp.indexOf(x)>=0))sm=x;});
       if(sm)fitSido(sm);
