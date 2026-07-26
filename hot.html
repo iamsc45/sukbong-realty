@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Y7P41Z09PV"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-Y7P41Z09PV');</script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>실시간 인기 · 석봉 부동산 정보방</title>
+<meta name="description" content="최근 거래가 몰린 단지와 1년 새 값이 오른 지역을 실거래 데이터로 보여드립니다.">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+.wrap{max-width:1000px}
+h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;margin:48px 0 6px}
+.pgsub{color:var(--muted);font-size:13.5px;margin:0 0 22px}
+.tabs{display:flex;gap:8px;margin:0 0 6px;flex-wrap:wrap}
+.tab{border:1px solid var(--text);border-radius:100px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer;background:transparent;color:var(--text);transition:background 120ms ease}
+.tab.on{background:var(--text);color:#fff}
+.tab.soon{border-color:var(--hair);color:var(--muted);cursor:default}
+.tcap{font-size:12px;color:var(--muted);margin:12px 0 6px}
+.rk{display:flex;align-items:center;gap:13px;padding:12px 4px;border-bottom:1px solid var(--hair)}
+.rk .no{width:26px;text-align:center;font-size:16px;font-weight:800;color:var(--acc-blue);font-variant-numeric:tabular-nums}
+.rk .mn{flex:1;min-width:0}
+.rk .mn a,.rk .mn .nml{font-size:14.5px;font-weight:800;text-decoration:none;color:var(--text);letter-spacing:-0.01em}
+.rk .mn a:hover{color:var(--acc-blue)}
+.rk .mn .sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+.rk .rt{text-align:right;white-space:nowrap}
+.rk .rt .big{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums}
+.rk .rt .d{font-size:11px;color:var(--muted);margin-top:1px}
+.up{color:#c0392b}
+.dn{color:#1d6fb8}
+.new{font-size:10px;font-weight:800;color:#1d9e75;background:rgba(29,158,117,.1);border-radius:100px;padding:2px 7px;margin-left:6px}
+.soonbox{border:1px dashed var(--hair);border-radius:14px;padding:34px 20px;text-align:center;color:var(--muted);font-size:13.5px;margin-top:12px}
+.soonbox b{color:var(--text);display:block;font-size:15px;margin-bottom:4px}
+.notice2{font-size:11.5px;color:var(--muted);line-height:1.7;margin:26px 0 50px}
+</style>
+<meta property="og:title" content="실시간 인기 · 석봉 부동산 정보방">
+<meta property="og:description" content="최근 거래가 몰린 단지와 1년 새 값이 오른 지역을 실거래 데이터로.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xn--2q1br1nnrasc92a76myvau64b.com/hot.html">
+<meta property="og:site_name" content="석봉 부동산 정보방">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html">석봉 부동산 정보방</a>
+  <nav>
+    <a href="index.html">홈</a>
+    <a href="map.html">실거래지도</a>
+    <a href="apply.html">청약</a>
+    <a href="https://blog.naver.com/seokbongnews" target="_blank" rel="noopener">리포트</a>
+    <a href="channels.html">채널</a>
+  </nav>
+</header>
+<main class="wrap" style="margin:0 auto;padding:0 22px">
+  <h1 class="pg">실시간 인기</h1>
+  <p class="pgsub" id="basis">최근 거래가 몰린 단지와 1년 새 값이 오른 지역 · 국토교통부 실거래(해제 제외)</p>
+  <div class="tabs" id="tabs">
+    <button class="tab on" data-t="trade">거래 급증</button>
+    <button class="tab" data-t="price">가격 급등</button>
+    <button class="tab soon" data-t="view">조회 인기</button>
+  </div>
+  <p class="tcap" id="tcap"></p>
+  <div id="list"><div class="soonbox">데이터를 불러오는 중입니다.</div></div>
+  <p class="notice2">※ 거래 급증은 최근 30일 매매 신고 건수가 많은 단지 순입니다(신축 입주장 등 대량 등기가 포함될 수 있습니다). 가격 급등은 시군구별 매매 평당가(전용면적 기준) 중위값을 전년 같은 달과 비교한 상승률입니다. 표본이 적은 지역·단지는 제외했습니다. 값은 국토교통부 실거래 신고분(해제 제외)이며 투자 권유가 아닙니다.</p>
+</main>
+<footer class="site-footer">
+  <span>📈 <a href="https://telegram.me/seokbongnews">텔레그램 채널</a></span> ·
+  <span>💬 <a href="https://open.kakao.com/o/gt8CTUCi">카카오 오픈채팅</a> · <a href="https://blog.naver.com/seokbongnews">네이버 블로그</a></span>
+  <div class="fine">원자료: 국토교통부 실거래가 공개시스템 (해제 건 제외) · 편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 무단 전재·재배포 금지 · 방문 통계 수집을 위해 Google Analytics(쿠키)를 사용합니다</div>
+</footer>
+<script src="data/hot.js"></script>
+<script>
+(function(){
+  var H=window.SB&&SB.hot;
+  var list=document.getElementById('list'), tcap=document.getElementById('tcap');
+  if(!H){list.innerHTML='<div class="soonbox">인기 데이터 연결 대기 중입니다.</div>';return;}
+  document.getElementById('basis').textContent='최근 거래가 몰린 단지와 1년 새 값이 오른 지역 · 국토교통부 실거래(해제 제외) · 기준일 '+H.updated;
+  function q(v){return 'map.html?q='+encodeURIComponent(v);}
+  function comma(n){return (n||0).toLocaleString();}
+  function trade(){
+    tcap.textContent='최근 30일 매매 신고 건수 상위 · 최근 계약 '+(H.tradeAsof||H.updated)+' 기준';
+    if(!H.trade||!H.trade.length){list.innerHTML='<div class="soonbox">집계된 단지가 없습니다.</div>';return;}
+    list.innerHTML=H.trade.map(function(x,i){
+      var chg='';
+      if(x.prev>0){var d=x.n-x.prev;chg=d>0?'<span class="up">▲'+d+'</span>':(d<0?'<span class="dn">▼'+(-d)+'</span>':'±0');chg=' <span style="font-size:11px">'+chg+'</span>';}
+      else chg='<span class="new">신규</span>';
+      return '<div class="rk"><span class="no">'+(i+1)+'</span>'
+        +'<div class="mn"><a href="'+q(x.nm)+'">'+x.nm+'</a>'+chg
+        +'<div class="sub">'+x.sgg+' '+x.dong+(x.py?' · 평당 '+comma(x.py)+'만':'')+'</div></div>'
+        +'<div class="rt"><div class="big">'+x.n+'<span style="font-size:12px;font-weight:600;color:var(--muted)">건</span></div><div class="d">최근 30일</div></div></div>';
+    }).join('');
+  }
+  function price(){
+    tcap.textContent='시군구 매매 평당가(전용) 중위 · '+H.priceRecent+' vs '+H.priceBase+' 상승률';
+    if(!H.price||!H.price.length){list.innerHTML='<div class="soonbox">집계된 지역이 없습니다.</div>';return;}
+    list.innerHTML=H.price.map(function(x,i){
+      return '<div class="rk"><span class="no">'+(i+1)+'</span>'
+        +'<div class="mn"><a href="'+q(x.sgg)+'">'+x.sgg+'</a>'
+        +'<div class="sub">평당 '+comma(x.now)+'만 (전년 '+comma(x.was)+'만) · 표본 '+x.n+'건</div></div>'
+        +'<div class="rt"><div class="big up">+'+x.pct+'%</div><div class="d">'+H.priceRecent+' vs '+H.priceBase+'</div></div></div>';
+    }).join('');
+  }
+  function view(){
+    tcap.textContent='';
+    list.innerHTML='<div class="soonbox"><b>조회 인기 · 업데이트 예정</b>방문자가 가장 많이 찾아본 단지·지역을 실시간으로 보여드릴 예정입니다. 준비 중입니다.</div>';
+  }
+  var R={trade:trade,price:price,view:view};
+  document.querySelectorAll('#tabs .tab').forEach(function(b){
+    b.addEventListener('click',function(){
+      document.querySelectorAll('#tabs .tab').forEach(function(x){x.classList.remove('on');});
+      b.classList.add('on');(R[b.dataset.t]||trade)();
+    });
+  });
+  trade();
+})();
+</script>
+</body></html>
