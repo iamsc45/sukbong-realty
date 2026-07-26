@@ -55,7 +55,7 @@ body{margin:0;background:var(--paper);color:var(--ink);font-family:'Malgun Gothi
 </head>
 <body>
 <div class="wrap">
-  <div class="top"><span class="bi">석봉 부동산 정보방</span><a href="map_재개발_staging.html?mode=redev">지도(재개발)로 →</a></div>
+  <div class="top"><span class="bi">석봉 부동산 정보방</span><a href="map.html?mode=redev">지도(재개발)로 →</a></div>
   <div id="app"><p style="color:var(--warm)">불러오는 중…</p></div>
   <div class="foot">추진단계·정비계획은 정비몽땅(서울시 정비사업 정보공개) 공개자료 기준이며 시점에 따라 달라질 수 있습니다. 구역계·단계는 참고용이며 법적 효력이 없습니다. 자료 출처: 국가정보포털 공공 DB 등.</div>
 </div>
@@ -137,7 +137,7 @@ function render(){
       +'<div>이 구역 법정동의 과거 실거래 표본이 부족합니다. 데이터가 쌓이면 연도별 시세 그래프가 표시됩니다.</div></div>')+'</div>';
   h+='<div class="sec" id="nearTxSec"></div>';
   h+='<div class="sec"><div class="lab">더 보기</div>'
-    +'<a class="cta dark" href="map_재개발_staging.html?mode=redev">지도(재개발)로 가기 →</a>'
+    +'<a class="cta dark" href="map.html?mode=redev">지도(재개발)로 가기 →</a>'
     +'<a class="cta line" href="재개발_기초상식.html">재개발·재건축 기초상식 →</a></div>';
   app.innerHTML=h;
   if(tr)drawTrend(99);

@@ -70,6 +70,16 @@
     border-radius:16px;background:#fff;outline:none;color:var(--text2)}
   #sq::placeholder{color:var(--muted2)}
   #sq:focus{box-shadow:0 0 0 2px rgba(20,20,20,.12)}
+  #sform{position:relative}
+  #sac{display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:1600;width:290px;max-height:340px;
+    overflow-y:auto;background:#fff;border:1px solid var(--hair-soft);border-radius:12px;box-shadow:0 12px 28px rgba(20,20,20,.18)}
+  #sac.open{display:block}
+  #sac .sach{padding:6px 12px;font-size:10.5px;color:var(--muted);border-bottom:1px solid var(--hair);position:sticky;top:0;background:#fff}
+  #sac .sitem{display:flex;justify-content:space-between;gap:8px;align-items:baseline;padding:7px 12px;cursor:pointer;border-bottom:1px solid var(--hair)}
+  #sac .sitem:last-child{border-bottom:0}
+  #sac .sitem:hover{background:#f3eee1}
+  #sac .sitem b{font-size:12.5px;font-weight:700;color:var(--text2)}
+  #sac .sitem span{font-size:11px;color:var(--muted);white-space:nowrap}
   #bar{position:relative}
   #fpanel{display:none;position:fixed;left:8px;z-index:1400;background:#fff;
     border:1px solid var(--hair-soft);border-radius:12px;box-shadow:0 10px 26px rgba(20,20,20,.14);
@@ -101,6 +111,50 @@
     .site-footer{font-size:9.5px;padding:7px 10px}
     .site-footer span{float:none!important;margin-left:0!important}
   }
+.pricetag{transition:transform .12s ease}
+.pricetag:hover{transform:scale(1.3);z-index:10000;position:relative}
+#modes{display:flex;gap:6px;margin-right:8px}
+#modes button{border:1px solid #d5d9e0;background:#fff;color:#5b6473;font-size:13px;font-weight:700;padding:5px 13px;border-radius:20px;cursor:pointer;white-space:nowrap}
+#modes button.on{background:#12203a;color:#fff;border-color:#12203a}
+#rfbar{display:none;gap:5px;align-items:center;flex-wrap:wrap;margin-right:6px}
+body.redev #rfbar{display:flex}
+.rflbl{color:var(--muted);font-size:11px;margin:0 2px}
+.rfc{border:1px solid #cdd3db;background:#fff;color:#5b6473;font-size:12px;font-weight:700;padding:4px 11px;border-radius:16px;cursor:pointer;white-space:nowrap;transition:background .12s ease}
+.rfc.on{background:#12203a;color:#fff;border-color:#12203a}
+.rfc[data-rf="신통"].on{background:#d6336c;border-color:#d6336c}
+.rfc[data-rf="모아"].on{background:#2b8a3e;border-color:#2b8a3e}
+.rfc.trade{margin-left:8px;border-style:dashed}
+@media (max-width:720px){#rfbar{flex-wrap:nowrap}.rfc{padding:4px 9px;font-size:11px}}
+#rcard{display:none;position:fixed;top:0;right:0;width:358px;height:100%;z-index:1600;background:#f7f5f0;border-left:1.5px solid #1a1a1a;overflow-y:auto;box-shadow:-4px 0 18px rgba(0,0,0,.12);font-family:'Pretendard','Malgun Gothic',system-ui,sans-serif}
+#rcard.open{display:block}
+@media (max-width:720px){#rcard{width:100%;height:58%;top:auto;bottom:0;border-left:0;border-top:1.5px solid #1a1a1a}}
+.rc-h{color:#fff;padding:14px 16px;position:relative}
+.rc-h .k{font-size:10.5px;letter-spacing:.12em;opacity:.85}
+.rc-h h2{font-family:Georgia,'Bookman',serif;font-size:19px;margin:3px 0 0;line-height:1.25}
+.rc-h .loc{font-size:12px;opacity:.9;margin-top:3px}
+.rc-pill{display:inline-block;padding:2px 9px;border-radius:20px;background:rgba(255,255,255,.25);color:#fff;font-size:11px;font-weight:700;margin-top:8px}
+.rc-sec{padding:11px 16px;border-bottom:1px solid #ded8cc}
+.rc-lab{font-size:10px;letter-spacing:.11em;color:#8a8071;text-transform:uppercase;margin-bottom:8px}
+.rc-stage{display:flex;margin:1px 0 3px}
+.rc-st{flex:1;text-align:center;position:relative}
+.rc-st .dot{width:10px;height:10px;border-radius:50%;background:#d3ccbe;margin:0 auto 4px;border:2px solid #f7f5f0;position:relative;z-index:2}
+.rc-st.done .dot{background:#a8792c}
+.rc-st.now .dot{background:#c0562e;animation:pulseNow 1.15s ease-out infinite}
+@keyframes pulseNow{0%{box-shadow:0 0 0 0 rgba(192,86,46,.7);transform:scale(1)}45%{transform:scale(1.45)}70%{box-shadow:0 0 0 15px rgba(192,86,46,0)}100%{box-shadow:0 0 0 0 rgba(192,86,46,0);transform:scale(1)}}
+.rc-st .t{font-size:8px;color:#8a8071;line-height:1.12}.rc-st.done .t{color:#1a1a1a;font-weight:700}.rc-st.now .t{color:#c0562e;font-weight:800}
+.rc-st:not(:last-child):after{content:"";position:absolute;top:4px;left:50%;width:100%;height:2px;background:#d3ccbe;z-index:1}
+.rc-st.done:not(:last-child):after{background:#a8792c}
+.rc-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px 14px}
+.rc-kv{display:flex;justify-content:space-between;padding:3px 0;font-size:12.5px;border-bottom:1px dotted #e7e1d4}.rc-kv .v{font-weight:700;text-align:right}
+.rc-dl{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dotted #e7e1d4;font-size:12.5px}.rc-dl b{font-variant-numeric:tabular-nums}
+.rc-row{display:flex;justify-content:space-between;align-items:center;padding:6px 4px;border-bottom:1px dotted #e7e1d4;font-size:12.5px;cursor:pointer;border-radius:5px}
+.rc-row:hover{background:#efe9dc}
+.rc-row .arw{color:#b6ad9c;margin-left:4px}
+.rc-badge{color:#fff;font-size:10.5px;padding:1px 8px;border-radius:20px;white-space:nowrap;font-weight:700}
+.rc-cta{display:block;margin:12px 16px 4px;padding:11px;background:#12203a;color:#f7f5f0;border-radius:10px;text-decoration:none;font-weight:700;font-size:13px;text-align:center;box-shadow:0 2px 0 rgba(0,0,0,.28),0 4px 10px rgba(0,0,0,.18);transition:transform .08s ease,box-shadow .08s ease}
+.rc-cta:hover{transform:translateY(-1px);box-shadow:0 3px 0 rgba(0,0,0,.28),0 7px 14px rgba(0,0,0,.22)}
+.rc-cta:active{transform:translateY(2px);box-shadow:0 0 0 rgba(0,0,0,.28)}
+.rc-note{font-size:11px;color:#8a8071;padding:2px 16px 16px;line-height:1.45}
 </style><meta name="description" content="지도를 확대하면 건물별 실거래 가격이 보입니다. 매매·전세·월세, ㎡당 단가, 계약월 필터까지.">
 <meta property="og:title" content="실거래지도 · 석봉 부동산 정보방">
 <meta property="og:description" content="지도를 확대하면 건물별 실거래 가격이 보입니다. 매매·전세·월세, ㎡당 단가, 계약월 필터까지.">
@@ -121,7 +175,9 @@
   </nav>
 </header>
 <div id="bar">
-  <form id="sform"><input id="sq" type="search" placeholder="지역·동 검색" autocomplete="off"><button type="submit" class="sbtn">검색</button></form>
+  <div id="modes"><button data-m="trade" class="on">실거래</button><button data-m="redev">재개발·재건축</button></div>
+  <div id="rfbar"><span class="rflbl">유형</span><button class="rfc on" data-rf="재개발">재개발</button><button class="rfc on" data-rf="재건축">재건축·주거환경</button><button class="rfc on" data-rf="신통">신속통합기획</button><button class="rfc on" data-rf="모아">모아주택</button><button class="rfc trade" data-rf="trade">실거래 겹쳐보기</button></div>
+  <form id="sform"><input id="sq" type="search" placeholder="지역·동·단지 검색" autocomplete="off"><button type="submit" class="sbtn">검색</button><div id="sac"></div></form>
   <button id="fbtn" type="button">필터 ▾</button>
   <select id="selSido"></select><select id="selSgg"></select>
   <span class="bargrp"><span class="lbl">상품:</span><span id="typechips"></span></span>
@@ -143,6 +199,7 @@
 </div>
 <div id="map"></div>
 <div id="legend"></div>
+<div id="rcard"></div>
 <footer class="site-footer">
   <span>📈 <a href="https://telegram.me/seokbongnews">텔레그램</a></span> ·
   <span>💬 <a href="https://open.kakao.com/o/gt8CTUCi">카카오</a> · <a href="https://blog.naver.com/seokbongnews">블로그</a></span>
@@ -155,8 +212,16 @@
 var TYPE={apt:["아파트","#2554E0"],offi:["오피스텔","#7A5AF8"],villa:["연립·다세대","#0FA98A"],
   house:["단독·다가구","#6E6E6A"],bldg:["빌딩","#D4573F"],comm:["구분상가·오피스","#E8A13A"],land:["토지","#4C9A4C"]};
 var Z_DETAIL=13, Z_POINT=15, Z_NAME=16;
-var curT='all', curU='all', curD='all', curSido='all', curSgg='all';
-try{var P0=new URLSearchParams(location.search);var t0=P0.get('t');if(t0&&TYPE[t0])curT=t0;
+var curU='all', curD='all', curSido='all', curSgg='all';
+var curTset=null;
+var curMode='trade';
+var curRF={'재개발':true,'재건축':true,'신통':true,'모아':true};
+var redevShowTrade=false;
+function matchRF(cat,tag){
+  return (curRF['재개발']&&cat==='재개발') || (curRF['재건축']&&(cat==='재건축'||cat==='주거환경'))
+    || (curRF['신통']&&(tag==='신통'||cat==='신통')) || (curRF['모아']&&tag==='모아');
+}
+try{var P0=new URLSearchParams(location.search);var t0=P0.get('t');if(t0&&TYPE[t0]){curTset={};curTset[t0]=true;}
 var u0=P0.get('u');if(u0==='매매'||u0==='전세'||u0==='월세')curU=u0;}catch(e){}
 /* 상세 필터 상태 (매매가·보증금·월세·면적·연식·층) — fXc는 직접 입력 [최소,최대+1) 만원 */
 var fS='all', fB='all', fW='all', fA='all', fY='all', fF='all';
@@ -197,7 +262,7 @@ function ptTxs(pt){
   /* 맞춤 검색: 설정된 가격 필터 프로파일을 "같은 지점"이 전부 충족해야 표시.
      매매가 → 해당 범위 매매 거래 보유 / 보증금(+월세액) → 해당 조건 전·월세 거래 보유.
      매매가+보증금 조합 = 매매가 X이면서 전세(보증금) Y인 매물(갭 검색). */
-  if(curT!=='all'&&pt.t!==curT)return [];
+  if(curTset&&!curTset[pt.t])return [];
   if(fY!=='all'){
     var y=ptYear(pt);if(!y)return [];
     var ag=CURY-y;
@@ -243,12 +308,13 @@ function visibleRegions(){
 }
 function render(){
   layer.clearLayers();
+  if(curMode==='redev'&&!redevShowTrade)return;
   var z=map.getZoom(), nPt=0, nTx=0;
   document.getElementById('map').classList.toggle('names',z>=Z_NAME);
   if(z<Z_DETAIL){
     SB.summary.regions.forEach(function(r){
       if(!r.lat||!regionPass(r))return;
-      var tot=(curT==='all'||!r.nt)?(r.n['매매']+r.n['전세']+r.n['월세']):(r.nt[curT]||0);
+      var tot;if(!curTset||!r.nt){tot=r.n['매매']+r.n['전세']+r.n['월세'];}else{tot=0;for(var _k in curTset){tot+=(r.nt[_k]||0);}}
       if(!tot)return;
       var sz=Math.min(64,Math.max(42,Math.round(14*Math.log(tot||1))));
       var icon=L.divIcon({className:'',html:'<div class="clus" style="width:'+sz+'px;height:'+sz+'px">'
@@ -270,9 +336,10 @@ function render(){
     d.forEach(function(pt){
       if(!b.contains([pt.lat,pt.lng]))return;
       var txs=ptTxs(pt); if(!txs.length)return;
-      pts.push({pt:pt,txs:txs});
+      pts.push({pt:pt,txs:txs,code:r.code});
     });
   });
+  window._PTS=pts;
   if(z<Z_POINT){
     var dongs={};
     pts.forEach(function(o){
@@ -300,13 +367,13 @@ function render(){
       +'<span class="nm">'+pt.name+'</span></div>',iconSize:null,iconAnchor:[30,12]});
     var rows=txs.map(function(t){
       var u=t.u+(t.k?'·'+t.k.slice(0,2):'');
-      var sqm=(t.u==='매매'&&t.a)?'<div style="font-weight:normal;font-size:10px;color:#888">'+Math.round(t.p/t.a).toLocaleString()+'만/㎡</div>':'';
+      var sqm=(t.u==='매매'&&t.a)?'<div style="font-weight:normal;font-size:10px;color:#888">'+Math.round(t.p/t.a*3.305785).toLocaleString()+'만/평</div>':'';
       return '<tr><td>'+t.cd.slice(5)+'</td><td>'+u+'</td><td>'+(t.a||'-')+'</td><td>'+t.f+'</td><td class="pr">'+priceLabel(t)+sqm+'</td></tr>';
     }).join('');
     var pop='<div class="pop"><h4>'+pt.name+'<span class="badge" style="background:'+col+'">'+ti[0]+'</span></h4>'
       +'<div class="meta">'+pt.dong+' '+pt.jibun+(pt.extra?' · '+pt.extra:'')+' · '+txs.length+'건'+(pt.ax?' · <b style="color:#D4573F">지번 비공개 — 동 단위 개략 위치</b>':'')+'</div>'
       +'<div class="tw"><table><thead><tr><th>계약</th><th>거래</th><th>면적㎡</th><th>층</th><th>가격</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
-    var mk=L.marker([pt.lat,pt.lng],{icon:icon}).bindPopup(pop,{maxWidth:320});
+    var mk=L.marker([pt.lat,pt.lng],{icon:icon}).on('click',function(){showAptCard(pt,txs);});
     mk.on('popupopen',function(){var el=mk.getElement();if(el){var t=el.querySelector('.pricetag');if(t)t.classList.add('sel');}});
     mk.on('popupclose',function(){var el=mk.getElement();if(el){var t=el.querySelector('.pricetag');if(t)t.classList.remove('sel');}});
     mk.addTo(layer);
@@ -328,7 +395,18 @@ function mkChips(elId,items,cur,setter){
     el.appendChild(b);
   });
 }
-mkChips('typechips',[['all','전체',null]].concat(Object.keys(TYPE).map(function(t){return [t,TYPE[t][0],TYPE[t][1]];})),curT,function(v){curT=v;});
+(function(){var el=document.getElementById('typechips');
+  var items=[['all','전체',null]].concat(Object.keys(TYPE).map(function(t){return [t,TYPE[t][0],TYPE[t][1]];}));
+  var btns={};
+  function syncUI(){items.forEach(function(it){var on=it[0]==='all'?!curTset:(curTset&&curTset[it[0]]);btns[it[0]].classList.toggle('on',!!on);});}
+  items.forEach(function(it){var b=document.createElement('button');b.className='chip';
+    b.innerHTML=(it[2]?'<span class="dot" style="background:'+it[2]+'"></span>':'')+it[1];btns[it[0]]=b;
+    b.addEventListener('click',function(){
+      if(it[0]==='all'){curTset=null;}
+      else{if(!curTset)curTset={};if(curTset[it[0]])delete curTset[it[0]];else curTset[it[0]]=true;if(Object.keys(curTset).length===0)curTset=null;}
+      syncUI();render();});
+    el.appendChild(b);});
+  syncUI();})();
 mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월세','월세']],curU,function(v){curU=v;});
 mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',function(v){curD=v;});
 /* 상세 필터 패널 */
@@ -495,6 +573,36 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
     if(handled)render();
     return handled;
   }
+  /* 검색어 라우팅: 단지 → 재개발 구역 → 지역 */
+  function _normz(s){return (s||'').toLowerCase().replace(/[\s·()\-]/g,'');}
+  function tryRedevZone(v,onNo){
+    loadRedev(function(){
+      var n=_normz(v),hit=null;
+      (redevMarks||[]).forEach(function(m){if(!hit&&m.nm&&_normz(m.nm).indexOf(n)>=0)hit={nm:m.nm,lat:m.lat,lon:m.lon,cat:m.cat,stage:m.stage,gubun:m.gubun,biz:m.nm};});
+      if(!hit&&redevData&&redevData.features){redevData.features.forEach(function(f){if(hit)return;var p=f.properties||{},nm=p.nm||'',bz=p.biz||'';if((nm&&_normz(nm).indexOf(n)>=0)||(bz&&_normz(bz).indexOf(n)>=0)){var r0=f.geometry.coordinates[0],cx=0,cy=0,i;for(i=0;i<r0.length;i++){cx+=r0[i][0];cy+=r0[i][1];}cx/=r0.length;cy/=r0.length;hit={nm:nm||bz,lat:cy,lon:cx,cat:p.cat,stage:p.stage,gubun:p.gubun,area:p.area,biz:bz||nm};}});}
+      if(hit){focusZone(hit);return;}
+      /* 마커·폴리곤 없는 구역(예: 흑석11) — 상세 매칭 후 법정동 좌표로 재개발 모드 이동 */
+      var DD=window.REDEVDETAIL||{},dk=null;
+      for(var k in DD){if(_normz(k).indexOf(n)>=0){dk=k;break;}}
+      if(dk){
+        var pref=(v.match(/[가-힣]+/)||[''])[0], dloc=null, dnm='';
+        if(pref&&window.SB&&SB.dongs){var ks=Object.keys(SB.dongs);for(var j=0;j<ks.length;j++){if(ks[j].indexOf(pref)===0){dloc=SB.dongs[ks[j]];dnm=ks[j];break;}}}
+        if(dloc){
+          if(curMode!=='redev')setMode('redev');
+          try{map.setView([dloc[1],dloc[2]],15);}catch(e){}
+          var st=document.getElementById('stat');if(st)st.textContent=dk.replace(/\s.*/,'')+' · '+dnm+' 일대 (재개발 모드)';
+          return;
+        }
+      }
+      if(onNo)onNo();
+    });
+  }
+  function routeQ(v){
+    if(window._trySelectApt&&window._trySelectApt(v))return;
+    tryRedevZone(v,function(){
+      if(!findAndGo(v)){var st=document.getElementById('stat');if(st)st.textContent='"'+v+'" 검색 결과를 찾지 못했습니다';setFcount('"'+v+'" 검색 결과 없음');}
+    });
+  }
   /* 딥링크: ?r=시군구코드 | ?q=주소·지역명 | ?s=시도명 */
   try{
     var P=new URLSearchParams(location.search);
@@ -506,7 +614,7 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
         if(t0.lat)setTimeout(function(){try{map.invalidateSize();map.setView([t0.lat,t0.lng],Z_DETAIL+1,{animate:false});}catch(e){}},150);
       }
     }else if(pq){
-      findAndGo(pq);
+      routeQ(pq);
     }else if(psp){
       var sm=null;sidos.forEach(function(x){if(!sm&&(x===psp||psp.indexOf(x)>=0))sm=x;});
       if(sm)fitSido(sm);
@@ -518,12 +626,9 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
     e.preventDefault();
     var v=document.getElementById('sq').value.trim();
     if(!v)return;
+    if(window.closeSac)window.closeSac();
     try{if(typeof gtag==='function')gtag('event','region_search',{search_term:v,source:'map'});}catch(_e){}
-    if(!findAndGo(v)){
-      var st=document.getElementById('stat');
-      if(st)st.textContent='"'+v+'" 지역을 찾지 못했습니다 (데이터 확충 중)';
-      setFcount('"'+v+'" 지역을 찾지 못했습니다');
-    }
+    routeQ(v);
   });
 })();
 /* 범례 */
@@ -533,7 +638,275 @@ document.getElementById('legend').innerHTML=Object.keys(TYPE).map(function(t){
 var popLock=false;
 map.on('popupopen',function(){popLock=true;});
 map.on('popupclose',function(){popLock=false;setTimeout(render,50);});
-map.on('moveend zoomend',function(){if(!popLock)render();});
+map.on('moveend zoomend',function(){if(popLock)return;render();if(curMode==='redev')renderRedev();});
+/* ===== 단지 검색 (검색창 자동완성 → 지도 이동 + 카드, 2026-07-25) ===== */
+(function(){
+  var idxLoading=false,idxReady=false;
+  var sq=document.getElementById('sq'), sac=document.getElementById('sac');
+  if(!sq||!sac)return;
+  function norm(s){return (s||'').toLowerCase().replace(/[\s·().,\-]/g,'');}
+  function esc(s){return (s||'').replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
+  window.closeSac=function(){sac.classList.remove('open');sac.innerHTML='';};
+  function sggName(code){var rs=(window.SB&&SB.summary&&SB.summary.regions)||[];for(var i=0;i<rs.length;i++){if(rs[i].code===code)return (rs[i].sgg||'').replace(/_/g,' ');}return '';}
+  function loadIdx(cb){
+    if(idxReady){cb&&cb();return;}
+    if(idxLoading){setTimeout(function(){loadIdx(cb);},180);return;}
+    idxLoading=true;
+    var s=document.createElement('script');s.src='data/apt_index.js';
+    s.onload=function(){idxReady=true;idxLoading=false;cb&&cb();};
+    s.onerror=function(){idxLoading=false;};
+    document.body.appendChild(s);
+  }
+  function matches(q,limit){
+    var n=norm(q); if(n.length<2||!window.SB||!SB.aptIdx)return [];
+    var pre=[],inc=[];
+    for(var i=0;i<SB.aptIdx.length;i++){var r=SB.aptIdx[i];var p=norm(r[0]).indexOf(n);
+      if(p<0)continue; if(p===0){pre.push(r);}else{if(inc.length<limit)inc.push(r);}
+      if(pre.length>=limit)break;}
+    return pre.concat(inc).slice(0,limit);
+  }
+  function jumpApt(r){   /* r=[name,lat,lng,code,dong] */
+    window.closeSac(); sq.value=r[0]; sq.blur();
+    go(r[1],r[2],17);
+    var code=r[3];
+    function open(){var d=window.SB&&SB.d&&SB.d[code];if(!d)return;
+      var pt=null,best=1e9;
+      for(var i=0;i<d.length;i++){if(d[i].name===r[0]){var dd=Math.abs(d[i].lat-r[1])+Math.abs(d[i].lng-r[2]);if(dd<best){best=dd;pt=d[i];}}}
+      if(pt){showAptCard(pt,(pt.txs||[]).slice());}
+    }
+    if(loaded[code]){open();}else{loadDetail(code,open);setTimeout(open,900);}
+  }
+  window._jumpApt=jumpApt;
+  function render(q){
+    var list=matches(q,12);
+    if(!list.length){window.closeSac();return;}
+    window._sacList=list;
+    sac.innerHTML='<div class="sach">단지 '+list.length+'곳 · 누르면 지도 이동·카드</div>'+list.map(function(r,i){
+      return '<div class="sitem" data-i="'+i+'"><b>'+esc(r[0])+'</b><span>'+esc(r[4]||'')+' · '+esc(sggName(r[3]))+'</span></div>';}).join('');
+    sac.classList.add('open');
+    if(window.innerWidth<=720){var br=sq.getBoundingClientRect();sac.style.position='fixed';sac.style.top=(br.bottom+4)+'px';sac.style.left=Math.max(6,br.left)+'px';sac.style.width=Math.min(300,window.innerWidth-12)+'px';}
+    else{sac.style.position='';sac.style.top='';sac.style.left='';sac.style.width='';}
+    Array.prototype.forEach.call(sac.querySelectorAll('.sitem'),function(el){
+      el.addEventListener('mousedown',function(ev){ev.preventDefault();jumpApt(window._sacList[+el.getAttribute('data-i')]);});
+    });
+  }
+  window._trySelectApt=function(v){
+    if(!idxReady||!window.SB||!SB.aptIdx)return false;
+    var n=norm(v);
+    for(var i=0;i<SB.aptIdx.length;i++){if(norm(SB.aptIdx[i][0])===n){jumpApt(SB.aptIdx[i]);return true;}}
+    return false;
+  };
+  sq.addEventListener('focus',function(){loadIdx(function(){var v=sq.value.trim();if(v)render(v);});});
+  sq.addEventListener('input',function(){var v=sq.value.trim();if(!v){window.closeSac();return;}if(!idxReady){loadIdx(function(){render(v);});return;}render(v);});
+  sq.addEventListener('keydown',function(e){if(e.key==='Escape')window.closeSac();});
+  document.addEventListener('click',function(e){if(!sac.contains(e.target)&&e.target!==sq)window.closeSac();});
+})();
+/* ===== 재개발·재건축 모드 (스테이징, 2026-07-24) ===== */
+var redevLayer=L.layerGroup();
+var redevRenderer=L.canvas();
+var redevData=null, redevLoading=false, redevMarks=[];
+var RCOL={'재개발':'#c0562e','재건축':'#2f5d86','주거환경':'#4c7a4a','신통':'#d6336c'};
+function rcatKo(c){return c==='신통'?'신속통합기획':(RCOL[c]?c:'정비구역');}
+function redevTag(p){return (window.REDEVTAG||{})[p.biz||p.nm]||p.tag||'';}
+function tagBadge(t){if(!t)return '';var m={'신통':['신속통합기획','#d6336c'],'모아':['모아주택','#2b8a3e']}[t];return m?'<span class="rc-pill" style="background:'+m[1]+';margin-right:5px">'+m[0]+'</span>':'';}
+function loadRedev(cb){
+  if(redevData){cb();return;}
+  if(redevLoading)return;
+  redevLoading=true;
+  document.getElementById('stat').textContent='정비구역 불러오는 중…';
+  function done(){redevData=window.REDEV||{type:'FeatureCollection',features:[]};redevMarks=(window.REDEVMARK||[]).concat(window.SINTONGMARK||[]);redevLoading=false;cb();}
+  function loadTag(){if(window.REDEVTAG){done();return;}var g=document.createElement('script');g.src='data/jeongbi_tag.js';g.onload=done;g.onerror=done;document.body.appendChild(g);}
+  function loadDetail(){if(window.REDEVDETAIL){loadTag();return;}var d=document.createElement('script');d.src='data/jeongbi_detail.js';d.onload=loadTag;d.onerror=loadTag;document.body.appendChild(d);}
+  function loadMarks(){if(window.REDEVMARK){loadDetail();return;}var m=document.createElement('script');m.src='data/jeongbi_markers.js';m.onload=loadDetail;m.onerror=loadDetail;document.body.appendChild(m);}
+  if(window.REDEV){loadMarks();return;}
+  var sc=document.createElement('script');sc.src='data/jeongbi_seoul.js';
+  sc.onload=loadMarks;
+  sc.onerror=function(){redevLoading=false;document.getElementById('stat').textContent='정비구역 데이터를 불러오지 못했습니다';};
+  document.body.appendChild(sc);
+}
+var STAGEIDX={'정비구역지정':0,'정비계획 수립':0,'재정비촉진지구수립':0,'안전진단':0,'안전진단(1차)':0,
+'추진위원회승인':1,'추진위구성':1,'조합원 모집신고':1,'주민대표회의구성통지':1,
+'조합설립인가':2,'사업시행인가':3,'사업시행계획인가':3,'사업시행자(LH) 지정':3,
+'관리처분인가':4,'착공':5,'분양':5,'철거':5,'이주':5,'준공':6,'준공인가':6};
+function stageBar(stage){
+  var order=['구역지정','추진위','조합설립','사업시행','관리처분','착공','준공'];
+  var cur=(stage in STAGEIDX)?STAGEIDX[stage]:-1;
+  return '<div class="rc-stage">'+order.map(function(nm,i){
+    var cls=i<cur?'done':(i===cur?'now':'');
+    return '<div class="rc-st '+cls+'"><div class="dot"></div><div class="t">'+nm+'</div></div>';}).join('')+'</div>';
+}
+function focusZone(z){
+  document.getElementById('rcard').classList.remove('open');
+  if(curMode!=='redev'){ setMode('redev'); }
+  map.setView([z.lat,z.lon],16);
+  setTimeout(function(){ showRcard(z); }, 380);
+}
+function rcDetailSec(p){
+  var DD=window.REDEVDETAIL||{};var d=DD[p.biz]||DD[p.nm];
+  function rw(k,v){return v?'<div class="rc-kv"><span>'+k+'</span><span class="v">'+v+'</span></div>':'';}
+  if(d&&d.fixed){
+    var far=d.far?d.far+'%':'', bcr=d.bcr?d.bcr+'%':'';
+    var units=d.units?(Number(d.units).toLocaleString()+'세대'):'';
+    var zar=d.zone_area?(Math.round(Number(d.zone_area)).toLocaleString()+'㎡'):'';
+    return '<div class="rc-sec"><div class="rc-lab">정비계획 · 정비몽땅</div><div class="rc-grid">'
+      +rw('용적률',far)+rw('건폐율',bcr)+rw('계획세대',units)+rw('용도지역',d.usezone)
+      +rw('최고층수',d.floors)+rw('구역면적',zar)
+      +rw('조합원',d.members?Number(d.members).toLocaleString()+'명':'')
+      +rw('토지등소유자',d.owners?Number(d.owners).toLocaleString()+'명':'')
+      +'</div><div class="rc-note" style="padding:6px 0 0">정비계획 고시 기준(정비몽땅 사업개요). 변경계획 진행 시 달라질 수 있습니다.</div></div>';
+  }
+  return '<div class="rc-sec"><div class="rc-lab">정비계획</div>'
+    +'<div style="font-size:12.5px;color:#8a8071;line-height:1.5">정비계획 확정 전입니다. 용적률·세대수 등 세부 계획은 사업시행계획 확정·고시 시점에 채워집니다.</div></div>';
+}
+function rcNearTx(p){
+  var clat=p._lat||p.lat, clon=p._lon||p.lon;
+  if(!clat||!clon||!window._PTS||!window._PTS.length)return '';
+  var near=window._PTS.map(function(o){return {pt:o.pt,code:o.code,tx:o.txs[0],d:Math.round(_hav(clat,clon,o.pt.lat,o.pt.lng))};})
+    .filter(function(o){return o.d<=1200;}).sort(function(a,b){return a.d-b.d;}).slice(0,6);
+  if(!near.length)return '';
+  var SN={apt:'아파트',offi:'오피스텔',villa:'연립',house:'단독',bldg:'빌딩',comm:'상가',land:'토지'};
+  var ORD={apt:0,offi:1,villa:2,house:3,comm:4,bldg:5,land:6};
+  near.sort(function(a,b){return (ORD[a.pt.t]||9)-(ORD[b.pt.t]||9)||a.d-b.d;});
+  var rows=near.map(function(o){var t=o.tx;var tp=TYPE[o.pt.t]||['기타','#8a8071'];
+    var py=(t.u==='매매'&&t.a)?(' <span style="color:#8a8071;font-weight:400">'+Math.round(t.p/t.a*3.305785).toLocaleString()+'만/평</span>'):'';
+    var href='단지상세.html?code='+(o.code||'')+'&nm='+encodeURIComponent(o.pt.name)+'&dong='+encodeURIComponent(o.pt.dong||'');
+    var chip='<span style="background:'+tp[1]+';color:#fff;font-size:9px;padding:1px 5px;border-radius:20px;font-weight:700;margin-right:5px">'+(SN[o.pt.t]||'기타')+'</span>';
+    return '<a class="rc-dl" style="text-decoration:none;color:inherit" href="'+href+'"><span style="color:#6b6355">'+chip+o.pt.name+' <span style="color:#8a8071">'+o.d+'m</span> <span class="arw" style="color:#b6ad9c">→</span></span><b>'+priceLabel(t)+py+'</b></a>';}).join('');
+  return '<div class="rc-sec"><div class="rc-lab">인근 실거래 · 상품별 · 누르면 상세</div>'+rows+'</div>';
+}
+function showRcard(p){
+  var c=(RCOL[p.cat]||'#8a8071');
+  var ar=p.area?(Math.round(p.area).toLocaleString()+'㎡ · 약 '+Math.round(p.area/3.3058).toLocaleString()+'평'):'-';
+  var html='<button id="rcClose" style="position:absolute;top:8px;right:10px;border:0;background:rgba(255,255,255,.28);color:#fff;font-size:18px;width:28px;height:28px;border-radius:50%;cursor:pointer;z-index:2">×</button>'
+    +'<div class="rc-h" style="background:'+c+'"><div class="k">서울 · '+rcatKo(p.cat)+' · 정비구역</div><h2>'+p.nm+'</h2>'+tagBadge(redevTag(p))+'<span class="rc-pill">'+(p.stage||'확인중')+'</span></div>'
+    +'<div class="rc-sec"><div class="rc-lab">추진 단계 · 정비몽땅 최신</div>'+stageBar(p.stage)+'</div>'
+    +'<div class="rc-sec"><div class="rc-lab">구역 개요</div><div class="rc-grid">'
+      +'<div class="rc-kv"><span>유형</span><span class="v">'+rcatKo(p.cat)+'</span></div>'
+      +'<div class="rc-kv"><span>사업구분</span><span class="v">'+(p.gubun||'-')+'</span></div>'
+      +'<div class="rc-kv"><span>면적</span><span class="v">'+ar+'</span></div>'
+      +'<div class="rc-kv"><span>대지평당가</span><span class="v" style="color:#b06a2e;font-weight:600">수집 후</span></div>'
+      +'</div></div>'
+    +rcDetailSec(p)
+    +rcNearTx(p)
+    +'<a class="rc-cta" href="구역상세.html?nm='+encodeURIComponent(p.biz||p.nm)+'" style="background:#7a3b12">구역 상세 · 정비계획 전체 보기 →</a>'
+    +'<a class="rc-cta" href="재개발_기초상식.html" style="background:#3a4658">재개발·재건축 기초상식 →</a>'
+    +'<div class="rc-note">추진단계는 정비몽땅 공개자료 기준이라 시점에 따라 다를 수 있습니다. 구역계·단계는 참고용, 법적효력 없음.</div>';
+  var rc=document.getElementById('rcard');rc.innerHTML=html;rc.classList.add('open');
+  document.getElementById('rcClose').onclick=function(){rc.classList.remove('open');};
+}
+
+function renderRedev(){
+  if(!redevData)return;
+  redevLayer.clearLayers();var n=0;
+  var mb=map.getBounds(),W=mb.getWest(),E=mb.getEast(),S=mb.getSouth(),N=mb.getNorth();
+  redevData.features.forEach(function(f){
+    var r0=f.geometry.coordinates[0],mnx=1e9,mxx=-1e9,mny=1e9,mxy=-1e9;
+    for(var i=0;i<r0.length;i++){var x=r0[i][0],y=r0[i][1];if(x<mnx)mnx=x;if(x>mxx)mxx=x;if(y<mny)mny=y;if(y>mxy)mxy=y;}
+    if(mxx<W||mnx>E||mxy<S||mny>N)return;
+    if(!matchRF(f.properties.cat,redevTag(f.properties)))return;
+    var c=(RCOL[f.properties.cat]||'#8a8071');
+    var ll=f.geometry.coordinates.map(function(r){return r.map(function(pt){return [pt[1],pt[0]];});});
+    var _cy=(mny+mxy)/2,_cx=(mnx+mxx)/2;
+    L.polygon(ll,{renderer:redevRenderer,color:c,weight:1.3,fillColor:c,fillOpacity:.30}).on('click',function(){showRcard(Object.assign({_lat:_cy,_lon:_cx},f.properties));}).addTo(redevLayer);
+    n++;
+  });
+  (redevMarks||[]).forEach(function(m){
+    if(m.lon<W||m.lon>E||m.lat<S||m.lat>N)return;
+    if(!matchRF(m.cat,m.tag||redevTag(m)))return;
+    var c=(RCOL[m.cat]||'#8a8071');
+    L.circleMarker([m.lat,m.lon],{renderer:redevRenderer,radius:6,color:'#fff',weight:1.5,fillColor:c,fillOpacity:1}).on('click',function(){showRcard(m);}).addTo(redevLayer);
+    n++;
+  });
+  setFcount('화면 내 정비구역 '+n.toLocaleString()+'곳 · 구역/마커 클릭 시 상세');
+}
+function redevLegend(){
+  var dt=function(c){return '<span class="dot" style="background:'+c+'"></span>';};
+  var bar=function(c){return '<span style="display:inline-block;width:16px;height:9px;border-radius:2px;background:'+c+';opacity:.55;vertical-align:0;margin-right:4px"></span>';};
+  document.getElementById('legend').innerHTML=
+    '<b style="color:#4a4438">유형(색)</b> '
+    +dt(RCOL['재개발'])+'재개발 &nbsp;'
+    +dt(RCOL['재건축'])+'재건축 &nbsp;'
+    +dt(RCOL['주거환경'])+'주거환경 &nbsp;'
+    +dt('#d6336c')+'신속통합기획 &nbsp;'
+    +dt('#2b8a3e')+'모아주택'
+    +'<br><b style="color:#4a4438">모양</b> '+bar('#9a8f7a')+'채워진 <b>구역(면)</b>=정비구역 경계 &nbsp; '+dt('#9a8f7a')+'<b>점</b>=위치 마커(구역계 없는 재건축·신통 후보지 등)'
+    +'<br>신통기획·모아주택은 카드에 뱃지 · 추진단계=정비몽땅 최신 · 출처: 국가정보포털 공공 DB 등 · 참고용';
+}
+function tradeLegend(){
+  document.getElementById('legend').innerHTML=Object.keys(TYPE).map(function(t){return '<span style="margin-right:8px"><span class="dot" style="background:'+TYPE[t][1]+'"></span>'+TYPE[t][0]+'</span>';}).join('')+'<br>'+(SB.summary.period?('계약일 '+SB.summary.period.f.replace(/-/g,'.')+' ~ '+SB.summary.period.t.slice(5).replace(/-/g,'.')+' · '):'')+'기준일 '+SB.summary.updated;
+}
+function _hav(a,b,c,d){var R=6371000,rl=Math.PI/180;var x=Math.sin((c-a)*rl/2);var y=Math.sin((d-b)*rl/2);var h=x*x+Math.cos(a*rl)*Math.cos(c*rl)*y*y;return 2*R*Math.asin(Math.sqrt(h));}
+window._NZ=[];
+function showAptCard(pt, txs){
+  var ti=TYPE[pt.t]||['기타','#6E6E6A'], col=ti[1];
+  var rows=txs.slice(0,8).map(function(t){
+    var py=(t.u==='매매'&&t.a)?(' <span style="color:#8a8071;font-weight:400">'+Math.round(t.p/t.a*3.305785).toLocaleString()+'만/평</span>'):'';
+    return '<div class="rc-dl"><span style="color:#6b6355">'+t.cd.slice(2)+' · '+(t.a||'-')+'㎡ · '+t.f+'층</span><b>'+priceLabel(t)+py+'</b></div>';
+  }).join('');
+  var nz=[];
+  if(typeof redevMarks!=='undefined' && redevMarks && redevMarks.length){
+    redevMarks.forEach(function(m){var d=Math.round(_hav(pt.lat,pt.lng,m.lat,m.lon));if(d<=1200)nz.push({nm:m.nm,stage:m.stage,cat:m.cat,gubun:m.gubun,lat:m.lat,lon:m.lon,area:null,d:d});});
+  }
+  if(typeof redevData!=='undefined' && redevData && redevData.features){
+    redevData.features.forEach(function(f){var r0=f.geometry.coordinates[0];var cx=0,cy=0;for(var i=0;i<r0.length;i++){cx+=r0[i][0];cy+=r0[i][1];}cx/=r0.length;cy/=r0.length;var d=Math.round(_hav(pt.lat,pt.lng,cy,cx));if(d<=1200)nz.push({nm:f.properties.nm,biz:f.properties.biz,stage:f.properties.stage,cat:f.properties.cat,gubun:f.properties.gubun,area:f.properties.area,lat:cy,lon:cx,d:d});});
+  }
+  nz.sort(function(a,b){return a.d-b.d;}); nz=nz.slice(0,6); window._NZ=nz;
+  var near=nz.map(function(z,i){var cc=(RCOL[z.cat]||'#8a8071');
+    return '<div class="rc-row" onclick="focusZone(window._NZ['+i+'])"><span>'+z.nm+' <span style="color:#8a8071">'+z.d+'m</span><span class="arw">→</span></span><span class="rc-badge" style="background:'+cc+'">'+(z.stage||'확인중')+'</span></div>';}).join('');
+  var code=(window.SB&&SB.dongs&&SB.dongs[pt.dong])?SB.dongs[pt.dong][0]:'';
+  if(code&&(!window.APTASK||window.APTASK[code]===undefined)){
+    showAptCard._pend=showAptCard._pend||{};
+    if(!showAptCard._pend[code]){showAptCard._pend[code]=1;
+      var sc=document.createElement('script');sc.src='data/apt_asking_'+code+'.js';
+      sc.onload=function(){showAptCard(pt,txs);};sc.onerror=function(){window.APTASK=window.APTASK||{};window.APTASK[code]={};};document.body.appendChild(sc);}
+  }
+  var A=(code&&window.APTASK&&window.APTASK[code]&&window.APTASK[code][pt.name])||null;
+  var hoSec='';
+  {
+    function eok2(m){if(!m)return '';var v=m/10000;return (v>=100?Math.round(v):(''+v.toFixed(1)).replace(/\.0$/,''))+'억';}
+    function md(a){if(!a.length)return 0;var s=a.slice().sort(function(x,y){return x-y;});return s[Math.floor(s.length/2)];}
+    var mmT=txs.filter(function(t){return t.u==='매매';}),jeT=txs.filter(function(t){return t.u==='전세';}),woT=txs.filter(function(t){return t.u==='월세';});
+    function rrow(l,rv,hv){return '<div style="display:grid;grid-template-columns:40px 1fr 1fr;font-size:12.5px;padding:5px 0;border-bottom:1px dotted #e7e1d4"><b style="color:#6b6355;font-weight:700">'+l+'</b><span style="text-align:right;font-weight:700">'+(rv||'·')+'</span><span style="text-align:right;font-weight:700;color:#c0562e">'+(hv||'·')+'</span></div>';}
+    hoSec='<div class="rc-sec"><div class="rc-lab">실거래 vs 호가 · 중위</div>'
+      +'<div style="display:grid;grid-template-columns:40px 1fr 1fr;font-size:10px;color:#8a8071;font-weight:700;padding-bottom:2px"><span></span><span style="text-align:right">실거래</span><span style="text-align:right">호가</span></div>'
+      +rrow('매매',eok2(md(mmT.map(function(t){return t.p;}))),(A&&A.mm)?eok2(A.mm.med):'')
+      +rrow('전세',eok2(md(jeT.map(function(t){return t.p;}))),(A&&A.je)?eok2(A.je.med):'')
+      +rrow('월세',woT.length?(eok2(md(woT.map(function(t){return t.p;})))+'/'+md(woT.map(function(t){return t.r;}))+'만'):'',(A&&A.wo)?(eok2(A.wo.bo)+'/'+A.wo.wol+'만'):'')
+      +'<div class="rc-note" style="padding:4px 0 0">호가=협상 전 매물가(중위, 주황). '+(A?'실거래(체결가)와 다를 수 있음.':'이 단지 현재 호가 매물 없음.')+'</div></div>';
+  }
+  var html='<button id="rcClose" style="position:absolute;top:8px;right:10px;border:0;background:rgba(255,255,255,.28);color:#fff;font-size:18px;width:28px;height:28px;border-radius:50%;cursor:pointer;z-index:2">×</button>'
+    +'<div class="rc-h" style="background:'+col+'"><div class="k">'+ti[0]+' · 실거래</div><h2>'+pt.name+'</h2><div class="loc">'+pt.dong+' '+(pt.jibun||'')+'</div></div>'
+    +hoSec
+    +'<div class="rc-sec"><div class="rc-lab">최근 실거래 · 평당 전용기준</div>'+(rows||'<div style="color:#8a8071;font-size:13px">거래 없음</div>')+'</div>'
+    +(near?'<div class="rc-sec"><div class="rc-lab">인근 정비구역 (누르면 이동)</div>'+near+'</div>':'')
+    +'<a class="rc-cta" href="단지상세.html?code='+code+'&nm='+encodeURIComponent(pt.name)+'&dong='+encodeURIComponent(pt.dong||'')+'" style="background:#12203a">이 단지 실거래·평형별 상세 →</a>'
+    +'<div class="rc-note">실거래 기준일 '+((window.SB&&SB.summary&&SB.summary.updated)||'-')+' · 호가 수집일 '+(window.APTASKDAY||(A?'-':'미수집 지역'))+'</div>';
+  var rc=document.getElementById('rcard');rc.innerHTML=html;rc.classList.add('open');
+  document.getElementById('rcClose').onclick=function(){rc.classList.remove('open');};
+}
+
+function setMode(m){
+  curMode=m;
+  document.querySelectorAll('#modes button').forEach(function(b){b.classList.toggle('on',b.dataset.m===m);});
+  document.body.classList.toggle('redev',m==='redev');
+  if(!map.hasLayer(layer))map.addLayer(layer);
+  if(m==='trade'){
+    if(map.hasLayer(redevLayer))map.removeLayer(redevLayer);
+    document.getElementById('rcard').classList.remove('open');
+    tradeLegend();render();
+  }else{
+    if(!map.hasLayer(redevLayer))map.addLayer(redevLayer);
+    redevLegend();render();loadRedev(renderRedev);
+  }
+}
+document.querySelectorAll('#modes button').forEach(function(b){b.addEventListener('click',function(){setMode(b.dataset.m);});});
+document.querySelectorAll('#rfbar button').forEach(function(b){b.addEventListener('click',function(){
+  var rf=b.dataset.rf;
+  if(rf==='trade'){redevShowTrade=!redevShowTrade;b.classList.toggle('on',redevShowTrade);render();}
+  else{curRF[rf]=!curRF[rf];b.classList.toggle('on',curRF[rf]);renderRedev();}
+});});
+try{if((new URLSearchParams(location.search)).get('mode')==='redev'){setMode('redev');}}catch(e){}
+
 render();
 </script>
 </body></html>
