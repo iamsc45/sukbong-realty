@@ -245,8 +245,18 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
   align-items:center;justify-content:center;font-weight:800;font-size:16px;flex:0 0 auto}
 .op-strip .ot{font-size:13.5px;font-weight:800;letter-spacing:-0.01em}
 .op-strip .os{font-size:11.5px;color:#B9B9B4;margin-top:2px;line-height:1.5}
-.op-strip .obtn{margin-left:auto;font-size:12px;font-weight:700;color:var(--blk);background:#fff;
-  border-radius:100px;padding:9px 18px;text-decoration:none;white-space:nowrap}
+.op-info{min-width:190px}
+.op-links{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.op-links .oc{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:#fff;
+  background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.20);border-radius:100px;
+  padding:9px 15px;text-decoration:none;white-space:nowrap;transition:background .15s ease}
+.op-links .oc:hover{background:rgba(255,255,255,.22)}
+.op-links .oc i{font-size:16px}
+.op-links .rd i{color:#f0997b}
+.op-links .tg i{color:#2AABEE}
+.op-links .kk i{color:#FEE500}
+.op-links .bl i{color:#03C75A}
+@media(max-width:720px){.op-links{margin-left:0;width:100%}.op-links .oc{flex:1;justify-content:center;min-width:44%}}
 /* 모바일 허브 (m-home 안) */
 .hubgrid-m{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:22px 0 0}
 .tile-m{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 4px;
@@ -310,8 +320,14 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
   <a class="ad-slot" id="adDesk" href="mailto:iamsc45@gmail.com"><i class="ti ti-speakerphone" aria-hidden="true"></i>이 자리에 브랜드를 노출하세요<span class="sub">청약·분양·중개업소 배너 제휴 문의 →</span></a>
   <div class="op-strip">
     <span class="oi">석</span>
-    <div><div class="ot">석봉 부동산 정보방</div><div class="os">부동산 시행·빌딩 중개·담보대출 전문가가 직접 운영합니다. 국토부·공공 데이터 기반, 전부 무료로 제공합니다.</div></div>
-    <a class="obtn" href="channels.html">채널 구독</a>
+    <div class="op-info"><div class="ot">석봉 부동산 정보방</div><div class="os">부동산 시행·빌딩 중개·담보대출 전문가가 직접 운영 · 국토부·공공 데이터 기반, 전부 무료</div></div>
+    <div class="op-links">
+      <a class="oc" href="map_재개발_staging.html"><i class="ti ti-map-2" aria-hidden="true"></i>실거래지도</a>
+      <a class="oc rd" href="map_재개발_staging.html?mode=redev"><i class="ti ti-building-community" aria-hidden="true"></i>재개발지도</a>
+      <a class="oc tg" href="https://telegram.me/seokbongnews" target="_blank" rel="noopener"><i class="ti ti-brand-telegram" aria-hidden="true"></i>텔레그램</a>
+      <a class="oc kk" href="https://open.kakao.com/o/gt8CTUCi" target="_blank" rel="noopener"><i class="ti ti-message-circle" aria-hidden="true"></i>카카오톡</a>
+      <a class="oc bl" href="https://blog.naver.com/seokbongnews" target="_blank" rel="noopener"><i class="ti ti-notebook" aria-hidden="true"></i>블로그</a>
+    </div>
   </div>
 </section>
 
