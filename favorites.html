@@ -4,13 +4,16 @@
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-Y7P41Z09PV');</script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>관심단지 · 석봉 부동산 정보방</title>
-<meta name="description" content="지도나 단지 상세에서 등록한 관심단지를 한곳에서 봅니다.">
+<meta name="description" content="관심단지를 등록하면 어느 기기에서나 보고, 새 실거래 소식을 확인할 수 있습니다.">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <link rel="stylesheet" href="assets/site.css">
 <style>
 .wrap{max-width:820px}
 h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;margin:48px 0 6px}
 .pgsub{color:var(--muted);font-size:13.5px;margin:0 0 22px}
+.who{display:flex;gap:10px;align-items:center;font-size:12.5px;color:var(--muted);margin:0 0 14px}
+.who b{color:var(--text)}
+.who button{border:1px solid var(--hair);background:#fff;border-radius:100px;padding:5px 13px;font:inherit;font-size:11.5px;font-weight:700;cursor:pointer;color:#555}
 .fv{display:flex;align-items:center;gap:12px;padding:14px 4px;border-bottom:1px solid var(--hair)}
 .fv .star{color:#d9a514;font-size:18px}
 .fv .mn{flex:1;min-width:0}
@@ -22,7 +25,9 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
 .emptybox{border:1px dashed var(--hair);border-radius:14px;padding:40px 22px;text-align:center;color:var(--muted);font-size:13.5px;margin-top:14px;line-height:1.8}
 .emptybox b{color:var(--text);display:block;font-size:15px;margin-bottom:4px}
 .emptybox a{color:var(--acc-blue);font-weight:700;text-decoration:none}
+.kbtn{display:inline-block;margin-top:14px;border:0;border-radius:12px;background:#FEE500;color:#191919;font:inherit;font-size:14.5px;font-weight:800;padding:13px 30px;cursor:pointer}
 .notice2{font-size:11.5px;color:var(--muted);line-height:1.7;margin:26px 0 50px}
+.notice2 a{color:var(--acc-blue)}
 </style>
 <meta property="og:title" content="관심단지 · 석봉 부동산 정보방">
 <meta property="og:type" content="website">
@@ -42,65 +47,83 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
 </header>
 <main class="wrap" style="margin:0 auto;padding:0 22px">
   <h1 class="pg">관심단지</h1>
-  <p class="pgsub" id="cnt">등록한 단지를 한곳에서 봅니다 · 이 기기(브라우저)에 저장됩니다</p>
+  <p class="pgsub" id="cnt">등록한 단지를 어느 기기에서나 확인합니다</p>
+  <div class="who" id="who" style="display:none"></div>
   <div id="list"></div>
-  <p class="notice2">※ 관심단지는 서버가 아니라 지금 사용 중인 기기·브라우저에만 저장됩니다. 다른 기기에서는 보이지 않으며, 브라우저 데이터를 지우면 사라집니다. 단지명을 누르면 실거래·평형별 상세로 이동합니다.</p>
+  <p class="notice2" id="note">※ 관심단지는 회원 기능입니다. 카카오 로그인으로 어느 기기에서나 같은 목록을 보고, 새 실거래가 생기면 표시해 드립니다. 단지명을 누르면 실거래·평형별 상세로 이동합니다. <a href="privacy.html" target="_blank">개인정보 처리방침</a></p>
 </main>
 <footer class="site-footer">
   <span>📈 <a href="https://telegram.me/seokbongnews">텔레그램 채널</a></span> ·
   <span>💬 <a href="https://open.kakao.com/o/gt8CTUCi">카카오 오픈채팅</a> · <a href="https://blog.naver.com/seokbongnews">네이버 블로그</a></span>
   <div class="fine">편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 방문 통계 수집을 위해 Google Analytics(쿠키)를 사용합니다</div>
 </footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets/sb_auth.js"></script>
 <script>
 (function(){
-  function fl(){try{return JSON.parse(localStorage.getItem('sb_fav')||'[]');}catch(e){return [];}}
-  function fs(l){try{localStorage.setItem('sb_fav',JSON.stringify(l));}catch(e){}}
   function esc(s){return (s||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
   function eok(m){if(!m)return '';var v=m/10000;return (v>=100?Math.round(v):(''+v.toFixed(1)).replace(/\.0$/,''))+'억';}
-  var list=document.getElementById('list'), cnt=document.getElementById('cnt');
+  var list=document.getElementById('list'), cnt=document.getElementById('cnt'), who=document.getElementById('who');
+  function guest(){
+    who.style.display='none';
+    cnt.textContent='등록한 단지를 어느 기기에서나 확인합니다';
+    list.innerHTML='<div class="emptybox"><b>관심단지는 회원 기능입니다</b>'
+      +'카카오로 3초 만에 시작하고, 관심단지의 새 실거래 소식을 받아보세요.<br>'
+      +'<button class="kbtn" id="kJoin">카카오로 시작하기</button></div>';
+    document.getElementById('kJoin').onclick=function(){SBAuth.gate(null,null);};
+  }
   function draw(extra){
-    var l=fl();
-    cnt.textContent=(l.length?('등록 '+l.length+'개 · '):'')+'이 기기(브라우저)에 저장됩니다';
+    var l=SBAuth.favAll();
+    cnt.textContent=(l.length?('등록 '+l.length+'개 · '):'')+'어느 기기에서나 같은 목록을 봅니다';
+    who.style.display='flex';
+    who.innerHTML='<span><b>'+esc(SBAuth.nickname())+'</b>님</span>'
+      +'<button id="btnOut">로그아웃</button><button id="btnQuit">회원 탈퇴</button>';
+    document.getElementById('btnOut').onclick=function(){SBAuth.logout();};
+    document.getElementById('btnQuit').onclick=async function(){
+      if(!confirm('탈퇴하면 관심단지 목록이 모두 삭제됩니다. 진행할까요?'))return;
+      var l2=SBAuth.favAll().slice();
+      for(var i=0;i<l2.length;i++){await SBAuth.delFav((l2[i].code||'')+'|'+l2[i].nm);}
+      alert('관심단지 정보가 삭제되었습니다. 로그아웃합니다.\n계정 완전 삭제를 원하시면 iamsc45@gmail.com 으로 요청해 주세요.');
+      SBAuth.logout();
+    };
     if(!l.length){
       list.innerHTML='<div class="emptybox"><b>아직 등록한 단지가 없습니다</b>'
         +'<a href="map.html">실거래지도</a>에서 단지를 누르고 <b style="display:inline">☆ 관심단지 등록</b> 버튼을 누르면 여기에 모입니다.</div>';
       return;
     }
     list.innerHTML=l.map(function(f,i){
+      var id=(f.code||'')+'|'+f.nm;
       var dt='단지상세.html?code='+encodeURIComponent(f.code||'')+'&nm='+encodeURIComponent(f.nm)+'&dong='+encodeURIComponent(f.dong||'');
-      var x=(extra||{})[f.id]||{};
+      var x=(extra||{})[id]||{};
       var badge=x.newN?'<span style="margin-left:7px;font-size:10.5px;font-weight:800;color:#fff;background:#c0392b;border-radius:100px;padding:2px 8px;vertical-align:2px">신규 거래 +'+x.newN+'</span>':'';
       var latest=x.latest?(' · 최근 '+x.latest):'';
       return '<div class="fv"><span class="star">★</span>'
         +'<div class="mn"><a href="'+dt+'">'+esc(f.nm)+'</a>'+badge+'<div class="sub">'+esc(f.dong||'')+latest+'</div></div>'
         +'<a class="go" href="map.html?q='+encodeURIComponent(f.nm)+'">지도</a>'
-        +'<button class="del" data-i="'+i+'" aria-label="삭제">✕</button></div>';
+        +'<button class="del" data-id="'+esc(id)+'" aria-label="삭제">✕</button></div>';
     }).join('');
     list.querySelectorAll('.del').forEach(function(b){
-      b.addEventListener('click',function(){var l2=fl();l2.splice(+b.dataset.i,1);fs(l2);draw(extra);});
+      b.addEventListener('click',function(){SBAuth.delFav(b.dataset.id).then(function(){draw(extra);});});
     });
   }
-  draw();
-  /* 지난 방문 이후 신규 실거래 배지: 등록 시점 거래 건수(lastN)와 현재 detail 데이터 비교 */
-  (function(){
-    var l=fl(); if(!l.length)return;
+  function badges(){
+    var l=SBAuth.favAll(); if(!l.length){draw({});return;}
     window.SB=window.SB||{d:{}};
     var codes=[]; l.forEach(function(f){if(f.code&&codes.indexOf(f.code)<0)codes.push(f.code);});
-    var left=codes.length; if(!left)return;
+    var left=codes.length; if(!left){draw({});return;}
     function done(){
-      var extra={}, changed=false;
+      var extra={};
       l.forEach(function(f){
+        var id=(f.code||'')+'|'+f.nm;
         var d=(SB.d&&SB.d[f.code])||[], pt=null;
         for(var i=0;i<d.length;i++){if(d[i].name===f.nm){pt=d[i];break;}}
-        if(!pt){extra[f.id]={latest:'최근 6개월 거래 없음'};return;}
-        var n=(pt.txs||[]).length, t0=(pt.txs||[])[0];
-        var x={};
-        if(typeof f.lastN==='number'&&n>f.lastN)x.newN=n-f.lastN;
+        if(!pt){extra[id]={latest:'최근 6개월 거래 없음'};return;}
+        var n=(pt.txs||[]).length, t0=(pt.txs||[])[0], x={};
+        if(typeof f.last_n==='number'&&n>f.last_n)x.newN=n-f.last_n;
         if(t0)x.latest=t0.cd.slice(5).replace('-','/')+' '+t0.u+' '+eok(t0.p);
-        extra[f.id]=x;
-        if(f.lastN!==n){f.lastN=n;changed=true;}   /* 확인했으니 기준 갱신 */
+        extra[id]=x;
+        if(f.last_n!==n)SBAuth.setLastN(id,n);
       });
-      if(changed)fs(l);
       draw(extra);
     }
     codes.forEach(function(c){
@@ -109,7 +132,10 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
       s.onerror=function(){if(--left===0)done();};
       document.body.appendChild(s);
     });
-  })();
+  }
+  function boot(){ if(SBAuth.isIn()){draw({});badges();} else guest(); }
+  if(window.SBAuth){SBAuth.whenReady(boot);SBAuth.onChange(boot);}
+  else{list.innerHTML='<div class="emptybox">로그인 모듈을 불러오지 못했습니다. 새로고침해 주세요.</div>';}
 })();
 </script>
 </body></html>

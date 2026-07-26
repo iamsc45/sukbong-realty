@@ -71,6 +71,8 @@
 <div class="links"><a class="map" href="map.html?mode=redev">지도(재개발)로 가기 →</a><a class="info" href="재개발_기초상식.html">재개발·재건축 기초상식 →</a></div>
 <div class="src">자료: 국토교통부 실거래가(해제 건 제외) · 석봉 부동산 정보방 · 참고용, 법적효력 없음. 세대수·시공사·교통·학교 등 단지 정보는 순차 추가됩니다.</div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets/sb_auth.js"></script>
 <script src="data/jeongbi_seoul.js"></script>
 <script src="data/jeongbi_markers.js"></script>
 <script>
@@ -131,22 +133,25 @@ function render(pt,code){
   var jr=(mmamt&&jemed)?Math.round(jemed/mmamt*100):0;
   document.getElementById('kk').textContent='단지 상세 · '+esc(pt.dong||'');
   document.getElementById('nm').textContent=pt.name;
-  /* 관심단지 등록 버튼 (이 기기 브라우저에 저장) */
+  /* 관심단지 등록 버튼 (회원 기능 · 카카오 원클릭 가입 유도) */
   (function(){
-    function fl(){try{return JSON.parse(localStorage.getItem('sb_fav')||'[]');}catch(e){return [];}}
-    function fs(l){try{localStorage.setItem('sb_fav',JSON.stringify(l));}catch(e){}}
     var fid=code+'|'+pt.name;
+    var item={id:fid,nm:pt.name,code:code,dong:pt.dong||'',lastN:(pt.txs||[]).length};
     var b=document.getElementById('favBtn');
     if(!b){b=document.createElement('button');b.id='favBtn';
       b.style.cssText='display:block;margin:10px 0 0;border:1.5px solid #b08434;border-radius:100px;padding:9px 20px;font:inherit;font-size:13.5px;font-weight:800;cursor:pointer;background:#fff;color:#5c4300';
       document.querySelector('.mast').appendChild(b);}
     function paint(on){b.textContent=on?'★ 관심단지 등록됨 (목록 보기)':'☆ 관심단지 등록';
       b.style.background=on?'#ffd24d':'#fff';}
-    var on=fl().some(function(f){return f.id===fid;});paint(on);
+    function sync(){paint(window.SBAuth&&SBAuth.isIn()&&SBAuth.favHas(fid));}
+    if(window.SBAuth){SBAuth.whenReady(sync);SBAuth.onChange(sync);}else{paint(false);}
     b.onclick=function(){
-      var l=fl(),i=-1;for(var k=0;k<l.length;k++){if(l[k].id===fid){i=k;break;}}
-      if(i>=0){if(confirm('관심단지 목록으로 이동할까요? (취소=등록 해제)')){location.href='favorites.html';return;}l.splice(i,1);fs(l);paint(false);return;}
-      l.push({id:fid,nm:pt.name,code:code,dong:pt.dong||'',lastN:(pt.txs||[]).length});fs(l);paint(true);
+      if(!(window.SBAuth&&SBAuth.isIn())){if(window.SBAuth)SBAuth.gate(item,null);return;}
+      if(SBAuth.favHas(fid)){
+        if(confirm('관심단지 목록으로 이동할까요? (취소=등록 해제)')){location.href='favorites.html';return;}
+        SBAuth.delFav(fid).then(function(ok){if(ok)paint(false);});return;
+      }
+      SBAuth.addFav(item).then(function(ok){if(ok)paint(true);});
       try{if(typeof gtag==='function')gtag('event','favorite_toggle',{item_name:pt.name,on:1});}catch(e){}
     };
   })();

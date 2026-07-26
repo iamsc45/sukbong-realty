@@ -226,6 +226,8 @@ body.redev #rfbar{display:flex}
   <span style="color:#8A93A5;margin-left:auto;float:right">원자료: 국토교통부 실거래가 공개시스템 (해제 건 제외) · ⓒ 2026 석봉 부동산 정보방 · 위치는 지번 기준 개략 · 좌표 확보 지점만 표시(확충 중) · 투자 권유 아님 · 방문 통계 수집을 위해 Google Analytics(쿠키)를 사용합니다</span>
 </footer>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets/sb_auth.js"></script>
 <script src="data/summary.js"></script>
 <script src="data/dongs.js"></script>
 <script>
@@ -1018,7 +1020,8 @@ function showAptCard(pt, txs){
       +rrow('월세',woT.length?(eok2(md(woT.map(function(t){return t.p;})))+'/'+md(woT.map(function(t){return t.r;}))+'만'):'',(A&&A.wo)?(eok2(A.wo.bo)+'/'+A.wo.wol+'만'):'')
       +'<div class="rc-note" style="padding:4px 0 0">호가=협상 전 매물가(중위, 주황). '+(A?'실거래(체결가)와 다를 수 있음.':'이 단지 현재 호가 매물 없음.')+'</div></div>';
   }
-  var favId=code+'|'+pt.name, isFav=favHas(favId);
+  var favId=code+'|'+pt.name;
+  var isFav=(window.SBAuth&&SBAuth.isIn())?SBAuth.favHas(favId):false;
   var html='<button id="rcClose" style="position:absolute;top:8px;right:10px;border:0;background:rgba(255,255,255,.28);color:#fff;font-size:18px;width:28px;height:28px;border-radius:50%;cursor:pointer;z-index:2">×</button>'
     +'<div class="rc-h" style="background:'+col+'"><div class="k">'+ti[0]+' · 실거래</div><h2>'+pt.name+'</h2><div class="loc">'+pt.dong+' '+(pt.jibun||'')+'</div>'
     +'<button id="rcFav" style="margin-top:9px;border:0;border-radius:100px;padding:8px 16px;font:inherit;font-size:12.5px;font-weight:800;cursor:pointer;'
@@ -1033,10 +1036,18 @@ function showAptCard(pt, txs){
   document.getElementById('rcClose').onclick=function(){rc.classList.remove('open');};
   var fb=document.getElementById('rcFav');
   if(fb)fb.onclick=function(){
-    var on=favToggle({id:favId,nm:pt.name,code:code,dong:pt.dong||'',lastN:(pt.txs||txs||[]).length});
-    fb.textContent=on?'★ 관심단지 등록됨':'☆ 관심단지 등록';
-    fb.style.background=on?'#ffd24d':'rgba(255,255,255,.92)';fb.style.color=on?'#5c4300':'#1a1a1a';
-    try{if(typeof gtag==='function')gtag('event','favorite_toggle',{item_name:pt.name,on:on?1:0});}catch(e){}
+    var item={id:favId,nm:pt.name,code:code,dong:pt.dong||'',lastN:(pt.txs||txs||[]).length};
+    function paint(on){
+      fb.textContent=on?'★ 관심단지 등록됨':'☆ 관심단지 등록';
+      fb.style.background=on?'#ffd24d':'rgba(255,255,255,.92)';fb.style.color=on?'#5c4300':'#1a1a1a';
+    }
+    if(!(window.SBAuth&&SBAuth.isIn())){
+      if(window.SBAuth)SBAuth.gate(item,null);
+      return;
+    }
+    if(SBAuth.favHas(favId)){SBAuth.delFav(favId).then(function(ok){if(ok)paint(false);});}
+    else{SBAuth.addFav(item).then(function(ok){if(ok)paint(true);});}
+    try{if(typeof gtag==='function')gtag('event','favorite_toggle',{item_name:pt.name});}catch(e){}
   };
 }
 
