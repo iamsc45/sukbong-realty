@@ -660,10 +660,14 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
     });
   }
   function routeQ(v){
-    if(window._trySelectApt&&window._trySelectApt(v))return;
-    tryRedevZone(v,function(){
-      if(!findAndGo(v)){var st=document.getElementById('stat');if(st)st.textContent='"'+v+'" 검색 결과를 찾지 못했습니다';setFcount('"'+v+'" 검색 결과 없음');}
-    });
+    function afterIdx(){
+      if(window._trySelectApt&&window._trySelectApt(v))return;
+      tryRedevZone(v,function(){
+        if(!findAndGo(v)){var st=document.getElementById('stat');if(st)st.textContent='"'+v+'" 검색 결과를 찾지 못했습니다';setFcount('"'+v+'" 검색 결과 없음');}
+      });
+    }
+    if(window._loadAptIdx && !(window.SB&&SB.aptIdx)){window._loadAptIdx(afterIdx);}
+    else afterIdx();
   }
   /* 딥링크: ?r=시군구코드 | ?q=주소·지역명 | ?s=시도명 */
   try{
@@ -739,6 +743,7 @@ map.on('moveend zoomend',function(){if(popLock)return;render();if(curMode==='red
     if(loaded[code]){open();}else{loadDetail(code,open);setTimeout(open,900);}
   }
   window._jumpApt=jumpApt;
+  window._loadAptIdx=loadIdx;
   function render(q){
     var list=matches(q,12);
     if(!list.length){window.closeSac();return;}
