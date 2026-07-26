@@ -1,0 +1,1 @@
+window.APTASK=window.APTASK||{};APTASK["47750"]={"진보무지개":{"mm":{"med":4500,"py":270,"n":1}}};window.APTASKDAY="2026-07-25";

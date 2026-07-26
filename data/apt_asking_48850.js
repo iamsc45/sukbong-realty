@@ -1,0 +1,1 @@
+window.APTASK=window.APTASK||{};APTASK["48850"]={"하동해양파크빌":{"mm":{"med":5200,"py":294,"n":9},"wo":{"bo":500,"wol":35,"n":1}},"미진스위트빌":{"mm":{"med":13000,"py":512,"n":3}}};window.APTASKDAY="2026-07-25";

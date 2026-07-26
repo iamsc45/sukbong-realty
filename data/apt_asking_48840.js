@@ -1,0 +1,1 @@
+window.APTASK=window.APTASK||{};APTASK["48840"]={"대아":{"mm":{"med":9500,"py":532,"n":1}}};window.APTASKDAY="2026-07-25";
