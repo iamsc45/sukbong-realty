@@ -191,7 +191,7 @@ body.redev #rfbar{display:flex}
 <div id="bar">
   <div id="modes"><button data-m="trade" class="on">실거래</button><button data-m="redev">재개발·재건축</button></div>
   <div id="rfbar"><span class="rflbl">유형</span><button class="rfc on" data-rf="재개발">재개발</button><button class="rfc on" data-rf="재건축">재건축·주거환경</button><button class="rfc on" data-rf="신통">신속통합기획</button><button class="rfc on" data-rf="모아">모아주택</button><button class="rfc trade" data-rf="trade">실거래 겹쳐보기</button></div>
-  <form id="sform"><input id="sq" type="search" placeholder="지역·동·단지 검색" autocomplete="off"><button type="submit" class="sbtn">검색</button><div id="sac"></div></form>
+  <form id="sform"><input id="sq" type="search" placeholder="지역·단지·지번 검색" autocomplete="off"><button type="submit" class="sbtn">검색</button><div id="sac"></div></form>
   <button id="fbtn" type="button">필터 ▾</button>
   <select id="selSido"></select><select id="selSgg"></select>
   <span class="bargrp"><span class="lbl">상품:</span><span id="typechips"></span></span>
@@ -635,8 +635,71 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
     if(handled)render();
     return handled;
   }
-  /* 검색어 라우팅: 단지 → 재개발 구역 → 지역 */
+  /* 검색어 라우팅: 단지 → 주소(지번·도로명) → 재개발 구역 → 지역 */
   function _normz(s){return (s||'').toLowerCase().replace(/[\s·()\-]/g,'');}
+  var VKEY='EBC23601-6E41-3269-9ECB-821DEECCF3F0';
+  function _jsonp(url,cb,onerr){
+    var name='_vw'+Date.now()+Math.floor(Math.random()*1e4);
+    var t=setTimeout(function(){if(window[name]){delete window[name];s.remove();if(onerr)onerr();}},6000);
+    window[name]=function(d){clearTimeout(t);delete window[name];s.remove();cb(d);};
+    var s=document.createElement('script');s.src=url+'&callback='+name;
+    s.onerror=function(){clearTimeout(t);delete window[name];s.remove();if(onerr)onerr();};
+    document.body.appendChild(s);
+  }
+  function _addrMark(lat,lng,label,z){
+    if(window._addrMk){try{map.removeLayer(window._addrMk);}catch(e){}}
+    window._addrMk=L.circleMarker([lat,lng],{radius:9,color:'#c0392b',weight:3,fillColor:'#fff',fillOpacity:.9}).addTo(map).bindPopup(label);
+    try{map.setView([lat,lng],z||17);}catch(e){}
+    setTimeout(function(){try{window._addrMk.openPopup();}catch(e){}},300);
+    var st=document.getElementById('stat');if(st)st.textContent='주소: '+label;
+  }
+  function _vwGeocode(addr,type,cb,onerr){
+    var url='https://api.vworld.kr/req/address?service=address&request=getcoord&version=2.0&crs=epsg:4326'
+      +'&address='+encodeURIComponent(addr)+'&refine=true&simple=false&format=json&type='+type+'&key='+VKEY;
+    _jsonp(url,function(d){
+      try{
+        var r=d&&d.response;
+        if(r&&r.status==='OK'&&r.result&&r.result.point){cb({lat:+r.result.point.y,lng:+r.result.point.x,text:(r.refined&&r.refined.text)||addr});return;}
+      }catch(e){}
+      if(onerr)onerr();
+    },onerr);
+  }
+  function tryAddress(v,onNo){
+    var m=v.match(/(\d+(?:-\d+)?)\s*(?:번지)?\s*$/);
+    if(!m){onNo();return;}
+    var jibun=m[1], head=v.slice(0,m.index).trim();
+    if(!head){onNo();return;}
+    var toks=head.split(/\s+/), lastTok=toks[toks.length-1];
+    var isRoad=/[로길]\d*$/.test(lastTok);
+    var isDongish=/[동리가]$/.test(lastTok);
+    if(!isRoad&&!isDongish){onNo();return;}   /* '흑석11' 같은 구역명 오탐 방지 */
+    function vw(){
+      _vwGeocode(v,isRoad?'ROAD':'PARCEL',function(p){_addrMark(p.lat,p.lng,p.text);},
+        function(){_vwGeocode(v,isRoad?'PARCEL':'ROAD',function(p){_addrMark(p.lat,p.lng,p.text);},onNo);});
+    }
+    if(isRoad||!window.SB||!SB.dongs){vw();return;}
+    /* 동+지번: 우리 실거래 데이터에서 정확 매칭 → 건물 카드 */
+    var dk=null, two=toks.length>=2?toks[toks.length-2]+' '+lastTok:null;
+    if(two&&SB.dongs[two])dk=two; else if(SB.dongs[lastTok])dk=lastTok;
+    if(!dk){vw();return;}
+    var de=SB.dongs[dk], code=de[0];
+    /* 시도·시군구 힌트가 있으면 동명 중복 오매칭 방지 */
+    if(toks.length>(two===dk?2:1)){
+      var hint=toks.slice(0,toks.length-(two===dk?2:1)).join(' ');
+      var reg=(SB.summary&&SB.summary.regions||[]).find(function(r){return r.code===code;});
+      var sggNm=reg?(reg.sido+' '+reg.sgg.replace(/_/g,' ')):'';
+      var ok=hint.split(/\s+/).every(function(h){return sggNm.indexOf(h.replace(/(특별시|광역시|특별자치시|특별자치도)$/,''))>=0;});
+      if(!ok){vw();return;}
+    }
+    function openPt(){
+      var d=SB.d[code]||[], pt=null;
+      for(var i=0;i<d.length;i++){if(d[i].jibun===jibun&&(d[i].dong===dk||dk.indexOf(d[i].dong)>=0||(d[i].dong||'').indexOf(lastTok)>=0)){pt=d[i];break;}}
+      if(pt){go(pt.lat,pt.lng,17);setTimeout(function(){showAptCard(pt,(pt.txs||[]).slice());},400);
+        var st=document.getElementById('stat');if(st)st.textContent='주소: '+dk+' '+jibun+' · '+pt.name;}
+      else vw();
+    }
+    if(loaded[code]){openPt();}else{loadDetail(code,openPt);setTimeout(function(){if(!loaded[code])vw();},2500);}
+  }
   function tryRedevZone(v,onNo){
     loadRedev(function(){
       var n=_normz(v),hit=null;
@@ -662,8 +725,10 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
   function routeQ(v){
     function afterIdx(){
       if(window._trySelectApt&&window._trySelectApt(v))return;
-      tryRedevZone(v,function(){
-        if(!findAndGo(v)){var st=document.getElementById('stat');if(st)st.textContent='"'+v+'" 검색 결과를 찾지 못했습니다';setFcount('"'+v+'" 검색 결과 없음');}
+      tryAddress(v,function(){
+        tryRedevZone(v,function(){
+          if(!findAndGo(v)){var st=document.getElementById('stat');if(st)st.textContent='"'+v+'" 검색 결과를 찾지 못했습니다';setFcount('"'+v+'" 검색 결과 없음');}
+        });
       });
     }
     if(window._loadAptIdx && !(window.SB&&SB.aptIdx)){window._loadAptIdx(afterIdx);}
