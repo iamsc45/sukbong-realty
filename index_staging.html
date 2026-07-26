@@ -232,7 +232,9 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
   background:var(--bg);color:var(--g2);border:1px solid var(--hair);border-radius:100px;padding:2px 7px}
 .ad-slot{margin:18px 0 0;border:1.5px solid var(--blue);border-radius:14px;min-height:74px;
   background:rgba(37,84,224,.055);display:flex;align-items:center;justify-content:center;gap:9px;
-  color:var(--blue);font-size:13.5px;font-weight:700;letter-spacing:.01em}
+  color:var(--blue);font-size:13.5px;font-weight:700;letter-spacing:.01em;text-decoration:none;
+  cursor:pointer;transition:background .15s ease}
+.ad-slot:hover{background:rgba(37,84,224,.12)}
 .ad-slot i{font-size:19px}
 .ad-slot .sub{color:var(--g2);font-weight:500;font-size:11.5px}
 .op-strip{display:flex;align-items:center;gap:13px;margin:20px 0 0;padding:15px 22px;background:var(--blk);
@@ -303,7 +305,7 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
 <section class="hub wrap">
   <div class="hub-h"><h2>부동산, 필요한 정보 한 곳에서</h2><span class="d">전부 무료 · 매일 자동 갱신 · 잠금 없음</span></div>
   <div class="hubgrid" id="hubDesk"></div>
-  <div class="ad-slot" id="adDesk"><i class="ti ti-speakerphone" aria-hidden="true"></i>이 자리에 브랜드를 노출하세요<span class="sub">청약·분양·중개업소 배너 제휴 문의</span></div>
+  <a class="ad-slot" id="adDesk" href="mailto:iamsc45@gmail.com"><i class="ti ti-speakerphone" aria-hidden="true"></i>이 자리에 브랜드를 노출하세요<span class="sub">청약·분양·중개업소 배너 제휴 문의 →</span></a>
   <div class="op-strip">
     <span class="oi">석</span>
     <div><div class="ot">석봉 부동산 정보방</div><div class="os">부동산 시행·빌딩 중개·담보대출 전문가가 직접 운영합니다. 국토부·공공 데이터 기반, 전부 무료로 제공합니다.</div></div>
@@ -407,6 +409,12 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
   }
   var hd=document.getElementById('hubDesk'); if(hd)hd.innerHTML=HUB.map(function(t){return tile(t,false);}).join('');
   var hm=document.getElementById('hubMob'); if(hm)hm.innerHTML=HUB.map(function(t){return tile(t,true);}).join('');
+  var ad=document.getElementById('adDesk');
+  if(ad){
+    var subj='[석봉 부동산 정보방] 배너 광고 문의';
+    var body='업체명:\n담당자/연락처:\n희망 노출 위치(청약·분양·중개업소 등):\n희망 기간:\n문의 내용:\n';
+    ad.href='mailto:iamsc45@gmail.com?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
+  }
 })();
 </script>
 <script src="data/summary.js"></script>
