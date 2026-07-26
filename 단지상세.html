@@ -77,6 +77,7 @@
 function qs(k){var m=new RegExp('[?&]'+k+'=([^&]*)').exec(location.search);return m?decodeURIComponent(m[1].replace(/\+/g,' ')):'';}
 function eok(m){if(!m)return '·';var v=m/10000;return (v>=100?Math.round(v):(''+v.toFixed(1)).replace(/\.0$/,''))+'억';}
 function comma(n){return Number(n).toLocaleString();}
+function PY(m){m=+m;if(!m)return '';var p=m/3.305785;return (p<100?p.toFixed(1):Math.round(p))+'평';}
 function med(a){if(!a.length)return 0;var s=a.slice().sort(function(x,y){return x-y;});return s[Math.floor(s.length/2)];}
 function hav(a,b,c,d){var R=6371000,r=Math.PI/180,x=Math.sin((c-a)*r/2),y=Math.sin((d-b)*r/2);return 2*R*Math.asin(Math.sqrt(x*x+Math.cos(a*r)*Math.cos(c*r)*y*y));}
 function esc(s){return (s||'').replace(/[<>&]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;'}[c];});}
@@ -155,7 +156,7 @@ function render(pt,code){
       +frow(IC.cal,'준공',info.ymd?info.ymd+'년':'')
       +frow(IC.build,'시공사',info.builder)
       +frow(IC.build,'시행사',info.dev)
-      +frow(IC.home,'연면적',info.area?comma(info.area)+'㎡':'')
+      +frow(IC.home,'연면적',info.area?comma(info.area)+'㎡('+PY(info.area)+')':'')
       +frow(IC.heat,'난방',info.heat)
       +frow(IC.park,'지하주차',info.park?comma(info.park)+'대':'')
       +frow(IC.cctv,'CCTV',info.cctv?comma(info.cctv)+'대':'')
@@ -195,9 +196,9 @@ function render(pt,code){
     +'<div class="list" id="dlist"></div></div>';
   document.getElementById('body').innerHTML=h;
   // 실거래 렌더
-  function rMM(x){return '<div class="deal"><div><b>'+x.a+'㎡</b><span class="meta">'+x.f+'층 · '+x.cd.slice(2).replace(/-/g,'.')+'</span></div><div class="pr">'+eok(x.p)+'<span class="s">'+(x.a?comma(Math.round(x.p/x.a*3.305785))+'만/평':'')+'</span></div></div>';}
-  function rJE(x){return '<div class="deal"><div><b>'+x.a+'㎡</b><span class="meta">'+x.f+'층 · '+x.cd.slice(2).replace(/-/g,'.')+'</span></div><div class="pr">'+eok(x.p)+'<span class="s">전세</span></div></div>';}
-  function rWO(x){return '<div class="deal"><div><b>'+x.a+'㎡</b><span class="meta">'+x.f+'층 · '+x.cd.slice(2).replace(/-/g,'.')+'</span></div><div class="pr">'+eok(x.p)+' / '+x.r+'만<span class="s">월세</span></div></div>';}
+  function rMM(x){return '<div class="deal"><div><b>'+x.a+'㎡('+PY(x.a)+')</b><span class="meta">'+x.f+'층 · '+x.cd.slice(2).replace(/-/g,'.')+'</span></div><div class="pr">'+eok(x.p)+'<span class="s">'+(x.a?comma(Math.round(x.p/x.a*3.305785))+'만/평':'')+'</span></div></div>';}
+  function rJE(x){return '<div class="deal"><div><b>'+x.a+'㎡('+PY(x.a)+')</b><span class="meta">'+x.f+'층 · '+x.cd.slice(2).replace(/-/g,'.')+'</span></div><div class="pr">'+eok(x.p)+'<span class="s">전세</span></div></div>';}
+  function rWO(x){return '<div class="deal"><div><b>'+x.a+'㎡('+PY(x.a)+')</b><span class="meta">'+x.f+'층 · '+x.cd.slice(2).replace(/-/g,'.')+'</span></div><div class="pr">'+eok(x.p)+' / '+x.r+'만<span class="s">월세</span></div></div>';}
   function rd(t){var a=t==='mm'?mm.map(rMM):t==='je'?je.map(rJE):wo.map(rWO);document.getElementById('dlist').innerHTML=a.length?a.join(''):'<div class="deal">해당 유형 최근 거래 없음</div>';}
   rd('mm');
   document.querySelectorAll('.tabs b').forEach(function(b){b.onclick=function(){document.querySelectorAll('.tabs b').forEach(function(x){x.classList.remove('on');});b.classList.add('on');rd(b.dataset.t);};});

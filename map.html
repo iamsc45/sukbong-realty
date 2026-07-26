@@ -93,9 +93,23 @@
   #fcount{color:var(--muted);font-size:11.5px;margin-right:auto}
   .leaflet-tile{filter:saturate(.75) grayscale(.12) brightness(1.02)}
   /* 모바일: 필터바 한 줄 가로 스크롤 + 화면 확보 (2026-07-17) */
+  /* 모바일 카테고리 시트 (2026-07-26) */
+  #mcats{display:none;gap:6px;flex-wrap:wrap}
+  #mcats button{border:1px solid var(--hair-soft);background:#fff;border-radius:100px;padding:6px 13px;font:inherit;font-size:12.5px;font-weight:600;color:var(--text2);white-space:nowrap;cursor:pointer}
+  #mcats button b{color:var(--navy);font-weight:800;margin:0 3px}
+  #msheet{display:none;position:fixed;inset:0;z-index:2000;background:rgba(20,20,20,.42)}
+  #msheet.open{display:block}
+  #msheet .ms-in{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:18px 18px 0 0;max-height:74%;overflow:auto;padding:0 0 16px}
+  #msheet .ms-h{display:flex;align-items:center;justify-content:space-between;padding:15px 20px 11px;position:sticky;top:0;background:#fff;border-bottom:1px solid var(--hair);font-size:15px;font-weight:800}
+  #msheet .ms-h button{border:0;background:transparent;font-size:20px;line-height:1;cursor:pointer;color:var(--muted2)}
+  #msheet .ms-opt{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:15px 20px;font-size:15px;border-bottom:1px solid var(--hair-soft);cursor:pointer;color:var(--text2)}
+  #msheet .ms-opt .dot{width:11px;height:11px;border-radius:50%;margin-right:9px;vertical-align:-1px;display:inline-block}
+  #msheet .ms-opt.on{font-weight:800;color:var(--navy)}
+  #msheet .ms-opt .ck{color:var(--navy);font-weight:800;font-size:16px}
   @media (max-width:720px){
-    #bar{flex-wrap:nowrap;overflow-x:auto;gap:6px;padding:8px 10px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-    #bar::-webkit-scrollbar{display:none}
+    #bar{flex-wrap:wrap;gap:6px;padding:8px 10px}
+    .bargrp{display:none}
+    #mcats{display:flex}
     .lbl{display:none}
     #stat{display:none}
     .chip{white-space:nowrap;flex:0 0 auto;padding:5px 12px}
@@ -183,6 +197,11 @@ body.redev #rfbar{display:flex}
   <span class="bargrp"><span class="lbl">상품:</span><span id="typechips"></span></span>
   <span class="bargrp"><span class="lbl">거래:</span><span id="uchips"></span></span>
   <span class="bargrp"><span class="lbl">계약:</span><span id="dchips"></span></span>
+  <div id="mcats">
+    <button type="button" data-c="type">상품 <b id="mcType">전체</b>▾</button>
+    <button type="button" data-c="u">거래 <b id="mcU">전체</b>▾</button>
+    <button type="button" data-c="d">계약 <b id="mcD">전체</b>▾</button>
+  </div>
   <span id="stat"></span>
   <div id="fpanel">
     <div class="frow"><span class="flbl">매매가</span><span class="fgrp" id="fpS"></span>
@@ -200,6 +219,7 @@ body.redev #rfbar{display:flex}
 <div id="map"></div>
 <div id="legend"></div>
 <div id="rcard"></div>
+<div id="msheet"><div class="ms-in"><div class="ms-h"><span id="msTitle"></span><button type="button" id="msClose" aria-label="닫기">✕</button></div><div id="msBody"></div></div></div>
 <footer class="site-footer">
   <span>📈 <a href="https://telegram.me/seokbongnews">텔레그램</a></span> ·
   <span>💬 <a href="https://open.kakao.com/o/gt8CTUCi">카카오</a> · <a href="https://blog.naver.com/seokbongnews">블로그</a></span>
@@ -245,6 +265,7 @@ function go(lat,lng,z){try{map.flyTo([lat,lng],z,{duration:.6});}catch(e){try{ma
 var loading={}, loaded={};
 
 function fmtEok(man){var e=man/10000;return (e>=10?e.toFixed(1):e.toFixed(2)).replace(/\.?0+$/,'')+'억';}
+function PY(m){m=+m;if(!m)return '';var p=m/3.305785;return (p<100?p.toFixed(1):Math.round(p))+'평';}
 function priceLabel(tx){
   if(tx.u==='매매')return fmtEok(tx.p);
   if(tx.u==='전세')return '전세 '+fmtEok(tx.p);
@@ -363,12 +384,12 @@ function render(){
   pts.forEach(function(o){
     var pt=o.pt,txs=o.txs,ti=TYPE[pt.t]||["기타","#6E6E6A"],col=ti[1],latest=txs[0];
     var icon=L.divIcon({className:'',html:'<div class="pricetag'+(pt.ax?' apx':'')+'" style="background:'+col+'">'
-      +priceLabel(latest)+' <span class="n">'+(latest.a?Math.round(latest.a)+'㎡':'')+'</span>'
+      +priceLabel(latest)+' <span class="n">'+(latest.a?Math.round(latest.a)+'㎡·'+PY(latest.a):'')+'</span>'
       +'<span class="nm">'+pt.name+'</span></div>',iconSize:null,iconAnchor:[30,12]});
     var rows=txs.map(function(t){
       var u=t.u+(t.k?'·'+t.k.slice(0,2):'');
       var sqm=(t.u==='매매'&&t.a)?'<div style="font-weight:normal;font-size:10px;color:#888">'+Math.round(t.p/t.a*3.305785).toLocaleString()+'만/평</div>':'';
-      return '<tr><td>'+t.cd.slice(5)+'</td><td>'+u+'</td><td>'+(t.a||'-')+'</td><td>'+t.f+'</td><td class="pr">'+priceLabel(t)+sqm+'</td></tr>';
+      return '<tr><td>'+t.cd.slice(5)+'</td><td>'+u+'</td><td>'+(t.a?t.a+'<span style="color:#9a938a;font-size:10px"> '+PY(t.a)+'</span>':'-')+'</td><td>'+t.f+'</td><td class="pr">'+priceLabel(t)+sqm+'</td></tr>';
     }).join('');
     var pop='<div class="pop"><h4>'+pt.name+'<span class="badge" style="background:'+col+'">'+ti[0]+'</span></h4>'
       +'<div class="meta">'+pt.dong+' '+pt.jibun+(pt.extra?' · '+pt.extra:'')+' · '+txs.length+'건'+(pt.ax?' · <b style="color:#D4573F">지번 비공개 — 동 단위 개략 위치</b>':'')+'</div>'
@@ -409,6 +430,47 @@ function mkChips(elId,items,cur,setter){
   syncUI();})();
 mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월세','월세']],curU,function(v){curU=v;});
 mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',function(v){curD=v;});
+/* 모바일 카테고리 바텀시트 (누르면 목록에서 선택) */
+(function(){
+  var TYPEITEMS=[['all','전체']].concat(Object.keys(TYPE).map(function(t){return [t,TYPE[t][0],TYPE[t][1]];}));
+  var UITEMS=[['all','전체'],['매매','매매'],['전세','전세'],['월세','월세']];
+  var DITEMS=[['all','전체'],['2026-07','7월'],['2026-06','6월']];
+  var dLabel={'2026-07':'7월','2026-06':'6월','all':'전체'};
+  var sheet=document.getElementById('msheet');
+  if(!sheet)return;
+  var body=document.getElementById('msBody'), title=document.getElementById('msTitle');
+  function labels(){
+    var mt=document.getElementById('mcType');
+    if(mt){if(!curTset)mt.textContent='전체';else{var ks=Object.keys(curTset);mt.textContent=ks.length===1?(TYPE[ks[0]]?TYPE[ks[0]][0]:ks[0]):ks.length+'종';}}
+    var mu=document.getElementById('mcU'); if(mu)mu.textContent=curU==='all'?'전체':curU;
+    var md=document.getElementById('mcD'); if(md)md.textContent=dLabel[curD]||'전체';
+  }
+  function isOn(cat,k){if(cat==='type')return k==='all'?!curTset:!!(curTset&&curTset[k]);if(cat==='u')return curU===k;return curD===k;}
+  function close(){sheet.classList.remove('open');}
+  function openSheet(cat){
+    var items=cat==='type'?TYPEITEMS:(cat==='u'?UITEMS:DITEMS), multi=cat==='type';
+    title.textContent=(cat==='type'?'상품':cat==='u'?'거래 유형':'계약월')+(multi?' (여러 개 선택 가능)':'');
+    body.innerHTML=items.map(function(it){
+      var on=isOn(cat,it[0]);
+      var dot=it[2]?'<span class="dot" style="background:'+it[2]+'"></span>':'';
+      return '<div class="ms-opt'+(on?' on':'')+'" data-k="'+it[0]+'"><span>'+dot+it[1]+'</span>'+(on?'<span class="ck">'+(multi?'✓':'●')+'</span>':'')+'</div>';
+    }).join('');
+    body.querySelectorAll('.ms-opt').forEach(function(el){el.addEventListener('click',function(){pick(cat,el.getAttribute('data-k'));});});
+    sheet.classList.add('open');
+  }
+  function pick(cat,k){
+    if(cat==='type'){
+      if(k==='all')curTset=null;
+      else{if(!curTset)curTset={};if(curTset[k])delete curTset[k];else curTset[k]=true;if(!Object.keys(curTset).length)curTset=null;}
+      render();labels();openSheet('type');
+    }else if(cat==='u'){curU=k;render();labels();close();}
+    else{curD=k;render();labels();close();}
+  }
+  document.getElementById('msClose').addEventListener('click',close);
+  sheet.addEventListener('click',function(e){if(e.target===sheet)close();});
+  document.querySelectorAll('#mcats button').forEach(function(b){b.addEventListener('click',function(){openSheet(b.dataset.c);});});
+  labels();
+})();
 /* 상세 필터 패널 */
 (function(){
   var pn=document.getElementById('fpanel'),bt=document.getElementById('fbtn');
@@ -841,7 +903,7 @@ function showAptCard(pt, txs){
   var ti=TYPE[pt.t]||['기타','#6E6E6A'], col=ti[1];
   var rows=txs.slice(0,8).map(function(t){
     var py=(t.u==='매매'&&t.a)?(' <span style="color:#8a8071;font-weight:400">'+Math.round(t.p/t.a*3.305785).toLocaleString()+'만/평</span>'):'';
-    return '<div class="rc-dl"><span style="color:#6b6355">'+t.cd.slice(2)+' · '+(t.a||'-')+'㎡ · '+t.f+'층</span><b>'+priceLabel(t)+py+'</b></div>';
+    return '<div class="rc-dl"><span style="color:#6b6355">'+t.cd.slice(2)+' · '+(t.a?t.a+'㎡('+PY(t.a)+')':'-')+' · '+t.f+'층</span><b>'+priceLabel(t)+py+'</b></div>';
   }).join('');
   var nz=[];
   if(typeof redevMarks!=='undefined' && redevMarks && redevMarks.length){
