@@ -146,7 +146,7 @@ function render(pt,code){
     b.onclick=function(){
       var l=fl(),i=-1;for(var k=0;k<l.length;k++){if(l[k].id===fid){i=k;break;}}
       if(i>=0){if(confirm('관심단지 목록으로 이동할까요? (취소=등록 해제)')){location.href='favorites.html';return;}l.splice(i,1);fs(l);paint(false);return;}
-      l.push({id:fid,nm:pt.name,code:code,dong:pt.dong||''});fs(l);paint(true);
+      l.push({id:fid,nm:pt.name,code:code,dong:pt.dong||'',lastN:(pt.txs||[]).length});fs(l);paint(true);
       try{if(typeof gtag==='function')gtag('event','favorite_toggle',{item_name:pt.name,on:1});}catch(e){}
     };
   })();

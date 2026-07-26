@@ -1033,7 +1033,7 @@ function showAptCard(pt, txs){
   document.getElementById('rcClose').onclick=function(){rc.classList.remove('open');};
   var fb=document.getElementById('rcFav');
   if(fb)fb.onclick=function(){
-    var on=favToggle({id:favId,nm:pt.name,code:code,dong:pt.dong||''});
+    var on=favToggle({id:favId,nm:pt.name,code:code,dong:pt.dong||'',lastN:(pt.txs||txs||[]).length});
     fb.textContent=on?'★ 관심단지 등록됨':'☆ 관심단지 등록';
     fb.style.background=on?'#ffd24d':'rgba(255,255,255,.92)';fb.style.color=on?'#5c4300':'#1a1a1a';
     try{if(typeof gtag==='function')gtag('event','favorite_toggle',{item_name:pt.name,on:on?1:0});}catch(e){}

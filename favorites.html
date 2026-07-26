@@ -56,8 +56,9 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
   function fl(){try{return JSON.parse(localStorage.getItem('sb_fav')||'[]');}catch(e){return [];}}
   function fs(l){try{localStorage.setItem('sb_fav',JSON.stringify(l));}catch(e){}}
   function esc(s){return (s||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function eok(m){if(!m)return '';var v=m/10000;return (v>=100?Math.round(v):(''+v.toFixed(1)).replace(/\.0$/,''))+'억';}
   var list=document.getElementById('list'), cnt=document.getElementById('cnt');
-  function draw(){
+  function draw(extra){
     var l=fl();
     cnt.textContent=(l.length?('등록 '+l.length+'개 · '):'')+'이 기기(브라우저)에 저장됩니다';
     if(!l.length){
@@ -67,16 +68,48 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
     }
     list.innerHTML=l.map(function(f,i){
       var dt='단지상세.html?code='+encodeURIComponent(f.code||'')+'&nm='+encodeURIComponent(f.nm)+'&dong='+encodeURIComponent(f.dong||'');
+      var x=(extra||{})[f.id]||{};
+      var badge=x.newN?'<span style="margin-left:7px;font-size:10.5px;font-weight:800;color:#fff;background:#c0392b;border-radius:100px;padding:2px 8px;vertical-align:2px">신규 거래 +'+x.newN+'</span>':'';
+      var latest=x.latest?(' · 최근 '+x.latest):'';
       return '<div class="fv"><span class="star">★</span>'
-        +'<div class="mn"><a href="'+dt+'">'+esc(f.nm)+'</a><div class="sub">'+esc(f.dong||'')+'</div></div>'
+        +'<div class="mn"><a href="'+dt+'">'+esc(f.nm)+'</a>'+badge+'<div class="sub">'+esc(f.dong||'')+latest+'</div></div>'
         +'<a class="go" href="map.html?q='+encodeURIComponent(f.nm)+'">지도</a>'
         +'<button class="del" data-i="'+i+'" aria-label="삭제">✕</button></div>';
     }).join('');
     list.querySelectorAll('.del').forEach(function(b){
-      b.addEventListener('click',function(){var l2=fl();l2.splice(+b.dataset.i,1);fs(l2);draw();});
+      b.addEventListener('click',function(){var l2=fl();l2.splice(+b.dataset.i,1);fs(l2);draw(extra);});
     });
   }
   draw();
+  /* 지난 방문 이후 신규 실거래 배지: 등록 시점 거래 건수(lastN)와 현재 detail 데이터 비교 */
+  (function(){
+    var l=fl(); if(!l.length)return;
+    window.SB=window.SB||{d:{}};
+    var codes=[]; l.forEach(function(f){if(f.code&&codes.indexOf(f.code)<0)codes.push(f.code);});
+    var left=codes.length; if(!left)return;
+    function done(){
+      var extra={}, changed=false;
+      l.forEach(function(f){
+        var d=(SB.d&&SB.d[f.code])||[], pt=null;
+        for(var i=0;i<d.length;i++){if(d[i].name===f.nm){pt=d[i];break;}}
+        if(!pt){extra[f.id]={latest:'최근 6개월 거래 없음'};return;}
+        var n=(pt.txs||[]).length, t0=(pt.txs||[])[0];
+        var x={};
+        if(typeof f.lastN==='number'&&n>f.lastN)x.newN=n-f.lastN;
+        if(t0)x.latest=t0.cd.slice(5).replace('-','/')+' '+t0.u+' '+eok(t0.p);
+        extra[f.id]=x;
+        if(f.lastN!==n){f.lastN=n;changed=true;}   /* 확인했으니 기준 갱신 */
+      });
+      if(changed)fs(l);
+      draw(extra);
+    }
+    codes.forEach(function(c){
+      var s=document.createElement('script');s.src='data/detail_'+c+'.js';
+      s.onload=function(){if(--left===0)done();};
+      s.onerror=function(){if(--left===0)done();};
+      document.body.appendChild(s);
+    });
+  })();
 })();
 </script>
 </body></html>
