@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Y7P41Z09PV"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-Y7P41Z09PV');</script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>경매·공매 · 석봉 부동산 정보방</title>
+<meta name="description" content="법원경매·온비드 공매의 상품별 낙찰률과 낙찰가율을 데이터로 보여드립니다.">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+.wrap{max-width:1000px}
+h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;margin:48px 0 6px}
+.pgsub{color:var(--muted);font-size:13.5px;margin:0 0 22px}
+.tabs{display:flex;gap:8px;margin:0 0 16px;flex-wrap:wrap}
+.tab{border:1px solid var(--text);border-radius:100px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer;background:transparent;color:var(--text);transition:background 120ms ease}
+.tab.on{background:var(--text);color:#fff}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:0 0 20px}
+.kpi2{background:var(--soft);border:1px solid var(--hair);border-radius:14px;padding:15px 18px}
+.kpi2 .v{font-size:28px;font-weight:800;letter-spacing:-0.03em;font-variant-numeric:tabular-nums}
+.kpi2 .l{font-size:11.5px;color:var(--muted);margin-top:2px}
+.kpi2:nth-child(1) .v{color:var(--acc-blue)}.kpi2:nth-child(2) .v{color:var(--acc-teal)}.kpi2:nth-child(3) .v{color:var(--gold)}
+table.tb{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+.tb th{font-size:11px;letter-spacing:.08em;color:var(--muted);text-align:right;font-weight:700;padding:8px 10px;border-bottom:1.5px solid var(--text)}
+.tb th:first-child{text-align:left}
+.tb td{padding:9px 10px;border-bottom:1px solid var(--hair);text-align:right}
+.tb td:first-child{text-align:left;font-weight:700}
+.tb .hl{color:var(--acc-blue);font-weight:800}
+.bar{display:inline-block;height:7px;border-radius:4px;background:var(--acc-blue);vertical-align:1px;margin-right:7px}
+.seg{font-size:12px;color:var(--muted);margin:26px 0 6px;font-weight:700}
+.notice2{font-size:11.5px;color:var(--muted);line-height:1.7;margin:26px 0 50px}
+@media(max-width:640px){.tb th:nth-child(4),.tb td:nth-child(4){display:none}}
+</style>
+<meta property="og:title" content="경매·공매 · 석봉 부동산 정보방">
+<meta property="og:description" content="법원경매·온비드 공매의 상품별 낙찰률과 낙찰가율을 데이터로.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xn--2q1br1nnrasc92a76myvau64b.com/auction.html">
+<meta property="og:site_name" content="석봉 부동산 정보방">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html">석봉 부동산 정보방</a>
+  <nav>
+    <a href="index.html">홈</a>
+    <a href="map.html">실거래지도</a>
+    <a href="apply.html">청약</a>
+    <a href="https://blog.naver.com/seokbongnews" target="_blank" rel="noopener">리포트</a>
+    <a href="channels.html">채널</a>
+  </nav>
+</header>
+<main class="wrap" style="margin:0 auto;padding:0 22px">
+  <h1 class="pg">경매·공매</h1>
+  <p class="pgsub" id="basis">법원경매·온비드 공매 낙찰 통계</p>
+  <div class="tabs">
+    <button class="tab on" data-t="auction">법원경매</button>
+    <button class="tab" data-t="onbid">공매 (온비드)</button>
+  </div>
+  <div class="kpis" id="kpis"></div>
+  <p class="seg" id="segTable"></p>
+  <div id="tbl"></div>
+  <div id="extra"></div>
+  <p class="notice2" id="note"></p>
+</main>
+<footer class="site-footer">
+  <span>📈 <a href="https://telegram.me/seokbongnews">텔레그램 채널</a></span> ·
+  <span>💬 <a href="https://open.kakao.com/o/gt8CTUCi">카카오 오픈채팅</a> · <a href="https://blog.naver.com/seokbongnews">네이버 블로그</a></span>
+  <div class="fine">원자료: 법원경매정보·캠코 온비드 공공 데이터 · 편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 무단 전재·재배포 금지 · 방문 통계 수집을 위해 Google Analytics(쿠키)를 사용합니다</div>
+</footer>
+<script src="data/auction.js"></script>
+<script>
+(function(){
+  var A=window.SB&&SB.auction;
+  var kel=document.getElementById('kpis'),tbl=document.getElementById('tbl'),ex=document.getElementById('extra');
+  var seg=document.getElementById('segTable'),note=document.getElementById('note');
+  if(!A){tbl.innerHTML='<p style="color:var(--muted)">데이터 연결 대기 중입니다.</p>';return;}
+  document.getElementById('basis').textContent='법원경매·온비드 공매 낙찰 통계 · 기준일 '+A.updated;
+  var NM={'아파트':'아파트','오피스텔':'오피스텔','연립다세대':'연립·다세대','단독다가구':'단독·다가구','상가업무':'상가·업무','토지':'토지','공장창고':'공장·창고','자동차중기':'자동차·중기','주거_기타':'주거 기타','기타':'기타'};
+  function kpi(v,l){return '<div class="kpi2"><div class="v">'+v+'</div><div class="l">'+l+'</div></div>';}
+  function table(rows,xLabel){
+    var maxRate=Math.max.apply(null,rows.map(function(r){return r.rate;}));
+    return '<table class="tb"><thead><tr><th>상품</th><th>물건 수</th><th>낙찰률</th><th>낙찰가율</th><th>'+xLabel+'</th></tr></thead><tbody>'
+      +rows.map(function(r){
+        var w=maxRate?Math.max(4,Math.round(r.rate/maxRate*70)):4;
+        return '<tr><td>'+(NM[r.p]||r.p)+'</td><td>'+r.n.toLocaleString()+'</td>'
+          +'<td><span class="bar" style="width:'+w+'px"></span><span class="hl">'+r.rate+'%</span></td>'
+          +'<td>'+(r.ratio?r.ratio+'%':'·')+'</td><td>'+(r.x?r.x:'·')+'</td></tr>';
+      }).join('')+'</tbody></table>';
+  }
+  function auction(){
+    var t=A.auction.total||{};
+    kel.innerHTML=kpi(t.rate+'%','낙찰률 · 물건 기준')+kpi(t.ratio+'%','낙찰가율 · 감정가 대비')+kpi((t.n||0).toLocaleString(),'개찰 물건 수');
+    seg.textContent='상품별 낙찰 통계 · 매각기일 '+A.auction.from+' ~ '+A.auction.to;
+    tbl.innerHTML=table(A.auction.rows,'평균 유찰');
+    ex.innerHTML='';
+    note.textContent='※ 법원경매 매각결과를 매주 수집해 누적한 통계입니다(현재 '+A.auction.from+' 이후분, 매주 확대). 낙찰률은 물건 기준(낙찰 물건 ÷ 개찰 물건), 낙찰가율은 감정가 대비 매각가입니다. 유찰이 반복된 물건이 포함되어 실제 시세와 다를 수 있으며, 투자 권유가 아닙니다.';
+  }
+  function onbid(){
+    var t=A.onbid.total||{};
+    kel.innerHTML=kpi(t.rate+'%','낙찰률 · 물건 기준')+kpi(t.ratio+'%','낙찰가율 · 감정가 대비')+kpi((t.n||0).toLocaleString(),'개찰 물건 수 · 최근 1년');
+    seg.textContent='상품별 낙찰 통계 · 최근 1년 누적';
+    tbl.innerHTML=table(A.onbid.rows,'평균 응찰');
+    var m=A.onbid.monthly||[];
+    ex.innerHTML=m.length?('<p class="seg">월별 추이 · 전체 상품(물건 기준)</p>'
+      +'<table class="tb"><thead><tr><th>개찰월</th><th>물건 수</th><th>낙찰률</th><th>낙찰가율</th><th></th></tr></thead><tbody>'
+      +m.map(function(r){return '<tr><td>'+r.ym+'</td><td>'+r.n.toLocaleString()+'</td><td class="hl">'+r.rate+'%</td><td>'+(r.ratio?r.ratio+'%':'·')+'</td><td></td></tr>';}).join('')
+      +'</tbody></table>'):'';
+    note.textContent='※ 캠코 온비드 공매 입찰결과를 매일 수집해 누적한 통계입니다(최근 1년). 낙찰률은 물건 기준이며, 회차 기준 낙찰률은 이보다 크게 낮습니다(공매는 유찰 회차가 많음). 낙찰가율은 감정가 대비 낙찰가입니다. 투자 권유가 아닙니다.';
+  }
+  var R={auction:auction,onbid:onbid};
+  document.querySelectorAll('.tabs .tab').forEach(function(b){
+    b.addEventListener('click',function(){
+      document.querySelectorAll('.tabs .tab').forEach(function(x){x.classList.remove('on');});
+      b.classList.add('on');(R[b.dataset.t]||auction)();
+    });
+  });
+  auction();
+})();
+</script>
+</body></html>

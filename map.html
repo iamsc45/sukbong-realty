@@ -760,7 +760,13 @@ map.on('moveend zoomend',function(){if(popLock)return;render();if(curMode==='red
   window._trySelectApt=function(v){
     if(!idxReady||!window.SB||!SB.aptIdx)return false;
     var n=norm(v);
+    if(n.length<2)return false;
     for(var i=0;i<SB.aptIdx.length;i++){if(norm(SB.aptIdx[i][0])===n){jumpApt(SB.aptIdx[i]);return true;}}
+    /* 정확매칭 실패 시 부분매칭 폴백: 표기가 살짝 달라도(괄호·단지번호 등) 유일 후보면 그 단지로 */
+    var part=[];
+    for(var j=0;j<SB.aptIdx.length;j++){var m=norm(SB.aptIdx[j][0]);if(m.indexOf(n)>=0||n.indexOf(m)>=0){part.push(SB.aptIdx[j]);if(part.length>2)break;}}
+    if(part.length===1){jumpApt(part[0]);return true;}
+    if(part.length===2&&norm(part[0][0])===norm(part[1][0])){jumpApt(part[0]);return true;}
     return false;
   };
   sq.addEventListener('focus',function(){loadIdx(function(){var v=sq.value.trim();if(v)render(v);});});
