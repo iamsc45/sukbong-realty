@@ -184,6 +184,7 @@ body.redev #rfbar{display:flex}
     <a href="index.html">홈</a>
     <a class="on" href="map.html">실거래지도</a>
     <a href="apply.html">청약</a>
+    <a href="favorites.html">★ 관심단지</a>
     <a href="https://blog.naver.com/seokbongnews" target="_blank" rel="noopener">리포트</a>
     <a href="channels.html">채널 안내</a>
   </nav>
@@ -1026,7 +1027,7 @@ function showAptCard(pt, txs){
     +'<div class="rc-h" style="background:'+col+'"><div class="k">'+ti[0]+' · 실거래</div><h2>'+pt.name+'</h2><div class="loc">'+pt.dong+' '+(pt.jibun||'')+'</div>'
     +'<button id="rcFav" style="margin-top:9px;border:0;border-radius:100px;padding:8px 16px;font:inherit;font-size:12.5px;font-weight:800;cursor:pointer;'
       +(isFav?'background:#ffd24d;color:#5c4300':'background:rgba(255,255,255,.92);color:#1a1a1a')+'">'
-    +(isFav?'★ 관심단지 등록됨':'☆ 관심단지 등록')+'</button></div>'
+    +(isFav?'★ 등록됨 · 목록 보기':'☆ 관심단지 등록')+'</button></div>'
     +hoSec
     +'<div class="rc-sec"><div class="rc-lab">최근 실거래 · 평당 전용기준</div>'+(rows||'<div style="color:#8a8071;font-size:13px">거래 없음</div>')+'</div>'
     +(near?'<div class="rc-sec"><div class="rc-lab">인근 정비구역 (누르면 이동)</div>'+near+'</div>':'')
@@ -1038,14 +1039,17 @@ function showAptCard(pt, txs){
   if(fb)fb.onclick=function(){
     var item={id:favId,nm:pt.name,code:code,dong:pt.dong||'',lastN:(pt.txs||txs||[]).length};
     function paint(on){
-      fb.textContent=on?'★ 관심단지 등록됨':'☆ 관심단지 등록';
+      fb.textContent=on?'★ 등록됨 · 목록 보기':'☆ 관심단지 등록';
       fb.style.background=on?'#ffd24d':'rgba(255,255,255,.92)';fb.style.color=on?'#5c4300':'#1a1a1a';
     }
     if(!(window.SBAuth&&SBAuth.isIn())){
       if(window.SBAuth)SBAuth.gate(item,null);
       return;
     }
-    if(SBAuth.favHas(favId)){SBAuth.delFav(favId).then(function(ok){if(ok)paint(false);});}
+    if(SBAuth.favHas(favId)){
+      if(confirm('관심단지 목록으로 이동할까요? (취소=등록 해제)')){location.href='favorites.html';return;}
+      SBAuth.delFav(favId).then(function(ok){if(ok)paint(false);});
+    }
     else{SBAuth.addFav(item).then(function(ok){if(ok)paint(true);});}
     try{if(typeof gtag==='function')gtag('event','favorite_toggle',{item_name:pt.name});}catch(e){}
   };
