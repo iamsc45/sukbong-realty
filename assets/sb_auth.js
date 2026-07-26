@@ -76,7 +76,7 @@ window.SBAuth=(function(){
   }
   function login(){
     ensure();
-    client.auth.signInWithOAuth({provider:'kakao',options:{redirectTo:location.href.split('#')[0]}});
+    client.auth.signInWithOAuth({provider:'kakao',options:{redirectTo:location.href.split('#')[0],scopes:'profile_nickname'}});
   }
   async function logout(){try{await client.auth.signOut();}catch(e){}location.reload();}
   /* 가입 유도 모달 */
