@@ -580,7 +580,21 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
       var n=_normz(v),hit=null;
       (redevMarks||[]).forEach(function(m){if(!hit&&m.nm&&_normz(m.nm).indexOf(n)>=0)hit={nm:m.nm,lat:m.lat,lon:m.lon,cat:m.cat,stage:m.stage,gubun:m.gubun,biz:m.nm};});
       if(!hit&&redevData&&redevData.features){redevData.features.forEach(function(f){if(hit)return;var p=f.properties||{},nm=p.nm||'',bz=p.biz||'';if((nm&&_normz(nm).indexOf(n)>=0)||(bz&&_normz(bz).indexOf(n)>=0)){var r0=f.geometry.coordinates[0],cx=0,cy=0,i;for(i=0;i<r0.length;i++){cx+=r0[i][0];cy+=r0[i][1];}cx/=r0.length;cy/=r0.length;hit={nm:nm||bz,lat:cy,lon:cx,cat:p.cat,stage:p.stage,gubun:p.gubun,area:p.area,biz:bz||nm};}});}
-      if(hit){focusZone(hit);}else if(onNo){onNo();}
+      if(hit){focusZone(hit);return;}
+      /* 마커·폴리곤 없는 구역(예: 흑석11) — 상세 매칭 후 법정동 좌표로 재개발 모드 이동 */
+      var DD=window.REDEVDETAIL||{},dk=null;
+      for(var k in DD){if(_normz(k).indexOf(n)>=0){dk=k;break;}}
+      if(dk){
+        var pref=(v.match(/[가-힣]+/)||[''])[0], dloc=null, dnm='';
+        if(pref&&window.SB&&SB.dongs){var ks=Object.keys(SB.dongs);for(var j=0;j<ks.length;j++){if(ks[j].indexOf(pref)===0){dloc=SB.dongs[ks[j]];dnm=ks[j];break;}}}
+        if(dloc){
+          if(curMode!=='redev')setMode('redev');
+          try{map.setView([dloc[1],dloc[2]],15);}catch(e){}
+          var st=document.getElementById('stat');if(st)st.textContent=dk.replace(/\s.*/,'')+' · '+dnm+' 일대 (재개발 모드)';
+          return;
+        }
+      }
+      if(onNo)onNo();
     });
   }
   function routeQ(v){
