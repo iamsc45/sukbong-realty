@@ -862,11 +862,11 @@ function loadRedev(cb){
   redevLoading=true;
   document.getElementById('stat').textContent='정비구역 불러오는 중…';
   function done(){redevData=window.REDEV||{type:'FeatureCollection',features:[]};redevMarks=(window.REDEVMARK||[]).concat(window.SINTONGMARK||[]);
-    if(window.REDEVGG){redevMarks=redevMarks.concat(REDEVGG.marks||[]);
-      var DD=window.REDEVDETAIL=window.REDEVDETAIL||{},gd=REDEVGG.detail||{};
+    if(window.REDEVEXT){redevMarks=redevMarks.concat(REDEVEXT.marks||[]);
+      var DD=window.REDEVDETAIL=window.REDEVDETAIL||{},gd=REDEVEXT.detail||{};
       for(var k in gd)if(!DD[k])DD[k]=gd[k];}
     redevLoading=false;cb();}
-  function loadGG(){if(window.REDEVGG){done();return;}var g2=document.createElement('script');g2.src='data/jeongbi_gg.js';g2.onload=done;g2.onerror=done;document.body.appendChild(g2);}
+  function loadGG(){if(window.REDEVEXT){done();return;}var g2=document.createElement('script');g2.src='data/jeongbi_ext.js';g2.onload=done;g2.onerror=done;document.body.appendChild(g2);}
   function loadTag(){if(window.REDEVTAG){loadGG();return;}var g=document.createElement('script');g.src='data/jeongbi_tag.js';g.onload=loadGG;g.onerror=loadGG;document.body.appendChild(g);}
   function loadDetail(){if(window.REDEVDETAIL){loadTag();return;}var d=document.createElement('script');d.src='data/jeongbi_detail.js';d.onload=loadTag;d.onerror=loadTag;document.body.appendChild(d);}
   function loadMarks(){if(window.REDEVMARK){loadDetail();return;}var m=document.createElement('script');m.src='data/jeongbi_markers.js';m.onload=loadDetail;m.onerror=loadDetail;document.body.appendChild(m);}

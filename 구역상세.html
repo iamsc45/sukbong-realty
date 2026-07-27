@@ -64,12 +64,12 @@ body{margin:0;background:var(--paper);color:var(--ink);font-family:'Malgun Gothi
 <script src="data/jeongbi_markers.js"></script>
 <script src="data/jeongbi_tag.js"></script>
 <script src="data/jeongbi_trend.js"></script>
-<script src="data/jeongbi_gg.js"></script>
+<script src="data/jeongbi_ext.js"></script>
 <script>
-/* 경기(온누리) 데이터 병합 */
-if(window.REDEVGG){
+/* 시도 확장(경기 온누리·부산 dynamice) 데이터 병합 */
+if(window.REDEVEXT){
   window.REDEVDETAIL=window.REDEVDETAIL||{};window.REDEVTREND=window.REDEVTREND||{};window.REDEVMARK=window.REDEVMARK||[];
-  (function(){var g=window.REDEVGG;for(var k in (g.detail||{}))if(!REDEVDETAIL[k])REDEVDETAIL[k]=g.detail[k];
+  (function(){var g=window.REDEVEXT;for(var k in (g.detail||{}))if(!REDEVDETAIL[k])REDEVDETAIL[k]=g.detail[k];
   for(var t in (g.trend||{}))if(!REDEVTREND[t])REDEVTREND[t]=g.trend[t];
   window.REDEVMARK=REDEVMARK.concat(g.marks||[]);})();
 }
