@@ -1127,7 +1127,8 @@ function setMode(m){
   }
 }
 document.querySelectorAll('#modes button').forEach(function(b){b.addEventListener('click',function(){setMode(b.dataset.m);});});
-document.querySelectorAll('#rfbar button').forEach(function(b){b.addEventListener('click',function(){
+/* 모바일에선 trade 칩이 #map 안으로 이동돼 있어 두 위치 모두 배선 */
+document.querySelectorAll('#rfbar button,#map .rfc.trade').forEach(function(b){b.addEventListener('click',function(){
   var rf=b.dataset.rf;
   if(rf==='trade'){redevShowTrade=!redevShowTrade;b.classList.toggle('on',redevShowTrade);render();}
   else{curRF[rf]=!curRF[rf];b.classList.toggle('on',curRF[rf]);renderRedev();}
