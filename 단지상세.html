@@ -213,7 +213,7 @@ function render(pt,code){
   // 인근 정비구역
   var near=nearZones(pt.lat,pt.lng);
   h+='<div class="sec"><div class="lab">인근 정비구역 (재개발·재건축)</div>'+(near||'<div style="color:#8a8071;padding:8px 2px">반경 1.5km 내 진행중 정비구역 없음</div>')
-    +'<div class="note">반경 1.5km 진행중 구역 · 단계=정비몽땅 최신 · 누르면 구역 상세</div></div>';
+    +'<div class="note">반경 1.5km 진행중 구역 · 단계=공공 DB 최신 · 누르면 구역 상세</div></div>';
   // 실거래 이력
   h+='<div class="sec"><div class="lab">실거래 이력</div>'
     +'<div class="tabs"><b class="on" data-t="mm">매매 '+mm.length+'</b><b data-t="je">전세 '+je.length+'</b><b data-t="wo">월세 '+wo.length+'</b></div>'

@@ -894,6 +894,8 @@ function focusZone(z){
   map.setView([z.lat,z.lon],16);
   setTimeout(function(){ showRcard(z); }, 380);
 }
+/* 대외 출처 순화: 소스명 대신 '공공 DB', 기준일만 유지 */
+function srcLab(s){var m=(s||'').match(/\(([^)]*기준[^)]*)\)/);return '공공 DB'+(m?' ('+m[1]+')':'');}
 function rcDetailSec(p){
   var DD=window.REDEVDETAIL||{};var d=DD[p.biz]||DD[p.nm];
   function rw(k,v){return v?'<div class="rc-kv"><span>'+k+'</span><span class="v">'+v+'</span></div>':'';}
@@ -901,12 +903,12 @@ function rcDetailSec(p){
     var far=d.far?d.far+'%':'', bcr=d.bcr?d.bcr+'%':'';
     var units=d.units?(Number(d.units).toLocaleString()+'세대'):'';
     var zar=d.zone_area?(Math.round(Number(d.zone_area)).toLocaleString()+'㎡'):'';
-    return '<div class="rc-sec"><div class="rc-lab">정비계획 · '+(d.src||'정비몽땅')+'</div><div class="rc-grid">'
+    return '<div class="rc-sec"><div class="rc-lab">정비계획 · '+srcLab(d.src)+'</div><div class="rc-grid">'
       +rw('용적률',far)+rw('건폐율',bcr)+rw('계획세대',units)+rw('용도지역',d.usezone)
       +rw('최고층수',d.floors)+rw('구역면적',zar)
       +rw('조합원',d.members?Number(d.members).toLocaleString()+'명':'')
       +rw('토지등소유자',d.owners?Number(d.owners).toLocaleString()+'명':'')
-      +'</div><div class="rc-note" style="padding:6px 0 0">정비계획 고시 기준('+(d.src||'정비몽땅')+' 사업개요). 변경계획 진행 시 달라질 수 있습니다.</div></div>';
+      +'</div><div class="rc-note" style="padding:6px 0 0">정비계획 고시 기준(공공 DB 사업개요). 변경계획 진행 시 달라질 수 있습니다.</div></div>';
   }
   return '<div class="rc-sec"><div class="rc-lab">정비계획</div>'
     +'<div style="font-size:12.5px;color:#8a8071;line-height:1.5">정비계획 확정 전입니다. 용적률·세대수 등 세부 계획은 사업시행계획 확정·고시 시점에 채워집니다.</div></div>';
@@ -932,7 +934,7 @@ function showRcard(p){
   var ar=p.area?(Math.round(p.area).toLocaleString()+'㎡ · 약 '+Math.round(p.area/3.3058).toLocaleString()+'평'):'-';
   var html='<button id="rcClose" style="position:absolute;top:8px;right:10px;border:0;background:rgba(255,255,255,.28);color:#fff;font-size:18px;width:28px;height:28px;border-radius:50%;cursor:pointer;z-index:2">×</button>'
     +'<div class="rc-h" style="background:'+c+'"><div class="k">'+(p.sido||'서울')+' · '+rcatKo(p.cat)+' · 정비구역</div><h2>'+p.nm+'</h2>'+tagBadge(redevTag(p))+'<span class="rc-pill">'+(p.stage||'확인중')+'</span></div>'
-    +'<div class="rc-sec"><div class="rc-lab">추진 단계 · '+(p.src||'정비몽땅')+' 최신</div>'+stageBar(p.stage)+'</div>'
+    +'<div class="rc-sec"><div class="rc-lab">추진 단계 · '+srcLab(p.src)+' 최신</div>'+stageBar(p.stage)+'</div>'
     +'<div class="rc-sec"><div class="rc-lab">구역 개요</div><div class="rc-grid">'
       +'<div class="rc-kv"><span>유형</span><span class="v">'+rcatKo(p.cat)+'</span></div>'
       +'<div class="rc-kv"><span>사업구분</span><span class="v">'+(p.gubun||'-')+'</span></div>'
@@ -943,7 +945,7 @@ function showRcard(p){
     +rcNearTx(p)
     +'<a class="rc-cta" href="구역상세.html?nm='+encodeURIComponent(p.biz||p.nm)+'" style="background:#7a3b12">구역 상세 · 정비계획 전체 보기 →</a>'
     +'<a class="rc-cta" href="재개발_기초상식.html" style="background:#3a4658">재개발·재건축 기초상식 →</a>'
-    +'<div class="rc-note">추진단계는 '+(p.src||'정비몽땅')+' 공개자료 기준이라 시점에 따라 다를 수 있습니다. 구역계·단계는 참고용, 법적효력 없음.</div>';
+    +'<div class="rc-note">추진단계는 '+srcLab(p.src)+' 공개자료 기준이라 시점에 따라 다를 수 있습니다. 구역계·단계는 참고용, 법적효력 없음.</div>';
   var rc=document.getElementById('rcard');rc.innerHTML=html;rc.classList.add('open');
   document.getElementById('rcClose').onclick=function(){rc.classList.remove('open');};
 }
@@ -983,7 +985,7 @@ function redevLegend(){
     +dt('#d6336c')+'신속통합기획 &nbsp;'
     +dt('#2b8a3e')+'모아주택'
     +'<br><b style="color:#4a4438">모양</b> '+bar('#9a8f7a')+'채워진 <b>구역(면)</b>=정비구역 경계 &nbsp; '+dt('#9a8f7a')+'<b>점</b>=위치 마커(구역계 없는 재건축·신통 후보지 등)'
-    +'<br>신통기획·모아주택은 카드에 뱃지 · 추진단계=정비몽땅(서울)·온누리(경기)·부산 통합홈페이지 최신 · 출처: 국가정보포털 공공 DB 등 · 참고용';
+    +'<br>신통기획·모아주택은 카드에 뱃지 · 추진단계=시도별 공공 DB 최신 · 출처: 국가정보포털 공공 DB 등 · 참고용';
 }
 function tradeLegend(){
   document.getElementById('legend').innerHTML=Object.keys(TYPE).map(function(t){return '<span style="margin-right:8px"><span class="dot" style="background:'+TYPE[t][1]+'"></span>'+TYPE[t][0]+'</span>';}).join('')+'<br>'+(SB.summary.period?('계약일 '+SB.summary.period.f.replace(/-/g,'.')+' ~ '+SB.summary.period.t.slice(5).replace(/-/g,'.')+' · '):'')+'기준일 '+SB.summary.updated;
