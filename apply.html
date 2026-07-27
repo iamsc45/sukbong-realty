@@ -64,6 +64,9 @@ h1.pg{font-size:clamp(34px,5.5vw,60px);letter-spacing:-0.045em;font-weight:800;m
   .ap .nm{font-size:15px}
   .ap .pr{text-align:left}
   .ap-search{max-width:none}
+  .pgsub{font-size:12.5px}
+  .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .tab{padding:8px 0;text-align:center;font-size:12px}
 }
 .leaflet-control-attribution{display:none}
 </style><meta property="og:title" content="청약 · 석봉 부동산 정보방">
@@ -122,7 +125,7 @@ function stateOf(x){
   return "soon";
 }
 var items=A.items.map(function(x){x.state=stateOf(x);return x;});
-document.getElementById("basis").textContent="전국 아파트 분양 공고 "+items.length+"건 · 기준일 "+A.updated+" · 자료: 한국부동산원 청약홈 · 매일 갱신";
+document.getElementById("basis").textContent="전국 아파트 분양 공고 "+items.length+"건 · 기준일 "+A.updated+" · 매일 갱신";
 /* KPI */
 var now=items.filter(function(x){return x.state==="now";}).length;
 var soon=items.filter(function(x){return x.state==="soon";}).length;
