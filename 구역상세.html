@@ -57,20 +57,29 @@ body{margin:0;background:var(--paper);color:var(--ink);font-family:'Malgun Gothi
 <div class="wrap">
   <div class="top"><span class="bi">석봉 부동산 정보방</span><a href="map.html?mode=redev">지도(재개발)로 →</a></div>
   <div id="app"><p style="color:var(--warm)">불러오는 중…</p></div>
-  <div class="foot">추진단계·정비계획은 정비몽땅(서울시 정비사업 정보공개) 공개자료 기준이며 시점에 따라 달라질 수 있습니다. 구역계·단계는 참고용이며 법적 효력이 없습니다. 자료 출처: 국가정보포털 공공 DB 등.</div>
+  <div class="foot">추진단계·정비계획은 정비몽땅(서울시 정비사업 정보공개)·온누리(경기도 정비사업) 공개자료 기준이며 시점에 따라 달라질 수 있습니다. 구역계·단계는 참고용이며 법적 효력이 없습니다. 자료 출처: 국가정보포털 공공 DB 등.</div>
 </div>
 <script src="data/jeongbi_detail.js"></script>
 <script src="data/jeongbi_seoul.js"></script>
 <script src="data/jeongbi_markers.js"></script>
 <script src="data/jeongbi_tag.js"></script>
 <script src="data/jeongbi_trend.js"></script>
+<script src="data/jeongbi_gg.js"></script>
 <script>
+/* 경기(온누리) 데이터 병합 */
+if(window.REDEVGG){
+  window.REDEVDETAIL=window.REDEVDETAIL||{};window.REDEVTREND=window.REDEVTREND||{};window.REDEVMARK=window.REDEVMARK||[];
+  (function(){var g=window.REDEVGG;for(var k in (g.detail||{}))if(!REDEVDETAIL[k])REDEVDETAIL[k]=g.detail[k];
+  for(var t in (g.trend||{}))if(!REDEVTREND[t])REDEVTREND[t]=g.trend[t];
+  window.REDEVMARK=REDEVMARK.concat(g.marks||[]);})();
+}
 var RCOL={'재개발':'#c0562e','재건축':'#2f5d86','주거환경':'#4c7a4a'};
 function catKo(c){return RCOL[c]?c:'정비구역';}
 var STAGEIDX={'정비구역지정':0,'정비계획 수립':0,'재정비촉진지구수립':0,'안전진단':0,'안전진단(1차)':0,
 '추진위원회승인':1,'추진위구성':1,'조합원 모집신고':1,'주민대표회의구성통지':1,
 '조합설립인가':2,'사업시행인가':3,'사업시행계획인가':3,'사업시행자(LH) 지정':3,
-'관리처분인가':4,'착공':5,'분양':5,'철거':5,'이주':5,'준공':6,'준공인가':6};
+'관리처분인가':4,'착공':5,'분양':5,'철거':5,'이주':5,'준공':6,'준공인가':6,
+'구역지정':0,'구역지정(예정)':0,'재건축진단':0,'추진위 승인':1,'이주·철거':5};
 function stageBar(stage){
   var order=['구역지정','추진위','조합설립','사업시행','관리처분','착공','준공'];
   var cur=(stage in STAGEIDX)?STAGEIDX[stage]:-1;
@@ -94,14 +103,14 @@ function render(){
   var tg=(window.REDEVTAG||{})[nm]||'';
   var tgm={'신통':['신속통합기획','#d6336c'],'모아':['모아주택','#2b8a3e']}[tg];
   var tgb=tgm?'<span class="pill" style="background:'+tgm[1]+';margin-right:6px">'+tgm[0]+'</span>':'';
-  var h='<div class="mast"><div class="k">서울 '+esc(d.gu||'')+' · '+cat+' · 정비구역</div>'
+  var h='<div class="mast"><div class="k">'+(d.sido||'서울')+' '+esc(d.gu||'')+' · '+cat+' · 정비구역</div>'
     +'<h1>'+esc(nm)+'</h1>'
     +tgb+'<span class="pill" style="background:'+col+'">'+esc(d.stage||'확인중')+'</span>'
     +'<div class="loc">'+esc(d.gubun||'')+'</div></div>';
-  h+='<div class="sec"><div class="lab">추진 단계 · 정비몽땅 최신</div>'+stageBar(d.stage)+'</div>';
+  h+='<div class="sec"><div class="lab">추진 단계 · '+(d.src||'정비몽땅')+' 최신</div>'+stageBar(d.stage)+'</div>';
 
   if(d.fixed){
-    h+='<div class="sec"><div class="lab">정비계획 핵심 · 정비몽땅 사업개요</div><div class="big">'
+    h+='<div class="sec"><div class="lab">정비계획 핵심 · '+(d.src||'정비몽땅')+' 사업개요</div><div class="big">'
       +(d.far?'<div class="stat"><div class="n">'+d.far+'%</div><div class="l">용적률</div></div>':'')
       +(d.bcr?'<div class="stat"><div class="n">'+d.bcr+'%</div><div class="l">건폐율</div></div>':'')
       +(d.units?'<div class="stat"><div class="n">'+num(d.units)+'</div><div class="l">계획 세대수</div></div>':'')
@@ -190,7 +199,8 @@ function trendSvg(s,gu){
   return head+svg+'<div class="note" style="margin-top:4px">Y축=평당 만원(전용) · X축=연도 · 법정동 아파트 매매 실거래 연도별 중위값(해제 제외). 구역 단지가 아닌 동 단위 참고치.</div>';
 }
 function loadNearTx(nm,gu){
-  var co=zoneCoords(nm),code=GUCODE[gu];
+  var d=(window.REDEVDETAIL||{})[nm]||{};
+  var co=zoneCoords(nm),code=GUCODE[gu]||d.sgg;
   if(!co||!code)return;
   var s=document.createElement('script');s.src='data/detail_'+code+'.js';
   s.onload=function(){fillNearTx(co,code);};s.onerror=function(){};document.body.appendChild(s);
