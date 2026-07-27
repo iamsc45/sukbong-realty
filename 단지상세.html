@@ -85,6 +85,12 @@ var _css=document.createElement('style');
 _css.textContent='.chips{display:flex;flex-wrap:wrap;gap:6px}'
  +'.chip{display:inline-flex;align-items:baseline;gap:4px;border:1px solid #ded8cc;background:#fff;border-radius:100px;padding:5px 12px;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}'
  +'.chip small{font-size:11px;color:#8a8071;font-weight:600}'
+ +'.fee{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}'
+ +'.fee-b{background:#efe9dc;border:1px solid #ded8cc;border-radius:10px;padding:11px 13px}'
+ +'.fee-b .n{font-family:Georgia,serif;font-size:21px;font-weight:700;line-height:1}'
+ +'.fee-b .n small{font-size:12px;font-weight:600}'
+ +'.fee-b .l{font-size:11px;color:#6b6355;margin-top:5px;line-height:1.35}'
+ +'@media(max-width:520px){.fee{grid-template-columns:1fr}}'
  +'.cmpr b small{display:block;font-size:10.5px;color:#8a8071;font-weight:600;margin-top:2px}';
 document.head.appendChild(_css);
 function comma(n){return Number(n).toLocaleString();}
@@ -115,7 +121,10 @@ function boot(){
       var k=document.createElement('script');k.src='data/apt_asking_'+code+'.js';
       k.onload=k.onerror=function(){
         var al=document.createElement('script');al.src='data/alias_'+code+'.js';
-        al.onload=al.onerror=function(){go(code,nm,dong);};document.body.appendChild(al);
+        al.onload=al.onerror=function(){
+          var fe=document.createElement('script');fe.src='data/apt_fee_'+code+'.js';
+          fe.onload=fe.onerror=function(){go(code,nm,dong);};document.body.appendChild(fe);
+        };document.body.appendChild(al);
       };document.body.appendChild(k);
     };
     document.body.appendChild(a);
@@ -149,6 +158,36 @@ function findAsk(code,name){
   var box=(window.APTASK&&window.APTASK[code])||null; if(!box)return null;
   var ak=aliasOf(code,name,'a');
   return (ak&&box[ak])||box[name]||null;
+}
+function findFee(code,name){
+  var box=(window.APTFEE&&window.APTFEE[code])||null; if(!box)return null;
+  var ak=aliasOf(code,name,'i');
+  return (ak&&box[ak])||box[name]||null;
+}
+function won(v){return v?Number(v).toLocaleString()+'원':'·';}
+/* 관리비 섹션 — 세대당(메인) · 평당 전용(사이트 단가 기준 통일) · ㎡당 부과면적(공식 대조용) */
+function feeSec(fee,myArea){
+  if(!fee||!fee.tot||(!fee.perSe&&!fee.perPy))return '';
+  var ym=(fee.ym||'').replace(/^(\d{4})(\d{2})$/,'$1.$2');
+  var mine=(myArea&&fee.privArea&&fee.se)?Math.round(fee.tot*(myArea/fee.privArea)):0;
+  function box(n,l,s){return '<div class="fee-b"><div class="n">'+n+'</div><div class="l">'+l+'</div>'
+    +(s?'<div class="s">'+s+'</div>':'')+'</div>';}
+  var tops=(fee.top||[]).map(function(x){
+    return '<div class="lrow"><span>'+x[0]+'</span><span class="lv">'+won(Math.round(x[1]/(fee.se||1)))+'</span></div>';}).join('');
+  return '<div class="sec"><div class="lab">관리비 · 공공 DB ('+ym+' 기준)</div>'
+    +'<div class="fee">'
+    + box(fee.perSe?comma(fee.perSe)+'<small>원</small>':'·','세대당 월 평균')
+    + box(fee.perPy?comma(fee.perPy)+'<small>원</small>':'·','평당 월(전용 기준)')
+    + box(mine?comma(mine)+'<small>원</small>':'·', myArea?('전용 '+myArea.toFixed(1)+'㎡('+PY(myArea)+') 기준 추정'):'평형별 추정')
+    +'</div>'
+    +'<div class="grid2" style="margin-top:10px"><div>'
+    +'<div class="lrow"><span>공용관리비</span><span class="lv">'+won(Math.round(fee.cmn/(fee.se||1)))+'</span></div>'
+    +'<div class="lrow"><span>개별사용료(난방·전기·수도 등)</span><span class="lv">'+won(Math.round(fee.ind/(fee.se||1)))+'</span></div>'
+    +'<div class="lrow"><span>장기수선충당금</span><span class="lv">'+won(Math.round(fee.ltsn/(fee.se||1)))+'</span></div>'
+    +'</div><div>'+(tops?'<div class="lrow" style="border:0;color:#8a8071;font-size:11.5px">비중 큰 항목(세대당)</div>'+tops:'')+'</div></div>'
+    +'<div class="note">세대당 금액은 단지 전체 월 관리비를 세대수로 나눈 평균이라 실제 우리 집 고지서와 다를 수 있습니다(평형·사용량에 따라 달라짐). '
+    +'평당은 <b>전용면적 기준</b>이고, 공식 자료(K-apt·시 부동산정보광장)의 ㎡당 표기는 <b>관리비부과면적 기준</b>이라 분모가 달라 값이 다릅니다'
+    +(fee.perM2?(' (이 단지 ㎡당 '+comma(fee.perM2)+'원)'):'')+'.</div></div>';
 }
 function render(pt,code){
   _CURDONG=pt.dong||'';
@@ -260,6 +299,10 @@ function render(pt,code){
     +'<div class="lrow" style="border-top:1px solid #ded8cc;margin-top:3px;padding-top:6px;font-weight:700"><span>은행 예상 한도 (낮은 값)</span><span class="lv">'+(base?eok(Math.min(cap,Math.round(base*0.4))):'·')+'</span></div>'
     +'<div class="note">2026.04 시행 규제(작성 2026.07.25). 소득(DSR)·은행별로 더 낮아질 수 있고 비규제는 다릅니다. 대출 권유·한도 보장 아님. <a href="재개발_기초상식.html#loan-limit" style="color:var(--brass)">자세히 →</a></div></div>';
   h+=lineup;
+  var _fee=findFee(code,pt.name);
+  var _myA=(function(){var c={};txs.forEach(function(t){if(t.a)c[t.a]=(c[t.a]||0)+1;});
+    var b=0,bn=0;for(var k in c){if(c[k]>bn){bn=c[k];b=+k;}}return b;})();
+  h+=feeSec(_fee,_myA);
   h+='<div class="grid2"><div class="sec"><div class="lab">평형별 시세 (전용)</div>'+(pyr||'<div style="color:#8a8071;padding:8px 2px">최근 매매 표본 부족</div>')+'</div>'
     +'<div class="sec"><div class="lab">은행 대출 한도 (규제지역 기준)</div>'+loan+'</div></div>';
   h+='<div class="sec"><div class="lab">시세 추이 (평당·연도별)</div><div class="soon">'
