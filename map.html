@@ -1068,9 +1068,13 @@ function showAptCard(pt, txs){
     showAptCard._pend=showAptCard._pend||{};
     if(!showAptCard._pend[code]){showAptCard._pend[code]=1;
       var sc=document.createElement('script');sc.src='data/apt_asking_'+code+'.js';
-      sc.onload=function(){showAptCard(pt,txs);};sc.onerror=function(){window.APTASK=window.APTASK||{};window.APTASK[code]={};};document.body.appendChild(sc);}
+      sc.onload=function(){var al=document.createElement('script');al.src='data/alias_'+code+'.js';
+        al.onload=al.onerror=function(){showAptCard(pt,txs);};document.body.appendChild(al);};
+      sc.onerror=function(){window.APTASK=window.APTASK||{};window.APTASK[code]={};};document.body.appendChild(sc);}
   }
-  var A=(code&&window.APTASK&&window.APTASK[code]&&window.APTASK[code][pt.name])||null;
+  var _al=(code&&window.APTALIAS&&window.APTALIAS[code]&&window.APTALIAS[code][pt.name])||null;
+  var _ak=(_al&&_al.a)||pt.name;
+  var A=(code&&window.APTASK&&window.APTASK[code]&&window.APTASK[code][_ak])||null;
   var hoSec='';
   {
     function eok2(m){if(!m)return '';var v=m/10000;return (v>=100?Math.round(v):(''+v.toFixed(1)).replace(/\.0$/,''))+'억';}

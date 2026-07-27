@@ -113,7 +113,10 @@ function boot(){
     var a=document.createElement('script');a.src='data/apt_info_'+code+'.js';
     a.onload=a.onerror=function(){
       var k=document.createElement('script');k.src='data/apt_asking_'+code+'.js';
-      k.onload=k.onerror=function(){go(code,nm,dong);};document.body.appendChild(k);
+      k.onload=k.onerror=function(){
+        var al=document.createElement('script');al.src='data/alias_'+code+'.js';
+        al.onload=al.onerror=function(){go(code,nm,dong);};document.body.appendChild(al);
+      };document.body.appendChild(k);
     };
     document.body.appendChild(a);
   };
@@ -131,12 +134,20 @@ function go(code,nm,dong){
 function band(a){return a<=60?'60㎡(18.1평) 이하':a<=85?'60~85㎡(18.1~25.7평)':a<=110?'85~110㎡(25.7~33.3평)':'110㎡(33.3평) 초과';}
 /* 단지정보 키 매칭: 표기 차이(아파트 접미·공백·괄호) 흡수 (2026-07-27) */
 function nkey(n){return String(n||'').replace(/[\s\-_()·]/g,'').replace(/(아파트|APT|apt)$/,'');}
+function aliasOf(code,name,f){var A=(window.APTALIAS&&window.APTALIAS[code]&&window.APTALIAS[code][name])||null;return A?A[f]:null;}
 function findInfo(code,name){
   var box=(window.APTINFO&&window.APTINFO[code])||null; if(!box)return null;
-  if(box[name])return box[name];
+  var ak=aliasOf(code,name,'i');            /* 빌드 시 정합된 별칭 우선 */
+  if(ak&&box[ak]&&box[ak].se)return box[ak];
+  if(box[name]&&box[name].se)return box[name];   /* 빈 껍데기는 무시 */
   var t=nkey(name);
-  for(var k in box){if(nkey(k)===t)return box[k];}
+  for(var k in box){if(nkey(k)===t&&box[k]&&box[k].se)return box[k];}
   return null;
+}
+function findAsk(code,name){
+  var box=(window.APTASK&&window.APTASK[code])||null; if(!box)return null;
+  var ak=aliasOf(code,name,'a');
+  return (ak&&box[ak])||box[name]||null;
 }
 function render(pt,code){
   document.title=pt.name+' · 단지 상세';
@@ -182,7 +193,7 @@ function render(pt,code){
   var h='<div class="top"><div id="map"></div><div class="kpis">'
     +kp.map(function(x){return '<div class="kpi"><div class="n">'+x[0]+'</div><div class="u">'+x[1]+'</div></div>';}).join('')+'</div></div>';
   var womed=med(wo.map(function(t){return t.p;})),womedw=med(wo.map(function(t){return t.r;}));
-  var A=(window.APTASK&&window.APTASK[code]&&window.APTASK[code][pt.name])||null;
+  var A=findAsk(code,pt.name);
   function arng(list){var a=list.filter(function(t){return t.a;}).map(function(t){return t.a;}).sort(function(x,y){return x-y;});
     if(!a.length)return '';var lo=a[0].toFixed(1),hi=a[a.length-1].toFixed(1);
     return '<small>전용 '+(lo===hi?lo+'㎡ · '+PY(a[0]):lo+'~'+hi+'㎡')+'</small>';}
