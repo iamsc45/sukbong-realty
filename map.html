@@ -983,7 +983,7 @@ function redevLegend(){
     +dt('#d6336c')+'신속통합기획 &nbsp;'
     +dt('#2b8a3e')+'모아주택'
     +'<br><b style="color:#4a4438">모양</b> '+bar('#9a8f7a')+'채워진 <b>구역(면)</b>=정비구역 경계 &nbsp; '+dt('#9a8f7a')+'<b>점</b>=위치 마커(구역계 없는 재건축·신통 후보지 등)'
-    +'<br>신통기획·모아주택은 카드에 뱃지 · 추진단계=정비몽땅(서울)·온누리(경기) 최신 · 출처: 국가정보포털 공공 DB 등 · 참고용';
+    +'<br>신통기획·모아주택은 카드에 뱃지 · 추진단계=정비몽땅(서울)·온누리(경기)·부산 통합홈페이지 최신 · 출처: 국가정보포털 공공 DB 등 · 참고용';
 }
 function tradeLegend(){
   document.getElementById('legend').innerHTML=Object.keys(TYPE).map(function(t){return '<span style="margin-right:8px"><span class="dot" style="background:'+TYPE[t][1]+'"></span>'+TYPE[t][0]+'</span>';}).join('')+'<br>'+(SB.summary.period?('계약일 '+SB.summary.period.f.replace(/-/g,'.')+' ~ '+SB.summary.period.t.slice(5).replace(/-/g,'.')+' · '):'')+'기준일 '+SB.summary.updated;
