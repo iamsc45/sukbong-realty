@@ -816,8 +816,20 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
         });
       });
     }
-    if(window._loadAptIdx && !(window.SB&&SB.aptIdx)){window._loadAptIdx(afterIdx);}
-    else afterIdx();
+    /* ⚠️ 단지 검색 모듈(_loadAptIdx/_trySelectApt)은 이 블록보다 뒤에서 정의된다.
+       딥링크가 먼저 실행되면 _loadAptIdx가 아직 undefined라 인덱스를 안 싣고
+       단지 매칭을 통째로 건너뛴다 → 지도만 이동하고 단지 카드가 안 열림
+       (모바일에서 빈발, 2026-07-28 수정). 모듈이 뜰 때까지 최대 3초 기다린다. */
+    var _w=0;
+    (function waitMod(){
+      if(window._loadAptIdx){
+        if(!(window.SB&&SB.aptIdx&&SB.aptIdx.length))window._loadAptIdx(afterIdx);
+        else afterIdx();
+        return;
+      }
+      if(_w>=3000){afterIdx();return;}
+      _w+=100;setTimeout(waitMod,100);
+    })();
   }
   /* 딥링크: ?r=시군구코드 | ?q=주소·지역명 | ?s=시도명 */
   try{
