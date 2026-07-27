@@ -185,9 +185,10 @@ function feeSec(fee,myArea){
     +'<div class="lrow"><span>개별사용료(난방·전기·수도 등)</span><span class="lv">'+won(Math.round(fee.ind/(fee.se||1)))+'</span></div>'
     +'<div class="lrow"><span>장기수선충당금</span><span class="lv">'+won(Math.round(fee.ltsn/(fee.se||1)))+'</span></div>'
     +'</div><div>'+(tops?'<div class="lrow" style="border:0;color:#8a8071;font-size:11.5px">비중 큰 항목(세대당)</div>'+tops:'')+'</div></div>'
-    +'<div class="note">세대당 금액은 단지 전체 월 관리비를 세대수로 나눈 평균이라 실제 우리 집 고지서와 다를 수 있습니다(평형·사용량에 따라 달라짐). '
-    +'평당은 <b>전용면적 기준</b>이고, 공식 자료(K-apt·시 부동산정보광장)의 ㎡당 표기는 <b>관리비부과면적 기준</b>이라 분모가 달라 값이 다릅니다'
-    +(fee.perM2?(' (이 단지 ㎡당 '+comma(fee.perM2)+'원)'):'')+'.</div></div>';
+    +'<div class="note">세대당 금액은 단지 전체 월 관리비를 세대수로 나눈 평균입니다. 평형과 사용량에 따라 실제 고지서와 차이가 납니다. '
+    +'단가는 <b>전용면적 기준</b>'+(fee.perPy?(', 전용 ㎡당 '+comma(Math.round(fee.perPy/3.305785))+'원'):'')+'입니다.'
+    +(fee.perM2?(' 공용부까지 포함한 관리비부과면적으로 나누면 ㎡당 '+comma(fee.perM2)+'원이 됩니다.'):'')
+    +' 공용관리비와 개별사용료(난방·전기·수도), 장기수선충당금을 모두 합친 금액입니다.</div></div>';
 }
 function render(pt,code){
   _CURDONG=pt.dong||'';
@@ -300,8 +301,12 @@ function render(pt,code){
     +'<div class="note">2026.04 시행 규제(작성 2026.07.25). 소득(DSR)·은행별로 더 낮아질 수 있고 비규제는 다릅니다. 대출 권유·한도 보장 아님. <a href="재개발_기초상식.html#loan-limit" style="color:var(--brass)">자세히 →</a></div></div>';
   h+=lineup;
   var _fee=findFee(code,pt.name);
-  var _myA=(function(){var c={};txs.forEach(function(t){if(t.a)c[t.a]=(c[t.a]||0)+1;});
-    var b=0,bn=0;for(var k in c){if(c[k]>bn){bn=c[k];b=+k;}}return b;})();
+  /* 대표 평형 = 거래가 가장 많은 전용면적. 84.66·84.99처럼 소수만 다른 같은 평형이
+     따로 세어지면 실제 주력 평형이 밀리므로 1㎡ 단위로 묶어 최빈 구간을 고른다. */
+  var _myA=(function(){var c={},s={};txs.forEach(function(t){if(!t.a)return;
+      var k=Math.round(t.a);c[k]=(c[k]||0)+1;s[k]=(s[k]||0)+t.a;});
+    var b=0,bn=0;for(var k in c){if(c[k]>bn){bn=c[k];b=k;}}
+    return b?s[b]/c[b]:0;})();
   h+=feeSec(_fee,_myA);
   h+='<div class="grid2"><div class="sec"><div class="lab">평형별 시세 (전용)</div>'+(pyr||'<div style="color:#8a8071;padding:8px 2px">최근 매매 표본 부족</div>')+'</div>'
     +'<div class="sec"><div class="lab">은행 대출 한도 (규제지역 기준)</div>'+loan+'</div></div>';
