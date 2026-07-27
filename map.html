@@ -909,7 +909,12 @@ map.on('moveend zoomend',function(){if(popLock)return;render();if(curMode==='red
     });
   }
   window._trySelectApt=function(v,dong){
-    if(!idxReady||!window.SB||!SB.aptIdx)return false;
+    /* ⚠️ idxReady(script onload 플래그) 대신 실제 데이터 존재로 판정한다(2026-07-28 수정).
+       인덱스 스크립트가 실행돼 SB.aptIdx는 생겼지만 onload가 아직 안 뜬 구간이 있는데,
+       routeQ는 SB.aptIdx 유무로 호출하고 여기서는 idxReady를 봐서 그 창에 걸리면
+       매칭이 false로 빠져 지도만 이동하고 단지 카드가 안 열렸다(모바일에서 파싱이 느려 빈발). */
+    if(!window.SB||!SB.aptIdx||!SB.aptIdx.length)return false;
+    idxReady=true;
     var n=norm(v);
     if(n.length<2)return false;
     /* 법정동이 주어지면 그 동 단지만 후보로 — 동명이단지 오이동 방지(2026-07-28, 블로그 딥링크용).
