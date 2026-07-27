@@ -128,6 +128,7 @@
     select{max-width:none;width:100%;height:30px;border-radius:9px;padding:0 5px;box-sizing:border-box}
     #mcats{grid-column:3/7;display:flex;gap:5px}
     #mcats button{flex:1;min-width:0;height:30px;padding:0 2px;border-radius:9px;text-align:center;font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    #mcats button.set .pfx{display:none}
     #rfbar{grid-column:1/7}
     /* 지도 조작 시 상단바 자동 접힘(2026-07-27): 첫 줄(모드+필터)만 남김 */
     #barHandle{display:none;grid-column:1/7;border:0;background:transparent;color:var(--navy);font-size:13px;font-weight:800;padding:2px 0 3px;height:auto;line-height:1.2;cursor:pointer}
@@ -220,9 +221,9 @@ body.redev #rfbar{display:flex}
   <span class="bargrp"><span class="lbl">거래:</span><span id="uchips"></span></span>
   <span class="bargrp"><span class="lbl">계약:</span><span id="dchips"></span></span>
   <div id="mcats">
-    <button type="button" data-c="type">상품 <b id="mcType">전체</b>▾</button>
-    <button type="button" data-c="u">거래 <b id="mcU">전체</b>▾</button>
-    <button type="button" data-c="d">계약 <b id="mcD">전체</b>▾</button>
+    <button type="button" data-c="type"><span class="pfx">상품 </span><b id="mcType">전체</b>▾</button>
+    <button type="button" data-c="u"><span class="pfx">거래 </span><b id="mcU">전체</b>▾</button>
+    <button type="button" data-c="d"><span class="pfx">계약 </span><b id="mcD">전체</b>▾</button>
   </div>
   <button id="barHandle" type="button">▾ 검색·지역·상품 펼치기</button>
   <span id="stat"></span>
@@ -476,6 +477,9 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
     if(mt){if(!curTset)mt.textContent='전체';else{var ks=Object.keys(curTset);mt.textContent=ks.length===1?(MSHORT[ks[0]]||(TYPE[ks[0]]?TYPE[ks[0]][0]:ks[0])):ks.length+'종';}}
     var mu=document.getElementById('mcU'); if(mu)mu.textContent=curU==='all'?'전체':curU;
     var md=document.getElementById('mcD'); if(md)md.textContent=dLabel[curD]||'전체';
+    /* 값 선택 시 접두어(상품/거래/계약) 숨겨 좁은 폭에서도 온전히 표시 */
+    document.querySelectorAll('#mcats button').forEach(function(b){
+      var v=b.querySelector('b');b.classList.toggle('set',!!(v&&v.textContent!=='전체'));});
   }
   function isOn(cat,k){if(cat==='type')return k==='all'?!curTset:!!(curTset&&curTset[k]);if(cat==='u')return curU===k;return curD===k;}
   function close(){sheet.classList.remove('open');}
