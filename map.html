@@ -1076,13 +1076,16 @@ function showAptCard(pt, txs){
     function eok2(m){if(!m)return '';var v=m/10000;return (v>=100?Math.round(v):(''+v.toFixed(1)).replace(/\.0$/,''))+'억';}
     function md(a){if(!a.length)return 0;var s=a.slice().sort(function(x,y){return x-y;});return s[Math.floor(s.length/2)];}
     var mmT=txs.filter(function(t){return t.u==='매매';}),jeT=txs.filter(function(t){return t.u==='전세';}),woT=txs.filter(function(t){return t.u==='월세';});
-    function rrow(l,rv,hv){return '<div style="display:grid;grid-template-columns:40px 1fr 1fr;font-size:12.5px;padding:5px 0;border-bottom:1px dotted #e7e1d4"><b style="color:#6b6355;font-weight:700">'+l+'</b><span style="text-align:right;font-weight:700">'+(rv||'·')+'</span><span style="text-align:right;font-weight:700;color:#c0562e">'+(hv||'·')+'</span></div>';}
+    function arng2(list){var a=list.filter(function(t){return t.a;}).map(function(t){return t.a;}).sort(function(x,y){return x-y;});
+      if(!a.length)return '';var lo=a[0].toFixed(1),hi=a[a.length-1].toFixed(1);
+      return '<span style="display:block;font-size:9.5px;color:#a39887;font-weight:600">'+(lo===hi?lo+'㎡·'+PY(a[0]):lo+'~'+hi+'㎡')+'</span>';}
+    function rrow(l,rv,hv,ar){return '<div style="display:grid;grid-template-columns:52px 1fr 1fr;font-size:12.5px;padding:5px 0;border-bottom:1px dotted #e7e1d4"><b style="color:#6b6355;font-weight:700">'+l+(ar||'')+'</b><span style="text-align:right;font-weight:700">'+(rv||'·')+'</span><span style="text-align:right;font-weight:700;color:#c0562e">'+(hv||'·')+'</span></div>';}
     hoSec='<div class="rc-sec"><div class="rc-lab">실거래 vs 호가 · 중위</div>'
-      +'<div style="display:grid;grid-template-columns:40px 1fr 1fr;font-size:10px;color:#8a8071;font-weight:700;padding-bottom:2px"><span></span><span style="text-align:right">실거래</span><span style="text-align:right">호가</span></div>'
-      +rrow('매매',eok2(md(mmT.map(function(t){return t.p;}))),(A&&A.mm)?eok2(A.mm.med):'')
-      +rrow('전세',eok2(md(jeT.map(function(t){return t.p;}))),(A&&A.je)?eok2(A.je.med):'')
-      +rrow('월세',woT.length?(eok2(md(woT.map(function(t){return t.p;})))+'/'+md(woT.map(function(t){return t.r;}))+'만'):'',(A&&A.wo)?(eok2(A.wo.bo)+'/'+A.wo.wol+'만'):'')
-      +'<div class="rc-note" style="padding:4px 0 0">호가=협상 전 매물가(중위, 주황). '+(A?'실거래(체결가)와 다를 수 있음.':'이 단지 현재 호가 매물 없음.')+'</div></div>';
+      +'<div style="display:grid;grid-template-columns:52px 1fr 1fr;font-size:10px;color:#8a8071;font-weight:700;padding-bottom:2px"><span></span><span style="text-align:right">실거래</span><span style="text-align:right">호가</span></div>'
+      +rrow('매매',eok2(md(mmT.map(function(t){return t.p;}))),(A&&A.mm)?eok2(A.mm.med):'',arng2(mmT))
+      +rrow('전세',eok2(md(jeT.map(function(t){return t.p;}))),(A&&A.je)?eok2(A.je.med):'',arng2(jeT))
+      +rrow('월세',woT.length?(eok2(md(woT.map(function(t){return t.p;})))+'/'+md(woT.map(function(t){return t.r;}))+'만'):'',(A&&A.wo)?(eok2(A.wo.bo)+'/'+A.wo.wol+'만'):'',arng2(woT))
+      +'<div class="rc-note" style="padding:4px 0 0">거래된 <b>전 평형 중위</b>(특정 평형 아님, 좌측 면적범위 참고) · 호가=협상 전 매물가(주황). '+(A?'체결가와 다를 수 있음.':'이 단지 현재 호가 매물 없음.')+'</div></div>';
   }
   var favId=code+'|'+pt.name;
   var isFav=(window.SBAuth&&SBAuth.isIn())?SBAuth.favHas(favId):false;

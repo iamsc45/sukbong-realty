@@ -79,6 +79,13 @@
 <script>
 function qs(k){var m=new RegExp('[?&]'+k+'=([^&]*)').exec(location.search);return m?decodeURIComponent(m[1].replace(/\+/g,' ')):'';}
 function eok(m){if(!m)return '·';var v=m/10000;return (v>=100?Math.round(v):(''+v.toFixed(1)).replace(/\.0$/,''))+'억';}
+/* 평형 라인업 칩 (2026-07-27) */
+var _css=document.createElement('style');
+_css.textContent='.chips{display:flex;flex-wrap:wrap;gap:6px}'
+ +'.chip{display:inline-flex;align-items:baseline;gap:4px;border:1px solid #ded8cc;background:#fff;border-radius:100px;padding:5px 12px;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}'
+ +'.chip small{font-size:11px;color:#8a8071;font-weight:600}'
+ +'.cmpr b small{display:block;font-size:10.5px;color:#8a8071;font-weight:600;margin-top:2px}';
+document.head.appendChild(_css);
 function comma(n){return Number(n).toLocaleString();}
 function PY(m){m=+m;if(!m)return '';var p=m/3.305785;return (p<100?p.toFixed(1):Math.round(p))+'평';}
 function med(a){if(!a.length)return 0;var s=a.slice().sort(function(x,y){return x-y;});return s[Math.floor(s.length/2)];}
@@ -120,11 +127,20 @@ function go(code,nm,dong){
   if(!pt){fail();return;}
   render(pt,code);
 }
-function band(a){return a<=60?'60㎡ 이하':a<=85?'60~85㎡':a<=110?'85~110㎡':'110㎡ 이상';}
+function band(a){return a<=60?'60㎡(18.1평) 이하':a<=85?'60~85㎡(18.1~25.7평)':a<=110?'85~110㎡(25.7~33.3평)':'110㎡(33.3평) 초과';}
+/* 단지정보 키 매칭: 표기 차이(아파트 접미·공백·괄호) 흡수 (2026-07-27) */
+function nkey(n){return String(n||'').replace(/[\s\-_()·]/g,'').replace(/(아파트|APT|apt)$/,'');}
+function findInfo(code,name){
+  var box=(window.APTINFO&&window.APTINFO[code])||null; if(!box)return null;
+  if(box[name])return box[name];
+  var t=nkey(name);
+  for(var k in box){if(nkey(k)===t)return box[k];}
+  return null;
+}
 function render(pt,code){
   document.title=pt.name+' · 단지 상세';
   var txs=pt.txs||[];
-  var info=(window.APTINFO&&window.APTINFO[code]&&window.APTINFO[code][pt.name])||null;
+  var info=findInfo(code,pt.name);
   var mm=txs.filter(function(t){return t.u==='매매';}),
       je=txs.filter(function(t){return t.u==='전세';}),
       wo=txs.filter(function(t){return t.u==='월세';});
@@ -166,15 +182,18 @@ function render(pt,code){
     +kp.map(function(x){return '<div class="kpi"><div class="n">'+x[0]+'</div><div class="u">'+x[1]+'</div></div>';}).join('')+'</div></div>';
   var womed=med(wo.map(function(t){return t.p;})),womedw=med(wo.map(function(t){return t.r;}));
   var A=(window.APTASK&&window.APTASK[code]&&window.APTASK[code][pt.name])||null;
-  function cmpr(l,rv,hv){return '<div class="cmpr"><b>'+l+'</b><span>'+(rv||'·')+'</span><span class="ho">'+(hv||'·')+'</span></div>';}
+  function arng(list){var a=list.filter(function(t){return t.a;}).map(function(t){return t.a;}).sort(function(x,y){return x-y;});
+    if(!a.length)return '';var lo=a[0].toFixed(1),hi=a[a.length-1].toFixed(1);
+    return '<small>전용 '+(lo===hi?lo+'㎡('+PY(a[0])+')':lo+'~'+hi+'㎡ 전체')+'</small>';}
+  function cmpr(l,rv,hv,ar){return '<div class="cmpr"><b>'+l+(ar||'')+'</b><span>'+(rv||'·')+'</span><span class="ho">'+(hv||'·')+'</span></div>';}
   var mmR=mmamt?(eok(mmamt)+(mmpy?'<small>'+comma(mmpy)+'만/평</small>':'')):'';
   var mmH=(A&&A.mm)?(eok(A.mm.med)+(A.mm.py?'<small>'+comma(A.mm.py)+'만/평 · '+A.mm.n+'건</small>':'')):'';
   var jeR=jemed?eok(jemed):'',jeH=(A&&A.je)?(eok(A.je.med)+'<small>'+A.je.n+'건</small>'):'';
   var woR=wo.length?(eok(womed)+' / '+womedw+'만'):'',woH=(A&&A.wo)?(eok(A.wo.bo)+' / '+A.wo.wol+'만<small>'+A.wo.n+'건</small>'):'';
   h+='<div class="sec"><div class="lab">실거래 vs 호가 · 매매·전세·월세</div><div class="cmp">'
     +'<div class="cmph"><span></span><span>실거래<small>체결가·중위</small></span><span>호가<small>협상 전·중위</small></span></div>'
-    +cmpr('매매',mmR,mmH)+cmpr('전세',jeR,jeH)+cmpr('월세',woR,woH)+'</div>'
-    +'<div class="note">실거래 기준=최근 계약 '+(txs.length?txs.map(function(t){return t.cd;}).sort().pop().replace(/-/g,'.'):'-')+' (국토부 실거래·해제 제외) · 호가 기준=수집일 '+(window.APTASKDAY||'-')+' (네이버 매물·협상 전). 호가는 실제 체결가와 다를 수 있습니다.</div></div>';
+    +cmpr('매매',mmR,mmH,arng(mm))+cmpr('전세',jeR,jeH,arng(je))+cmpr('월세',woR,woH,arng(wo))+'</div>'
+    +'<div class="note"><b>면적 기준</b>: 특정 평형이 아니라 <b>거래된 전 평형의 중위값</b>입니다(평형별은 아래 표 참고). 실거래 기준=최근 계약 '+(txs.length?txs.map(function(t){return t.cd;}).sort().pop().replace(/-/g,'.'):'-')+' (국토부 실거래·해제 제외) · 호가 기준=수집일 '+(window.APTASKDAY||'-')+' (네이버 매물·협상 전). 호가는 실제 체결가와 다를 수 있습니다.</div></div>';
   if(info){
     h+='<div class="sec"><div class="lab">단지 개요</div><div class="ov">'
       +frow(IC.home,'세대/동',(info.se?comma(info.se)+'세대':'')+(info.dongCnt?' · '+info.dongCnt+'동':''))
@@ -192,12 +211,25 @@ function render(pt,code){
       +lrow(IC.conv,'생활편의',esc(info.conv),true);
     if(live)h+='<div class="sec"><div class="lab">교통 · 생활 · 교육</div><div class="living">'+live+'</div></div>';
   }
-  // 평형별
-  var bmap={};mm.forEach(function(t){if(!t.a)return;var b=band(t.a);(bmap[b]=bmap[b]||[]).push(t);});
-  var border=['60㎡ 이하','60~85㎡','85~110㎡','110㎡ 이상'];
-  var pyr=border.filter(function(b){return bmap[b];}).map(function(b){
-    var g=bmap[b],am=med(g.map(function(t){return t.p;})),py=med(g.map(function(t){return Math.round(t.p/t.a*3.305785);}));
-    return '<div class="pyr"><div><span class="pb">전용 '+b+'</span><span class="pm">'+g.length+'건</span></div><div class="pv">'+eok(am)+'<span class="s">'+comma(py)+'만/평</span></div></div>';}).join('');
+  // 평형별 (매매 없으면 전세→월세 순으로 보완, 거래유형 명시)
+  var border=['60㎡(18.1평) 이하','60~85㎡(18.1~25.7평)','85~110㎡(25.7~33.3평)','110㎡(33.3평) 초과'];
+  function bandRows(list,kind){
+    var bm={};list.forEach(function(t){if(!t.a)return;(bm[band(t.a)]=bm[band(t.a)]||[]).push(t);});
+    return border.filter(function(b){return bm[b];}).map(function(b){
+      var g=bm[b],am=med(g.map(function(t){return t.p;})),
+          py=med(g.map(function(t){return Math.round(t.p/t.a*3.305785);})),
+          ars=g.map(function(t){return t.a;}).sort(function(x,y){return x-y;}),
+          arl=ars[0].toFixed(1)+(ars[0]!==ars[ars.length-1]?'~'+ars[ars.length-1].toFixed(1):'')+'㎡';
+      return '<div class="pyr"><div><span class="pb">전용 '+b+'</span><span class="pm">'+arl+' · '+kind+' '+g.length+'건</span></div>'
+        +'<div class="pv">'+eok(am)+'<span class="s">'+(kind==='매매'?comma(py)+'만/평':'보증금 중위')+'</span></div></div>';}).join('');
+  }
+  var pyr=bandRows(mm,'매매')||bandRows(je,'전세')||bandRows(wo,'월세보증금');
+  // 평형 라인업(실거래에 나타난 전용면적 종류)
+  var ars=[];txs.forEach(function(t){if(t.a&&ars.indexOf(+t.a.toFixed(1))<0)ars.push(+t.a.toFixed(1));});
+  ars.sort(function(a,b){return a-b;});
+  var lineup=ars.length?('<div class="sec"><div class="lab">평형 라인업 · 실거래 확인 전용면적 '+ars.length+'종</div><div class="chips">'
+    +ars.map(function(a){return '<span class="chip">'+a+'㎡<small>'+PY(a)+'</small></span>';}).join('')
+    +'</div><div class="note" style="padding-top:6px">최근 실거래(매매·전월세)에 나타난 전용면적입니다. 거래가 없던 평형은 표시되지 않을 수 있습니다.</div></div>'):'';
   // 대출
   var base=mmamt||0,cap=base<=150000?60000:base<=250000?40000:20000;
   var loan='<div class="loan"><div class="lt">'+(base?'매매 중위 '+eok(base)+' 기준 (규제지역 가정)':'시세 표본 부족')+'</div>'
@@ -205,6 +237,7 @@ function render(pt,code){
     +'<div class="lrow"><span>LTV 40% 기준</span><span class="lv">'+(base?eok(Math.round(base*0.4)):'·')+'</span></div>'
     +'<div class="lrow" style="border-top:1px solid #ded8cc;margin-top:3px;padding-top:6px;font-weight:700"><span>은행 예상 한도 (낮은 값)</span><span class="lv">'+(base?eok(Math.min(cap,Math.round(base*0.4))):'·')+'</span></div>'
     +'<div class="note">2026.04 시행 규제(작성 2026.07.25). 소득(DSR)·은행별로 더 낮아질 수 있고 비규제는 다릅니다. 대출 권유·한도 보장 아님. <a href="재개발_기초상식.html#loan-limit" style="color:var(--brass)">자세히 →</a></div></div>';
+  h+=lineup;
   h+='<div class="grid2"><div class="sec"><div class="lab">평형별 시세 (전용)</div>'+(pyr||'<div style="color:#8a8071;padding:8px 2px">최근 매매 표본 부족</div>')+'</div>'
     +'<div class="sec"><div class="lab">은행 대출 한도 (규제지역 기준)</div>'+loan+'</div></div>';
   h+='<div class="sec"><div class="lab">시세 추이 (평당·연도별)</div><div class="soon">'
