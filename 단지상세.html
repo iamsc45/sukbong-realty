@@ -134,7 +134,8 @@ function go(code,nm,dong){
 function band(a){return a<=60?'60㎡(18.1평) 이하':a<=85?'60~85㎡(18.1~25.7평)':a<=110?'85~110㎡(25.7~33.3평)':'110㎡(33.3평) 초과';}
 /* 단지정보 키 매칭: 표기 차이(아파트 접미·공백·괄호) 흡수 (2026-07-27) */
 function nkey(n){return String(n||'').replace(/[\s\-_()·]/g,'').replace(/(아파트|APT|apt)$/,'');}
-function aliasOf(code,name,f){var A=(window.APTALIAS&&window.APTALIAS[code]&&window.APTALIAS[code][name])||null;return A?A[f]:null;}
+var _CURDONG='';
+function aliasOf(code,name,f){var B=(window.APTALIAS&&window.APTALIAS[code])||null;if(!B)return null;var A=B[name+'|'+(_CURDONG||'')]||B[name]||null;return A?A[f]:null;}
 function findInfo(code,name){
   var box=(window.APTINFO&&window.APTINFO[code])||null; if(!box)return null;
   var ak=aliasOf(code,name,'i');            /* 빌드 시 정합된 별칭 우선 */
@@ -150,6 +151,7 @@ function findAsk(code,name){
   return (ak&&box[ak])||box[name]||null;
 }
 function render(pt,code){
+  _CURDONG=pt.dong||'';
   document.title=pt.name+' · 단지 상세';
   var txs=pt.txs||[];
   var info=findInfo(code,pt.name);

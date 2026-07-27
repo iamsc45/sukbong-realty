@@ -1072,7 +1072,8 @@ function showAptCard(pt, txs){
         al.onload=al.onerror=function(){showAptCard(pt,txs);};document.body.appendChild(al);};
       sc.onerror=function(){window.APTASK=window.APTASK||{};window.APTASK[code]={};};document.body.appendChild(sc);}
   }
-  var _al=(code&&window.APTALIAS&&window.APTALIAS[code]&&window.APTALIAS[code][pt.name])||null;
+  var _ab=(code&&window.APTALIAS&&window.APTALIAS[code])||null;
+  var _al=_ab?(_ab[pt.name+'|'+(pt.dong||'')]||_ab[pt.name]||null):null;
   var _ak=(_al&&_al.a)||pt.name;
   var A=(code&&window.APTASK&&window.APTASK[code]&&window.APTASK[code][_ak])||null;
   var hoSec='';
