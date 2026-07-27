@@ -88,7 +88,7 @@ _css.textContent='.chips{display:flex;flex-wrap:wrap;gap:6px}'
  +'.cmpr b small{display:block;font-size:10.5px;color:#8a8071;font-weight:600;margin-top:2px}';
 document.head.appendChild(_css);
 function comma(n){return Number(n).toLocaleString();}
-function PY(m){m=+m;if(!m)return '';var p=m/3.305785;return (p<100?p.toFixed(1):Math.round(p))+'평';}
+function PY(m){m=+m;if(!m)return '';var p=m/3.305785;return (p<100?p.toFixed(1):Math.round(p).toLocaleString())+'평';}
 function med(a){if(!a.length)return 0;var s=a.slice().sort(function(x,y){return x-y;});return s[Math.floor(s.length/2)];}
 function hav(a,b,c,d){var R=6371000,r=Math.PI/180,x=Math.sin((c-a)*r/2),y=Math.sin((d-b)*r/2);return 2*R*Math.asin(Math.sqrt(x*x+Math.cos(a*r)*Math.cos(c*r)*y*y));}
 function esc(s){return (s||'').replace(/[<>&]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;'}[c];});}

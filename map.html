@@ -292,7 +292,7 @@ function go(lat,lng,z){try{map.flyTo([lat,lng],z,{duration:.6});}catch(e){try{ma
 var loading={}, loaded={};
 
 function fmtEok(man){var e=man/10000;return (e>=10?e.toFixed(1):e.toFixed(2)).replace(/\.?0+$/,'')+'억';}
-function PY(m){m=+m;if(!m)return '';var p=m/3.305785;return (p<100?p.toFixed(1):Math.round(p))+'평';}
+function PY(m){m=+m;if(!m)return '';var p=m/3.305785;return (p<100?p.toFixed(1):Math.round(p).toLocaleString())+'평';}
 /* 관심단지 (이 기기 브라우저에 저장) */
 function favList(){try{return JSON.parse(localStorage.getItem('sb_fav')||'[]');}catch(e){return [];}}
 function favSave(l){try{localStorage.setItem('sb_fav',JSON.stringify(l));}catch(e){}}
