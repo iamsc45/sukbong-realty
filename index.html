@@ -45,6 +45,13 @@ a{color:inherit}
   box-shadow:0 6px 18px rgba(37,84,224,.28);transition:opacity 150ms ease,transform 150ms ease}
 .nav .cta i{font-size:18px}
 .nav .cta:hover{opacity:.9;transform:translateY(-1px)}
+.nav .inq-lnk{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:800;
+  color:var(--blk);border:1.5px solid var(--blk);border-radius:100px;padding:9px 16px;text-decoration:none;
+  white-space:nowrap;transition:background 150ms ease,color 150ms ease}
+.nav .inq-lnk i{font-size:16px}
+.nav .inq-lnk:hover{background:var(--blk);color:#fff}
+.nav .inq-lnk+.cta{margin-left:0}
+@media(max-width:720px){.nav .inq-lnk{padding:7px 12px;font-size:12px}}
 /* ── 히어로 ── */
 .hero{padding:48px 0 20px;position:relative}
 .kicker{font-size:13px;letter-spacing:.12em;color:var(--blk2);text-transform:uppercase;font-weight:700;
@@ -308,6 +315,7 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
   <a class="lnk" href="favorites.html">★ 관심단지</a>
   <a class="lnk" href="https://blog.naver.com/seokbongnews" target="_blank" rel="noopener">리포트</a>
   <a class="lnk" href="channels.html">채널</a>
+  <a class="inq-lnk" href="#" id="navInq"><i class="ti ti-speakerphone" aria-hidden="true"></i>광고·제휴 문의</a>
   <a class="cta" href="map.html"><i class="ti ti-map-2" aria-hidden="true"></i>지도 열기</a>
 </div></nav>
 
@@ -488,6 +496,7 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
   function inqClose(){if(inqBg)inqBg.classList.remove('on');}
   var ad=document.getElementById('adDesk'); if(ad){ad.href='#';ad.addEventListener('click',inqOpen);}
   var adm=document.getElementById('adMob'); if(adm)adm.addEventListener('click',inqOpen);
+  var ni=document.getElementById('navInq'); if(ni)ni.addEventListener('click',inqOpen);
   var ix=document.getElementById('inqX'); if(ix)ix.addEventListener('click',inqClose);
   if(inqBg)inqBg.addEventListener('click',function(e){if(e.target===inqBg)inqClose();});
   var im=document.getElementById('inqMailto'); if(im)im.href=mailHref;
