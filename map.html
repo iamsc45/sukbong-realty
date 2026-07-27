@@ -712,7 +712,7 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
   function tryRedevZone(v,onNo){
     loadRedev(function(){
       var n=_normz(v),hit=null;
-      (redevMarks||[]).forEach(function(m){if(!hit&&m.nm&&_normz(m.nm).indexOf(n)>=0)hit={nm:m.nm,lat:m.lat,lon:m.lon,cat:m.cat,stage:m.stage,gubun:m.gubun,biz:m.nm};});
+      (redevMarks||[]).forEach(function(m){if(!hit&&m.nm&&_normz(m.nm).indexOf(n)>=0)hit={nm:m.nm,lat:m.lat,lon:m.lon,cat:m.cat,stage:m.stage,gubun:m.gubun,biz:m.nm,sido:m.sido,src:m.src};});
       if(!hit&&redevData&&redevData.features){redevData.features.forEach(function(f){if(hit)return;var p=f.properties||{},nm=p.nm||'',bz=p.biz||'';if((nm&&_normz(nm).indexOf(n)>=0)||(bz&&_normz(bz).indexOf(n)>=0)){var r0=f.geometry.coordinates[0],cx=0,cy=0,i;for(i=0;i<r0.length;i++){cx+=r0[i][0];cy+=r0[i][1];}cx/=r0.length;cy/=r0.length;hit={nm:nm||bz,lat:cy,lon:cx,cat:p.cat,stage:p.stage,gubun:p.gubun,area:p.area,biz:bz||nm};}});}
       if(hit){focusZone(hit);return;}
       /* 마커·폴리곤 없는 구역(예: 흑석11) — 상세 매칭 후 법정동 좌표로 재개발 모드 이동 */
