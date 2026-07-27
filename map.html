@@ -303,7 +303,13 @@ var _MAPVIEW_KEY='sb_mapview', _BACKVIEW=null;
     /* 뒤로가기·상세에서 복귀면 6시간, 그 외 같은 세션 재방문이면 30분 이내만 복원 */
     if(v&&v.lat){
       var age=Date.now()-(v.t||0);
-      if(((isBack||fromDetail)&&age<6*3600*1000)||age<30*60*1000)_BACKVIEW=v;
+      /* ⚠️ URL에 딥링크(q/r/s)가 있으면 '보던 화면' 복원보다 딥링크가 우선한다(2026-07-28 수정).
+         종전엔 30분 내 재방문이기만 하면 복원이 이겨서, 블로그 단지 링크를 하나 눌러본 뒤
+         30분 안에 다른 단지 링크를 누르면 딥링크가 통째로 무시되고 이전 화면만 떴다
+         (지도 이동·단지 카드 모두 안 됨). 진짜 뒤로가기(back_forward)일 때만 복원을 유지한다. */
+      var hasDeep=/[?&](q|r|s)=/.test(location.search);
+      if(hasDeep&&!isBack)v=null;
+      if(v&&((((isBack||fromDetail)&&age<6*3600*1000)||age<30*60*1000)))_BACKVIEW=v;
     }
   }catch(e){}
   function save(){try{var c=map.getCenter();

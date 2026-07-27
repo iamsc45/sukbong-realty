@@ -18,7 +18,7 @@
 .kpis{flex:1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;align-content:start}
 .kpi{background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 10px}
 .kpi .n{font-family:'Bookman','Georgia',serif;font-size:19px;line-height:1}
-.kpi .u{font-size:10px;color:#8a8071;margin-top:4px}
+.kpi .u{font-size:10px;color:#8a8071;margin-top:4px;line-height:1.3;word-break:keep-all}
 .sec{margin:13px 0}
 .lab{font-size:11px;letter-spacing:.11em;color:#8a8071;text-transform:uppercase;margin-bottom:9px;border-bottom:1px solid var(--line);padding-bottom:5px}
 .ov{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px 18px}
@@ -192,6 +192,14 @@ function render(pt,code){
     [jr?jr+'%':'·','전세가율'],
     [(info&&info.se)?comma(info.se):(mm.length+'건'),(info&&info.se)?'세대수':'매매 표본'],
     [(info&&info.ymd)?info.ymd:((je.length+wo.length)+'건'),(info&&info.ymd)?'준공':'전월세 표본']];
+  /* 아래 3칸: 최고가·월세·거래활발도 (2026-07-28) */
+  var mmTop=mm.length?Math.max.apply(null,mm.map(function(t){return t.p;})):0;
+  var mmTopT=mm.filter(function(t){return t.p===mmTop;})[0];
+  var woB=med(wo.map(function(t){return t.p;})),woW=med(wo.map(function(t){return t.r;}));
+  var lastCd=txs.length?txs.map(function(t){return t.cd;}).sort().pop():'';
+  kp.push([mmTop?eok(mmTop):'·','최고 매매가'+(mmTopT&&mmTopT.a?' · 전용 '+mmTopT.a.toFixed(1)+'㎡':'')]);
+  kp.push([wo.length?(eok(woB)+'<small style="font-size:11px">/'+comma(woW)+'만</small>'):'·','월세 중위(보증금/월세)']);
+  kp.push([txs.length?comma(txs.length)+'<small style="font-size:11px">건</small>':'·','최근 6개월 거래'+(lastCd?' · 최근 '+lastCd.slice(2).replace(/-/g,'.'):'')]);
   var h='<div class="top"><div id="map"></div><div class="kpis">'
     +kp.map(function(x){return '<div class="kpi"><div class="n">'+x[0]+'</div><div class="u">'+x[1]+'</div></div>';}).join('')+'</div></div>';
   var womed=med(wo.map(function(t){return t.p;})),womedw=med(wo.map(function(t){return t.r;}));
