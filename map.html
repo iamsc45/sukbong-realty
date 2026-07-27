@@ -294,10 +294,16 @@ var map=L.map('map',{minZoom:9}).setView([37.55,126.98],11);
 var _MAPVIEW_KEY='sb_mapview', _BACKVIEW=null;
 (function(){
   try{
+    /* 뒤로가기 판정: 내비게이션 타입이 가장 정확(뒤로가기 시 referrer는 비어 있는 경우가 많음) */
+    var nav=(performance.getEntriesByType&&performance.getEntriesByType('navigation')[0])||null;
+    var isBack=(nav&&nav.type==='back_forward')||(performance.navigation&&performance.navigation.type===2);
     var ref=decodeURIComponent(document.referrer||'');
-    if(/단지상세|구역상세|재개발_기초상식/.test(ref)){
-      var v=JSON.parse(sessionStorage.getItem(_MAPVIEW_KEY)||'null');
-      if(v&&v.lat&&(Date.now()-(v.t||0))<6*3600*1000)_BACKVIEW=v;
+    var fromDetail=/단지상세|구역상세|재개발_기초상식/.test(ref);
+    var v=JSON.parse(sessionStorage.getItem(_MAPVIEW_KEY)||'null');
+    /* 뒤로가기·상세에서 복귀면 6시간, 그 외 같은 세션 재방문이면 30분 이내만 복원 */
+    if(v&&v.lat){
+      var age=Date.now()-(v.t||0);
+      if(((isBack||fromDetail)&&age<6*3600*1000)||age<30*60*1000)_BACKVIEW=v;
     }
   }catch(e){}
   function save(){try{var c=map.getCenter();
