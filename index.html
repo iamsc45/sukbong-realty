@@ -217,21 +217,24 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
 .hub-h{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
 .hub-h h2{font-size:clamp(22px,2.6vw,30px);letter-spacing:-0.03em;margin:0;font-weight:800}
 .hub-h .d{font-size:12px;color:var(--g2)}
-.hubgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.hubgrid{display:grid;grid-template-columns:repeat(5,1fr);border-top:2px solid var(--blk);border-left:1px solid var(--hair)}
 @media(max-width:900px){.hubgrid{grid-template-columns:repeat(3,1fr)}}
-.tile{position:relative;display:flex;flex-direction:column;gap:7px;padding:15px 14px;background:var(--wh);
-  border:1px solid var(--hair);border-radius:14px;text-decoration:none;color:var(--blk);
-  transition:border-color .15s ease,transform .15s ease}
-.tile:hover{border-color:var(--blk);transform:translateY(-2px)}
-.tile .ic{font-size:27px;line-height:1;color:var(--blue)}
-.tile .tn{font-size:14.5px;font-weight:800;letter-spacing:-0.01em}
+.tile{position:relative;display:flex;flex-direction:column;gap:7px;padding:17px 16px 15px;background:transparent;
+  border-right:1px solid var(--hair);border-bottom:1px solid var(--hair);text-decoration:none;color:var(--blk);
+  transition:background .16s ease,color .16s ease}
+.tile .num{font-size:9.5px;letter-spacing:.16em;color:var(--g3);font-weight:700;font-variant-numeric:tabular-nums}
+.tile:hover{background:var(--blk);color:#fff}
+.tile:hover .td{color:#B9B9B4}
+.tile:hover .num{color:#8A8A85}
+.tile .ic{font-size:22px;line-height:1}
+.tile .tn{font-size:15px;font-weight:800;letter-spacing:-0.01em}
 .tile .td{font-size:11px;color:var(--g2);line-height:1.4}
-.tile.hot .ic{color:#D85A30}
 .tile.soon{cursor:default}
-.tile.soon:hover{border-color:var(--hair);transform:none}
-.tile.soon .ic{color:var(--g3)}
+.tile.soon:hover{background:transparent;color:var(--blk)}
+.tile.soon .ic{color:var(--g3)!important}
+.tile.soon .tn{color:var(--g3)}
 .tile .badge{position:absolute;top:12px;right:12px;font-size:9px;font-weight:800;letter-spacing:.04em;
-  background:var(--bg);color:var(--g2);border:1px solid var(--hair);border-radius:100px;padding:2px 7px}
+  color:var(--g3);border:1px solid var(--hair);border-radius:100px;padding:2px 7px}
 .ad-slot{margin:18px 0 0;border:1.5px solid var(--blue);border-radius:14px;min-height:74px;
   background:rgba(37,84,224,.055);display:flex;align-items:center;justify-content:center;gap:9px;
   color:var(--blue);font-size:13.5px;font-weight:700;letter-spacing:.01em;text-decoration:none;
@@ -258,15 +261,16 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
 .op-links .bl i{color:#03C75A}
 @media(max-width:720px){.op-links{margin-left:0;width:100%}.op-links .oc{flex:1;justify-content:center;min-width:44%}}
 /* 모바일 허브 (m-home 안) */
-.hubgrid-m{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:22px 0 0}
-.tile-m{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 4px;
-  background:var(--wh);border:1px solid var(--hair);border-radius:14px;text-decoration:none;color:var(--blk)}
-.tile-m .ic{font-size:23px;line-height:1;color:var(--blue)}
+.hubgrid-m{display:grid;grid-template-columns:repeat(4,1fr);margin:22px 0 0;
+  border-top:2px solid var(--blk);border-left:1px solid var(--hair)}
+.tile-m{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 4px 12px;
+  background:transparent;border-right:1px solid var(--hair);border-bottom:1px solid var(--hair);text-decoration:none;color:var(--blk)}
+.tile-m .num{display:none}
+.tile-m .ic{font-size:22px;line-height:1}
 .tile-m .tn{font-size:10.5px;font-weight:700;text-align:center;letter-spacing:-0.02em}
-.tile-m.hot .ic{color:#D85A30}
-.tile-m.soon .ic{color:var(--g3)}
+.tile-m.soon .ic{color:var(--g3)!important}
+.tile-m.soon .tn{color:var(--g3)}
 .tile-m .badge{position:absolute;top:6px;right:6px;width:6px;height:6px;border-radius:50%;background:var(--g3)}
-.tile-m.hot .badge{background:#D85A30}
 </style><meta property="og:title" content="석봉 부동산 정보방">
 <meta property="og:description" content="전국 실거래가를 지도와 대시보드로 · 매일 갱신되는 아파트·오피스텔·빌딩 실거래 데이터, 평당가·전세가율·청약 정보까지 무료.">
 <meta property="og:type" content="website">
@@ -406,28 +410,31 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
 <script>
 (function(){
   var HUB=[
-    {n:'실거래지도',d:'건물별 실거래가',i:'map-2',h:'map.html'},
-    {n:'재개발·재건축',d:'정비구역·시세추이',i:'building-community',h:'map.html?mode=redev'},
-    {n:'실시간 인기',d:'거래 급증·가격 급등',i:'flame',cls:'hot',h:'hot.html'},
-    {n:'경매·공매',d:'낙찰률·낙찰가율',i:'gavel',h:'auction.html'},
-    {n:'청약',d:'분양 일정·경쟁률',i:'ticket',h:'apply.html'},
-    {n:'시세·통계',d:'평당가·전세가율',i:'chart-histogram',h:'#dash'},
-    {n:'상가·빌딩',d:'상업용 실거래',i:'building-store',h:'map.html?t=comm'},
-    {n:'리포트',d:'주간·월간 결산',i:'file-text',h:'https://blog.naver.com/seokbongnews',blank:true},
-    {n:'관심단지',d:'내가 찜한 단지',i:'star',h:'favorites.html'},
-    {n:'커뮤니티',d:'동네 이야기',i:'messages',soon:true}
+    {n:'실거래지도',d:'건물별 실거래가',i:'map-2',c:'#2554E0',h:'map.html'},
+    {n:'재개발·재건축',d:'정비구역·시세추이',i:'building-community',c:'#c0562e',h:'map.html?mode=redev'},
+    {n:'실시간 인기',d:'거래 급증·가격 급등',i:'flame',c:'#D85A30',h:'hot.html'},
+    {n:'경매·공매',d:'낙찰률·낙찰가율',i:'gavel',c:'#0F6E56',h:'auction.html'},
+    {n:'청약',d:'분양 일정·경쟁률',i:'ticket',c:'#185FA5',h:'apply.html'},
+    {n:'시세·통계',d:'평당가·전세가율',i:'chart-histogram',c:'#0FA98A',h:'#dash'},
+    {n:'상가·빌딩',d:'상업용 실거래',i:'building-store',c:'#E8A13A',h:'map.html?t=comm'},
+    {n:'리포트',d:'주간·월간 결산',i:'file-text',c:'#6E6E6A',h:'https://blog.naver.com/seokbongnews',blank:true},
+    {n:'관심단지',d:'내가 찜한 단지',i:'star',c:'#D9A514',h:'favorites.html'},
+    {n:'커뮤니티',d:'동네 이야기',i:'messages',c:'#8A8A85',soon:true}
   ];
-  function tile(t,mob){
-    var cls=(mob?'tile-m':'tile')+(t.cls?' '+t.cls:'')+(t.soon?' soon':'');
-    var inner='<i class="ti ti-'+t.i+' ic" aria-hidden="true"></i><span class="tn">'+t.n+'</span>'
+  function tile(t,idx,mob){
+    var cls=(mob?'tile-m':'tile')+(t.soon?' soon':'');
+    var num=('0'+(idx+1)).slice(-2);
+    var inner='<span class="num">'+num+'</span>'
+      +'<i class="ti ti-'+t.i+' ic" aria-hidden="true" style="color:'+t.c+'"></i>'
+      +'<span class="tn">'+t.n+'</span>'
       +(mob?'':'<span class="td">'+t.d+'</span>')
       +(t.soon?'<span class="badge">'+(mob?'':'준비중')+'</span>':'');
     if(t.soon)return '<a class="'+cls+'" href="#" onclick="return false" title="준비 중입니다">'+inner+'</a>';
     var tgt=t.blank?' target="_blank" rel="noopener"':'';
     return '<a class="'+cls+'" href="'+t.h+'"'+tgt+'>'+inner+'</a>';
   }
-  var hd=document.getElementById('hubDesk'); if(hd)hd.innerHTML=HUB.map(function(t){return tile(t,false);}).join('');
-  var hm=document.getElementById('hubMob'); if(hm)hm.innerHTML=HUB.map(function(t){return tile(t,true);}).join('');
+  var hd=document.getElementById('hubDesk'); if(hd)hd.innerHTML=HUB.map(function(t,i){return tile(t,i,false);}).join('');
+  var hm=document.getElementById('hubMob'); if(hm)hm.innerHTML=HUB.map(function(t,i){return tile(t,i,true);}).join('');
   var ad=document.getElementById('adDesk');
   if(ad){
     var subj='[석봉 부동산 정보방] 배너 광고 문의';
