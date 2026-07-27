@@ -95,6 +95,7 @@
   /* 모바일: 필터바 한 줄 가로 스크롤 + 화면 확보 (2026-07-17) */
   /* 모바일 카테고리 시트 (2026-07-26) */
   #mcats{display:none;gap:6px;flex-wrap:wrap}
+  #barHandle{display:none}
   #mcats button{border:1px solid var(--hair-soft);background:#fff;border-radius:100px;padding:6px 13px;font:inherit;font-size:12.5px;font-weight:600;color:var(--text2);white-space:nowrap;cursor:pointer}
   #mcats button b{color:var(--navy);font-weight:800;margin:0 3px}
   #msheet{display:none;position:fixed;inset:0;z-index:2000;background:rgba(20,20,20,.42)}
@@ -127,6 +128,10 @@
     #mcats{grid-column:3/7;display:flex;gap:5px}
     #mcats button{flex:1;height:30px;padding:0 2px;border-radius:9px;text-align:center;font-size:11.5px}
     #rfbar{grid-column:1/7}
+    /* 지도 조작 시 상단바 자동 접힘(2026-07-27): 첫 줄(모드+필터)만 남김 */
+    #barHandle{display:none;grid-column:1/7;border:0;background:transparent;color:var(--muted);font-size:10.5px;padding:0;height:15px;line-height:1;cursor:pointer}
+    body.barfold #sform,body.barfold #selSido,body.barfold #selSgg,body.barfold #mcats,body.barfold #rfbar{display:none}
+    body.barfold #barHandle{display:block}
     #fpanel{left:6px;right:6px;max-width:none;padding:3px 10px 7px}
     .flbl{width:60px;font-size:10.5px}
     .fnum{width:48px}
@@ -213,6 +218,7 @@ body.redev #rfbar{display:flex}
     <button type="button" data-c="u">거래 <b id="mcU">전체</b>▾</button>
     <button type="button" data-c="d">계약 <b id="mcD">전체</b>▾</button>
   </div>
+  <button id="barHandle" type="button">▾ 검색·지역·상품 펼치기</button>
   <span id="stat"></span>
   <div id="fpanel">
     <div class="frow"><span class="flbl">매매가</span><span class="fgrp" id="fpS"></span>
@@ -488,6 +494,14 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
   document.getElementById('msClose').addEventListener('click',close);
   sheet.addEventListener('click',function(e){if(e.target===sheet)close();});
   document.querySelectorAll('#mcats button').forEach(function(b){b.addEventListener('click',function(){openSheet(b.dataset.c);});});
+  /* 지도 조작 시 상단바 자동 접힘 (모바일) */
+  (function(){
+    var mq=window.matchMedia('(max-width:720px)');
+    function fold(){if(mq.matches&&!document.body.classList.contains('barfold')){document.body.classList.add('barfold');setTimeout(function(){try{map.invalidateSize();}catch(e){}},60);}}
+    map.on('dragstart',fold);map.on('zoomstart',fold);
+    var h=document.getElementById('barHandle');
+    if(h)h.addEventListener('click',function(){document.body.classList.remove('barfold');setTimeout(function(){try{map.invalidateSize();}catch(e){}},60);});
+  })();
   labels();
 })();
 /* 상세 필터 패널 */
