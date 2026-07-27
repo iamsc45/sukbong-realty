@@ -129,9 +129,16 @@
     #mcats button{flex:1;height:30px;padding:0 2px;border-radius:9px;text-align:center;font-size:11.5px}
     #rfbar{grid-column:1/7}
     /* 지도 조작 시 상단바 자동 접힘(2026-07-27): 첫 줄(모드+필터)만 남김 */
-    #barHandle{display:none;grid-column:1/7;border:0;background:transparent;color:var(--muted);font-size:10.5px;padding:0;height:15px;line-height:1;cursor:pointer}
+    #barHandle{display:none;grid-column:1/7;border:0;background:transparent;color:var(--navy);font-size:13px;font-weight:800;padding:2px 0 3px;height:auto;line-height:1.2;cursor:pointer}
     body.barfold #sform,body.barfold #selSido,body.barfold #selSgg,body.barfold #mcats,body.barfold #rfbar{display:none}
     body.barfold #barHandle{display:block}
+    /* 필터 패널: 스크롤 + 닫기 보장 */
+    #fpanel{max-height:calc(100dvh - 210px);overflow:auto}
+    /* 지도 저작권 표기·범례 축소 */
+    .leaflet-control-attribution{display:none}
+    /* 실거래 겹쳐보기: 지도 우상단 오버레이(JS가 #map으로 이동, 재개발 모드만 표시) */
+    #map .rfc.trade{display:none;position:absolute;top:10px;right:10px;z-index:900;margin:0;background:rgba(255,255,255,.95);box-shadow:0 2px 8px rgba(20,20,20,.18)}
+    body.redev #map .rfc.trade{display:block}
     #fpanel{left:6px;right:6px;max-width:none;padding:3px 10px 7px}
     .flbl{width:60px;font-size:10.5px}
     .fnum{width:48px}
@@ -230,7 +237,7 @@ body.redev #rfbar{display:flex}
     <div class="frow"><span class="flbl">전용면적</span><span class="fgrp" id="fpA"></span></div>
     <div class="frow"><span class="flbl">준공</span><span class="fgrp" id="fpY"></span></div>
     <div class="frow"><span class="flbl">층</span><span class="fgrp" id="fpF"></span></div>
-    <div class="frow" style="border:0"><span id="fcount"></span><button class="chip" id="freset" type="button">초기화</button></div>
+    <div class="frow" style="border:0"><span id="fcount"></span><button class="chip" id="freset" type="button">초기화</button><button class="chip" id="fclose" type="button" style="background:var(--navy);color:#fff">닫기 ✕</button></div>
   </div>
 </div>
 <div id="map"></div>
@@ -501,6 +508,17 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
     map.on('dragstart',fold);map.on('zoomstart',fold);
     var h=document.getElementById('barHandle');
     if(h)h.addEventListener('click',function(){document.body.classList.remove('barfold');setTimeout(function(){try{map.invalidateSize();}catch(e){}},60);});
+    /* 모바일: 실거래 겹쳐보기 칩을 지도 우상단 오버레이로 이동 */
+    if(mq.matches){
+      var tc=document.querySelector('#rfbar .rfc.trade'),md=document.getElementById('map');
+      if(tc&&md)md.appendChild(tc);
+    }
+    /* 필터 패널 닫기 버튼 */
+    var fc=document.getElementById('fclose');
+    if(fc)fc.addEventListener('click',function(){
+      var pn=document.getElementById('fpanel');pn.classList.remove('open');
+      var bt=document.getElementById('fbtn');if(bt)bt.textContent=bt.textContent.replace('▴','▾');
+    });
   })();
   labels();
 })();
@@ -796,9 +814,7 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
   });
 })();
 /* 범례 */
-document.getElementById('legend').innerHTML=Object.keys(TYPE).map(function(t){
-  return '<span style="margin-right:8px"><span class="dot" style="background:'+TYPE[t][1]+'"></span>'+TYPE[t][0]+'</span>';
-}).join('')+'<br>'+(SB.summary.period?('계약일 '+SB.summary.period.f.replace(/-/g,'.')+' ~ '+SB.summary.period.t.slice(5).replace(/-/g,'.')+' · '):'')+'기준일 '+SB.summary.updated+' · 확대할수록 상세(건물명은 최대 확대 시) · 점선 마커=지번 비공개(동 단위 개략)';
+tradeLegend();
 var popLock=false;
 map.on('popupopen',function(){popLock=true;});
 map.on('popupclose',function(){popLock=false;setTimeout(render,50);});
@@ -1001,6 +1017,12 @@ function renderRedev(){
 function redevLegend(){
   var dt=function(c){return '<span class="dot" style="background:'+c+'"></span>';};
   var bar=function(c){return '<span style="display:inline-block;width:16px;height:9px;border-radius:2px;background:'+c+';opacity:.55;vertical-align:0;margin-right:4px"></span>';};
+  if(window.matchMedia('(max-width:720px)').matches){
+    document.getElementById('legend').innerHTML=
+      dt(RCOL['재개발'])+'재개발 '+dt(RCOL['재건축'])+'재건축 '+dt(RCOL['주거환경'])+'주거환경 '+dt('#d6336c')+'신통 '+dt('#2b8a3e')+'모아'
+      +'<br>면=구역 경계 · 점=위치 · 공공 DB · 참고용';
+    return;
+  }
   document.getElementById('legend').innerHTML=
     '<b style="color:#4a4438">유형(색)</b> '
     +dt(RCOL['재개발'])+'재개발 &nbsp;'
@@ -1012,7 +1034,13 @@ function redevLegend(){
     +'<br>신통기획·모아주택은 카드에 뱃지 · 추진단계=시도별 공공 DB 최신 · 출처: 국가정보포털 공공 DB 등 · 참고용';
 }
 function tradeLegend(){
-  document.getElementById('legend').innerHTML=Object.keys(TYPE).map(function(t){return '<span style="margin-right:8px"><span class="dot" style="background:'+TYPE[t][1]+'"></span>'+TYPE[t][0]+'</span>';}).join('')+'<br>'+(SB.summary.period?('계약일 '+SB.summary.period.f.replace(/-/g,'.')+' ~ '+SB.summary.period.t.slice(5).replace(/-/g,'.')+' · '):'')+'기준일 '+SB.summary.updated;
+  var per=(SB.summary.period?('계약일 '+SB.summary.period.f.replace(/-/g,'.')+' ~ '+SB.summary.period.t.slice(5).replace(/-/g,'.')+' · '):'')+'기준일 '+SB.summary.updated;
+  if(window.matchMedia('(max-width:720px)').matches){
+    var SHORTN={apt:'아파트',offi:'오피스텔',villa:'연립',house:'단독',bldg:'빌딩',comm:'상가',land:'토지'};
+    document.getElementById('legend').innerHTML=Object.keys(TYPE).map(function(t){return '<span style="margin-right:6px;white-space:nowrap"><span class="dot" style="background:'+TYPE[t][1]+'"></span>'+(SHORTN[t]||TYPE[t][0])+'</span>';}).join('')+'<br>'+per;
+    return;
+  }
+  document.getElementById('legend').innerHTML=Object.keys(TYPE).map(function(t){return '<span style="margin-right:8px"><span class="dot" style="background:'+TYPE[t][1]+'"></span>'+TYPE[t][0]+'</span>';}).join('')+'<br>'+per+' · 확대할수록 상세(건물명은 최대 확대 시) · 점선 마커=지번 비공개(동 단위 개략)';
 }
 function _hav(a,b,c,d){var R=6371000,rl=Math.PI/180;var x=Math.sin((c-a)*rl/2);var y=Math.sin((d-b)*rl/2);var h=x*x+Math.cos(a*rl)*Math.cos(c*rl)*y*y;return 2*R*Math.asin(Math.sqrt(h));}
 window._NZ=[];
