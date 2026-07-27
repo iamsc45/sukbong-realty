@@ -165,8 +165,8 @@ body.redev #rfbar{display:flex}
 .rflbl{color:var(--muted);font-size:11px;margin:0 2px}
 .rfc{border:1px solid #cdd3db;background:#fff;color:#5b6473;font-size:12px;font-weight:700;padding:4px 11px;border-radius:16px;cursor:pointer;white-space:nowrap;transition:background .12s ease}
 .rfc.on{background:#12203a;color:#fff;border-color:#12203a}
-.rfc[data-rf="신통"].on{background:#d6336c;border-color:#d6336c}
-.rfc[data-rf="모아"].on{background:#2b8a3e;border-color:#2b8a3e}
+.rfc[data-rf="신통"].on{background:#C2185B;border-color:#C2185B}
+.rfc[data-rf="모아"].on{background:#7CB518;border-color:#7CB518}
 .rfc.trade{margin-left:8px;border-style:dashed}
 @media (max-width:720px){#rfbar{flex-wrap:wrap;width:100%;row-gap:5px}.rfc{padding:4px 9px;font-size:11px;flex:0 0 auto}}
 #rcard{display:none;position:fixed;top:0;right:0;width:358px;height:100%;z-index:1600;background:#f7f5f0;border-left:1.5px solid #1a1a1a;overflow-y:auto;box-shadow:-4px 0 18px rgba(0,0,0,.12);font-family:'Pretendard','Malgun Gothic',system-ui,sans-serif}
@@ -904,10 +904,10 @@ map.on('moveend zoomend',function(){if(popLock)return;render();if(curMode==='red
 var redevLayer=L.layerGroup();
 var redevRenderer=L.canvas();
 var redevData=null, redevLoading=false, redevMarks=[];
-var RCOL={'재개발':'#c0562e','재건축':'#2f5d86','주거환경':'#4c7a4a','신통':'#d6336c'};
+var RCOL={'재개발':'#E0632E','재건축':'#2554E0','주거환경':'#0FA98A','신통':'#C2185B'};
 function rcatKo(c){return c==='신통'?'신속통합기획':(RCOL[c]?c:'정비구역');}
 function redevTag(p){return (window.REDEVTAG||{})[p.biz||p.nm]||p.tag||'';}
-function tagBadge(t){if(!t)return '';var m={'신통':['신속통합기획','#d6336c'],'모아':['모아주택','#2b8a3e']}[t];return m?'<span class="rc-pill" style="background:'+m[1]+';margin-right:5px">'+m[0]+'</span>':'';}
+function tagBadge(t){if(!t)return '';var m={'신통':['신속통합기획','#C2185B'],'모아':['모아주택','#7CB518']}[t];return m?'<span class="rc-pill" style="background:'+m[1]+';margin-right:5px">'+m[0]+'</span>':'';}
 function loadRedev(cb){
   if(redevData){cb();return;}
   if(redevLoading)return;
@@ -1044,7 +1044,7 @@ function redevLegend(){
   var bar=function(c){return '<span style="display:inline-block;width:16px;height:9px;border-radius:2px;background:'+c+';opacity:.55;vertical-align:0;margin-right:4px"></span>';};
   if(window.matchMedia('(max-width:720px)').matches){
     document.getElementById('legend').innerHTML=
-      dt(RCOL['재개발'])+'재개발 '+dt(RCOL['재건축'])+'재건축 '+dt(RCOL['주거환경'])+'주거환경 '+dt('#d6336c')+'신통 '+dt('#2b8a3e')+'모아'
+      dt(RCOL['재개발'])+'재개발 '+dt(RCOL['재건축'])+'재건축 '+dt(RCOL['주거환경'])+'주거환경 '+dt('#C2185B')+'신통 '+dt('#7CB518')+'모아'
       +'<br>면=구역 경계 · 점=위치 · 공공 DB · 참고용';
     return;
   }
@@ -1052,8 +1052,8 @@ function redevLegend(){
     dt(RCOL['재개발'])+'재개발 &nbsp;'
     +dt(RCOL['재건축'])+'재건축 &nbsp;'
     +dt(RCOL['주거환경'])+'주거환경 &nbsp;'
-    +dt('#d6336c')+'신속통합기획 &nbsp;'
-    +dt('#2b8a3e')+'모아주택'
+    +dt('#C2185B')+'신속통합기획 &nbsp;'
+    +dt('#7CB518')+'모아주택'
     +'<br>'+bar('#9a8f7a')+'면=구역 경계 · 점=위치 마커 · 추진단계=공공 DB · 참고용';
 }
 function tradeLegend(){

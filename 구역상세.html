@@ -73,7 +73,7 @@ if(window.REDEVEXT){
   for(var t in (g.trend||{}))if(!REDEVTREND[t])REDEVTREND[t]=g.trend[t];
   window.REDEVMARK=REDEVMARK.concat(g.marks||[]);})();
 }
-var RCOL={'재개발':'#c0562e','재건축':'#2f5d86','주거환경':'#4c7a4a'};
+var RCOL={'재개발':'#E0632E','재건축':'#2554E0','주거환경':'#0FA98A'};
 function catKo(c){return RCOL[c]?c:'정비구역';}
 var STAGEIDX={'정비구역지정':0,'정비계획 수립':0,'재정비촉진지구수립':0,'안전진단':0,'안전진단(1차)':0,
 '추진위원회승인':1,'추진위구성':1,'조합원 모집신고':1,'주민대표회의구성통지':1,
@@ -103,7 +103,7 @@ function render(){
   var cat=catKo(d.cat|| (d.gubun&&d.gubun.indexOf('재개발')>=0?'재개발':(d.gubun&&d.gubun.indexOf('주거환경')>=0?'주거환경':'재건축')));
   var col=RCOL[cat];
   var tg=(window.REDEVTAG||{})[nm]||'';
-  var tgm={'신통':['신속통합기획','#d6336c'],'모아':['모아주택','#2b8a3e']}[tg];
+  var tgm={'신통':['신속통합기획','#C2185B'],'모아':['모아주택','#7CB518']}[tg];
   var tgb=tgm?'<span class="pill" style="background:'+tgm[1]+';margin-right:6px">'+tgm[0]+'</span>':'';
   var h='<div class="mast"><div class="k">'+(d.sido||'서울')+' '+esc(d.gu||'')+' · '+cat+' · 정비구역</div>'
     +'<h1>'+esc(nm)+'</h1>'
