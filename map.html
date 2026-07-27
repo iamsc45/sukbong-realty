@@ -50,6 +50,7 @@
   .pop th{background:var(--soft);color:var(--navy);padding:3px 6px;border:1px solid #E2E8F2;position:sticky;top:0;z-index:1}
   .pop td{padding:3px 6px;border:1px solid #E2E8F2;text-align:center}
   .pop td.pr{font-weight:bold;color:var(--navy)}
+  .leaflet-control-attribution{display:none} /* 저작권은 푸터에 최소 표기(2026-07-27 석봉님 지시) */
   #legend{position:absolute;bottom:52px;left:10px;z-index:900;background:rgba(255,255,255,.93);
     border:1px solid var(--hair-soft);border-radius:8px;padding:7px 11px;font-size:11px;color:var(--text2)}
   #legend .dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:-1px}
@@ -134,8 +135,6 @@
     body.barfold #barHandle{display:block}
     /* 필터 패널: 스크롤 + 닫기 보장 */
     #fpanel{max-height:calc(100dvh - 210px);overflow:auto}
-    /* 지도 저작권 표기·범례 축소 */
-    .leaflet-control-attribution{display:none}
     /* 실거래 겹쳐보기: 지도 우상단 오버레이(JS가 #map으로 이동, 재개발 모드만 표시) */
     #map .rfc.trade{display:none;position:absolute;top:10px;right:10px;z-index:900;margin:0;background:rgba(255,255,255,.95);box-shadow:0 2px 8px rgba(20,20,20,.18)}
     body.redev #map .rfc.trade{display:block}
@@ -247,7 +246,7 @@ body.redev #rfbar{display:flex}
 <footer class="site-footer">
   <span>📈 <a href="https://telegram.me/seokbongnews">텔레그램</a></span> ·
   <span>💬 <a href="https://open.kakao.com/o/gt8CTUCi">카카오</a> · <a href="https://blog.naver.com/seokbongnews">블로그</a></span>
-  <span style="color:#8A93A5;margin-left:auto;float:right">원자료: 국토교통부 실거래가 공개시스템 (해제 건 제외) · ⓒ 2026 석봉 부동산 정보방 · 위치는 지번 기준 개략 · 좌표 확보 지점만 표시(확충 중) · 투자 권유 아님 · 방문 통계 수집을 위해 Google Analytics(쿠키)를 사용합니다</span>
+  <span style="color:#8A93A5;margin-left:auto;float:right">원자료: 국토교통부 실거래가 공개시스템 (해제 건 제외) · 지도 VWorld · ⓒ 2026 석봉 부동산 정보방 · 위치는 지번 기준 개략 · 투자 권유 아님 · Google Analytics(쿠키) 사용</span>
 </footer>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -1024,14 +1023,12 @@ function redevLegend(){
     return;
   }
   document.getElementById('legend').innerHTML=
-    '<b style="color:#4a4438">유형(색)</b> '
-    +dt(RCOL['재개발'])+'재개발 &nbsp;'
+    dt(RCOL['재개발'])+'재개발 &nbsp;'
     +dt(RCOL['재건축'])+'재건축 &nbsp;'
     +dt(RCOL['주거환경'])+'주거환경 &nbsp;'
     +dt('#d6336c')+'신속통합기획 &nbsp;'
     +dt('#2b8a3e')+'모아주택'
-    +'<br><b style="color:#4a4438">모양</b> '+bar('#9a8f7a')+'채워진 <b>구역(면)</b>=정비구역 경계 &nbsp; '+dt('#9a8f7a')+'<b>점</b>=위치 마커(구역계 없는 재건축·신통 후보지 등)'
-    +'<br>신통기획·모아주택은 카드에 뱃지 · 추진단계=시도별 공공 DB 최신 · 출처: 국가정보포털 공공 DB 등 · 참고용';
+    +'<br>'+bar('#9a8f7a')+'면=구역 경계 · 점=위치 마커 · 추진단계=공공 DB · 참고용';
 }
 function tradeLegend(){
   var per=(SB.summary.period?('계약일 '+SB.summary.period.f.replace(/-/g,'.')+' ~ '+SB.summary.period.t.slice(5).replace(/-/g,'.')+' · '):'')+'기준일 '+SB.summary.updated;
@@ -1040,7 +1037,7 @@ function tradeLegend(){
     document.getElementById('legend').innerHTML=Object.keys(TYPE).map(function(t){return '<span style="margin-right:6px;white-space:nowrap"><span class="dot" style="background:'+TYPE[t][1]+'"></span>'+(SHORTN[t]||TYPE[t][0])+'</span>';}).join('')+'<br>'+per;
     return;
   }
-  document.getElementById('legend').innerHTML=Object.keys(TYPE).map(function(t){return '<span style="margin-right:8px"><span class="dot" style="background:'+TYPE[t][1]+'"></span>'+TYPE[t][0]+'</span>';}).join('')+'<br>'+per+' · 확대할수록 상세(건물명은 최대 확대 시) · 점선 마커=지번 비공개(동 단위 개략)';
+  document.getElementById('legend').innerHTML=Object.keys(TYPE).map(function(t){return '<span style="margin-right:8px"><span class="dot" style="background:'+TYPE[t][1]+'"></span>'+TYPE[t][0]+'</span>';}).join('')+'<br>'+per;
 }
 function _hav(a,b,c,d){var R=6371000,rl=Math.PI/180;var x=Math.sin((c-a)*rl/2);var y=Math.sin((d-b)*rl/2);var h=x*x+Math.cos(a*rl)*Math.cos(c*rl)*y*y;return 2*R*Math.asin(Math.sqrt(h));}
 window._NZ=[];
