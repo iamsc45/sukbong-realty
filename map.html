@@ -290,6 +290,20 @@ var CURY=new Date().getFullYear();
 function ptYear(pt){if(pt._y===undefined){var m=/(19|20)\d{2}/.exec(pt.extra||'');pt._y=m?+m[0]:null;}return pt._y;}
 function regionPass(r){if(curSgg!=='all')return r.code===curSgg;if(curSido!=='all')return r.sido===curSido;return true;}
 var map=L.map('map',{minZoom:9}).setView([37.55,126.98],11);
+/* 보던 화면 기억: 단지상세·구역상세 다녀와 뒤로가기 하면 그 확대·위치 그대로 (2026-07-28) */
+var _MAPVIEW_KEY='sb_mapview', _BACKVIEW=null;
+(function(){
+  try{
+    var ref=decodeURIComponent(document.referrer||'');
+    if(/단지상세|구역상세|재개발_기초상식/.test(ref)){
+      var v=JSON.parse(sessionStorage.getItem(_MAPVIEW_KEY)||'null');
+      if(v&&v.lat&&(Date.now()-(v.t||0))<6*3600*1000)_BACKVIEW=v;
+    }
+  }catch(e){}
+  function save(){try{var c=map.getCenter();
+    sessionStorage.setItem(_MAPVIEW_KEY,JSON.stringify({lat:c.lat,lng:c.lng,z:map.getZoom(),m:(typeof curMode!=='undefined'?curMode:'trade'),t:Date.now()}));}catch(e){}}
+  map.on('moveend',save);map.on('zoomend',save);
+})();
 var baseV=L.tileLayer('https://api.vworld.kr/req/wmts/1.0.0/EBC23601-6E41-3269-9ECB-821DEECCF3F0/Base/{z}/{y}/{x}.png',
   {attribution:'&copy; VWorld(국토교통부)',maxZoom:19,maxNativeZoom:18,minZoom:6}).addTo(map);
 var _te=0;
@@ -803,6 +817,9 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
   try{
     var P=new URLSearchParams(location.search);
     var pr=P.get('r'),pq=P.get('q'),psp=P.get('s');
+    if(_BACKVIEW){                    /* 뒤로가기로 돌아온 경우: 딥링크보다 '보던 화면'이 우선 */
+      pr=pq=psp=null;
+    }
     if(pr){
       var t0=SB.summary.regions.find(function(x){return x.code===pr;});
       if(t0){
@@ -1172,6 +1189,12 @@ document.querySelectorAll('#rfbar button,#map .rfc.trade').forEach(function(b){b
   else{curRF[rf]=!curRF[rf];b.classList.toggle('on',curRF[rf]);renderRedev();}
 });});
 try{if((new URLSearchParams(location.search)).get('mode')==='redev'){setMode('redev');}}catch(e){}
+/* 뒤로가기 복원: 모드까지 되돌린 뒤 보던 좌표·확대로 이동 */
+if(_BACKVIEW){try{
+  if(_BACKVIEW.m==='redev'&&curMode!=='redev')setMode('redev');
+  else if(_BACKVIEW.m!=='redev'&&curMode==='redev')setMode('trade');
+  setTimeout(function(){try{map.invalidateSize();map.setView([_BACKVIEW.lat,_BACKVIEW.lng],_BACKVIEW.z,{animate:false});}catch(e){}},80);
+}catch(e){}}
 
 render();
 </script>
