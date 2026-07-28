@@ -28,6 +28,15 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
 .kbtn{display:inline-block;margin-top:14px;border:0;border-radius:12px;background:#FEE500;color:#191919;font:inherit;font-size:14.5px;font-weight:800;padding:13px 30px;cursor:pointer}
 .notice2{font-size:11.5px;color:var(--muted);line-height:1.7;margin:26px 0 50px}
 .notice2 a{color:var(--acc-blue)}
+.mail{border:1px solid var(--hair);border-radius:14px;padding:16px 18px;margin-top:24px;background:#fbfaf7}
+.mail h3{margin:0 0 4px;font-size:14px;font-weight:800;letter-spacing:-0.01em}
+.mail p{margin:0;font-size:11.5px;color:var(--muted);line-height:1.65}
+.mail .row{display:flex;gap:8px;margin-top:11px;flex-wrap:wrap}
+.mail input{flex:1;min-width:180px;border:1px solid var(--hair);border-radius:10px;padding:10px 12px;font:inherit;font-size:13.5px;background:#fff}
+.mail button{border:0;border-radius:10px;background:#141414;color:#fff;font:inherit;font-size:13px;font-weight:700;padding:10px 20px;cursor:pointer}
+.mail .msg{font-size:11.5px;margin-top:8px;font-weight:700}
+.mail .msg.ok{color:#0f7a52}.mail .msg.no{color:#c0392b}
+.mail .warn{margin-top:9px;font-size:11.5px;line-height:1.6;color:#8a5a10;background:#fdf6e3;border:1px solid #f0e0b8;border-radius:9px;padding:9px 11px}
 </style>
 <meta property="og:title" content="관심단지 · 석봉 부동산 정보방">
 <meta property="og:type" content="website">
@@ -51,6 +60,13 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
   <p class="pgsub" id="cnt">등록한 단지를 어느 기기에서나 확인합니다</p>
   <div class="who" id="who" style="display:none"></div>
   <div id="list"></div>
+  <div class="mail" id="mailbox" style="display:none">
+    <h3>알림 받을 이메일</h3>
+    <p>관심단지에 새 실거래가 등록되면 이 주소로 하루 한 번 보내드립니다.</p>
+    <div class="row"><input id="mailIn" type="email" placeholder="example@gmail.com" autocomplete="email" spellcheck="false"><button id="mailSave">저장</button></div>
+    <div class="msg" id="mailMsg"></div>
+    <div class="warn" id="mailWarn" style="display:none"></div>
+  </div>
   <p class="notice2" id="note">※ 관심단지는 회원 기능입니다. 카카오 로그인으로 어느 기기에서나 같은 목록을 보고, 새 실거래가 생기면 표시해 드립니다. 단지명을 누르면 실거래·평형별 상세로 이동합니다. <a href="privacy.html" target="_blank">개인정보 처리방침</a></p>
 </main>
 <footer class="site-footer">
@@ -134,7 +150,39 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
       document.body.appendChild(s);
     });
   }
-  function boot(){ if(SBAuth.isIn()){draw({});badges();} else guest(); }
+  /* 알림 받을 이메일 — 카카오 계정 이메일(@kakao.com)은 카카오메일을 쓰지 않는 회원에게
+     반송되므로(실측), 회원이 실제 받는 주소를 직접 지정할 수 있게 한다. */
+  var mailBox=document.getElementById('mailbox');
+  function mailSetup(){
+    var inp=document.getElementById('mailIn'), msg=document.getElementById('mailMsg'),
+        warn=document.getElementById('mailWarn'), btn=document.getElementById('mailSave');
+    var authMail=SBAuth.authEmail();
+    mailBox.style.display='block';
+    function checkWarn(v){
+      if(/@kakao\.com$/i.test((v||'').trim())){
+        warn.style.display='block';
+        warn.innerHTML='카카오 계정 주소(@kakao.com)는 <b>카카오메일을 따로 개설한 경우에만</b> 받을 수 있습니다. 평소 쓰시는 메일 주소로 바꾸시면 확실합니다.';
+      }else warn.style.display='none';
+    }
+    SBAuth.getNotifyEmail().then(function(v){
+      inp.value=v||authMail||'';
+      msg.className='msg'; msg.textContent=v?'':(authMail?'카카오 계정 주소가 기본값입니다.':'');
+      checkWarn(inp.value);
+    });
+    inp.addEventListener('input',function(){checkWarn(inp.value);msg.textContent='';});
+    btn.onclick=function(){
+      var v=(inp.value||'').trim();
+      if(v&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){msg.className='msg no';msg.textContent='이메일 형식을 확인해 주세요.';return;}
+      btn.disabled=true;
+      SBAuth.setNotifyEmail(v).then(function(ok){
+        btn.disabled=false;
+        msg.className='msg '+(ok?'ok':'no');
+        msg.textContent=ok?(v?'저장했습니다. 앞으로 이 주소로 보내드립니다.':'기본 주소(카카오 계정)로 되돌렸습니다.'):'저장하지 못했습니다. 잠시 후 다시 시도해 주세요.';
+        try{if(ok&&typeof gtag==='function')gtag('event','notify_email_save');}catch(e){}
+      });
+    };
+  }
+  function boot(){ if(SBAuth.isIn()){draw({});badges();mailSetup();} else {mailBox.style.display='none';guest();} }
   if(window.SBAuth){SBAuth.whenReady(boot);SBAuth.onChange(boot);}
   else{list.innerHTML='<div class="emptybox">로그인 모듈을 불러오지 못했습니다. 새로고침해 주세요.</div>';}
 })();

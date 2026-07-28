@@ -74,6 +74,19 @@ window.SBAuth=(function(){
     f.last_n=n;
     await client.from('favorites').update({last_n:n}).eq('id',f.id);
   }
+  /* 알림 받을 이메일 — 카카오가 넘겨주는 계정 이메일(@kakao.com)은 카카오메일을 개설하지
+     않은 사람에게는 반송되므로(2026-07-28 실측), 회원이 직접 받을 주소를 지정할 수 있게 한다. */
+  function authEmail(){return (user&&user.email)||'';}
+  async function getNotifyEmail(){
+    if(!user)return '';
+    var r=await client.from('prefs').select('notify_email').eq('user_id',user.id).maybeSingle();
+    return (!r.error&&r.data&&r.data.notify_email)||'';
+  }
+  async function setNotifyEmail(v){
+    if(!user)return false;
+    var r=await client.from('prefs').upsert({user_id:user.id,notify_email:v||null,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+    return !r.error;
+  }
   function login(){
     ensure();
     client.auth.signInWithOAuth({provider:'kakao',options:{redirectTo:location.href.split('#')[0],scopes:'profile_nickname'}});
@@ -107,5 +120,6 @@ window.SBAuth=(function(){
   init();
   return {whenReady:whenReady,onChange:onChange,isIn:isIn,nickname:nickname,
     favHas:favHas,favAll:favAll,addFav:addFav,delFav:delFav,setLastN:setLastN,
+    authEmail:authEmail,getNotifyEmail:getNotifyEmail,setNotifyEmail:setNotifyEmail,
     login:login,logout:logout,gate:gate};
 })();
