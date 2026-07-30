@@ -113,6 +113,7 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
   var out=document.getElementById('out');
   function esc(s){return (s||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
   function n(x){return Number(x).toLocaleString();}
+  function eok(man){if(!man)return '';var v=man/10000;return (v>=100?Math.round(v):(''+v.toFixed(1)).replace(/\.0$/,''))+'억';}
   function PY(m){m=+m;if(!m)return '';var p=m/3.305785;return (p<100?p.toFixed(1):Math.round(p).toLocaleString())+'평';}
 
   /* ── 최소 호수 기준. 서울 19 / 인천 20 / 경기 50 (전용 85㎡ 이하) ── */
@@ -225,23 +226,39 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
         else if(t.u==='월세')wo.push(t);
       });
     });
-    return {pts:pts,R:R,mmPy:med(mm),mmN:mm.length,
+    return {pts:pts,R:R,mmPy:Math.round(med(mm)),mmN:mm.length,
             jeMed:med(je.map(function(x){return x.p;})),jeN:je.length,woN:wo.length};
   }
 
   /* ── 4. 생활편의: 가장 가까운 단지의 공동주택 정보 ── */
+  function nkey(s){return (s||'').replace(/아파트$/,'').replace(/[\s\-_()·,]/g,'');}
+  function infoOf(code,name,dong){
+    var box=(window.APTINFO&&window.APTINFO[code])||{};
+    if(box[name]&&Object.keys(box[name]).length)return box[name];
+    var al=(window.APTALIAS&&window.APTALIAS[code])||{};
+    var e=al[name+'|'+(dong||'')];
+    if(e&&e.i&&box[e.i]&&Object.keys(box[e.i]).length)return box[e.i];
+    var nk=nkey(name);
+    for(var k in box){if(nkey(k)===nk&&Object.keys(box[k]).length)return box[k];}
+    return null;
+  }
   function amenity(lat,lng,code){
     var arr=(window.SB&&SB.d&&SB.d[code])||[];
-    var best=null,bd=1e9;
+    var cand=[];
     arr.forEach(function(p){
       if(p.t!=='apt'||p.lat==null)return;
-      var d=dist(lat,lng,p.lat,p.lng);
-      if(d<bd){bd=d;best=p;}
+      cand.push({p:p,d:dist(lat,lng,p.lat,p.lng)});
     });
-    if(!best)return null;
-    var box=(window.APTINFO&&window.APTINFO[code])||{};
-    var info=box[best.name]||null;
-    return {nm:best.name,d:Math.round(bd),info:info};
+    if(!cand.length)return null;
+    cand.sort(function(a,b){return a.d-b.d;});
+    /* 가장 가까운 단지에 정보가 없을 수 있다(공동주택 API는 의무관리대상 위주).
+       반경 1.5km 안에서 정보가 있는 단지를 찾고, 없으면 최근접 단지만 알려 준다. */
+    for(var i=0;i<cand.length;i++){
+      if(cand[i].d>1500)break;
+      var inf=infoOf(code,cand[i].p.name,cand[i].p.dong);
+      if(inf)return {nm:cand[i].p.name,d:Math.round(cand[i].d),info:inf};
+    }
+    return {nm:cand[0].p.name,d:Math.round(cand[0].d),info:null};
   }
 
   /* ── 판정 렌더 ── */
@@ -260,11 +277,12 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
         return;
       }
       out.innerHTML='<div class="msg">'+esc(p.text)+'<br>인근 실거래를 불러오는 중…</div>';
-      var need=2, code=cd.code;
+      var need=3, code=cd.code;
       function ready(){ if(--need>0)return; judge(p,sido,cd); }
       function load(src){var s=document.createElement('script');s.src=src;s.onload=s.onerror=ready;document.body.appendChild(s);}
       if(window.SB&&SB.d&&SB.d[code])ready(); else load('data/detail_'+code+'.js');
       if(window.APTINFO&&window.APTINFO[code])ready(); else load('data/apt_info_'+code+'.js');
+      if(window.APTALIAS&&window.APTALIAS[code])ready(); else load('data/alias_'+code+'.js');
     },function(){
       out.innerHTML='<div class="msg">주소를 찾지 못했습니다. 지번(예: 논현동 252-1)이나 도로명(예: 학동로 20)을 넣어 주세요.</div>';
     });
@@ -306,7 +324,7 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
       H.push(item('가격 적정성 기준선','산출 가능','p',
         '반경 '+n(mk.R)+'m 매매 실거래 '+n(mk.mmN)+'건의 <b>평당 중위 '+n(mk.mmPy)+'만원(전용)</b>이 기준선입니다. '
         +'탁상감정가가 이 선을 크게 웃돌면 가격 적정성에서 감점됩니다.',
-        '전용 '+area+'㎡('+PY(area)+') 기준 세대당 환산 약 <b>'+n(Math.round(mk.mmPy*area/3.305785))+'만원</b> · 표본 지점 '+n(mk.pts)+'곳'));
+        '전용 '+area+'㎡('+PY(area)+') 기준 세대당 환산 약 <b>'+eok(Math.round(mk.mmPy*area/3.305785))+'</b>('+n(Math.round(mk.mmPy*area/3.305785))+'만원) · 표본 지점 '+n(mk.pts)+'곳'));
     }else{
       warn++;
       H.push(item('가격 적정성 기준선','표본 부족','w',
