@@ -129,7 +129,10 @@ function boot(){
           var fe=document.createElement('script');fe.src='data/apt_fee_'+code+'.js';
           fe.onload=fe.onerror=function(){
             var tr=document.createElement('script');tr.src='data/apt_trend_'+code+'.js';
-            tr.onload=tr.onerror=function(){go(code,nm,dong);};document.body.appendChild(tr);
+            tr.onload=tr.onerror=function(){
+              var pg=document.createElement('script');pg.src='data/apt_pages.js';
+              pg.onload=pg.onerror=function(){go(code,nm,dong);};document.body.appendChild(pg);
+            };document.body.appendChild(tr);
           };document.body.appendChild(fe);
         };document.body.appendChild(al);
       };document.body.appendChild(k);
@@ -145,7 +148,22 @@ function go(code,nm,dong){
   for(var i=0;i<arr.length;i++){if(arr[i].name===nm&&(!dong||arr[i].dong===dong)){pt=arr[i];break;}}
   if(!pt){for(i=0;i<arr.length;i++){if(arr[i].name===nm){pt=arr[i];break;}}}
   if(!pt){fail();return;}
+  canon(pt,code);
   render(pt,code);
+}
+/* 이 화면은 쿼리 주소라 검색엔진에는 같은 내용이 여러 주소로 보인다.
+   같은 단지의 정적 페이지(/단지/…)가 있으면 그쪽을 대표 주소로 알린다(2026-07-30).
+   생성 규칙은 단지페이지_빌더.py의 slug()와 같아야 한다. */
+function _slug(s){return String(s||'').replace(/[\s/\\?#%&:*"<>|]+/g,'')
+  .replace(/[()\[\]{}.,·]/g,'').slice(0,40);}
+function canon(pt,code){
+  try{
+    var P=window.APTPAGES;if(!P||P.codes.indexOf(code)<0)return;
+    if(!pt.txs||pt.txs.length<(P.min||10))return;
+    var fn=code+'-'+_slug(pt.name)+'-'+_slug(pt.dong||'')+'.html';
+    var u='https://xn--2q1br1nnrasc92a76myvau64b.com/'+encodeURIComponent('단지')+'/'+encodeURIComponent(fn);
+    var l=document.createElement('link');l.rel='canonical';l.href=u;document.head.appendChild(l);
+  }catch(e){}
 }
 function band(a){return a<=60?'60㎡(18.1평) 이하':a<=85?'60~85㎡(18.1~25.7평)':a<=110?'85~110㎡(25.7~33.3평)':'110㎡(33.3평) 초과';}
 /* 단지정보 키 매칭: 표기 차이(아파트 접미·공백·괄호) 흡수 (2026-07-27) */
