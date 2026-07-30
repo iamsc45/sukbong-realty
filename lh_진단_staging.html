@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Y7P41Z09PV"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-Y7P41Z09PV');</script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LH 매입약정 적합성 셀프진단 · 석봉 부동산 정보방</title>
+<meta name="description" content="주소를 넣으면 LH 매입약정 심사 항목을 우리 실거래·정비구역 데이터로 자동 판정합니다.">
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+.wrap{max-width:1000px}
+h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;margin:44px 0 6px}
+.pgsub{color:var(--muted);font-size:13.5px;margin:0 0 6px;line-height:1.6}
+.stg{display:inline-block;background:var(--gold);color:#141414;font-size:11px;font-weight:800;padding:3px 11px;border-radius:20px;margin-bottom:16px}
+.form{border:1px solid var(--hair);border-radius:16px;background:var(--soft);padding:20px 22px;margin:0 0 22px}
+.frow{display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:12px}
+.frow input{border:1px solid var(--hair);border-radius:11px;padding:13px 14px;font:inherit;font-size:15px;background:#fff;color:var(--text);min-width:0}
+.frow button{border:0;border-radius:11px;background:var(--text);color:#fff;font:inherit;font-size:14.5px;font-weight:800;padding:0 26px;cursor:pointer}
+.frow button:disabled{background:var(--muted2);cursor:default}
+.plan{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.plan label{font-size:11.5px;color:var(--muted);font-weight:700;display:block;margin-bottom:4px}
+.plan input,.plan select{width:100%;border:1px solid var(--hair);border-radius:10px;padding:10px 11px;font:inherit;font-size:14px;background:#fff;color:var(--text)}
+.ex{font-size:11.5px;color:var(--muted);margin:10px 0 0;line-height:1.6}
+.ex b{color:var(--text)}
+.ex a{color:var(--acc-blue);text-decoration:none;cursor:pointer}
+.score{display:flex;gap:16px;align-items:center;border:1px solid var(--hair);border-radius:16px;padding:18px 22px;margin:0 0 16px;background:#fff}
+.score .big{font-size:40px;font-weight:800;letter-spacing:-0.04em;line-height:1}
+.score .txt{font-size:13.5px;color:var(--muted);line-height:1.6}
+.score .txt b{font-size:16px;display:block;margin-bottom:3px}
+.score.ok{border-color:var(--acc-teal)}.score.ok .big{color:var(--acc-teal)}
+.score.mid{border-color:var(--gold)}.score.mid .big{color:var(--gold)}
+.score.no{border-color:var(--down)}.score.no .big{color:var(--down)}
+.items{display:grid;gap:10px;margin:0 0 18px}
+.it{border:1px solid var(--hair);border-radius:14px;padding:15px 18px;background:var(--soft)}
+.it .hd{display:flex;align-items:baseline;gap:9px;margin-bottom:5px;flex-wrap:wrap}
+.it .nm{font-size:14.5px;font-weight:800}
+.it .vd{font-size:11px;font-weight:800;padding:2px 9px;border-radius:20px;border:1px solid;white-space:nowrap}
+.vd.p{color:#fff;background:var(--acc-teal);border-color:var(--acc-teal)}
+.vd.w{color:#8a5a10;background:#FDF6E3;border-color:#F0E0B8}
+.vd.f{color:#fff;background:var(--down);border-color:var(--down)}
+.vd.n{color:var(--muted);background:var(--gray);border-color:var(--hair)}
+.it .ds{font-size:13px;color:var(--text2);line-height:1.65}
+.it .bs{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.55}
+.it .bs b{color:var(--text2)}
+.cta{border:1px solid var(--hair);border-left:3px solid var(--acc-blue);background:var(--soft);border-radius:0 14px 14px 0;padding:17px 20px;margin:0 0 10px}
+.cta b{font-size:14.5px}
+.cta p{margin:5px 0 0;font-size:13px;color:var(--muted);line-height:1.65}
+.cta a{display:inline-block;margin-top:11px;background:var(--text);color:#fff;text-decoration:none;font-size:13.5px;font-weight:700;padding:11px 22px;border-radius:100px}
+.notice2{font-size:11.5px;color:var(--muted);line-height:1.75;margin:22px 0 50px}
+.msg{border:1px dashed var(--hair);border-radius:14px;padding:30px 20px;text-align:center;color:var(--muted);font-size:13.5px;line-height:1.7}
+@media(max-width:640px){
+  .frow{grid-template-columns:1fr}
+  .frow button{padding:13px 0}
+  .score{flex-direction:column;align-items:flex-start;gap:8px}
+}
+</style>
+<meta property="og:title" content="LH 매입약정 적합성 셀프진단 · 석봉 부동산 정보방">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="석봉 부동산 정보방">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html">석봉 부동산 정보방</a>
+  <nav>
+    <a href="index.html">홈</a>
+    <a href="map.html">실거래지도</a>
+    <a href="apply.html">청약</a>
+    <a href="favorites.html">★ 관심단지</a>
+    <a href="https://blog.naver.com/seokbongnews" target="_blank" rel="noopener">리포트</a>
+    <a href="channels.html">채널</a>
+  </nav>
+</header>
+<main class="wrap" style="margin:0 auto;padding:0 22px">
+  <h1 class="pg">매입약정 적합성 셀프진단</h1>
+  <p class="pgsub">사업지 주소를 넣으면 LH 매입약정 심사에서 걸리는 항목을 우리 데이터로 먼저 확인해 드립니다.<br>결과는 참고용이며, 실제 심의 통과 여부와 감정평가액을 보장하지 않습니다.</p>
+  <div class="stg">검토용 샘플 · 아직 공개 링크 없음</div>
+
+  <div class="form">
+    <div class="frow">
+      <input id="addr" type="text" placeholder="예: 서울 강남구 논현동 252-1  또는  성남시 중원구 상대원동 100" autocomplete="off">
+      <button id="go">진단하기</button>
+    </div>
+    <div class="plan">
+      <div><label>계획 호수</label><input id="units" type="number" min="1" value="24" inputmode="numeric"></div>
+      <div><label>세대 평균 전용면적(㎡)</label><input id="area" type="number" min="10" value="55" inputmode="numeric"></div>
+      <div><label>사업 방식</label><select id="kind"><option>민간 신축 매입약정</option><option>기존주택 매입</option><option>비주택 용도변경</option></select></div>
+    </div>
+    <p class="ex">예시로 눌러 보세요.
+      <a data-s="서울 강남구 논현동 252-1">서울 강남구 논현동 252-1</a> ·
+      <a data-s="서울 동작구 흑석동 100">서울 동작구 흑석동 100</a> ·
+      <a data-s="성남시 중원구 상대원동 100">성남시 중원구 상대원동 100</a>
+    </p>
+  </div>
+
+  <div id="out"><div class="msg">주소를 넣고 진단하기를 누르면 항목별 판정이 나옵니다.</div></div>
+
+  <p class="notice2" id="note"></p>
+</main>
+<footer class="site-footer">
+  <span>📈 <a href="https://telegram.me/seokbongnews">텔레그램 채널</a></span> ·
+  <span>💬 <a href="https://open.kakao.com/o/gt8CTUCi">카카오 오픈채팅</a> · <a href="https://blog.naver.com/seokbongnews">네이버 블로그</a></span>
+  <div class="fine">판정 근거: 국토교통부 실거래가 · 공공 정비사업 DB · 공동주택 단지정보 · 지오코딩은 공공 지도데이터 · 편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 참고용이며 심의 결과를 보장하지 않습니다</div>
+</footer>
+<script src="data/dongs.js"></script>
+<script src="data/jeongbi_seoul.js"></script>
+<script src="data/jeongbi_markers.js"></script>
+<script src="data/jeongbi_ext.js"></script>
+<script src="data/jeongbi_tag.js"></script>
+<script>
+(function(){
+  var VKEY='EBC23601-6E41-3269-9ECB-821DEECCF3F0';
+  var out=document.getElementById('out');
+  function esc(s){return (s||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function n(x){return Number(x).toLocaleString();}
+  function PY(m){m=+m;if(!m)return '';var p=m/3.305785;return (p<100?p.toFixed(1):Math.round(p).toLocaleString())+'평';}
+
+  /* ── 최소 호수 기준. 서울 19 / 인천 20 / 경기 50 (전용 85㎡ 이하) ── */
+  var MINU={'서울':19,'인천':20,'경기':50};
+  function minUnits(sido){return MINU[sido]||30;}
+
+  function _jsonp(url,cb,onerr){
+    var name='_vw'+Date.now()+Math.floor(Math.random()*1e4);
+    var t=setTimeout(function(){if(window[name]){delete window[name];s.remove();if(onerr)onerr();}},7000);
+    window[name]=function(d){clearTimeout(t);delete window[name];s.remove();cb(d);};
+    var s=document.createElement('script');s.src=url+'&callback='+name;
+    s.onerror=function(){clearTimeout(t);delete window[name];s.remove();if(onerr)onerr();};
+    document.body.appendChild(s);
+  }
+  function geocode(addr,cb,onerr){
+    function req(type,ok,bad){
+      var u='https://api.vworld.kr/req/address?service=address&request=getcoord&version=2.0&crs=epsg:4326'
+        +'&address='+encodeURIComponent(addr)+'&refine=true&simple=false&format=json&type='+type+'&key='+VKEY;
+      _jsonp(u,function(d){
+        var r=d&&d.response;
+        if(r&&r.status==='OK'&&r.result&&r.result.point){
+          ok({lat:+r.result.point.y,lng:+r.result.point.x,text:(r.refined&&r.refined.text)||addr,
+              st:(r.refined&&r.refined.structure)||{}});return;}
+        bad();
+      },bad);
+    }
+    var road=/[로길]\s*\d/.test(addr);
+    req(road?'ROAD':'PARCEL',cb,function(){req(road?'PARCEL':'ROAD',cb,onerr);});
+  }
+
+  /* ── 거리·폴리곤 ── */
+  function dist(a,b,c,d){var R=6371000,p=Math.PI/180;
+    var x=(c-a)*p, y=(d-b)*p*Math.cos((a+c)/2*p);return R*Math.sqrt(x*x+y*y);}
+  function inRing(pt,ring){
+    var x=pt[0],y=pt[1],inside=false;
+    for(var i=0,j=ring.length-1;i<ring.length;j=i++){
+      var xi=ring[i][0],yi=ring[i][1],xj=ring[j][0],yj=ring[j][1];
+      if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/((yj-yi)||1e-12)+xi))inside=!inside;
+    }
+    return inside;
+  }
+  function inGeom(lng,lat,g){
+    if(!g)return false;
+    var polys=g.type==='Polygon'?[g.coordinates]:(g.type==='MultiPolygon'?g.coordinates:[]);
+    for(var i=0;i<polys.length;i++){
+      var rings=polys[i];
+      if(rings.length&&inRing([lng,lat],rings[0])){
+        var hole=false;
+        for(var h=1;h<rings.length;h++)if(inRing([lng,lat],rings[h]))hole=true;
+        if(!hole)return true;
+      }
+    }
+    return false;
+  }
+
+  /* ── 1. 제외 지구: 정비구역 폴리곤 내부 또는 마커 근접 ── */
+  function zoneCheck(lat,lng){
+    var tag=window.REDEVTAG||{};
+    var hitIn=null;
+    var fc=(window.REDEV&&window.REDEV.features)||[];
+    for(var i=0;i<fc.length;i++){
+      if(inGeom(lng,lat,fc[i].geometry)){hitIn=fc[i].properties;break;}
+    }
+    var near=[];
+    function scan(arr){
+      (arr||[]).forEach(function(m){
+        if(m.lat==null||m.lon==null)return;
+        var d=dist(lat,lng,m.lat,m.lon);
+        if(d<=400)near.push({nm:m.nm,cat:m.cat||m.gubun,stage:m.stage,d:Math.round(d)});
+      });
+    }
+    scan(window.REDEVMARK);
+    scan(window.REDEVEXT&&window.REDEVEXT.marks);
+    near.sort(function(a,b){return a.d-b.d;});
+    return {inside:hitIn,near:near.slice(0,3),tagOf:function(nm){return tag[nm]||'';}};
+  }
+
+  /* ── 시군구코드·시도 ── */
+  function codeOf(st,text){
+    var dongs=(window.SB&&SB.dongs)||{};
+    var cand=[st.level4L,st.level4A,st.level4LC?null:null].filter(Boolean);
+    var toks=(text||'').split(/\s+/);
+    toks.forEach(function(t){if(/[동리가]$/.test(t))cand.push(t);});
+    for(var i=0;i<cand.length;i++){var d=dongs[cand[i]];if(d)return {code:d[0],dong:cand[i]};}
+    return null;
+  }
+  function sidoOf(text){
+    if(/^서울/.test(text))return '서울';
+    if(/^인천/.test(text))return '인천';
+    if(/^경기/.test(text))return '경기';
+    var m=text.match(/^(\S+?)(?:특별시|광역시|특별자치시|특별자치도|도)?\s/);
+    return m?m[1].replace(/(특별시|광역시|특별자치시|특별자치도|도)$/,''):'';
+  }
+
+  /* ── 2·3. 반경 내 실거래로 가격·임대수요 ── */
+  function med(a){if(!a.length)return 0;var s=a.slice().sort(function(x,y){return x-y;});return s[Math.floor(s.length/2)];}
+  function market(lat,lng,code){
+    var arr=(window.SB&&SB.d&&SB.d[code])||[];
+    var R=1200, mm=[],je=[],wo=[],pts=0;
+    arr.forEach(function(p){
+      if(p.lat==null||p.lng==null)return;
+      if(dist(lat,lng,p.lat,p.lng)>R)return;
+      if(['apt','offi','villa','house'].indexOf(p.t)<0)return;
+      pts++;
+      (p.txs||[]).forEach(function(t){
+        if(!t.a)return;
+        var py=t.p/(t.a/3.305785);
+        if(t.u==='매매')mm.push(py);
+        else if(t.u==='전세')je.push({p:t.p,a:t.a});
+        else if(t.u==='월세')wo.push(t);
+      });
+    });
+    return {pts:pts,R:R,mmPy:med(mm),mmN:mm.length,
+            jeMed:med(je.map(function(x){return x.p;})),jeN:je.length,woN:wo.length};
+  }
+
+  /* ── 4. 생활편의: 가장 가까운 단지의 공동주택 정보 ── */
+  function amenity(lat,lng,code){
+    var arr=(window.SB&&SB.d&&SB.d[code])||[];
+    var best=null,bd=1e9;
+    arr.forEach(function(p){
+      if(p.t!=='apt'||p.lat==null)return;
+      var d=dist(lat,lng,p.lat,p.lng);
+      if(d<bd){bd=d;best=p;}
+    });
+    if(!best)return null;
+    var box=(window.APTINFO&&window.APTINFO[code])||{};
+    var info=box[best.name]||null;
+    return {nm:best.name,d:Math.round(bd),info:info};
+  }
+
+  /* ── 판정 렌더 ── */
+  function item(nm,verdict,vcls,ds,bs){
+    return '<div class="it"><div class="hd"><span class="nm">'+nm+'</span>'
+      +'<span class="vd '+vcls+'">'+verdict+'</span></div>'
+      +'<div class="ds">'+ds+'</div>'+(bs?'<div class="bs">'+bs+'</div>':'')+'</div>';
+  }
+  function run(addr){
+    out.innerHTML='<div class="msg">주소를 찾고 있습니다…</div>';
+    geocode(addr,function(p){
+      var sido=sidoOf(p.text)||sidoOf(addr);
+      var cd=codeOf(p.st||{},p.text+' '+addr);
+      if(!cd){
+        out.innerHTML='<div class="msg">주소는 찾았지만(<b>'+esc(p.text)+'</b>) 우리 실거래 데이터의 법정동과 연결하지 못했습니다.<br>동 이름을 포함해 다시 넣어 주세요.</div>';
+        return;
+      }
+      out.innerHTML='<div class="msg">'+esc(p.text)+'<br>인근 실거래를 불러오는 중…</div>';
+      var need=2, code=cd.code;
+      function ready(){ if(--need>0)return; judge(p,sido,cd); }
+      function load(src){var s=document.createElement('script');s.src=src;s.onload=s.onerror=ready;document.body.appendChild(s);}
+      if(window.SB&&SB.d&&SB.d[code])ready(); else load('data/detail_'+code+'.js');
+      if(window.APTINFO&&window.APTINFO[code])ready(); else load('data/apt_info_'+code+'.js');
+    },function(){
+      out.innerHTML='<div class="msg">주소를 찾지 못했습니다. 지번(예: 논현동 252-1)이나 도로명(예: 학동로 20)을 넣어 주세요.</div>';
+    });
+  }
+  function judge(p,sido,cd){
+    var code=cd.code, lat=p.lat, lng=p.lng;
+    var z=zoneCheck(lat,lng), mk=market(lat,lng,code), am=amenity(lat,lng,code);
+    var units=+document.getElementById('units').value||0;
+    var area=+document.getElementById('area').value||0;
+    var kind=document.getElementById('kind').value;
+    var H=[], pass=0, total=0, fail=0, warn=0;
+
+    /* 1. 제외 지구 */
+    total++;
+    if(z.inside){
+      fail++;
+      var t=z.tagOf(z.inside.biz||z.inside.nm);
+      H.push(item('제외 지구 여부','제외 위험','f',
+        '이 위치는 <b>'+esc(z.inside.nm)+'</b>(' +esc(z.inside.cat)+ ', 단계 '+esc(z.inside.stage||'확인중')+') 구역 안에 있습니다. '
+        +'정비구역·재정비촉진지구·모아타운·도심복합은 서울 기준 매입 대상에서 원칙적으로 제외됩니다.'
+        +(t?' 이 구역은 <b>'+esc(t)+'</b>로도 분류됩니다.':''),
+        '근거: 공공 정비사업 DB 폴리곤 내부 판정'));
+    }else if(z.near.length){
+      warn++;
+      H.push(item('제외 지구 여부','인접 확인 필요','w',
+        '구역 경계 안은 아니지만 '+z.near.length+'곳이 <b>400m 안</b>에 있습니다. 경계 확정 전 구역이라면 편입 가능성을 확인하십시오.',
+        '가까운 순: '+z.near.map(function(x){return esc(x.nm)+' '+x.d+'m';}).join(' · ')));
+    }else{
+      pass++;
+      H.push(item('제외 지구 여부','해당 없음','p',
+        '반경 400m 안에 진행 중인 정비구역·재건축 사업장이 확인되지 않습니다.',
+        '근거: 공공 정비사업 DB 8개 시도 2,153구역'));
+    }
+
+    /* 2. 가격 적정성 */
+    total++;
+    if(mk.mmN>=5){
+      pass++;
+      H.push(item('가격 적정성 기준선','산출 가능','p',
+        '반경 '+n(mk.R)+'m 매매 실거래 '+n(mk.mmN)+'건의 <b>평당 중위 '+n(mk.mmPy)+'만원(전용)</b>이 기준선입니다. '
+        +'탁상감정가가 이 선을 크게 웃돌면 가격 적정성에서 감점됩니다.',
+        '전용 '+area+'㎡('+PY(area)+') 기준 세대당 환산 약 <b>'+n(Math.round(mk.mmPy*area/3.305785))+'만원</b> · 표본 지점 '+n(mk.pts)+'곳'));
+    }else{
+      warn++;
+      H.push(item('가격 적정성 기준선','표본 부족','w',
+        '반경 '+n(mk.R)+'m 매매 실거래가 '+n(mk.mmN)+'건뿐입니다. 인근 시세로 기준선을 세우기 어려운 지역입니다. 반경을 넓힌 조사가 필요합니다.',
+        '표본 지점 '+n(mk.pts)+'곳'));
+    }
+
+    /* 3. 임대수요 */
+    total++;
+    var rentN=mk.jeN+mk.woN;
+    if(rentN>=20){
+      pass++;
+      var ratio=(mk.mmPy&&mk.jeMed&&area)?Math.round(mk.jeMed/(mk.mmPy*area/3.305785)*100):0;
+      H.push(item('임대수요','충분','p',
+        '반경 안에서 전월세 실거래가 <b>'+n(rentN)+'건</b> 확인됩니다(전세 '+n(mk.jeN)+' · 월세 '+n(mk.woN)+'). 임차 회전이 있는 지역입니다.',
+        (ratio?'전세가율 참고치 약 <b>'+ratio+'%</b>(전세 중위 ÷ 매매 환산). ':'')+'LH 매입임대는 준공 후 임차인 모집이 전제라 임대수요가 심의에서 실질 기준입니다.'));
+    }else{
+      warn++;
+      H.push(item('임대수요','약함','w',
+        '반경 안 전월세 실거래가 '+n(rentN)+'건에 그칩니다. 임차 수요를 보수적으로 봐야 합니다.',
+        '전세 '+n(mk.jeN)+' · 월세 '+n(mk.woN)));
+    }
+
+    /* 4. 생활편의성 */
+    total++;
+    if(am&&am.info){
+      var i=am.info, sub=i.subway||'', subT=i.subT||'', edu=i.edu||'', conv=i.conv||'';
+      if(sub&&subT)sub=sub+' 도보 '+String(subT).replace(/분?$/,'분');
+      var has=(sub?1:0)+(edu?1:0)+(conv?1:0);
+      if(has>=2)pass++; else warn++;
+      H.push(item('생활편의성',has>=2?'양호':'보통',has>=2?'p':'w',
+        (sub?'지하철 <b>'+esc(String(sub))+'</b>. ':'')+(edu?'학교 '+esc(String(edu))+'. ':'')+(conv?'생활편의 '+esc(String(conv))+'.':'')
+        ||'인근 단지 정보에 교통·학교 항목이 비어 있습니다.',
+        '기준 단지: <b>'+esc(am.nm)+'</b> ('+n(am.d)+'m). 단지 정보를 사업지 인근 지표로 대신 씁니다.'));
+    }else{
+      warn++;
+      H.push(item('생활편의성','확인 불가','n',
+        '인근에 공동주택 단지 정보가 없어 교통·학교를 자동으로 확인하지 못했습니다.',
+        am?('가장 가까운 단지 '+esc(am.nm)+' '+n(am.d)+'m'):''));
+    }
+
+    /* 5. 최소 호수 */
+    total++;
+    var need=minUnits(sido);
+    var okA=area<=85;
+    if(units>=need&&okA){
+      pass++;
+      H.push(item('최소 호수 기준','충족','p',
+        sido+' 기준 <b>'+need+'호 이상</b>이고 전용 85㎡ 이하여야 합니다. 계획 '+n(units)+'호 · 전용 '+area+'㎡('+PY(area)+')로 충족합니다.',
+        '방식: '+esc(kind)));
+    }else{
+      fail++;
+      H.push(item('최소 호수 기준','미충족','f',
+        sido+' 기준은 <b>'+need+'호 이상 · 전용 85㎡ 이하</b>입니다. 현재 계획 '+n(units)+'호 · 전용 '+area+'㎡('+PY(area)+')'
+        +(units<need?' 로 호수가 부족합니다.':' 로 전용면적이 기준을 넘습니다.'),
+        '방식: '+esc(kind)));
+    }
+
+    /* 아직 자동 판정이 안 되는 두 항목 */
+    H.push(item('비선호 입지','자동 판정 준비 중','n',
+      '공장 밀집·위락시설 인근·산비탈·축산특화거리는 심의에서 감점 요인입니다. 건축물대장 주용도 데이터로 부분 판정이 가능하며 수집이 진행 중입니다.',''));
+    H.push(item('재무영향도','자료 확보 대기','n',
+      '정부지원단가 대비 탁상감정가 비율이 2026년 심사의 핵심 계량 항목입니다. 지원단가 확보 후 붙습니다.',''));
+
+    var cls=fail?'no':(warn?'mid':'ok');
+    var head=fail?'걸리는 항목이 있습니다':(warn?'확인이 필요한 항목이 있습니다':'자동 판정 항목은 전부 통과');
+    var sum='<div class="score '+cls+'"><div class="big">'+pass+' / '+total+'</div>'
+      +'<div class="txt"><b>'+head+'</b>'+esc(p.text)+'<br>'
+      +'통과 '+pass+' · 확인 필요 '+warn+' · 미충족 '+fail+' (자동 판정 5개 항목 기준)</div></div>';
+
+    var cta='<div class="cta"><b>여기까지는 데이터로 알 수 있는 부분입니다.</b>'
+      +'<p>실제 심의를 넘기려면 탁상감정가와 정부지원단가 대비 비율, 그리고 자금 구조가 맞아야 합니다. '
+      +'감정평가 라인과 대주 라인을 통해 사업성 검토를 받아 보실 수 있습니다.</p>'
+      +'<a href="index.html">상담 문의하기</a></div>';
+
+    out.innerHTML=sum+'<div class="items">'+H.join('')+'</div>'+cta;
+    try{if(typeof gtag==='function')gtag('event','lh_selfcheck',{pass:pass,fail:fail});}catch(e){}
+  }
+
+  document.getElementById('go').onclick=function(){
+    var v=document.getElementById('addr').value.trim();
+    if(!v){out.innerHTML='<div class="msg">사업지 주소를 넣어 주세요.</div>';return;}
+    run(v);
+  };
+  document.getElementById('addr').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('go').click();});
+  document.querySelectorAll('.ex a').forEach(function(a){
+    a.onclick=function(){document.getElementById('addr').value=a.dataset.s;run(a.dataset.s);};});
+
+  document.getElementById('note').innerHTML=
+    '판정 기준은 2026년 LH 매입임대 심사 항목을 따랐습니다. 일곱 항목 중 <b>다섯 개가 자동 판정</b>되고, 비선호 입지와 재무영향도는 자료 확보 후 붙습니다. '
+    +'제외 지구는 공공 정비사업 DB의 구역 경계로 판정하며, 경계가 확정되지 않은 예정 구역은 잡히지 않을 수 있습니다. '
+    +'가격과 임대수요는 반경 1.2km 안의 국토교통부 실거래(해제 건 제외)를 집계한 것이고, 단가는 전용면적 기준 평당입니다. '
+    +'생활편의성은 사업지에서 가장 가까운 공동주택 단지의 교통·학교 정보를 대신 씁니다. '
+    +'최소 호수는 서울 19호, 인천 20호, 경기 50호(전용 85㎡ 이하)를 적용했습니다. '
+    +'이 화면은 참고용이며 심의 결과나 감정평가액을 보장하지 않습니다. 계약 판단은 반드시 공고문 원문과 담당 지역본부 문의처를 확인하고 하십시오.';
+})();
+</script>
+</body></html>
