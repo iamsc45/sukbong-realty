@@ -26,6 +26,14 @@ table.t1,table.t2{width:100%;border-collapse:collapse;font-size:14px}
 .t2 th{font-size:11.5px;color:var(--muted);text-align:left;padding:7px 8px;border-bottom:1.5px solid var(--text)}
 .t2 td{padding:8px;border-bottom:1px solid var(--hair);font-variant-numeric:tabular-nums}
 .t2 td:first-child{color:var(--muted)}
+/* 첫 화면에서 바로 이 단지 지도로 갈 수 있게. 검색으로 들어온 사람이 스크롤을
+   끝까지 내려야 지도 링크를 만나면 대부분 이탈한다(2026-07-30 석봉님 지적). */
+.tcta{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px}
+.tcta a{display:inline-flex;align-items:center;gap:5px;padding:9px 16px;border-radius:100px;
+  text-decoration:none;font-size:13px;font-weight:700;line-height:1.2}
+.tcta a.p{background:var(--text);color:#fff}
+.tcta a.l{border:1px solid var(--hair);color:var(--text2);background:var(--soft)}
+.tcta a:hover{opacity:.88}
 .cta{display:flex;gap:10px;flex-wrap:wrap;margin:26px 0 0}
 .cta a{display:inline-block;padding:13px 24px;border-radius:100px;text-decoration:none;font-size:14px;font-weight:700}
 .cta a.p{background:var(--text);color:#fff}
@@ -52,6 +60,10 @@ ul.near span{color:var(--muted);font-size:11.5px;margin-left:6px}
 <main class="wrap">
   <h1>방죽마을영통뜨란채</h1>
   <p class="loc">경기 수원 영통구 망포동 · 아파트 · 최근 6개월 실거래 12건 · 마지막 신고 2026.07.29</p>
+  <div class="tcta">
+    <a class="p" href="../map.html?q=%EB%B0%A9%EC%A3%BD%EB%A7%88%EC%9D%84%EC%98%81%ED%86%B5%EB%9C%A8%EB%9E%80%EC%B1%84&dong=%EB%A7%9D%ED%8F%AC%EB%8F%99">지도에서 방죽마을영통뜨란채 보기 →</a>
+    <a class="l" href="../%EB%8B%A8%EC%A7%80%EC%83%81%EC%84%B8.html?code=41117&nm=%EB%B0%A9%EC%A3%BD%EB%A7%88%EC%9D%84%EC%98%81%ED%86%B5%EB%9C%A8%EB%9E%80%EC%B1%84&dong=%EB%A7%9D%ED%8F%AC%EB%8F%99">실거래 이력 전체 →</a>
+  </div>
   <div class="lead"><p>방죽마을영통뜨란채는 경기 수원 영통구 망포동에 있는 700세대 6개 동 규모의 아파트입니다.</p><p>2005년에 진흥기업 시공으로 준공됐습니다.</p><p>최근 6개월 매매 실거래는 7건이고 중위 가격은 5.9억, 전용면적 기준 평당 2,302만원입니다. 이 기간 최고가는 6.8억(전용 84.7㎡·2026.07.16)입니다.</p><p>전세 중위 보증금은 3.9억이고, 평당 기준 전세가율은 약 66%입니다.</p><p>2016년 평당 1,206만원에서 2026년 2,119만원으로 +76% 올랐습니다.</p><p>공개된 관리비는 세대당 월 평균 253,521원, 전용 평당 9,909원입니다.</p><p>가장 가까운 지하철은 1호선, 신분당선 망포 도보 10~15분이내입니다.</p><p>학군은 초등학교(대선초) 중학교(망포중) 고등학교(태장고등학교) 대학교(경희대 국제캠프스)입니다.</p></div>
 
   <h2>핵심 수치</h2>

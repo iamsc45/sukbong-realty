@@ -26,6 +26,14 @@ table.t1,table.t2{width:100%;border-collapse:collapse;font-size:14px}
 .t2 th{font-size:11.5px;color:var(--muted);text-align:left;padding:7px 8px;border-bottom:1.5px solid var(--text)}
 .t2 td{padding:8px;border-bottom:1px solid var(--hair);font-variant-numeric:tabular-nums}
 .t2 td:first-child{color:var(--muted)}
+/* 첫 화면에서 바로 이 단지 지도로 갈 수 있게. 검색으로 들어온 사람이 스크롤을
+   끝까지 내려야 지도 링크를 만나면 대부분 이탈한다(2026-07-30 석봉님 지적). */
+.tcta{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px}
+.tcta a{display:inline-flex;align-items:center;gap:5px;padding:9px 16px;border-radius:100px;
+  text-decoration:none;font-size:13px;font-weight:700;line-height:1.2}
+.tcta a.p{background:var(--text);color:#fff}
+.tcta a.l{border:1px solid var(--hair);color:var(--text2);background:var(--soft)}
+.tcta a:hover{opacity:.88}
 .cta{display:flex;gap:10px;flex-wrap:wrap;margin:26px 0 0}
 .cta a{display:inline-block;padding:13px 24px;border-radius:100px;text-decoration:none;font-size:14px;font-weight:700}
 .cta a.p{background:var(--text);color:#fff}
@@ -52,6 +60,10 @@ ul.near span{color:var(--muted);font-size:11.5px;margin-left:6px}
 <main class="wrap">
   <h1>주공3</h1>
   <p class="loc">인천 연수구 연수동 · 아파트 · 최근 6개월 실거래 40건 · 마지막 신고 2026.07.27</p>
+  <div class="tcta">
+    <a class="p" href="../map.html?q=%EC%A3%BC%EA%B3%B53&dong=%EC%97%B0%EC%88%98%EB%8F%99">지도에서 주공3 보기 →</a>
+    <a class="l" href="../%EB%8B%A8%EC%A7%80%EC%83%81%EC%84%B8.html?code=28185&nm=%EC%A3%BC%EA%B3%B53&dong=%EC%97%B0%EC%88%98%EB%8F%99">실거래 이력 전체 →</a>
+  </div>
   <div class="lead"><p>주공3은 인천 연수구 연수동에 있는 1,170세대 8개 동 규모의 아파트입니다.</p><p>1993년에 대한주택공사 시공으로 준공됐습니다.</p><p>최근 6개월 매매 실거래는 11건이고 중위 가격은 1.7억, 전용면적 기준 평당 1,288만원입니다. 이 기간 최고가는 1.9억(전용 44.7㎡·2026.06.17)입니다.</p><p>전세 중위 보증금은 1.4억이고, 평당 기준 전세가율은 약 80%입니다.</p><p>2016년 평당 1,110만원에서 2026년 1,268만원으로 +14% 올랐습니다.</p><p>공개된 관리비는 세대당 월 평균 125,063원, 전용 평당 9,257원입니다.</p><p>가장 가까운 지하철은 인천1호선, 수인선 신연수 도보 5~10분이내입니다.</p><p>학군은 초등학교(중앙) 중학교(인천,연수) 고등학교(연수,인천여고,생활과학고) 대학교(가천길대)입니다.</p></div>
 
   <h2>핵심 수치</h2>

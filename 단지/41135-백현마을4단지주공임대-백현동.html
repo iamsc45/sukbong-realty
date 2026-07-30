@@ -26,6 +26,14 @@ table.t1,table.t2{width:100%;border-collapse:collapse;font-size:14px}
 .t2 th{font-size:11.5px;color:var(--muted);text-align:left;padding:7px 8px;border-bottom:1.5px solid var(--text)}
 .t2 td{padding:8px;border-bottom:1px solid var(--hair);font-variant-numeric:tabular-nums}
 .t2 td:first-child{color:var(--muted)}
+/* 첫 화면에서 바로 이 단지 지도로 갈 수 있게. 검색으로 들어온 사람이 스크롤을
+   끝까지 내려야 지도 링크를 만나면 대부분 이탈한다(2026-07-30 석봉님 지적). */
+.tcta{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px}
+.tcta a{display:inline-flex;align-items:center;gap:5px;padding:9px 16px;border-radius:100px;
+  text-decoration:none;font-size:13px;font-weight:700;line-height:1.2}
+.tcta a.p{background:var(--text);color:#fff}
+.tcta a.l{border:1px solid var(--hair);color:var(--text2);background:var(--soft)}
+.tcta a:hover{opacity:.88}
 .cta{display:flex;gap:10px;flex-wrap:wrap;margin:26px 0 0}
 .cta a{display:inline-block;padding:13px 24px;border-radius:100px;text-decoration:none;font-size:14px;font-weight:700}
 .cta a.p{background:var(--text);color:#fff}
@@ -52,6 +60,10 @@ ul.near span{color:var(--muted);font-size:11.5px;margin-left:6px}
 <main class="wrap">
   <h1>백현마을4단지(주공)임대</h1>
   <p class="loc">경기 성남 분당구 백현동 · 아파트 · 최근 6개월 실거래 10건 · 마지막 신고 2026.07.29</p>
+  <div class="tcta">
+    <a class="p" href="../map.html?q=%EB%B0%B1%ED%98%84%EB%A7%88%EC%9D%844%EB%8B%A8%EC%A7%80%28%EC%A3%BC%EA%B3%B5%29%EC%9E%84%EB%8C%80&dong=%EB%B0%B1%ED%98%84%EB%8F%99">지도에서 백현마을4단지(주공)임대 보기 →</a>
+    <a class="l" href="../%EB%8B%A8%EC%A7%80%EC%83%81%EC%84%B8.html?code=41135&nm=%EB%B0%B1%ED%98%84%EB%A7%88%EC%9D%844%EB%8B%A8%EC%A7%80%28%EC%A3%BC%EA%B3%B5%29%EC%9E%84%EB%8C%80&dong=%EB%B0%B1%ED%98%84%EB%8F%99">실거래 이력 전체 →</a>
+  </div>
   <div class="lead"><p>백현마을4단지(주공)임대는 경기 성남 분당구 백현동에 있는 1,974세대 20개 동 규모의 아파트입니다.</p><p>2011년에 (주)남양건설 시공으로 준공됐습니다.</p><p>학군은 초등학교(성남화랑초,신백현초,보평초) 중학교(보평중,신백현중) 고등학교(성남외고)입니다.</p></div>
 
   <h2>핵심 수치</h2>
