@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Y7P41Z09PV"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-Y7P41Z09PV');</script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LH 주택매입공고 아카이브 · 석봉 부동산 정보방</title>
+<meta name="description" content="LH 주택매입공고 1,132건을 연도·유형·지역본부별로 모아 놓았습니다. 매입약정 공고는 LH 게시판 태그로 42건이지만 공고명 기준으로는 527건입니다.">
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+.wrap{max-width:1120px}
+h1.pg{font-size:clamp(30px,4.6vw,48px);letter-spacing:-0.04em;font-weight:800;margin:44px 0 6px}
+.pgsub{color:var(--muted);font-size:13.5px;margin:0 0 6px}
+.stg{display:inline-block;background:var(--gold);color:#141414;font-size:11px;font-weight:800;padding:3px 11px;border-radius:20px;margin-bottom:14px}
+.edge{border:1px solid var(--hair);border-left:3px solid var(--acc-blue);background:var(--soft);border-radius:0 12px 12px 0;padding:13px 16px;margin:0 0 20px;font-size:13px;line-height:1.65}
+.edge b{color:var(--acc-blue)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:0 0 20px}
+.kpi2{background:var(--soft);border:1px solid var(--hair);border-radius:14px;padding:14px 17px}
+.kpi2 .v{font-size:26px;font-weight:800;letter-spacing:-0.03em;font-variant-numeric:tabular-nums}
+.kpi2 .l{font-size:11.5px;color:var(--muted);margin-top:2px}
+.kpi2.a .v{color:var(--acc-blue)}.kpi2.b .v{color:var(--acc-teal)}.kpi2.c .v{color:var(--gold)}
+.fbar{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr .8fr;gap:8px;margin:0 0 10px}
+.fbar input,.fbar select{border:1px solid var(--hair);border-radius:10px;padding:9px 11px;font:inherit;font-size:13px;background:#fff;color:var(--text);min-width:0}
+.fbar2{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin:0 0 16px;font-size:12.5px;color:var(--muted)}
+.fbar2 label{display:inline-flex;align-items:center;gap:6px;cursor:pointer;color:var(--text);font-weight:700}
+.fbar2 .cnt{margin-left:auto;font-variant-numeric:tabular-nums}
+.fbar2 button{border:1px solid var(--hair);background:#fff;border-radius:100px;padding:5px 13px;font:inherit;font-size:11.5px;font-weight:700;color:var(--muted);cursor:pointer}
+table.tb{width:100%;border-collapse:collapse;font-size:13.5px}
+.tb th{font-size:11px;letter-spacing:.08em;color:var(--muted);text-align:left;font-weight:700;padding:8px 10px;border-bottom:1.5px solid var(--text);white-space:nowrap}
+.tb td{padding:10px;border-bottom:1px solid var(--hair);vertical-align:top}
+.tb td.dt,.tb td.att{font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--muted);font-size:12.5px}
+.tb tr.open{background:rgba(37,84,224,.045)}
+.tb tr.done td.nm a{color:var(--muted2)}
+.nm a{color:var(--text);text-decoration:none;font-weight:700;line-height:1.45}
+.nm a:hover{color:var(--acc-blue);text-decoration:underline}
+.bg{display:inline-block;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:20px;white-space:nowrap;border:1px solid}
+.bg.t{color:var(--acc-blue);border-color:rgba(37,84,224,.35);background:rgba(37,84,224,.07)}
+.bg.t.etc{color:var(--muted);border-color:var(--hair);background:var(--gray)}
+.bg.s1{color:#fff;background:var(--acc-teal);border-color:var(--acc-teal)}
+.bg.s2{color:#8a5a10;background:#FDF6E3;border-color:#F0E0B8}
+.bg.s3{color:var(--muted2);background:transparent;border-color:var(--hair)}
+.hq{font-size:12.5px;color:var(--muted);white-space:nowrap}
+.fl{display:block;font-size:11.5px;color:var(--acc-blue);text-decoration:none;margin-top:3px}
+.fl:hover{text-decoration:underline}
+.more{display:block;width:100%;margin:18px 0 0;border:1px solid var(--text);background:transparent;border-radius:100px;padding:12px 0;font:inherit;font-size:13.5px;font-weight:700;color:var(--text);cursor:pointer}
+.empty{border:1px dashed var(--hair);border-radius:14px;padding:38px 20px;text-align:center;color:var(--muted);font-size:13.5px}
+.notice2{font-size:11.5px;color:var(--muted);line-height:1.75;margin:26px 0 50px}
+.notice2 a{color:var(--acc-blue)}
+@media(max-width:820px){
+  .fbar{grid-template-columns:1fr 1fr}
+  .fbar input{grid-column:1 / -1}
+}
+@media(max-width:640px){
+  /* 표를 카드로 전환 — 7열을 좁은 화면에 밀어 넣으면 무너진다(경매 페이지 2026-07-27 교훈) */
+  .tb thead{display:none}
+  .tb,.tb tbody,.tb tr,.tb td{display:block;width:100%}
+  .tb tr{border:1px solid var(--hair);border-radius:12px;padding:12px 14px;margin-bottom:10px;background:var(--soft)}
+  .tb tr.open{border-color:var(--acc-teal)}
+  .tb td{border:0;padding:0}
+  .tb td.dt{display:inline-block;margin-right:8px}
+  .tb td.ty{display:inline-block}
+  .tb td.nm{margin:6px 0 4px}
+  .tb td.hqc,.tb td.att{display:inline-block;margin-right:10px}
+  .tb td.st{display:inline-block}
+}
+</style>
+<meta property="og:title" content="LH 주택매입공고 아카이브 · 석봉 부동산 정보방">
+<meta property="og:description" content="LH 주택매입공고 1,132건을 연도·유형·지역본부별로 한 화면에서.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xn--2q1br1nnrasc92a76myvau64b.com/lh_%EA%B3%B5%EA%B3%A0_staging.html">
+<meta property="og:site_name" content="석봉 부동산 정보방">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html">석봉 부동산 정보방</a>
+  <nav>
+    <a href="index.html">홈</a>
+    <a href="map.html">실거래지도</a>
+    <a href="apply.html">청약</a>
+    <a href="favorites.html">★ 관심단지</a>
+    <a href="https://blog.naver.com/seokbongnews" target="_blank" rel="noopener">리포트</a>
+    <a href="channels.html">채널</a>
+  </nav>
+</header>
+<main class="wrap" style="margin:0 auto;padding:0 22px">
+  <h1 class="pg">LH 주택매입공고</h1>
+  <p class="pgsub" id="basis">불러오는 중…</p>
+  <div class="stg">검토용 · 아직 공개 링크 없음</div>
+
+  <div class="edge">
+    LH 게시판은 기본 화면에 진행 중인 공고만 보여줍니다. 지난 공고를 찾기가 어렵습니다.
+    여기에는 <b>2018년 첫 공고부터 전부</b> 모아 두었습니다.<br>
+    또 하나. LH가 붙인 유형 태그로 매입약정 공고를 세면 <b>42건</b>인데, 공고명을 실제로 읽고 다시 분류하면 <b>527건</b>입니다.
+    민간 신축 매입약정만 <b>430건</b>입니다. 이 화면의 유형은 공고명 기준으로 다시 분류한 것입니다.
+  </div>
+
+  <div class="kpis">
+    <div class="kpi2 a"><div class="v" id="k1">·</div><div class="l">전체 공고</div></div>
+    <div class="kpi2 b"><div class="v" id="k2">·</div><div class="l">접수중</div></div>
+    <div class="kpi2 c"><div class="v" id="k3">·</div><div class="l">정정공고중</div></div>
+    <div class="kpi2"><div class="v" id="k4">·</div><div class="l">약정 관련</div></div>
+  </div>
+
+  <div class="fbar">
+    <input id="q" type="search" placeholder="공고명 검색 (예: 매입약정, 3차, 정정)" autocomplete="off" spellcheck="false">
+    <select id="fy"><option value="">연도 전체</option></select>
+    <select id="ft"><option value="">유형 전체</option></select>
+    <select id="fh"><option value="">지역본부 전체</option></select>
+    <select id="fs"><option value="">상태 전체</option></select>
+  </div>
+  <div class="fbar2">
+    <label><input type="checkbox" id="fa"> 매입약정 공고만</label>
+    <label><input type="checkbox" id="fo"> 지금 넣을 수 있는 공고만</label>
+    <button id="reset">조건 초기화</button>
+    <span class="cnt" id="cnt"></span>
+  </div>
+
+  <div id="list"></div>
+
+  <p class="notice2" id="note"></p>
+</main>
+<footer class="site-footer">
+  <span>📈 <a href="https://telegram.me/seokbongnews">텔레그램 채널</a></span> ·
+  <span>💬 <a href="https://open.kakao.com/o/gt8CTUCi">카카오 오픈채팅</a> · <a href="https://blog.naver.com/seokbongnews">네이버 블로그</a></span>
+  <div class="fine">자료 출처: LH청약플러스 주택매입공고 · 첨부파일은 LH 원본으로 직접 연결됩니다(우리가 보관하지 않습니다) · 편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 방문 통계 수집을 위해 Google Analytics(쿠키)를 사용합니다</div>
+</footer>
+<script src="data/lh_notice.js"></script>
+<script>
+(function(){
+  var A=(window.LHNOTICE||[]).slice();
+  var list=document.getElementById('list');
+  function esc(s){return (s||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function n(x){return Number(x).toLocaleString();}
+  if(!A.length){list.innerHTML='<div class="empty">공고 데이터를 불러오지 못했습니다. 새로고침해 주세요.</div>';return;}
+
+  /* 유형 11종 중 1~2건짜리 3종은 "기타"로 묶는다(인계 문서 4절 권고).
+     단 건설매입약정은 2026년 신설이라 앞으로 늘어나므로 따로 남긴다. */
+  var LUMP={'매입임대리츠':1,'연금형 희망나눔':1,'국민희망임대매입임대리츠':1};
+  function tyOf(x){return LUMP[x.t]?'기타':x.t;}
+  function hqOf(x){return x.h||'전국·본사';}
+  function yrOf(x){return (x.p||'').slice(0,4);}
+
+  /* 필터 옵션은 데이터에서 만든다(건수 병기) */
+  function fill(sel,vals,label){
+    var el=document.getElementById(sel), m={};
+    vals.forEach(function(v){m[v]=(m[v]||0)+1;});
+    Object.keys(m).sort(function(a,b){return m[b]-m[a];}).forEach(function(v){
+      var o=document.createElement('option');o.value=v;o.textContent=v+' ('+n(m[v])+')';el.appendChild(o);});
+  }
+  fill('ft',A.map(tyOf));
+  fill('fh',A.map(hqOf));
+  fill('fs',A.map(function(x){return x.s;}));
+  var ys=[];A.forEach(function(x){var y=yrOf(x);if(y&&ys.indexOf(y)<0)ys.push(y);});
+  ys.sort(function(a,b){return b-a;});
+  var fyEl=document.getElementById('fy');
+  ys.forEach(function(y){var c=A.filter(function(x){return yrOf(x)===y;}).length;
+    var o=document.createElement('option');o.value=y;o.textContent=y+'년 ('+n(c)+')';fyEl.appendChild(o);});
+
+  document.getElementById('k1').textContent=n(A.length);
+  document.getElementById('k2').textContent=n(A.filter(function(x){return x.s==='접수중';}).length);
+  document.getElementById('k3').textContent=n(A.filter(function(x){return x.s==='정정공고중';}).length);
+  document.getElementById('k4').textContent=n(A.filter(function(x){return x.y===1;}).length);
+  var last=A.reduce(function(a,x){return (x.p>a)?x.p:a;},'');
+  document.getElementById('basis').textContent='LH청약플러스 주택매입공고 전량 · 최신 공고 '+last+' 기준';
+
+  var SHOW=60, shown=SHOW;
+  function pass(x){
+    var q=document.getElementById('q').value.trim();
+    if(q && (x.n||'').indexOf(q)<0) return false;
+    var v;
+    v=document.getElementById('fy').value; if(v && yrOf(x)!==v) return false;
+    v=document.getElementById('ft').value; if(v && tyOf(x)!==v) return false;
+    v=document.getElementById('fh').value; if(v && hqOf(x)!==v) return false;
+    v=document.getElementById('fs').value; if(v && x.s!==v) return false;
+    if(document.getElementById('fa').checked && x.y!==1) return false;
+    if(document.getElementById('fo').checked && x.s==='접수마감') return false;
+    return true;
+  }
+  function row(x){
+    var cls=x.s==='접수마감'?'done':(x.s==='접수중'?'open':'');
+    var sb=x.s==='접수중'?'s1':(x.s==='정정공고중'?'s2':'s3');
+    var fa=(x.f||[]).length;
+    var att=fa?('<a class="fl" href="'+esc(x.f[0].u)+'" target="_blank" rel="noopener">첨부 '+fa+'개 받기</a>'):'<span style="color:var(--muted2)">첨부 없음</span>';
+    var ty=tyOf(x);
+    return '<tr class="'+cls+'">'
+      +'<td class="dt">'+esc(x.p)+'</td>'
+      +'<td class="ty"><span class="bg t'+(ty==='기타'?' etc':'')+'">'+esc(ty)+'</span></td>'
+      +'<td class="nm"><a href="'+esc(x.u)+'" target="_blank" rel="noopener">'+esc(x.n)+'</a>'
+        +(x.a?'<div style="font-size:11.5px;color:var(--muted);margin-top:3px">'+esc(x.a)+'</div>':'')+'</td>'
+      +'<td class="hqc"><span class="hq">'+esc(hqOf(x))+'</span></td>'
+      +'<td class="dt">'+esc(x.c||'·')+'</td>'
+      +'<td class="st"><span class="bg '+sb+'">'+esc(x.s)+'</span></td>'
+      +'<td class="att">'+att+'</td></tr>';
+  }
+  function draw(){
+    var f=A.filter(pass);
+    document.getElementById('cnt').textContent=n(f.length)+'건 / 전체 '+n(A.length)+'건';
+    if(!f.length){list.innerHTML='<div class="empty">조건에 맞는 공고가 없습니다. 조건을 줄여 보세요.</div>';return;}
+    var part=f.slice(0,shown);
+    list.innerHTML='<table class="tb"><thead><tr>'
+      +'<th>공고일</th><th>유형</th><th>공고명</th><th>지역본부</th><th>마감일</th><th>상태</th><th>첨부</th>'
+      +'</tr></thead><tbody>'+part.map(row).join('')+'</tbody></table>'
+      +(f.length>shown?'<button class="more" id="more">'+n(f.length-shown)+'건 더 보기</button>':'');
+    var mb=document.getElementById('more');
+    if(mb)mb.onclick=function(){shown+=SHOW*2;draw();};
+  }
+  ['q','fy','ft','fh','fs','fa','fo'].forEach(function(id){
+    var el=document.getElementById(id);
+    el.addEventListener(id==='q'?'input':'change',function(){shown=SHOW;draw();
+      try{if(typeof gtag==='function')gtag('event','lh_filter',{f:id});}catch(e){}});
+  });
+  document.getElementById('reset').onclick=function(){
+    ['fy','ft','fh','fs'].forEach(function(i){document.getElementById(i).value='';});
+    document.getElementById('q').value='';
+    document.getElementById('fa').checked=false;document.getElementById('fo').checked=false;
+    shown=SHOW;draw();};
+  draw();
+
+  document.getElementById('note').innerHTML=
+    '유형은 LH가 붙인 태그가 실제 내용과 어긋나는 경우가 많아 <b>공고명을 기준으로 다시 분류</b>한 값입니다. '
+    +'예를 들어 「2026년 건설매입약정 시범사업 공고」는 LH 태그로는 공공리모델링매입임대로 잡힙니다. '
+    +'지역본부는 공고명 앞머리에서 뽑았고, 표기가 없는 '+n(A.filter(function(x){return !x.h;}).length)+'건은 「전국·본사」로 묶었습니다. '
+    +'대상 지역이 비어 있는 공고는 전국 단위이거나 공고문 본문에만 적힌 경우입니다.<br>'
+    +'공고명과 첨부는 모두 LH 원본으로 연결됩니다. 파일은 우리가 보관하지 않으므로 항상 최신본이 열립니다. '
+    +'자료 출처는 LH청약플러스 주택매입공고이며, 계약 판단은 반드시 공고문 원문과 담당 지역본부 문의처를 확인하고 하십시오. 이 화면은 참고용입니다.';
+})();
+</script>
+</body></html>
