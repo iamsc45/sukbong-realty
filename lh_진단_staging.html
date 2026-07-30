@@ -352,7 +352,8 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
     total++;
     if(am&&am.info){
       var i=am.info, sub=i.subway||'', subT=i.subT||'', edu=i.edu||'', conv=i.conv||'';
-      if(sub&&subT)sub=sub+' 도보 '+String(subT).replace(/분?$/,'분');
+      /* subT는 '5' 또는 '5분이내'처럼 형식이 섞여 있다 */
+      if(sub&&subT){var st=String(subT).trim();sub=sub+' 도보 '+(/^\d+$/.test(st)?st+'분':st);}
       var has=(sub?1:0)+(edu?1:0)+(conv?1:0);
       if(has>=2)pass++; else warn++;
       H.push(item('생활편의성',has>=2?'양호':'보통',has>=2?'p':'w',
