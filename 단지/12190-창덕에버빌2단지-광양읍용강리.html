@@ -26,6 +26,14 @@ table.t1,table.t2{width:100%;border-collapse:collapse;font-size:14px}
 .t2 th{font-size:11.5px;color:var(--muted);text-align:left;padding:7px 8px;border-bottom:1.5px solid var(--text)}
 .t2 td{padding:8px;border-bottom:1px solid var(--hair);font-variant-numeric:tabular-nums}
 .t2 td:first-child{color:var(--muted)}
+/* 첫 화면에서 바로 이 단지 지도로 갈 수 있게. 검색으로 들어온 사람이 스크롤을
+   끝까지 내려야 지도 링크를 만나면 대부분 이탈한다(2026-07-30 석봉님 지적). */
+.tcta{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px}
+.tcta a{display:inline-flex;align-items:center;gap:5px;padding:9px 16px;border-radius:100px;
+  text-decoration:none;font-size:13px;font-weight:700;line-height:1.2}
+.tcta a.p{background:var(--text);color:#fff}
+.tcta a.l{border:1px solid var(--hair);color:var(--text2);background:var(--soft)}
+.tcta a:hover{opacity:.88}
 .cta{display:flex;gap:10px;flex-wrap:wrap;margin:26px 0 0}
 .cta a{display:inline-block;padding:13px 24px;border-radius:100px;text-decoration:none;font-size:14px;font-weight:700}
 .cta a.p{background:var(--text);color:#fff}
@@ -52,6 +60,10 @@ ul.near span{color:var(--muted);font-size:11.5px;margin-left:6px}
 <main class="wrap">
   <h1>창덕에버빌2단지</h1>
   <p class="loc">전남 광양시 광양읍 용강리 · 아파트 · 최근 6개월 실거래 11건 · 마지막 신고 2026.07.20</p>
+  <div class="tcta">
+    <a class="p" href="../map.html?q=%EC%B0%BD%EB%8D%95%EC%97%90%EB%B2%84%EB%B9%8C2%EB%8B%A8%EC%A7%80&dong=%EA%B4%91%EC%96%91%EC%9D%8D%20%EC%9A%A9%EA%B0%95%EB%A6%AC">지도에서 창덕에버빌2단지 보기 →</a>
+    <a class="l" href="../%EB%8B%A8%EC%A7%80%EC%83%81%EC%84%B8.html?code=12190&nm=%EC%B0%BD%EB%8D%95%EC%97%90%EB%B2%84%EB%B9%8C2%EB%8B%A8%EC%A7%80&dong=%EA%B4%91%EC%96%91%EC%9D%8D%20%EC%9A%A9%EA%B0%95%EB%A6%AC">실거래 이력 전체 →</a>
+  </div>
   <div class="lead"><p>창덕에버빌2단지는 전남 광양시 광양읍 용강리에 있는 1,416세대 12개 동 규모의 아파트입니다.</p><p>2001년에 창덕E&amp;C 시공으로 준공됐습니다.</p><p>최근 6개월 매매 실거래는 8건이고 중위 가격은 1억, 전용면적 기준 평당 400만원입니다. 이 기간 최고가는 1.4억(전용 84.8㎡·2026.06.02)입니다.</p><p>2016년 평당 392만원에서 2026년 371만원으로 -5% 내렸습니다.</p><p>공개된 관리비는 세대당 월 평균 181,901원, 전용 평당 7,544원입니다.</p></div>
 
   <h2>핵심 수치</h2>

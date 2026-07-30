@@ -26,6 +26,14 @@ table.t1,table.t2{width:100%;border-collapse:collapse;font-size:14px}
 .t2 th{font-size:11.5px;color:var(--muted);text-align:left;padding:7px 8px;border-bottom:1.5px solid var(--text)}
 .t2 td{padding:8px;border-bottom:1px solid var(--hair);font-variant-numeric:tabular-nums}
 .t2 td:first-child{color:var(--muted)}
+/* 첫 화면에서 바로 이 단지 지도로 갈 수 있게. 검색으로 들어온 사람이 스크롤을
+   끝까지 내려야 지도 링크를 만나면 대부분 이탈한다(2026-07-30 석봉님 지적). */
+.tcta{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px}
+.tcta a{display:inline-flex;align-items:center;gap:5px;padding:9px 16px;border-radius:100px;
+  text-decoration:none;font-size:13px;font-weight:700;line-height:1.2}
+.tcta a.p{background:var(--text);color:#fff}
+.tcta a.l{border:1px solid var(--hair);color:var(--text2);background:var(--soft)}
+.tcta a:hover{opacity:.88}
 .cta{display:flex;gap:10px;flex-wrap:wrap;margin:26px 0 0}
 .cta a{display:inline-block;padding:13px 24px;border-radius:100px;text-decoration:none;font-size:14px;font-weight:700}
 .cta a.p{background:var(--text);color:#fff}
@@ -52,6 +60,10 @@ ul.near span{color:var(--muted);font-size:11.5px;margin-left:6px}
 <main class="wrap">
   <h1>목포석현동라송센트럴카운티5차아파트</h1>
   <p class="loc">전남 목포시 석현동 · 아파트 · 최근 6개월 실거래 258건 · 마지막 신고 2026.07.22</p>
+  <div class="tcta">
+    <a class="p" href="../map.html?q=%EB%AA%A9%ED%8F%AC%EC%84%9D%ED%98%84%EB%8F%99%EB%9D%BC%EC%86%A1%EC%84%BC%ED%8A%B8%EB%9F%B4%EC%B9%B4%EC%9A%B4%ED%8B%B05%EC%B0%A8%EC%95%84%ED%8C%8C%ED%8A%B8&dong=%EC%84%9D%ED%98%84%EB%8F%99">지도에서 목포석현동라송센트럴카운티5차아파트 보기 →</a>
+    <a class="l" href="../%EB%8B%A8%EC%A7%80%EC%83%81%EC%84%B8.html?code=12110&nm=%EB%AA%A9%ED%8F%AC%EC%84%9D%ED%98%84%EB%8F%99%EB%9D%BC%EC%86%A1%EC%84%BC%ED%8A%B8%EB%9F%B4%EC%B9%B4%EC%9A%B4%ED%8B%B05%EC%B0%A8%EC%95%84%ED%8C%8C%ED%8A%B8&dong=%EC%84%9D%ED%98%84%EB%8F%99">실거래 이력 전체 →</a>
+  </div>
   <div class="lead"><p>목포석현동라송센트럴카운티5차아파트는 전남 목포시 석현동에 있는 756세대 9개 동 규모의 아파트입니다.</p><p>2020년에 라송산업 시공으로 준공됐습니다.</p><p>공개된 관리비는 세대당 월 평균 164,843원, 전용 평당 6,568원입니다.</p><p>학군은 초등학교(석현초등학교)입니다.</p></div>
 
   <h2>핵심 수치</h2>

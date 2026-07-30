@@ -26,6 +26,14 @@ table.t1,table.t2{width:100%;border-collapse:collapse;font-size:14px}
 .t2 th{font-size:11.5px;color:var(--muted);text-align:left;padding:7px 8px;border-bottom:1.5px solid var(--text)}
 .t2 td{padding:8px;border-bottom:1px solid var(--hair);font-variant-numeric:tabular-nums}
 .t2 td:first-child{color:var(--muted)}
+/* 첫 화면에서 바로 이 단지 지도로 갈 수 있게. 검색으로 들어온 사람이 스크롤을
+   끝까지 내려야 지도 링크를 만나면 대부분 이탈한다(2026-07-30 석봉님 지적). */
+.tcta{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px}
+.tcta a{display:inline-flex;align-items:center;gap:5px;padding:9px 16px;border-radius:100px;
+  text-decoration:none;font-size:13px;font-weight:700;line-height:1.2}
+.tcta a.p{background:var(--text);color:#fff}
+.tcta a.l{border:1px solid var(--hair);color:var(--text2);background:var(--soft)}
+.tcta a:hover{opacity:.88}
 .cta{display:flex;gap:10px;flex-wrap:wrap;margin:26px 0 0}
 .cta a{display:inline-block;padding:13px 24px;border-radius:100px;text-decoration:none;font-size:14px;font-weight:700}
 .cta a.p{background:var(--text);color:#fff}
@@ -52,6 +60,10 @@ ul.near span{color:var(--muted);font-size:11.5px;margin-left:6px}
 <main class="wrap">
   <h1>역삼I'PARK</h1>
   <p class="loc">서울 강남구 역삼동 · 아파트 · 최근 6개월 실거래 14건 · 마지막 신고 2026.07.16</p>
+  <div class="tcta">
+    <a class="p" href="../map.html?q=%EC%97%AD%EC%82%BCI%27PARK&dong=%EC%97%AD%EC%82%BC%EB%8F%99">지도에서 역삼I'PARK 보기 →</a>
+    <a class="l" href="../%EB%8B%A8%EC%A7%80%EC%83%81%EC%84%B8.html?code=11680&nm=%EC%97%AD%EC%82%BCI%27PARK&dong=%EC%97%AD%EC%82%BC%EB%8F%99">실거래 이력 전체 →</a>
+  </div>
   <div class="lead"><p>역삼I'PARK은 서울 강남구 역삼동에 있는 541세대 7개 동 규모의 아파트입니다.</p><p>2006년에 현대산업개발(주) 시공으로 준공됐습니다.</p><p>최근 6개월 매매 신고는 없고 전월세 거래가 14건 있었습니다.</p><p>전세 중위 보증금은 4.5억.</p><p>2016년 평당 4,051만원에서 2026년 11,352만원으로 +180% 올랐습니다.</p><p>공개된 관리비는 세대당 월 평균 406,088원, 전용 평당 13,950원입니다.</p><p>가장 가까운 지하철은 2호선, 분당선 선릉 도보 5~10분이내입니다.</p><p>학군은 초등학교(도곡,도성) 중학교(역삼,도곡,단국,숙명여) 고등학교(중대부속,숙명여,진선여)입니다.</p></div>
 
   <h2>핵심 수치</h2>
