@@ -26,6 +26,14 @@ table.t1,table.t2{width:100%;border-collapse:collapse;font-size:14px}
 .t2 th{font-size:11.5px;color:var(--muted);text-align:left;padding:7px 8px;border-bottom:1.5px solid var(--text)}
 .t2 td{padding:8px;border-bottom:1px solid var(--hair);font-variant-numeric:tabular-nums}
 .t2 td:first-child{color:var(--muted)}
+/* 첫 화면에서 바로 이 단지 지도로 갈 수 있게. 검색으로 들어온 사람이 스크롤을
+   끝까지 내려야 지도 링크를 만나면 대부분 이탈한다(2026-07-30 석봉님 지적). */
+.tcta{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px}
+.tcta a{display:inline-flex;align-items:center;gap:5px;padding:9px 16px;border-radius:100px;
+  text-decoration:none;font-size:13px;font-weight:700;line-height:1.2}
+.tcta a.p{background:var(--text);color:#fff}
+.tcta a.l{border:1px solid var(--hair);color:var(--text2);background:var(--soft)}
+.tcta a:hover{opacity:.88}
 .cta{display:flex;gap:10px;flex-wrap:wrap;margin:26px 0 0}
 .cta a{display:inline-block;padding:13px 24px;border-radius:100px;text-decoration:none;font-size:14px;font-weight:700}
 .cta a.p{background:var(--text);color:#fff}
@@ -52,6 +60,10 @@ ul.near span{color:var(--muted);font-size:11.5px;margin-left:6px}
 <main class="wrap">
   <h1>장안현대홈타운(336)</h1>
   <p class="loc">서울 동대문구 장안동 · 아파트 · 최근 6개월 실거래 29건 · 마지막 신고 2026.07.29</p>
+  <div class="tcta">
+    <a class="p" href="../map.html?q=%EC%9E%A5%EC%95%88%ED%98%84%EB%8C%80%ED%99%88%ED%83%80%EC%9A%B4%28336%29&dong=%EC%9E%A5%EC%95%88%EB%8F%99">지도에서 장안현대홈타운(336) 보기 →</a>
+    <a class="l" href="../%EB%8B%A8%EC%A7%80%EC%83%81%EC%84%B8.html?code=11230&nm=%EC%9E%A5%EC%95%88%ED%98%84%EB%8C%80%ED%99%88%ED%83%80%EC%9A%B4%28336%29&dong=%EC%9E%A5%EC%95%88%EB%8F%99">실거래 이력 전체 →</a>
+  </div>
   <div class="lead"><p>장안현대홈타운(336)은 서울 동대문구 장안동에 있는 2,182세대 22개 동 규모의 아파트입니다.</p><p>2003년에 현대건설 시공으로 준공됐습니다.</p><p>최근 6개월 매매 실거래는 6건이고 중위 가격은 12.6억, 전용면적 기준 평당 4,918만원입니다. 이 기간 최고가는 14.7억(전용 133.7㎡·2026.07.29)입니다.</p><p>전세 중위 보증금은 6.2억이고, 평당 기준 전세가율은 약 52%입니다.</p><p>2016년 평당 1,909만원에서 2026년 4,655만원으로 +144% 올랐습니다.</p><p>공개된 관리비는 세대당 월 평균 220,914원, 전용 평당 8,367원입니다.</p><p>가장 가까운 지하철은 1호선, 5호선, 7호선 장한평 도보 10~15분이내입니다.</p><p>학군은 초등학교(은석초교, 장평초교, 안평초교) 중학교(동대부속중, 장평중) 고등학교(동대부속고)입니다.</p></div>
 
   <h2>핵심 수치</h2>
