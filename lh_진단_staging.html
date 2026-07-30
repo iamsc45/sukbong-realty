@@ -222,12 +222,14 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
         if(!t.a)return;
         var py=t.p/(t.a/3.305785);
         if(t.u==='매매')mm.push(py);
-        else if(t.u==='전세')je.push({p:t.p,a:t.a});
+        else if(t.u==='전세')je.push({p:t.p,a:t.a,py:py});
         else if(t.u==='월세')wo.push(t);
       });
     });
     return {pts:pts,R:R,mmPy:Math.round(med(mm)),mmN:mm.length,
-            jeMed:med(je.map(function(x){return x.p;})),jeN:je.length,woN:wo.length};
+            jeMed:med(je.map(function(x){return x.p;})),
+            jePy:Math.round(med(je.map(function(x){return x.py;}))),
+            jeN:je.length,woN:wo.length};
   }
 
   /* ── 4. 생활편의: 가장 가까운 단지의 공동주택 정보 ── */
@@ -337,10 +339,10 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
     var rentN=mk.jeN+mk.woN;
     if(rentN>=20){
       pass++;
-      var ratio=(mk.mmPy&&mk.jeMed&&area)?Math.round(mk.jeMed/(mk.mmPy*area/3.305785)*100):0;
+      var ratio=(mk.mmPy&&mk.jePy)?Math.round(mk.jePy/mk.mmPy*100):0;
       H.push(item('임대수요','충분','p',
         '반경 안에서 전월세 실거래가 <b>'+n(rentN)+'건</b> 확인됩니다(전세 '+n(mk.jeN)+' · 월세 '+n(mk.woN)+'). 임차 회전이 있는 지역입니다.',
-        (ratio?'전세가율 참고치 약 <b>'+ratio+'%</b>(전세 중위 ÷ 매매 환산). ':'')+'LH 매입임대는 준공 후 임차인 모집이 전제라 임대수요가 심의에서 실질 기준입니다.'));
+        (ratio?'전세가율 참고치 약 <b>'+ratio+'%</b>(전세 평당 '+n(mk.jePy)+'만 ÷ 매매 평당 '+n(mk.mmPy)+'만, 같은 전용면적 기준). ':'')+'LH 매입임대는 준공 후 임차인 모집이 전제라 임대수요가 심의에서 실질 기준입니다.'));
     }else{
       warn++;
       H.push(item('임대수요','약함','w',
