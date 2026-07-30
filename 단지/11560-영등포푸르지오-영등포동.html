@@ -26,6 +26,14 @@ table.t1,table.t2{width:100%;border-collapse:collapse;font-size:14px}
 .t2 th{font-size:11.5px;color:var(--muted);text-align:left;padding:7px 8px;border-bottom:1.5px solid var(--text)}
 .t2 td{padding:8px;border-bottom:1px solid var(--hair);font-variant-numeric:tabular-nums}
 .t2 td:first-child{color:var(--muted)}
+/* 첫 화면에서 바로 이 단지 지도로 갈 수 있게. 검색으로 들어온 사람이 스크롤을
+   끝까지 내려야 지도 링크를 만나면 대부분 이탈한다(2026-07-30 석봉님 지적). */
+.tcta{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px}
+.tcta a{display:inline-flex;align-items:center;gap:5px;padding:9px 16px;border-radius:100px;
+  text-decoration:none;font-size:13px;font-weight:700;line-height:1.2}
+.tcta a.p{background:var(--text);color:#fff}
+.tcta a.l{border:1px solid var(--hair);color:var(--text2);background:var(--soft)}
+.tcta a:hover{opacity:.88}
 .cta{display:flex;gap:10px;flex-wrap:wrap;margin:26px 0 0}
 .cta a{display:inline-block;padding:13px 24px;border-radius:100px;text-decoration:none;font-size:14px;font-weight:700}
 .cta a.p{background:var(--text);color:#fff}
@@ -52,6 +60,10 @@ ul.near span{color:var(--muted);font-size:11.5px;margin-left:6px}
 <main class="wrap">
   <h1>영등포푸르지오</h1>
   <p class="loc">서울 영등포구 영등포동 · 아파트 · 최근 6개월 실거래 43건 · 마지막 신고 2026.07.25</p>
+  <div class="tcta">
+    <a class="p" href="../map.html?q=%EC%98%81%EB%93%B1%ED%8F%AC%ED%91%B8%EB%A5%B4%EC%A7%80%EC%98%A4&dong=%EC%98%81%EB%93%B1%ED%8F%AC%EB%8F%99">지도에서 영등포푸르지오 보기 →</a>
+    <a class="l" href="../%EB%8B%A8%EC%A7%80%EC%83%81%EC%84%B8.html?code=11560&nm=%EC%98%81%EB%93%B1%ED%8F%AC%ED%91%B8%EB%A5%B4%EC%A7%80%EC%98%A4&dong=%EC%98%81%EB%93%B1%ED%8F%AC%EB%8F%99">실거래 이력 전체 →</a>
+  </div>
   <div class="lead"><p>영등포푸르지오는 서울 영등포구 영등포동에 있는 2,462세대 31개 동 규모의 아파트입니다.</p><p>2002년에 대우건설 시공으로 준공됐습니다.</p><p>최근 6개월 매매 실거래는 7건이고 중위 가격은 15.8억, 전용면적 기준 평당 7,006만원입니다. 이 기간 최고가는 16억(전용 79.8㎡·2026.06.13)입니다.</p><p>전세 중위 보증금은 6.6억이고, 평당 기준 전세가율은 약 41%입니다.</p><p>2016년 평당 2,145만원에서 2026년 6,671만원으로 +211% 올랐습니다.</p><p>공개된 관리비는 세대당 월 평균 231,299원, 전용 평당 10,073원입니다.</p><p>가장 가까운 지하철은 1호선 영등포 도보 5~10분이내입니다.</p><p>학군은 초등학교(서울영원)입니다.</p></div>
 
   <h2>핵심 수치</h2>
