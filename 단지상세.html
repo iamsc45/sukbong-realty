@@ -91,6 +91,9 @@ _css.textContent='.chips{display:flex;flex-wrap:wrap;gap:6px}'
  +'.fee-b .n small{font-size:12px;font-weight:600}'
  +'.fee-b .l{font-size:11px;color:#6b6355;margin-top:5px;line-height:1.35}'
  +'@media(max-width:520px){.fee{grid-template-columns:1fr}}'
+ +'.trbtn{border:1px solid #d8d0c0;background:#fff;color:#6b6355;font-size:11.5px;font-weight:700;padding:4px 12px;border-radius:14px;cursor:pointer}'
+ +'.trbtn.on{background:#a8792c;color:#fff;border-color:#a8792c}'
+ +'.trwrap{border:1px solid #ded8cc;border-radius:11px;padding:12px 14px;background:#fff}'
  +'.cmpr b small{display:block;font-size:10.5px;color:#8a8071;font-weight:600;margin-top:2px}';
 document.head.appendChild(_css);
 function comma(n){return Number(n).toLocaleString();}
@@ -123,7 +126,10 @@ function boot(){
         var al=document.createElement('script');al.src='data/alias_'+code+'.js';
         al.onload=al.onerror=function(){
           var fe=document.createElement('script');fe.src='data/apt_fee_'+code+'.js';
-          fe.onload=fe.onerror=function(){go(code,nm,dong);};document.body.appendChild(fe);
+          fe.onload=fe.onerror=function(){
+            var tr=document.createElement('script');tr.src='data/apt_trend_'+code+'.js';
+            tr.onload=tr.onerror=function(){go(code,nm,dong);};document.body.appendChild(tr);
+          };document.body.appendChild(fe);
         };document.body.appendChild(al);
       };document.body.appendChild(k);
     };
@@ -165,6 +171,55 @@ function findFee(code,name){
   return (ak&&box[ak])||box[name]||null;
 }
 function won(v){return v?Number(v).toLocaleString()+'원':'·';}
+/* 단지 시세추이 — 백필 히스토리(매매 평당·전용 중위)를 연도별로 그린다.
+   데이터=data/apt_trend_<시군구>.js, 키='단지명|법정동', 값=[[연도, 평당만원, 건수], ...] */
+var _APTTR=null;
+function findTrend(code,name,dong){
+  var box=(window.APTTREND&&window.APTTREND[code])||null; if(!box)return null;
+  return box[name+'|'+(dong||'')]||null;
+}
+function trendSection(s){
+  _APTTR=s;
+  var btns=[['전체',99],['최근5년',5],['최근3년',3]].map(function(b){
+    return '<button class="trbtn'+(b[1]===99?' on':'')+'" onclick="drawTrend('+b[1]+',this)">'+b[0]+'</button>';}).join('');
+  return '<div class="trwrap"><div style="display:flex;gap:5px;margin-bottom:9px">'+btns+'</div>'
+    +'<div id="trendchart"></div></div>';
+}
+function drawTrend(ny,btn){
+  if(btn){var ps=btn.parentNode.querySelectorAll('.trbtn');
+    for(var i=0;i<ps.length;i++)ps[i].classList.remove('on');btn.classList.add('on');}
+  var s=_APTTR||[]; if(ny<99&&s.length>ny)s=s.slice(s.length-ny);
+  var el=document.getElementById('trendchart'); if(el)el.innerHTML=trendSvg(s);
+}
+function trendSvg(s){
+  if(!s||s.length<2)return '<div style="color:#8a8071;padding:10px 2px;font-size:13px">해당 기간 표본이 부족합니다.</div>';
+  var W=600,H=182,padL=54,padR=16,padT=26,padB=28;
+  var ys=s.map(function(d){return d[1];}),mn=Math.min.apply(null,ys),mx=Math.max.apply(null,ys);
+  var x0=s[0][0],x1=s[s.length-1][0],sp=(x1-x0)||1;
+  function X(y){return padL+(y-x0)/sp*(W-padL-padR);}
+  function Y(v){return padT+(1-(v-mn)/((mx-mn)||1))*(H-padT-padB);}
+  var grid='';[mx,(mn+mx)/2,mn].forEach(function(v){var yy=Y(v).toFixed(1);
+    grid+='<line x1="'+padL+'" y1="'+yy+'" x2="'+(W-padR)+'" y2="'+yy+'" stroke="#efe8da" stroke-width="1"/>'
+      +'<text x="'+(padL-7)+'" y="'+(parseFloat(yy)+3.5)+'" font-size="10" fill="#8a8071" text-anchor="end">'+Math.round(v).toLocaleString()+'</text>';});
+  var line=s.map(function(d){return X(d[0]).toFixed(1)+','+Y(d[1]).toFixed(1);}).join(' ');
+  var area='M'+X(x0).toFixed(1)+','+(H-padB)+' L'+line.split(' ').join(' L')+' L'+X(x1).toFixed(1)+','+(H-padB)+' Z';
+  var dots=s.map(function(d){return '<circle cx="'+X(d[0]).toFixed(1)+'" cy="'+Y(d[1]).toFixed(1)+'" r="3" fill="#a8792c"><title>'+d[0]+'년 '+d[1].toLocaleString()+'만원/평 · '+d[2]+'건</title></circle>';}).join('');
+  var xlabs=s.map(function(d,i){return (s.length<=7||i===0||i===s.length-1||i%2===0)?'<text x="'+X(d[0]).toFixed(1)+'" y="'+(H-9)+'" font-size="10" fill="#8a8071" text-anchor="middle">'+d[0]+'</text>':'';}).join('');
+  var first=s[0],last=s[s.length-1],rise=Math.round((last[1]/first[1]-1)*100);
+  var tot=s.reduce(function(a,d){return a+d[2];},0);
+  var head='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">'
+    +'<span style="font-size:12.5px;color:#6b6355">'+first[0]+'~'+last[0]+' · 매매 '+tot.toLocaleString()+'건</span>'
+    +'<b style="font-size:16px;color:'+(rise>=0?'#c0562e':'#2b6cb0')+'">'+(rise>=0?'+':'')+rise+'%</b></div>';
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="display:block;overflow:visible">'
+    +'<text x="6" y="13" font-size="10" fill="#8a8071">만원/평(전용)</text>'
+    +grid
+    +'<path d="'+area+'" fill="rgba(168,121,44,.12)"/><polyline points="'+line+'" fill="none" stroke="#a8792c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'+dots+xlabs
+    +'<text x="'+X(last[0]).toFixed(1)+'" y="'+(Y(last[1])-9).toFixed(1)+'" font-size="12" font-weight="700" fill="#1a1a1a" text-anchor="end">'+last[1].toLocaleString()+'</text>'
+    +'</svg>';
+  return head+svg+'<div class="note" style="margin-top:4px">Y축=평당 만원(전용) · X축=연도 · '
+    +'<b>이 단지</b> 아파트 매매 실거래의 연도별 중위값(해제 건 제외). 점에 마우스를 올리면 연도별 건수가 보입니다. '
+    +(tot<10?'표본이 적어 연도별 편차가 클 수 있습니다.':'평형 구성에 따라 연도별 중위값이 흔들릴 수 있습니다.')+'</div>';
+}
 /* 관리비 섹션 — 세대당(메인) · 평당 전용(사이트 단가 기준 통일) · ㎡당 부과면적(공식 대조용) */
 function feeSec(fee,myArea){
   if(!fee||!fee.tot||(!fee.perSe&&!fee.perPy))return '';
@@ -310,10 +365,13 @@ function render(pt,code){
   h+=feeSec(_fee,_myA);
   h+='<div class="grid2"><div class="sec"><div class="lab">평형별 시세 (전용)</div>'+(pyr||'<div style="color:#8a8071;padding:8px 2px">최근 매매 표본 부족</div>')+'</div>'
     +'<div class="sec"><div class="lab">은행 대출 한도 (규제지역 기준)</div>'+loan+'</div></div>';
-  h+='<div class="sec"><div class="lab">시세 추이 (평당·연도별)</div><div class="soon">'
-    +'<svg viewBox="0 0 48 28" width="54" height="31" fill="none" stroke="#a8792c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,24 12,16 22,19 32,9 46,3"/><circle cx="46" cy="3" r="2.6" fill="#a8792c" stroke="none"/></svg>'
-    +'<div class="tag">업데이트 예정</div>'
-    +'<div>실거래 과거 데이터(백필)가 쌓이면 연도별 매매 평당가 추이 그래프가 여기에 표시됩니다.</div></div></div>';
+  var _tr=findTrend(code,pt.name,pt.dong);
+  h+='<div class="sec"><div class="lab">시세 추이 (평당·연도별)</div>'
+    +(_tr?trendSection(_tr):'<div class="soon">'
+      +'<svg viewBox="0 0 48 28" width="54" height="31" fill="none" stroke="#a8792c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,24 12,16 22,19 32,9 46,3"/><circle cx="46" cy="3" r="2.6" fill="#a8792c" stroke="none"/></svg>'
+      +'<div class="tag">표본 부족</div>'
+      +'<div>이 단지는 과거 매매 실거래가 두 개 연도 이상 확인되지 않아 추이를 그릴 수 없습니다. 거래가 쌓이면 자동으로 표시됩니다.</div></div>')
+    +'</div>';
   // 인근 정비구역
   var near=nearZones(pt.lat,pt.lng);
   h+='<div class="sec"><div class="lab">인근 정비구역 (재개발·재건축)</div>'+(near||'<div style="color:#8a8071;padding:8px 2px">반경 1.5km 내 진행중 정비구역 없음</div>')
