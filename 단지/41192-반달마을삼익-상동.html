@@ -26,6 +26,14 @@ table.t1,table.t2{width:100%;border-collapse:collapse;font-size:14px}
 .t2 th{font-size:11.5px;color:var(--muted);text-align:left;padding:7px 8px;border-bottom:1.5px solid var(--text)}
 .t2 td{padding:8px;border-bottom:1px solid var(--hair);font-variant-numeric:tabular-nums}
 .t2 td:first-child{color:var(--muted)}
+/* 첫 화면에서 바로 이 단지 지도로 갈 수 있게. 검색으로 들어온 사람이 스크롤을
+   끝까지 내려야 지도 링크를 만나면 대부분 이탈한다(2026-07-30 석봉님 지적). */
+.tcta{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px}
+.tcta a{display:inline-flex;align-items:center;gap:5px;padding:9px 16px;border-radius:100px;
+  text-decoration:none;font-size:13px;font-weight:700;line-height:1.2}
+.tcta a.p{background:var(--text);color:#fff}
+.tcta a.l{border:1px solid var(--hair);color:var(--text2);background:var(--soft)}
+.tcta a:hover{opacity:.88}
 .cta{display:flex;gap:10px;flex-wrap:wrap;margin:26px 0 0}
 .cta a{display:inline-block;padding:13px 24px;border-radius:100px;text-decoration:none;font-size:14px;font-weight:700}
 .cta a.p{background:var(--text);color:#fff}
@@ -52,6 +60,10 @@ ul.near span{color:var(--muted);font-size:11.5px;margin-left:6px}
 <main class="wrap">
   <h1>반달마을(삼익)</h1>
   <p class="loc">경기 부천 원미구 상동 · 아파트 · 최근 6개월 실거래 13건 · 마지막 신고 2026.07.20</p>
+  <div class="tcta">
+    <a class="p" href="../map.html?q=%EB%B0%98%EB%8B%AC%EB%A7%88%EC%9D%84%28%EC%82%BC%EC%9D%B5%29&dong=%EC%83%81%EB%8F%99">지도에서 반달마을(삼익) 보기 →</a>
+    <a class="l" href="../%EB%8B%A8%EC%A7%80%EC%83%81%EC%84%B8.html?code=41192&nm=%EB%B0%98%EB%8B%AC%EB%A7%88%EC%9D%84%28%EC%82%BC%EC%9D%B5%29&dong=%EC%83%81%EB%8F%99">실거래 이력 전체 →</a>
+  </div>
   <div class="lead"><p>반달마을(삼익)은 경기 부천 원미구 상동에 있는 828세대 9개 동 규모의 아파트입니다.</p><p>1993년에 (주)삼익 시공으로 준공됐습니다.</p><p>최근 6개월 매매 실거래는 7건이고 중위 가격은 5.8억, 전용면적 기준 평당 2,333만원입니다. 이 기간 최고가는 6.1억(전용 82.9㎡·2026.07.16)입니다.</p><p>전세 중위 보증금은 3.9억이고, 평당 기준 전세가율은 약 67%입니다.</p><p>2016년 평당 1,336만원에서 2026년 2,297만원으로 +72% 올랐습니다.</p><p>공개된 관리비는 세대당 월 평균 250,140원, 전용 평당 10,525원입니다.</p><p>가장 가까운 지하철은 1호선, 6호선, 7호선 송내역, 상동역 도보 10~15분이내입니다.</p><p>학군은 초등학교(상동초, 상원초, 부인초) 중학교(부인중) 고등학교(부천정보산업고, 상원고) 대학교(부천대, 폴리텍)입니다.</p></div>
 
   <h2>핵심 수치</h2>
