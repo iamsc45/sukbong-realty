@@ -381,6 +381,7 @@ function render(pt,code){
     +'<div class="tabs"><b class="on" data-t="mm">매매 '+mm.length+'</b><b data-t="je">전세 '+je.length+'</b><b data-t="wo">월세 '+wo.length+'</b></div>'
     +'<div class="list" id="dlist"></div></div>';
   document.getElementById('body').innerHTML=h;
+  if(_tr)drawTrend(99);   // DOM 삽입 후에 그려야 #trendchart를 찾는다
   // 실거래 렌더
   function rMM(x){return '<div class="deal"><div><b>'+x.a+'㎡('+PY(x.a)+')</b><span class="meta">'+x.f+'층 · '+x.cd.slice(2).replace(/-/g,'.')+'</span></div><div class="pr">'+eok(x.p)+'<span class="s">'+(x.a?comma(Math.round(x.p/x.a*3.305785))+'만/평':'')+'</span></div></div>';}
   function rJE(x){return '<div class="deal"><div><b>'+x.a+'㎡('+PY(x.a)+')</b><span class="meta">'+x.f+'층 · '+x.cd.slice(2).replace(/-/g,'.')+'</span></div><div class="pr">'+eok(x.p)+'<span class="s">전세</span></div></div>';}
