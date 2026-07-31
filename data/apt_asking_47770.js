@@ -1,1 +1,1 @@
-window.APTASK=window.APTASK||{};APTASK["47770"]={"영덕우진센트럴하임":{"mm":{"med":40000,"py":1257,"n":2}}};window.APTASKDAY="2026-07-25";
+window.APTASK=window.APTASK||{};APTASK["47770"]={"영덕우진센트럴하임|영덕읍":{"mm":{"med":40000,"py":1257,"n":2}}};window.APTASKDAY="2026-07-25";

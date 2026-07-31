@@ -1,1 +1,1 @@
-window.APTASK=window.APTASK||{};APTASK["47930"]={"라온하이츠(주상복합)":{"mm":{"med":31000,"py":1220,"n":1}},"울진후포오션더캐슬(주상복합)":{"mm":{"med":53690,"py":2113,"n":5}}};window.APTASKDAY="2026-07-25";
+window.APTASK=window.APTASK||{};APTASK["47930"]={"라온하이츠(주상복합)|후포면":{"mm":{"med":31000,"py":1220,"n":1}},"울진후포오션더캐슬(주상복합)|후포면":{"mm":{"med":53690,"py":2113,"n":5}}};window.APTASKDAY="2026-07-25";

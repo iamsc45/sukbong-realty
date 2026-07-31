@@ -179,10 +179,13 @@ function findInfo(code,name){
   for(var k in box){if(nkey(k)===t&&box[k]&&box[k].se)return box[k];}
   return null;
 }
+/* 호가 키는 '단지명|법정동'이다(2026-07-30). 전에는 단지명뿐이라 같은 구의
+   동명이단지 호가가 한 덩어리로 합쳐졌다(압구정 현대1차에 개포동 호가가 붙어
+   실거래보다 낮게 표시된 사고). 별칭이 없어도 법정동을 붙여 찾는다. */
 function findAsk(code,name){
   var box=(window.APTASK&&window.APTASK[code])||null; if(!box)return null;
   var ak=aliasOf(code,name,'a');
-  return (ak&&box[ak])||box[name]||null;
+  return (ak&&box[ak])||box[name+'|'+(_CURDONG||'')]||null;
 }
 function findFee(code,name){
   var box=(window.APTFEE&&window.APTFEE[code])||null; if(!box)return null;
