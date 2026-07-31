@@ -1,1 +1,1 @@
-window.APTASK=window.APTASK||{};APTASK["12860"]={"진도청림모드니애":{"mm":{"med":38500,"py":1515,"n":1}}};window.APTASKDAY="2026-07-25";
+window.APTASK=window.APTASK||{};APTASK["12860"]={"진도청림모드니애|진도읍":{"mm":{"med":38500,"py":1515,"n":1}}};window.APTASKDAY="2026-07-25";

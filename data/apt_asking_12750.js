@@ -1,1 +1,1 @@
-window.APTASK=window.APTASK||{};APTASK["12750"]={"보성한국아델리움더테라스(도시형)":{"mm":{"med":35000,"py":1377,"n":1},"je":{"med":23000,"n":1}}};window.APTASKDAY="2026-07-25";
+window.APTASK=window.APTASK||{};APTASK["12750"]={"보성한국아델리움더테라스(도시형)|보성읍":{"mm":{"med":35000,"py":1377,"n":1},"je":{"med":23000,"n":1}}};window.APTASKDAY="2026-07-25";

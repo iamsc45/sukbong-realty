@@ -1,1 +1,1 @@
-window.APTASK=window.APTASK||{};APTASK["12790"]={"해성":{"mm":{"med":4200,"py":235,"n":1}},"미암":{"mm":{"med":4900,"py":312,"n":1}}};window.APTASKDAY="2026-07-25";
+window.APTASK=window.APTASK||{};APTASK["12790"]={"해성|해남읍":{"mm":{"med":4200,"py":235,"n":1}},"미암|해남읍":{"mm":{"med":4900,"py":312,"n":1}}};window.APTASKDAY="2026-07-25";
