@@ -27,6 +27,20 @@ table.tb{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numer
 .tb .hl{color:var(--acc-blue);font-weight:800}
 .bar{display:inline-block;height:7px;border-radius:4px;background:var(--acc-blue);vertical-align:1px;margin-right:7px}
 .seg{font-size:12px;color:var(--muted);margin:26px 0 6px;font-weight:700}
+/* 화제의 매각 결과 카드(2026-08-02) — 누르면 우리 지도에서 주변 시세와 비교 */
+.hotg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0 4px}
+a.hc{display:block;border:1px solid var(--hair);border-radius:14px;background:var(--soft);padding:14px 16px;text-decoration:none;color:var(--text);transition:border-color 120ms ease}
+a.hc:hover{border-color:var(--acc-blue)}
+.hc .loc{font-size:11.5px;color:var(--muted)}
+.hc .nm{font-size:14.5px;font-weight:800;letter-spacing:-0.02em;margin:2px 0 7px}
+.hc .nm small{font-weight:700;color:var(--muted);font-size:11px;margin-left:5px}
+.hc .pr{font-size:13px;font-variant-numeric:tabular-nums}
+.hc .pr b{font-size:15px}
+.hc .pr .rt{font-weight:800;margin-left:6px}
+.hc .rt.lo{color:var(--down)}.hc .rt.hi{color:var(--acc-blue)}
+.hc .mt{font-size:11px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between}
+.hc .mt .go{color:var(--acc-blue);font-weight:700}
+@media(max-width:640px){.hotg{grid-template-columns:1fr}}
 .notice2{font-size:11.5px;color:var(--muted);line-height:1.7;margin:26px 0 50px}
 @media(max-width:640px){
   .tb th:nth-child(4),.tb td:nth-child(4){display:none}
@@ -65,6 +79,7 @@ table.tb{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numer
   <p class="seg" id="segTable"></p>
   <div id="tbl"></div>
   <div id="extra"></div>
+  <div id="hot"></div>
   <p class="notice2" id="note"></p>
 </main>
 <footer class="site-footer">
@@ -82,6 +97,35 @@ table.tb{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numer
   document.getElementById('basis').textContent='법원경매·온비드 공매 낙찰 통계 · 기준일 '+A.updated;
   var NM={'아파트':'아파트','오피스텔':'오피스텔','연립다세대':'연립·다세대','단독다가구':'단독·다가구','상가업무':'상가·업무','토지':'토지','공장창고':'공장·창고','자동차중기':'자동차·중기','주거_기타':'주거 기타','기타':'기타'};
   function kpi(v,l){return '<div class="kpi2"><div class="v">'+v+'</div><div class="l">'+l+'</div></div>';}
+  var hot=document.getElementById('hot');
+  function eokM(m){if(!m)return '·';var v=m/10000;return v>=100?Math.round(v)+'억':v>=1?((''+v.toFixed(1)).replace(/\.0$/,''))+'억':Math.round(m).toLocaleString()+'만';}
+  function fd(s){return s?s.slice(4,6)+'.'+s.slice(6,8):'';}
+  /* 클릭 → 우리 지도의 해당 동으로. 낙찰가가 주변 실거래 대비 싼지 바로 비교하게 한다.
+     (법원경매정보는 세션 기반이라 물건 딥링크가 불가능 — 외부로 보내는 대신 시세 비교로 연결) */
+  function card(q,loc,nm,use,ap,sp,ratio,meta,d){
+    var cls=ratio<70?'lo':(ratio>=100?'hi':'');
+    return '<a class="hc" href="map.html?q='+encodeURIComponent(q)+'" '
+      +'onclick="if(window.gtag)gtag(\'event\',\'auction_hot_click\',{q:\''+q.replace(/'/g,'')+'\'})">'
+      +'<div class="loc">'+loc+'</div>'
+      +'<div class="nm">'+nm+(use&&use!==nm?'<small>'+use+'</small>':'')+'</div>'
+      +'<div class="pr">감정 '+eokM(ap)+' → <b>'+eokM(sp)+'</b><span class="rt '+cls+'">'+ratio+'%</span></div>'
+      +'<div class="mt"><span>'+meta+' · '+fd(d)+'</span><span class="go">지도에서 주변 시세 보기 →</span></div></a>';
+  }
+  function hotAuction(){
+    var h=(A.hot&&A.hot.auc)||[];
+    if(!h.length){hot.innerHTML='';return;}
+    hot.innerHTML='<p class="seg">최근 2주 화제의 매각 결과 · 관심(조회수) 상위</p><div class="hotg">'
+      +h.map(function(x){return card(x.sgg+' '+x.dong, x.sido+' '+x.sgg+' '+x.dong, x.nm, x.use,
+        x.ap, x.sp, x.ratio, '유찰 '+x.fail+'회 · 조회 '+x.view, x.d);}).join('')
+      +'</div><p class="notice2" style="margin:8px 0 0">※ 낙찰가율은 감정가 대비이며, 감정 시점이 시세와 다를 수 있습니다. 카드를 누르면 실거래지도의 해당 동으로 이동해 주변 시세와 비교할 수 있습니다.</p>';
+  }
+  function hotOnbid(){
+    var h=(A.hot&&A.hot.gong)||[];
+    if(!h.length){hot.innerHTML='';return;}
+    hot.innerHTML='<p class="seg">최근 개찰 화제의 낙찰 · 응찰자 몰린 물건</p><div class="hotg">'
+      +h.map(function(x){return card(x.q, x.addr, x.use, '', x.ap, x.sp, x.ratio, '응찰 '+x.bid+'명', x.d);}).join('')
+      +'</div><p class="notice2" style="margin:8px 0 0">※ 압류재산 등은 지분 매각·권리 제한이 흔해 낙찰가율이 극단적으로 낮거나 높을 수 있습니다. 반드시 공매공고 원문을 확인하세요. 카드를 누르면 실거래지도의 해당 지역으로 이동합니다.</p>';
+  }
   function table(rows,xLabel){
     var maxRate=Math.max.apply(null,rows.map(function(r){return r.rate;}));
     return '<table class="tb"><thead><tr><th>상품</th><th>물건 수</th><th>낙찰률</th><th>낙찰가율</th><th>'+xLabel+'</th></tr></thead><tbody>'
@@ -98,6 +142,7 @@ table.tb{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numer
     seg.textContent='상품별 낙찰 통계 · 매각기일 '+A.auction.from+' ~ '+A.auction.to;
     tbl.innerHTML=table(A.auction.rows,'평균 유찰');
     ex.innerHTML='';
+    hotAuction();
     note.textContent='※ 법원경매 매각결과를 매주 수집해 누적한 통계입니다(현재 '+A.auction.from+' 이후분, 매주 확대). 낙찰률은 물건 기준(낙찰 물건 ÷ 개찰 물건), 낙찰가율은 감정가 대비 매각가입니다. 유찰이 반복된 물건이 포함되어 실제 시세와 다를 수 있으며, 투자 권유가 아닙니다.';
   }
   function onbid(){
