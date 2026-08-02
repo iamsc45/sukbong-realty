@@ -48,6 +48,12 @@ a.hc:hover{border-color:var(--acc-blue)}
   .tb{font-size:12.5px}
   .tb th,.tb td{padding:8px 5px;white-space:nowrap}
   .bar{display:none}
+  /* 월별 추이표의 5번째 칸은 낙찰가율 옆에 붙는 표본 주석이라, 낙찰가율(4번째)이
+     모바일에서 숨겨지면 같이 숨긴다(2026-08-02). 안 그러면 값 없는 주석만 남는다. */
+  .tb.mtr th:nth-child(5),.tb.mtr td:nth-child(5){display:none}
+  /* 같은 이유로 '집계 제외' 설명도 숨긴다. 모바일에는 월별 낙찰가율이 아예 안 보이므로
+     설명할 대상이 없다. KPI 기준은 하단 총 주석이 계속 알려준다. */
+  .mtnote{display:none}
 }
 </style>
 <meta property="og:title" content="경매·공매 · 석봉 부동산 정보방">
@@ -157,12 +163,12 @@ a.hc:hover{border-color:var(--acc-blue)}
     tbl.innerHTML=table(A.onbid.rows,'평균 응찰');
     var m=A.onbid.monthly||[],hid=m.filter(function(r){return !r.ratio;}).length;
     ex.innerHTML=m.length?('<p class="seg">월별 추이 · 전체 상품(물건 기준)</p>'
-      +'<table class="tb"><thead><tr><th>개찰월</th><th>물건 수</th><th>낙찰률</th><th>낙찰가율</th><th></th></tr></thead><tbody>'
+      +'<table class="tb mtr"><thead><tr><th>개찰월</th><th>물건 수</th><th>낙찰률</th><th>낙찰가율</th><th></th></tr></thead><tbody>'
       +m.map(function(r){return '<tr><td>'+r.ym+'</td><td>'+r.n.toLocaleString()+'</td><td class="hl">'+r.rate+'%</td>'
         +'<td>'+(r.ratio?r.ratio+'%':'<span style="color:#9b958c">집계 제외</span>')+'</td>'
         +'<td style="color:#9b958c;font-size:12px">'+(r.ratio?'':'감정가 표본 '+(r.cov||0)+'%')+'</td></tr>';}).join('')
       +'</tbody></table>'
-      +(hid?'<p class="notice2" style="margin:8px 0 0">※ 낙찰가율이 \'집계 제외\'인 달은 낙찰 건 가운데 감정가가 함께 공개된 물건이 적어(표본 '+A.onbid.ratio_min_cov+'% 미만) 평균을 내면 실제보다 높게 나옵니다. 값을 지어내지 않고 비워 둡니다. 낙찰률은 전 기간 비교 가능합니다.</p>':'')):'';
+      +(hid?'<p class="notice2 mtnote" style="margin:8px 0 0">※ 낙찰가율이 \'집계 제외\'인 달은 낙찰 건 가운데 감정가가 함께 공개된 물건이 적어(표본 '+A.onbid.ratio_min_cov+'% 미만) 평균을 내면 실제보다 높게 나옵니다. 값을 지어내지 않고 비워 둡니다. 낙찰률은 전 기간 비교 가능합니다.</p>':'')):'';
     hotOnbid();
     note.textContent='※ 캠코 온비드 공매 입찰결과를 매일 수집해 누적한 통계입니다(최근 1년). 낙찰률은 물건 기준이며, 회차 기준 낙찰률은 이보다 크게 낮습니다(공매는 유찰 회차가 많음). 낙찰가율은 감정가 대비 낙찰가로, 감정가가 함께 공개된 물건만 집계합니다. 투자 권유가 아닙니다.';
   }
