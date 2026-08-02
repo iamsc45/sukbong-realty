@@ -171,7 +171,10 @@ function render(f){
   document.getElementById("list").innerHTML=L.map(function(x){
     var st=ST[x.state];
     var pr=x.hi?('<b>'+(x.lo&&x.lo!==x.hi?eok(x.lo)+' ~ ':'')+eok(x.hi)+'</b>'+(x.sqm?'<small>'+x.sqm.toLocaleString()+'만/㎡ (공급면적 기준)</small>':'')):'<small>분양가 공고 확인</small>';
-    var mapLink=(PRI.indexOf(x.area)>=0&&x.ad)?' <a class="mapgo" href="map.html?q='+encodeURIComponent(x.ad+' '+(x.nm||''))+'&t=apt&u=%EB%A7%A4%EB%A7%A4">주변 실거래지도 ↗</a>':'';
+    /* q는 주소만 넘긴다(2026-08-02) — 단지명을 붙이면 "...번지 일원(설명)" 뒤에 이름이 또 붙어
+       주소 파싱이 아예 안 되고 시군구 전체화면으로 빠졌다. 분양예정 단지라 실거래 인덱스에도
+       없으므로 주소 지오코딩(주변 실거래지도)만으로 충분하다. */
+    var mapLink=(PRI.indexOf(x.area)>=0&&x.ad)?' <a class="mapgo" href="map.html?q='+encodeURIComponent(x.ad)+'&t=apt&u=%EB%A7%A4%EB%A7%A4">주변 실거래지도 ↗</a>':'';
     return '<div class="ap rv on"><span class="st '+st[1]+'">'+st[0]+'</span>'
      +'<span class="nm">'+(x.url?'<a href="'+x.url+'" target="_blank" rel="noopener" style="text-decoration:none;color:inherit">'+x.nm+' ↗</a>':x.nm)+'</span>'
      +'<span class="pr">'+pr+'</span>'

@@ -684,7 +684,7 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
     if(!tgt&&window.SB&&SB.dongs){
       /* 동 단위: "답십리동"·"답십리"·주소 속 동명 → 동 중심 줌15 */
       var de=null;
-      pq.split(/\s+/).forEach(function(w){if(!de&&SB.dongs[w])de=SB.dongs[w];});
+      pq.split(/\s+/).forEach(function(w){w=w.replace(/[,，·]+$/,'');if(!de&&SB.dongs[w])de=SB.dongs[w];});   /* '금곡동,' 같은 쉼표열거 첫 동 매칭 (2026-08-02) */
       if(!de){
         var qd=pq.replace(/\s+/g,'');
         if(qd.length>=2){
@@ -768,17 +768,28 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
     },onerr);
   }
   function tryAddress(v,onNo){
-    var m=v.match(/(\d+(?:-\d+)?)\s*(?:번지)?\s*$/);
+    /* 청약 공고 주소는 "...번지 일원"·"...번지 일대"·"프로젝트명 (실제 지번주소)" 형태가 많아
+       끝이 숫자로 안 끝나면 지번 매칭이 통째로 안 됐다(2026-08-02 발견 — 주변 실거래지도가
+       주소로 못 가고 시군구 전체화면으로 빠지던 원인). 부가설명을 정리해 지번을 살린다. */
+    var vv=(v||'').trim();
+    var pm=vv.match(/^(.*?)\s*\(([^()]*)\)\s*$/);
+    if(pm){
+      if(/\d+(?:-\d+)?\s*번지/.test(pm[2]))vv=pm[2];   /* 괄호 안이 실주소면 채택 */
+      else vv=pm[1];                                    /* 아니면 부연설명 괄호 버림 */
+    }
+    vv=vv.replace(/\s*외\s*\d+\s*(?:개)?\s*필지\s*$/,'');   /* '...번지 외 6필지' */
+    vv=vv.replace(/\s*(일원|일대)\s*$/,'').trim();
+    var m=vv.match(/(산?\d+(?:-\d+)?)\s*(?:번지)?\s*$/);    /* '산175-7' 같은 임야 지번 접두 포함 */
     if(!m){onNo();return;}
-    var jibun=m[1], head=v.slice(0,m.index).trim();
+    var jibun=m[1], head=vv.slice(0,m.index).trim();
     if(!head){onNo();return;}
     var toks=head.split(/\s+/), lastTok=toks[toks.length-1];
     var isRoad=/[로길]\d*$/.test(lastTok);
     var isDongish=/[동리가]$/.test(lastTok);
     if(!isRoad&&!isDongish){onNo();return;}   /* '흑석11' 같은 구역명 오탐 방지 */
     function vw(){
-      _vwGeocode(v,isRoad?'ROAD':'PARCEL',function(p){_addrMark(p.lat,p.lng,p.text);},
-        function(){_vwGeocode(v,isRoad?'PARCEL':'ROAD',function(p){_addrMark(p.lat,p.lng,p.text);},onNo);});
+      _vwGeocode(vv,isRoad?'ROAD':'PARCEL',function(p){_addrMark(p.lat,p.lng,p.text);},
+        function(){_vwGeocode(vv,isRoad?'PARCEL':'ROAD',function(p){_addrMark(p.lat,p.lng,p.text);},onNo);});
     }
     if(isRoad||!window.SB||!SB.dongs){vw();return;}
     /* 동+지번: 우리 실거래 데이터에서 정확 매칭 → 건물 카드 */
