@@ -155,6 +155,7 @@ a.hc:hover{border-color:var(--acc-blue)}
       +'<table class="tb"><thead><tr><th>개찰월</th><th>물건 수</th><th>낙찰률</th><th>낙찰가율</th><th></th></tr></thead><tbody>'
       +m.map(function(r){return '<tr><td>'+r.ym+'</td><td>'+r.n.toLocaleString()+'</td><td class="hl">'+r.rate+'%</td><td>'+(r.ratio?r.ratio+'%':'·')+'</td><td></td></tr>';}).join('')
       +'</tbody></table>'):'';
+    hotOnbid();
     note.textContent='※ 캠코 온비드 공매 입찰결과를 매일 수집해 누적한 통계입니다(최근 1년). 낙찰률은 물건 기준이며, 회차 기준 낙찰률은 이보다 크게 낮습니다(공매는 유찰 회차가 많음). 낙찰가율은 감정가 대비 낙찰가입니다. 투자 권유가 아닙니다.';
   }
   var R={auction:auction,onbid:onbid};
