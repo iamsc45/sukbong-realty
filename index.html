@@ -697,6 +697,7 @@ if(window.SB&&SB.apply&&SB.apply.items&&SB.apply.items.length){
 try{
   function goMap(v,src){
     try{if(typeof gtag==="function")gtag("event","region_search",{search_term:v,source:src||"input"});}catch(e){}
+    try{if(window.SBLog)SBLog(v,src||"input");}catch(e){}
     location.href="map.html?q="+encodeURIComponent(v)+"&t=apt&u=%EB%A7%A4%EB%A7%A4";
   }
   var sf=document.getElementById("mSearch");
