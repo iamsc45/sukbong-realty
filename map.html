@@ -262,6 +262,7 @@ body.redev #rfbar{display:flex}
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="assets/sb_auth.js?v=3"></script>
+<script src="assets/sb_log.js"></script>
 <script src="data/summary.js"></script>
 <script src="data/dongs.js"></script>
 <script>
@@ -865,6 +866,7 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
     if(!v)return;
     if(window.closeSac)window.closeSac();
     try{if(typeof gtag==='function')gtag('event','region_search',{search_term:v,source:'map'});}catch(_e){}
+    try{if(window.SBLog)SBLog(v,'map');}catch(_e){}
     routeQ(v);
   });
 })();
