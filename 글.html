@@ -26,7 +26,10 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
   text-decoration:none;display:flex;flex-direction:column;transition:border-color 140ms ease}
 .pcard:hover{border-color:var(--text)}
 .pcard .th{width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--gray);display:block}
-.pcard .bd{padding:14px 16px 16px}
+.pcard .bd{padding:14px 16px 16px;display:block}
+/* 카드 속 요소는 <a> 안이라 전부 span으로 짰다. block을 주지 않으면
+   분류 라벨이 제목에 들러붙는다('청약수원 당수지구…', 2026-08-02 첫 배포에서 확인) */
+.pcard .bd>span{display:block}
 .pcard .cat{font-size:11px;font-weight:800;letter-spacing:.06em;color:var(--muted)}
 .pcard .ti{font-size:15.5px;font-weight:800;line-height:1.4;letter-spacing:-0.02em;color:var(--text);margin:5px 0 6px}
 .pcard .ex{font-size:13px;color:var(--muted);line-height:1.6;
