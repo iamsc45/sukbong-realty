@@ -216,6 +216,7 @@ body.redev #rfbar{display:flex}
     <a href="index.html">홈</a>
     <a class="on" href="map.html">실거래지도</a>
     <a href="apply.html">청약</a>
+    <a href="auction.html">경매·공매</a>
     <a href="favorites.html">★ 관심단지</a>
     <a href="https://blog.naver.com/seokbongnews" target="_blank" rel="noopener">리포트</a>
     <a href="channels.html">채널 안내</a>
@@ -1187,6 +1188,8 @@ function showAptCard(pt, txs){
     +'<div class="rc-sec"><div class="rc-lab">최근 실거래 · 평당 전용기준</div>'+(rows||'<div style="color:#8a8071;font-size:13px">거래 없음</div>')+'</div>'
     +(near?'<div class="rc-sec"><div class="rc-lab">인근 정비구역 (누르면 이동)</div>'+near+'</div>':'')
     +'<a class="rc-cta" href="단지상세.html?code='+code+'&nm='+encodeURIComponent(pt.name)+'&dong='+encodeURIComponent(pt.dong||'')+'" style="background:#12203a">이 단지 실거래·평형별 상세 →</a>'
+    /* 대출 문의(2026-08-02 석봉님 지시) — 지금은 준비 중 안내 페이지. 목적지 교체는 대출문의.html 한 파일만 */
+    +'<div style="text-align:center;margin-top:7px"><a href="%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html?ctx='+encodeURIComponent(pt.name+' '+(pt.dong||''))+'" style="font-size:12px;color:#8a8071;text-decoration:underline" onclick="if(window.gtag)gtag(\'event\',\'loan_inquiry_click\',{from:\'map_card\'})">💬 이 단지 담보 대출 문의</a></div>'
     +'<div class="rc-note">실거래 기준일 '+((window.SB&&SB.summary&&SB.summary.updated)||'-')+' · 호가 수집일 '+(window.APTASKDAY||(A?'-':'미수집 지역'))+'</div>';
   var rc=document.getElementById('rcard');rc.innerHTML=html;rc.classList.add('open');
   document.getElementById('rcClose').onclick=function(){rc.classList.remove('open');};

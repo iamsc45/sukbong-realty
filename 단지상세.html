@@ -375,7 +375,9 @@ function render(pt,code){
     +'<div class="lrow"><span>집값 구간 상한</span><span class="lv">'+(base?eok(cap):'·')+'</span></div>'
     +'<div class="lrow"><span>LTV 40% 기준</span><span class="lv">'+(base?eok(Math.round(base*0.4)):'·')+'</span></div>'
     +'<div class="lrow" style="border-top:1px solid #ded8cc;margin-top:3px;padding-top:6px;font-weight:700"><span>은행 예상 한도 (낮은 값)</span><span class="lv">'+(base?eok(Math.min(cap,Math.round(base*0.4))):'·')+'</span></div>'
-    +'<div class="note">2026.04 시행 규제(작성 2026.07.25). 소득(DSR)·은행별로 더 낮아질 수 있고 비규제는 다릅니다. 대출 권유·한도 보장 아님. <a href="재개발_기초상식.html#loan-limit" style="color:var(--brass)">자세히 →</a></div></div>';
+    +'<div class="note">2026.04 시행 규제(작성 2026.07.25). 소득(DSR)·은행별로 더 낮아질 수 있고 비규제는 다릅니다. 대출 권유·한도 보장 아님. <a href="재개발_기초상식.html#loan-limit" style="color:var(--brass)">자세히 →</a></div>'
+    /* 대출 문의(2026-08-02 석봉님 지시) — 지금은 준비 중 안내. 목적지 교체는 대출문의.html 한 파일만 */
+    +'<div style="margin-top:8px"><a href="%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html?ctx='+encodeURIComponent(pt.name+' '+(pt.dong||''))+'" style="font-size:12.5px;color:#8a8071;text-decoration:underline" onclick="if(window.gtag)gtag(\'event\',\'loan_inquiry_click\',{from:\'apt_detail\'})">💬 담보 조건 대출 문의</a></div></div>';
   h+=lineup;
   var _fee=findFee(code,pt.name);
   /* 대표 평형 = 거래가 가장 많은 전용면적. 84.66·84.99처럼 소수만 다른 같은 평형이
