@@ -145,6 +145,7 @@
     .fnum{width:48px}
     #fcount{display:inline}
     #legend{font-size:10px;padding:5px 8px;bottom:40px;max-width:calc(100vw - 16px);line-height:1.5}
+    #loanChip{bottom:40px !important;right:8px !important;font-size:11px !important;padding:7px 11px !important}
     .site-footer{font-size:9.5px;padding:7px 10px}
     .site-footer span{float:none!important;margin-left:0!important}
   }
@@ -253,6 +254,13 @@ body.redev #rfbar{display:flex}
 </div>
 <div id="map"></div>
 <div id="legend"></div>
+<!-- 대출 문의 상시 칩(2026-08-02 석봉님 지시 "지도 화면에 자연스럽게").
+     지금은 준비 중 안내 페이지 — 목적지 교체는 대출문의.html 한 파일만. -->
+<a id="loanChip" href="%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html?ctx=map"
+   style="position:absolute;bottom:52px;right:10px;z-index:900;background:rgba(255,255,255,.94);
+   border:1px solid #d9d2c2;border-radius:100px;padding:8px 14px;font-size:12px;font-weight:700;
+   color:#4A3A7A;text-decoration:none;box-shadow:0 1px 6px rgba(0,0,0,.08);white-space:nowrap"
+   onclick="if(window.gtag)gtag('event','loan_inquiry_click',{from:'map_chip'})">💬 대출 문의</a>
 <div id="rcard"></div>
 <div id="msheet"><div class="ms-in"><div class="ms-h"><span id="msTitle"></span><button type="button" id="msClose" aria-label="닫기">✕</button></div><div id="msBody"></div></div></div>
 <footer class="site-footer">
