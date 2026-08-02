@@ -1,1 +1,1 @@
-window.SB=window.SB||{};SB.chips={"updated":"2026-08-02","win":"2026-07-20~2026-08-02","items":[{"t":"노원구","n":296,"src":"trade"},{"t":"구로구","n":207,"src":"trade"},{"t":"은평구","n":183,"src":"trade"},{"t":"강서구","n":180,"src":"trade"},{"t":"성북구","n":166,"src":"trade"}]};
+window.SB=window.SB||{};SB.chips={"updated":"2026-08-02","win":"2026-07-20~2026-08-02","items":[{"t":"노원구","n":315,"src":"trade"},{"t":"구로구","n":214,"src":"trade"},{"t":"은평구","n":198,"src":"trade"},{"t":"강서구","n":188,"src":"trade"},{"t":"성북구","n":175,"src":"trade"}]};
