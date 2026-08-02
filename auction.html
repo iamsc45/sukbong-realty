@@ -107,7 +107,7 @@ a.hc:hover{border-color:var(--acc-blue)}
     return '<a class="hc" href="map.html?q='+encodeURIComponent(q)+'" '
       +'onclick="if(window.gtag)gtag(\'event\',\'auction_hot_click\',{q:\''+q.replace(/'/g,'')+'\'})">'
       +'<div class="loc">'+loc+'</div>'
-      +'<div class="nm">'+nm+(use&&use!==nm?'<small>'+use+'</small>':'')+'</div>'
+      +'<div class="nm">'+nm+(use&&nm.indexOf(use)<0?'<small>'+use+'</small>':'')+'</div>'
       +'<div class="pr">감정 '+eokM(ap)+' → <b>'+eokM(sp)+'</b><span class="rt '+cls+'">'+ratio+'%</span></div>'
       +'<div class="mt"><span>'+meta+' · '+fd(d)+'</span><span class="go">지도에서 주변 시세 보기 →</span></div></a>';
   }
