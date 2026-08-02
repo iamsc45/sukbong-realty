@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Y7P41Z09PV"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-Y7P41Z09PV');</script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>분석 · 석봉 부동산 정보방</title>
+<meta name="description" content="실거래·청약·경매 데이터를 직접 뜯어 정리한 분석 글 모음입니다. 국토교통부 실거래가와 공공 데이터가 근거입니다.">
+<link rel="canonical" href="https://xn--2q1br1nnrasc92a76myvau64b.com/%EA%B8%80.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="분석 · 석봉 부동산 정보방">
+<meta property="og:description" content="실거래·청약·경매 데이터를 직접 뜯어 정리한 분석 글 모음입니다. 국토교통부 실거래가와 공공 데이터가 근거입니다.">
+<meta property="og:url" content="https://xn--2q1br1nnrasc92a76myvau64b.com/%EA%B8%80.html">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+.wrap{max-width:960px}
+h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;margin:48px 0 6px}
+.pgsub{color:var(--muted);font-size:13.5px;margin:0 0 26px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 22px}
+.filters button{border:1px solid var(--text);border-radius:100px;padding:7px 16px;font-size:12.5px;
+  font-weight:700;cursor:pointer;background:transparent;color:var(--text);font-family:inherit}
+.filters button.on{background:var(--text);color:#fff}
+.plist{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:60px}
+.pcard{background:var(--soft);border:1px solid var(--hair);border-radius:14px;overflow:hidden;
+  text-decoration:none;display:flex;flex-direction:column;transition:border-color 140ms ease}
+.pcard:hover{border-color:var(--text)}
+.pcard .th{width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--gray);display:block}
+.pcard .bd{padding:14px 16px 16px}
+.pcard .cat{font-size:11px;font-weight:800;letter-spacing:.06em;color:var(--muted)}
+.pcard .ti{font-size:15.5px;font-weight:800;line-height:1.4;letter-spacing:-0.02em;color:var(--text);margin:5px 0 6px}
+.pcard .ex{font-size:13px;color:var(--muted);line-height:1.6;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.pcard .dt{font-size:11.5px;color:var(--muted2);margin-top:9px}
+.empty{color:var(--muted);font-size:14px;padding:30px 0}
+@media(max-width:640px){.plist{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html">석봉 부동산 정보방</a>
+  <nav>
+    <a href="index.html">홈</a>
+    <a href="map.html">실거래지도</a>
+    <a href="apply.html">청약</a>
+    <a href="auction.html">경매·공매</a>
+    <a href="%EA%B8%80.html" class="on">분석</a>
+    <a href="favorites.html">★ 관심단지</a>
+    <a href="https://blog.naver.com/seokbongnews" target="_blank" rel="noopener">리포트</a>
+    <a href="channels.html">채널</a>
+    <a href="%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html">대출 문의</a>
+  </nav>
+</header>
+<main class="wrap">
+  <h1 class="pg">분석</h1>
+  <p class="pgsub">실거래·청약·경매 데이터를 직접 뜯어 정리한 글입니다 · 총 35편</p>
+  <div class="filters"><button class="on" data-c="">전체</button><button data-c="청약">청약</button><button data-c="기획">기획</button><button data-c="데일리">데일리</button><button data-c="경매·공매">경매·공매</button><button data-c="재개발">재개발</button><button data-c="주간결산">주간결산</button></div>
+  <div class="plist" id="plist"></div>
+</main>
+<footer class="site-footer">
+  <span>📈 <a href="https://telegram.me/seokbongnews">텔레그램 채널</a></span> ·
+  <span>💬 <a href="https://open.kakao.com/o/gt8CTUCi">카카오 오픈채팅</a> · <a href="https://blog.naver.com/seokbongnews">네이버 블로그</a></span>
+  <div class="fine">편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 무단 전재·재배포 금지 · 본 자료는 정보 제공 목적이며 투자 권유가 아닙니다 · 방문 통계 수집을 위해 Google Analytics(쿠키)를 사용합니다</div>
+</footer>
+<script src="data/posts.js"></script>
+<script>
+(function(){
+  var P=(window.SB&&SB.posts&&SB.posts.items)||[],el=document.getElementById('plist'),cur='';
+  function esc(s){return (s||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function card(p){
+    var th=p.img?'<img class="th" src="'+encodeURI(p.img)+'" alt="" loading="lazy">':'';
+    return '<a class="pcard" href="'+encodeURI('글/'+p.f)+'">'+th
+      +'<span class="bd"><span class="cat">'+esc(p.c)+'</span>'
+      +'<span class="ti">'+esc(p.t)+'</span>'
+      +'<span class="ex">'+esc(p.e)+'</span>'
+      +'<span class="dt">'+esc(p.d)+'</span></span></a>';
+  }
+  function draw(){
+    var rows=cur?P.filter(function(p){return p.c===cur;}):P;
+    el.innerHTML=rows.length?rows.map(card).join(''):'<p class="empty">글이 없습니다.</p>';
+  }
+  document.querySelectorAll('.filters button').forEach(function(b){
+    b.addEventListener('click',function(){
+      document.querySelectorAll('.filters button').forEach(function(x){x.classList.remove('on');});
+      b.classList.add('on');cur=b.dataset.c;draw();
+    });
+  });
+  draw();
+})();
+</script>
+</body></html>
