@@ -709,8 +709,14 @@ try{
     if(v)goMap(v,"input");else location.href="map.html";
   });
   var hot=document.getElementById("mHot");
-  if(hot)["강남구","송파구","마포구","분당","일산"].forEach(function(r){
+  /* 인기 지역 칩: 최근 2주 검색 기록 상위 + 거래 많은 지역 폴백(data/hotchip.js).
+     파일이 없거나 비면 기존 고정 목록으로 돌아간다. */
+  var CH=(window.SB&&SB.chips&&SB.chips.items&&SB.chips.items.length)?SB.chips.items:null;
+  var chips=CH?CH:[{t:"강남구"},{t:"송파구"},{t:"마포구"},{t:"분당"},{t:"일산"}];
+  if(hot)chips.forEach(function(c){
+    var r=c.t;if(!r)return;
     var a=document.createElement("a");a.href="#";a.textContent=r;
+    a.title=c.src==="log"?"최근 2주 검색이 많았던 지역":(c.src==="trade"?"최근 30일 거래가 많은 지역":"");
     a.addEventListener("click",function(e){e.preventDefault();goMap(r,"chip");});
     hot.appendChild(a);
   });
