@@ -542,7 +542,11 @@ var TYPE={apt:"아파트",offi:"오피스텔",villa:"연립·다세대",house:"�
 function eok(man){var e=man/10000;if(e>=100)return Math.round(e).toLocaleString()+"억";
 return (e>=10?e.toFixed(1):e.toFixed(2)).replace(/\.?0+$/,"")+"억";}
 var P=T.period||{f:"",t:""};
-var PER=P.f.replace(/-/g,".")+" ~ "+(P.t.slice(0,4)===P.f.slice(0,4)?P.t.slice(5):P.t).replace(/-/g,".");
+function perLabel(p){return p.f.replace(/-/g,".")+" ~ "+(p.t.slice(0,4)===p.f.slice(0,4)?p.t.slice(5):p.t).replace(/-/g,".");}
+var PER=perLabel(P);
+/* 시도 카드·서울 구별 랭킹은 30일 창 (2026-08-03). 6개월 누적이라 숫자가 커지기만 했다.
+   period30이 없는 옛 stats.js가 캐시로 남아 있을 수 있어 PER로 폴백한다. */
+var P30=T.period30||P, PER30=perLabel(P30);
 var tot=0,geo=0;S.regions.forEach(function(r){tot+=r.n["매매"]+r.n["전세"]+r.n["월세"];geo+=r.geo;});
 /* KPI */
 var seoulMed=(T.sido.find(function(x){return x.name==="서울";})||{}).med;
@@ -567,7 +571,7 @@ kio.observe(document.getElementById("kpis"));
 document.getElementById("basis").textContent="계약일 "+PER+" · 기준일 "+T.updated+" · 매일 자동 갱신";
 document.getElementById("blabel").textContent="Live Data · 계약일 "+PER+" · 기준일 "+T.updated;
 document.getElementById("capProd").textContent="계약일 "+PER;
-document.getElementById("capRank").textContent="서울 25개 구 전체 · 거래 건수순 · 계약일 "+PER+" · 중위가는 아파트 매매";
+document.getElementById("capRank").textContent="서울 25개 구 전체 · 거래 건수순 · 최근 30일 (계약일 "+PER30+") · 중위가는 아파트 매매";
 document.getElementById("capTop").textContent="계약일 "+PER+" · 매매 상위 10 · 빌딩 포함 (고가 거래는 국토부가 지번 일부 비공개)";
 /* 티커 */
 var tks=T.top.map(function(d){return '<span class="tk">'+d.sgg+' '+d.name+' <b>'+eok(d.p)+'</b>'+(d.a?' '+Math.round(d.p/d.a).toLocaleString()+'만/㎡':'')+' · '+(TYPE[d.t]||"")+' · '+d.cd.slice(5)+'</span>';}).join("");
@@ -597,7 +601,7 @@ T.sido.forEach(function(x){
   var d=document.createElement("div");d.className="panel sido";
   d.innerHTML='<div class="head"><span class="nm">'+x.name+'</span><span class="tag">지도 오픈</span></div>'
    +'<div class="big">'+x.n.toLocaleString()+'<small> 건</small></div>'
-   +'<div style="font-size:10.5px;color:var(--g3);margin-top:2px">계약일 '+PER+'</div>'
+   +'<div style="font-size:10.5px;color:var(--g3);margin-top:2px">최근 30일 · 계약일 '+PER30+'</div>'
    +'<div class="row"><span>아파트 매매 중위가</span><b>'+(x.med?eok(x.med):"—")+'</b></div>';
   s3.appendChild(d);
 });
