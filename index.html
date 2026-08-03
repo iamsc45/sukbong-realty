@@ -105,6 +105,15 @@ h1 .thin{color:var(--g3)}
 .panel h3{margin:0;font-size:14.5px;font-weight:700;letter-spacing:-0.01em}
 .panel .cap{font-size:11.5px;color:var(--g2);margin:3px 0 16px}
 .sido3{grid-template-columns:repeat(auto-fit,minmax(230px,1fr));margin-top:14px}
+/* 거래량 기준 전환 칩 (2026-08-04) */
+.tglrow{display:flex;align-items:center;gap:11px;flex-wrap:wrap;margin:20px 0 0}
+.tgll{font-size:12px;font-weight:700;color:var(--g2)}
+.tgl{display:inline-flex;border:1px solid var(--g4);border-radius:100px;padding:3px;background:var(--wh)}
+.tgl button{border:0;background:transparent;font:inherit;font-size:12.5px;font-weight:700;color:var(--g2);
+  padding:6px 15px;border-radius:100px;cursor:pointer;transition:background 130ms ease,color 130ms ease}
+.tgl button.on{background:var(--blk);color:#fff}
+.tglh{font-size:11.5px;color:var(--g3);word-break:keep-all}
+@media(max-width:720px){.tglrow{gap:8px}.tgl button{padding:6px 12px;font-size:12px}.tglh{width:100%}}
 .sido .head{display:flex;justify-content:space-between;align-items:center}
 .sido .nm{font-size:13.5px;font-weight:700}
 .tag{font-size:10px;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--teal);color:var(--teal);
@@ -404,6 +413,15 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
       <div class="panel"><h3>청약 한눈에</h3><p class="cap" id="capApply2"></p><div id="applyStat"></div>
         <a href="apply.html" style="display:inline-block;margin-top:14px;font-size:12.5px;font-weight:700;color:var(--blue);text-decoration:none">전체 청약 일정 보기 →</a></div>
     </div>
+    <!-- 거래량 기준 전환 (2026-08-04). 기본은 아파트 매매 — 데일리 카드뉴스와 같은 기준이다. -->
+    <div class="tglrow rv">
+      <span class="tgll">거래량 기준</span>
+      <div class="tgl" id="cntTgl">
+        <button class="on" data-k="nas">아파트 매매</button>
+        <button data-k="n">전체 거래</button>
+      </div>
+      <span class="tglh" id="tglHint"></span>
+    </div>
     <div class="grid sido3 rv" id="sido3"></div>
     <div class="grid g-main rv" style="margin-top:14px;grid-template-columns:1fr 1fr">
       <div class="panel"><h3>아파트 평형대별 매매</h3><p class="cap" id="capPy"></p><div id="pyeong"></div></div>
@@ -571,7 +589,7 @@ kio.observe(document.getElementById("kpis"));
 document.getElementById("basis").textContent="계약일 "+PER+" · 기준일 "+T.updated+" · 매일 자동 갱신";
 document.getElementById("blabel").textContent="Live Data · 계약일 "+PER+" · 기준일 "+T.updated;
 document.getElementById("capProd").textContent="계약일 "+PER;
-document.getElementById("capRank").textContent="서울 25개 구 전체 · 거래 건수순 · 최근 30일 (계약일 "+PER30+") · 중위가는 아파트 매매";
+/* capRank는 drawRank()가 기준(전체/아파트 매매)에 맞춰 다시 쓴다 */
 document.getElementById("capTop").textContent="계약일 "+PER+" · 매매 상위 10 · 빌딩 포함 (고가 거래는 국토부가 지번 일부 비공개)";
 /* 티커 */
 var tks=T.top.map(function(d){return '<span class="tk">'+d.sgg+' '+d.name+' <b>'+eok(d.p)+'</b>'+(d.a?' '+Math.round(d.p/d.a).toLocaleString()+'만/㎡':'')+' · '+(TYPE[d.t]||"")+' · '+d.cd.slice(5)+'</span>';}).join("");
@@ -595,22 +613,55 @@ new Chart(document.getElementById("prod"),{type:"doughnut",data:{
    backgroundColor:["#2554E0","#7A5AF8","#0FA98A","#6E6E6A","#D4573F","#E8A13A","#4C9A4C"],borderWidth:2,borderColor:"#fff"}]},
   options:{cutout:"66%",plugins:{legend:{position:"bottom",labels:{boxWidth:9,boxHeight:9,font:{size:11}}},
    tooltip:{callbacks:{label:function(c){return " "+c.parsed.toLocaleString()+"건 ("+pct(c.parsed)+")";}}}}}});
-/* 시도 카드 */
-var s3=document.getElementById("sido3");
-T.sido.forEach(function(x){
-  var d=document.createElement("div");d.className="panel sido";
-  d.innerHTML='<div class="head"><span class="nm">'+x.name+'</span><span class="tag">지도 오픈</span></div>'
-   +'<div class="big">'+x.n.toLocaleString()+'<small> 건</small></div>'
-   +'<div style="font-size:10.5px;color:var(--g3);margin-top:2px">최근 30일 · 계약일 '+PER30+'</div>'
-   +'<div class="row"><span>아파트 매매 중위가</span><b>'+(x.med?eok(x.med):"—")+'</b></div>';
-  s3.appendChild(d);
-});
-/* 구 랭킹 */
-var maxN=Math.max.apply(null,T.gu.map(function(x){return x.n;}));
-document.getElementById("gurank").innerHTML=T.gu.map(function(x,i){
-  return '<tr onclick="location.href=\'map.html?q=\'+encodeURIComponent(\'서울 '+x.name+'\')"><td class="no">'+String(i+1).padStart(2,"0")+'</td><td class="nm">'+x.name+'</td>'
-   +'<td style="width:45%"><div style="display:flex;align-items:center;gap:8px"><div class="bar" style="width:'+Math.round(x.n/maxN*100)+'%"></div><span style="font-size:11.5px;color:#6E6E6A">'+x.n.toLocaleString()+'</span></div></td>'
-   +'<td class="med">'+(x.med?eok(x.med):"—")+'</td></tr>';}).join("");
+/* 시도 카드 · 구 랭킹 — 거래량 기준을 칩으로 전환 (2026-08-04)
+   nas=아파트 매매만(데일리 카드뉴스와 같은 기준), n=모든 물건·모든 거래유형.
+   기준을 안 밝히면 같은 줄의 '아파트 매매 중위가'와 어긋나 보인다. */
+var s3=document.getElementById("sido3"), CK="nas";
+var KLAB={nas:"아파트 매매", n:"전체 거래"};
+function cval(x,k){return (x[k]!=null?x[k]:x.n);}   /* 옛 stats.js 캐시 폴백 */
+function drawSido(){
+  s3.innerHTML="";
+  T.sido.slice().sort(function(a,b){return cval(b,CK)-cval(a,CK);}).forEach(function(x){
+    var d=document.createElement("div");d.className="panel sido";
+    d.innerHTML='<div class="head"><span class="nm">'+x.name+'</span><span class="tag">지도 오픈</span></div>'
+     +'<div class="big">'+cval(x,CK).toLocaleString()+'<small> 건</small></div>'
+     +'<div style="font-size:10.5px;color:var(--g3);margin-top:2px">'+KLAB[CK]+' · 최근 30일 · 계약일 '+PER30+'</div>'
+     +'<div class="row"><span>아파트 매매 중위가</span><b>'+(x.med?eok(x.med):"—")+'</b></div>';
+    s3.appendChild(d);
+  });
+}
+function drawRank(){
+  var g=T.gu.slice().sort(function(a,b){return cval(b,CK)-cval(a,CK);});
+  var maxN=Math.max.apply(null,g.map(function(x){return cval(x,CK);}))||1;
+  document.getElementById("gurank").innerHTML=g.map(function(x,i){
+    var v=cval(x,CK);
+    return '<tr onclick="location.href=\'map.html?q=\'+encodeURIComponent(\'서울 '+x.name+'\')"><td class="no">'+String(i+1).padStart(2,"0")+'</td><td class="nm">'+x.name+'</td>'
+     +'<td style="width:45%"><div style="display:flex;align-items:center;gap:8px"><div class="bar" style="width:'+Math.max(2,Math.round(v/maxN*100))+'%"></div><span style="font-size:11.5px;color:#6E6E6A">'+v.toLocaleString()+'</span></div></td>'
+     +'<td class="med">'+(x.med?eok(x.med):"—")+'</td></tr>';}).join("");
+  var tot=(T.sido.find(function(x){return x.name==="서울";})||{});
+  document.getElementById("rankfoot").textContent=
+    "서울 전체 합계 "+(cval(tot,CK)||0).toLocaleString()+"건 · "+KLAB[CK]+" 기준 · 최근 30일";
+  document.getElementById("capRank").textContent=
+    "서울 25개 구 전체 · 거래량은 "+KLAB[CK]+" 기준 · 최근 30일 (계약일 "+PER30+") · 중위가는 아파트 매매";
+}
+function drawCnt(){
+  drawSido(); drawRank();
+  document.getElementById("tglHint").textContent = CK==="nas"
+    ? "아파트 매매 신고분만 셉니다 (데일리 카드뉴스와 같은 기준)"
+    : "아파트·오피스텔·빌라·토지·상가의 매매와 전월세를 모두 셉니다";
+}
+drawCnt();
+(function(){
+  var box=document.getElementById("cntTgl");
+  if(!box)return;
+  box.addEventListener("click",function(e){
+    var b=e.target.closest("button"); if(!b)return;
+    CK=b.getAttribute("data-k");
+    box.querySelectorAll("button").forEach(function(x){x.classList.toggle("on",x===b);});
+    drawCnt();
+    try{if(typeof gtag==="function")gtag("event","home_count_basis",{basis:CK});}catch(_e){}
+  });
+})();
 /* 평형대별 · 가격대 분포 (막대 리스트) */
 function barList(items,maxN,rightFn){
   return items.map(function(x){
@@ -662,9 +713,7 @@ statPanel("rmPanel","아파트 임대 중위가","전국 · 계약일 "+PER,
   man(RM.je),"전세 보증금",
   [["월세 보증금",man(RM.wb)],["월세",Math.round(RM.wr)+"만/월"]]);
 }
-var top10sum=T.gu.reduce(function(a,x){return a+x.n;},0);
-var seoulTot=(T.sido.find(function(x){return x.name==="서울";})||{n:0}).n;
-document.getElementById("rankfoot").textContent="서울 전체 합계 "+seoulTot.toLocaleString()+"건 · 계약일 "+PER;
+/* rankfoot도 drawRank()가 기준에 맞춰 쓴다 (여기서 덮어쓰면 칩 전환이 무시된다) */
 /* 최고가 */
 function dealName(d){
   if(d.t!=="comm")return d.name;
