@@ -1004,7 +1004,12 @@ function redevTag(p){return (window.REDEVTAG||{})[p.biz||p.nm]||p.tag||'';}
 function tagBadge(t){if(!t)return '';var m={'신통':['신속통합기획','#C2185B'],'모아':['모아주택','#7CB518']}[t];return m?'<span class="rc-pill" style="background:'+m[1]+';margin-right:5px">'+m[0]+'</span>':'';}
 function loadRedev(cb){
   if(redevData){cb();return;}
-  if(redevLoading)return;
+  /* 로딩 중이면 예전에는 콜백을 그냥 버렸다(2026-08-04 수정).
+     ?mode=redev&q=구역명 딥링크가 정확히 여기서 죽었다. setMode('redev')가 먼저
+     loadRedev(renderRedev)로 로딩을 걸어 두고, 60ms 뒤 검색이 loadRedev(찾기)를
+     부르면 redevLoading=true라 그대로 return → 검색이 통째로 사라지고 재개발 지도
+     첫 화면(수도권 전역)만 남았다. loadIdx 처럼 끝날 때까지 기다렸다 다시 부른다. */
+  if(redevLoading){setTimeout(function(){loadRedev(cb);},180);return;}
   redevLoading=true;
   document.getElementById('stat').textContent='정비구역 불러오는 중…';
   function done(){redevData=window.REDEV||{type:'FeatureCollection',features:[]};redevMarks=(window.REDEVMARK||[]).concat(window.SINTONGMARK||[]);
