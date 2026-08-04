@@ -507,7 +507,9 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
       var sty=(document.getElementById('stype')||{value:'일반'}).value;
       var F=fitTypes(HQ, area), R=F?F.all.filter(function(x){return x.t===sty;})[0]:null;
       var others=F?F.ok.filter(function(t){return t!==sty;}):[];
-      var reqTxt=F?(esc(HQ)+' 요건 · '+F.all.map(function(r){return r.t+' '+areaTxt(r);}).join(' · ')):'';
+      /* 요건표 페이지로 보낸다. 13개 본부를 나란히 놓고 보면 왜 여기가 다른지 이해된다 */
+      var reqTxt=F?(esc(HQ)+' 요건 · '+F.all.map(function(r){return r.t+' '+areaTxt(r);}).join(' · ')
+        +' · <a href="lh_%EC%9A%94%EA%B1%B4_staging.html" style="color:var(--acc-blue);text-decoration:none;font-weight:700">13개 본부 요건 비교 →</a>'):'';
       if(R&&R.none){
         fail++;
         H.push(item('면적 요건 ('+esc(sty)+'형)','공급하지 않는 유형','f',
