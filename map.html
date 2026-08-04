@@ -473,7 +473,7 @@ function render(){
       return '<tr><td>'+t.cd.slice(5)+'</td><td>'+u+'</td><td>'+(t.a?t.a+'<span style="color:#9a938a;font-size:10px"> '+PY(t.a)+'</span>':'-')+'</td><td>'+t.f+'</td><td class="pr">'+priceLabel(t)+sqm+'</td></tr>';
     }).join('');
     var pop='<div class="pop"><h4>'+pt.name+'<span class="badge" style="background:'+col+'">'+ti[0]+'</span></h4>'
-      +'<div class="meta">'+pt.dong+' '+pt.jibun+(pt.extra?' · '+pt.extra:'')+' · '+txs.length+'건'+(pt.ax?' · <b style="color:#D4573F">지번 비공개 — 동 단위 개략 위치</b>':'')+'</div>'
+      +'<div class="meta">'+pt.dong+' '+pt.jibun+(pt.extra?' · '+pt.extra:'')+' · '+txs.length+'건'+(pt.ax?' · <b style="color:#D4573F">지번 비공개 · 동 단위 개략 위치</b>':'')+'</div>'
       +'<div class="tw"><table><thead><tr><th>계약</th><th>거래</th><th>면적㎡</th><th>층</th><th>가격</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
     var mk=L.marker([pt.lat,pt.lng],{icon:icon}).on('click',function(){showAptCard(pt,txs);});
     mk.on('popupopen',function(){var el=mk.getElement();if(el){var t=el.querySelector('.pricetag');if(t)t.classList.add('sel');}});
