@@ -274,16 +274,35 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
     '경북':'경상북도','경남':'경상남도','제주':'제주특별자치도'
   };
   var SIDO_ORDER=Object.keys(SIDO_SHORT).sort(function(a,b){return b.length-a.length;});
+  /* 시도를 빼고 '남양주시 별내동'처럼 쓰는 사람이 훨씬 많다(2026-08-04 실측으로 확인).
+     시군구 이름이 전국에서 유일하면 시도를 되짚어 준다. '강서구'(서울·부산)처럼
+     여러 시도에 걸친 이름은 되짚지 않는다. 틀린 관할을 알려주느니 안 알려주는 편이 낫다. */
+  var SGG2SIDO=(function(){
+    var m={}, dup={};
+    if(!LD||!LD.jur)return m;
+    Object.keys(LD.jur).forEach(function(sd){
+      (LD.jur[sd]||[]).forEach(function(e){
+        var g=e.sgg;
+        if(!g||g==='전체')return;
+        if(m[g]&&m[g]!==sd)dup[g]=1; else m[g]=sd;
+      });
+    });
+    Object.keys(dup).forEach(function(g){delete m[g];});
+    return m;
+  })();
   function parseAddr(addr){
     var p=(addr||'').replace(/,/g,' ').split(/\s+/).filter(Boolean);
     if(!p.length)return null;
-    var sido=null;
+    var sido=null, ate0=false;
     for(var i=0;i<SIDO_ORDER.length;i++){
-      if(p[0].indexOf(SIDO_ORDER[i])===0){sido=SIDO_SHORT[SIDO_ORDER[i]];break;}
+      if(p[0].indexOf(SIDO_ORDER[i])===0){sido=SIDO_SHORT[SIDO_ORDER[i]];ate0=true;break;}
     }
-    if(!sido&&LD&&LD.jur[p[0]])sido=p[0];       /* '경상남도'처럼 정식 명칭 그대로 */
+    if(!sido&&LD&&LD.jur[p[0]]){sido=p[0];ate0=true;}   /* '경상남도'처럼 정식 명칭 그대로 */
+    if(!sido){                                          /* 시도 생략 — 시군구로 되짚는다 */
+      for(var k=0;k<p.length;k++){if(SGG2SIDO[p[k]]){sido=SGG2SIDO[p[k]];break;}}
+    }
     if(!sido)return null;
-    var wide=/(광역시|특별시|특별자치시)$/.test(sido), rest=p.slice(1), sgg='';
+    var wide=/(광역시|특별시|특별자치시)$/.test(sido), rest=ate0?p.slice(1):p, sgg='';
     for(var j=0;j<rest.length;j++){
       var w=rest[j];
       if(/(시|군|구)$/.test(w)){
