@@ -83,7 +83,10 @@
 <div class="wrap">
 <div class="mast"><div class="k" id="kk">단지 상세</div><h1 id="nm">불러오는 중…</h1><div class="loc" id="loc"></div></div>
 <div id="body"></div>
-<div class="links"><a class="map" href="map.html?mode=redev">지도(재개발)로 가기 →</a><a class="info" href="재개발_기초상식.html">재개발·재건축 기초상식 →</a></div>
+<!-- 이 두 링크는 구역상세에서 복사해 온 것이 그대로 남아 있었다(2026-08-04 석봉님 제보).
+     단지 페이지인데 '재개발 지도 전체'로 보내니 서울 전역이 뜨고, 보던 단지는 사라졌다.
+     지금은 아래 스크립트가 이 단지 좌표로 가는 링크로 바꿔 끼운다. -->
+<div class="links"><a class="map" id="goMap" href="map.html">지도에서 이 단지 보기 →</a><a class="info" id="goRedev" href="재개발_기초상식.html">재개발·재건축 기초상식 →</a></div>
 <div class="src">자료: 국토교통부 실거래가(해제 건 제외) · 석봉 부동산 정보방 · 참고용, 법적효력 없음. 세대수·시공사·교통·학교 등 단지 정보는 순차 추가됩니다.</div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -130,6 +133,12 @@ function lrow(ic,l,v,wide){return v?'<div class="lr'+(wide?' wide':'')+'"><span 
 function boot(){
   var code=qs('code'),nm=qs('nm'),dong=qs('dong');
   if(!code||!nm){fail();return;}
+  /* '지도에서 이 단지 보기'를 이 단지로 보낸다(2026-08-04).
+     dong 을 함께 넘겨야 동명이단지로 새지 않는다(파크뷰 전국 5곳, 아시아선수촌 2곳). */
+  (function(){
+    var a=document.getElementById('goMap');
+    if(a)a.href='map.html?q='+encodeURIComponent(nm)+(dong?'&dong='+encodeURIComponent(dong):'');
+  })();
   var s=document.createElement('script');s.src='data/detail_'+code+'.js';
   s.onload=function(){
     var a=document.createElement('script');a.src='data/apt_info_'+code+'.js';

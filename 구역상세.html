@@ -68,7 +68,7 @@ body{margin:0;background:var(--paper);color:var(--ink);font-family:'Malgun Gothi
 <div class="sbnav"><div class="in"><a class="bi" href="index.html">석봉 부동산 정보방</a><nav><a href="index.html">홈</a><a href="map.html">실거래지도</a><a href="apply.html">청약</a><a href="auction.html">경매·공매</a><a href="%EA%B8%80.html">리포트</a><a href="favorites.html">★ 관심단지</a><a href="https://blog.naver.com/seokbongnews" target="_blank" rel="noopener">블로그</a><a href="channels.html">채널</a><a href="%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html">대출 문의</a></nav></div></div>
 
 <div class="wrap">
-  <div class="top"><a href="map.html?mode=redev">지도(재개발)로 →</a></div>
+  <div class="top"><a id="topMap" href="map.html?mode=redev">지도에서 이 구역 보기 →</a></div>
   <div id="app"><p style="color:var(--warm)">불러오는 중…</p></div>
   <div class="foot">추진단계·정비계획은 시도별 공공 DB 공개자료 기준이며 시점에 따라 달라질 수 있습니다. 구역계·단계는 참고용이며 법적 효력이 없습니다. 자료 출처: 국가정보포털 공공 DB 등.</div>
 </div>
@@ -108,6 +108,11 @@ function esc(s){return (s||'').replace(/[<>&]/g,function(c){return {'<':'&lt;','
 
 function render(){
   var nm=qs('nm');
+  /* 상단 링크도 이 구역으로 (2026-08-04). 구역명이 없으면 기존대로 재개발 지도 첫 화면 */
+  (function(){
+    var a=document.getElementById('topMap');
+    if(a&&nm)a.href='map.html?mode=redev&q='+encodeURIComponent(nm);
+  })();
   var D=window.REDEVDETAIL||{};
   var d=D[nm];
   var app=document.getElementById('app');
@@ -161,7 +166,9 @@ function render(){
       +'<div>이 구역 법정동의 과거 실거래 표본이 부족합니다. 데이터가 쌓이면 연도별 시세 그래프가 표시됩니다.</div></div>')+'</div>';
   h+='<div class="sec" id="nearTxSec"></div>';
   h+='<div class="sec"><div class="lab">더 보기</div>'
-    +'<a class="cta dark" href="map.html?mode=redev">지도(재개발)로 가기 →</a>'
+    /* 구역 이름을 안 붙이면 재개발 지도 첫 화면(서울 전역)이 떠서 보던 구역이 사라진다
+       (2026-08-04 단지상세에서 같은 문제가 제보돼 함께 고침) */
+    +'<a class="cta dark" href="map.html?mode=redev&q='+encodeURIComponent(nm)+'">지도에서 이 구역 보기 →</a>'
     +'<a class="cta line" href="재개발_기초상식.html">재개발·재건축 기초상식 →</a></div>';
   app.innerHTML=h;
   if(tr)drawTrend(99);
