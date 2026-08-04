@@ -963,17 +963,30 @@ map.on('moveend zoomend',function(){if(popLock)return;render();if(curMode==='red
     /* 법정동이 주어지면 그 동 단지만 후보로 — 동명이단지 오이동 방지(2026-07-28, 블로그 딥링크용).
        예: 아시아선수촌아파트(잠실동/반여동), 파크뷰(정자동 외 4곳) */
     var IDX=SB.aptIdx, dn=norm(dong||'');
+    function match(list){
+      for(var i=0;i<list.length;i++){if(norm(list[i][0])===n)return list[i];}
+      /* 정확매칭 실패 시 부분매칭 폴백: 표기가 살짝 달라도(괄호·단지번호 등) 유일 후보면 그 단지로 */
+      var part=[];
+      for(var j=0;j<list.length;j++){var m=norm(list[j][0]);if(m.indexOf(n)>=0||n.indexOf(m)>=0){part.push(list[j]);if(part.length>2)break;}}
+      if(part.length===1)return part[0];
+      if(part.length===2&&norm(part[0][0])===norm(part[1][0]))return part[0];
+      return null;
+    }
+    /* 법정동으로 먼저 좁히고(동명이단지 방지), 그 동에서 못 찾으면 전국에서 이름으로 다시 찾는다.
+       (2026-08-04) 예전에는 좁힌 목록에서 실패하면 그대로 검색 실패로 빠져 서울 전체
+       첫 화면이 떴다. 실거래 표기 법정동과 단지 인덱스의 법정동이 어긋나면 바로 이 꼴이
+       난다(헬리오시티를 잠실동으로 넘기면 가락동 단지라 못 찾고 서울 전역으로 튀었다).
+       동을 못 맞힌 것이 단지를 못 찾을 이유는 되지 않는다. */
     if(dn){
       var sub=[];
       for(var k=0;k<IDX.length;k++){if(norm(IDX[k][4]||'')===dn)sub.push(IDX[k]);}
-      if(sub.length)IDX=sub;
+      if(sub.length){
+        var hit=match(sub);
+        if(hit){jumpApt(hit);return true;}
+      }
     }
-    for(var i=0;i<IDX.length;i++){if(norm(IDX[i][0])===n){jumpApt(IDX[i]);return true;}}
-    /* 정확매칭 실패 시 부분매칭 폴백: 표기가 살짝 달라도(괄호·단지번호 등) 유일 후보면 그 단지로 */
-    var part=[];
-    for(var j=0;j<IDX.length;j++){var m=norm(IDX[j][0]);if(m.indexOf(n)>=0||n.indexOf(m)>=0){part.push(IDX[j]);if(part.length>2)break;}}
-    if(part.length===1){jumpApt(part[0]);return true;}
-    if(part.length===2&&norm(part[0][0])===norm(part[1][0])){jumpApt(part[0]);return true;}
+    var hit2=match(IDX);
+    if(hit2){jumpApt(hit2);return true;}
     return false;
   };
   sq.addEventListener('focus',function(){loadIdx(function(){var v=sq.value.trim();if(v)render(v);});});
