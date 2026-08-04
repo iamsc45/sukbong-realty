@@ -97,6 +97,7 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
     <div class="plan">
       <div><label>계획 호수</label><input id="units" type="number" min="1" value="24" inputmode="numeric"></div>
       <div><label>세대 평균 전용면적(㎡)</label><input id="area" type="number" min="10" value="55" inputmode="numeric"></div>
+      <div><label>공급 유형</label><select id="stype"><option>일반</option><option>다자녀</option><option>고령자</option><option>청년</option><option>신혼신생아Ⅰ</option><option>신혼신생아Ⅱ</option></select></div>
       <div><label>사업 방식</label><select id="kind"><option>민간 신축 매입약정</option><option>기존주택 매입</option><option>비주택 용도변경</option></select></div>
     </div>
     <p class="ex">예시로 눌러 보세요.
@@ -155,8 +156,11 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
   }
 
   /* VWorld structure의 level2는 '수원시 팔달구'처럼 구까지 붙는다.
-     관할표는 '수원시' 단위라 앞 토큰으로도 맞춰 본다. */
-  function findHQ(sido1, sgg2){
+     관할표는 '수원시' 단위라 앞 토큰으로도 맞춰 본다.
+     detailTxt = 시군구 아래 읍·면·동·리 문자열. 울산 울주군처럼 관할이 리 단위까지
+     잘린 곳이 있어서, 군 이름만 맞다고 통과시키면 온산읍까지 대상으로 잡힌다
+     (인수인계 검수표에서 실제로 걸린 항목, 2026-08-04). */
+  function findHQ(sido1, sgg2, detailTxt){
     if(!LD||!sido1)return null;
     var list=null, keys=sidoKeys(sido1);
     for(var k=0;k<keys.length;k++){ if(LD.jur[keys[k]]){list=LD.jur[keys[k]];break;} }
@@ -172,8 +176,18 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
     if(!e2)return {out:true, sido:sido1, sgg:sgg,
                    avail:list.filter(function(x){return x.sgg!=='전체';})
                              .map(function(x){return x.sgg;})};
-    return {hq:e2.hq, sido:sido1, sgg:e2.sgg==='전체'?sgg:e2.sgg,
-            detail:e2.d, memo:e2.memo, src:e2.src};
+    var base={hq:e2.hq, sido:sido1, sgg:e2.sgg==='전체'?sgg:e2.sgg,
+              detail:e2.d, memo:e2.memo, src:e2.src};
+    if(e2.d){
+      var d=(detailTxt||'').replace(/[·,]/g,' ');
+      var keys2=e2.d.split(/[·,\s]+/).filter(function(x){return x.length>=2;});
+      if(!d.trim())return Object.assign({cond:true}, base);      /* 읍·리를 안 넣었다 */
+      var m=keys2.some(function(k2){return d.indexOf(k2)>=0;});
+      if(!m)return {out:true, sido:sido1, sgg:sgg, need:e2.d,
+                    avail:list.filter(function(x){return x.sgg!=='전체';})
+                              .map(function(x){return x.sgg+(x.d?'('+x.d+')':'');})};
+    }
+    return base;
   }
 
   /* 계획 전용면적이 어느 공급유형에 들어가는지. inc=0이면 상한 미포함('미만') */
@@ -206,7 +220,7 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
       _jsonp(u,function(d){
         var r=d&&d.response;
         if(r&&r.status==='OK'&&r.result&&r.result.point){
-          ok({lat:+r.result.point.y,lng:+r.result.point.x,text:(r.refined&&r.refined.text)||addr,
+          ok({lat:+r.result.point.y,lng:+r.result.point.x,text:(r.refined&&r.refined.text)||addr,raw:addr,
               st:(r.refined&&r.refined.structure)||{}});return;}
         bad();
       },bad);
@@ -369,7 +383,10 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
     var H=[], pass=0, total=0, fail=0, warn=0;
 
     /* 0. 관할 지역본부 — 여기서 대상이 아니면 나머지를 볼 이유가 없다 (2026-08-04 신설) */
-    var st=p.st||{}, J=findHQ(st.level1||'', st.level2||'');
+    var st=p.st||{};
+    /* 읍·면·리는 VWorld structure에도 있고 원문 주소에도 있다. 둘 다 합쳐서 본다 */
+    var dtl=[st.level3, st.level4L, st.level4A, p.text, p.raw].filter(Boolean).join(' ');
+    var J=findHQ(st.level1||'', st.level2||'', dtl);
     var HQ=null;
     total++;
     if(!LD){
@@ -383,35 +400,53 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
     }else if(J.out){
       fail++;
       H.push(item('관할 지역본부','매입 대상 아님','f',
-        '<b>'+esc(J.sido)+' '+esc(J.sgg)+'</b>는 2026년 지역본부 공고의 매입 대상 지역에 없습니다. '
-        +'본사 공고 관할표에는 시·도 전체로 적혀 있어도 지역본부가 일부 시·군을 빼는 경우가 있습니다.',
+        '<b>'+esc(J.sido)+' '+esc(J.sgg)+'</b>는 2026년 지역본부 공고의 매입 대상 지역에 없습니다.'
+        +(J.need?' 이 시·군은 <b>'+esc(J.need)+'</b>만 대상입니다.'
+                :' 본사 공고 관할표에는 시·도 전체로 적혀 있어도 지역본부가 일부 시·군을 빼는 경우가 있습니다.'),
         esc(J.sido)+'에서 신청 가능한 곳: '+esc(J.avail.join(' · '))));
+    }else if(J.cond){
+      HQ=J.hq; warn++;
+      H.push(item('관할 지역본부','조건부 — 읍·리 확인 필요','w',
+        '<b>'+esc(J.hq)+'지역본부</b> 관할이지만 <b>'+esc(J.sgg)+'</b>는 <b>'+esc(J.detail)+'</b>만 대상입니다. '
+        +'주소에 읍·면·리까지 넣어 다시 확인해 주세요.',
+        '근거: '+esc(J.hq)+'지역본부 2026년 매입 공고 원문'+(LD.ver?' · 기준일 '+esc(LD.ver):'')));
     }else{
       HQ=J.hq; pass++;
       H.push(item('관할 지역본부','확인','p',
         '<b>'+esc(HQ)+'지역본부</b> 관할입니다.'
-        +(J.detail?' 다만 <b>'+esc(J.detail)+'</b>으로 한정됩니다.':'')
+        +(J.detail?' 이 시·군은 <b>'+esc(J.detail)+'</b>만 대상인데, 입력하신 주소가 여기에 들어갑니다.':'')
         +(J.memo?' <span style="color:#8A5A00">'+esc(J.memo)+'</span>':''),
         '근거: '+esc(HQ)+'지역본부 2026년 매입 공고 원문'
         +(LD.ver?' · 기준일 '+esc(LD.ver):'')));
     }
 
-    /* 0-2. 유형별 면적 요건 (2026-08-04 신설) */
+    /* 0-2. 유형별 면적 요건 (2026-08-04 신설)
+       선택한 공급유형을 기준으로 판정한다. 유형을 안 보고 '하나라도 되면 통과'로 두면
+       일반형을 염두에 둔 사람이 경남 50㎡를 넣었을 때 통과로 읽는다(실제로는 일반형 탈락). */
     if(HQ){
       total++;
-      var F=fitTypes(HQ, area);
-      if(F&&F.ok.length){
-        pass++;
-        H.push(item('유형별 면적 요건','충족','p',
-          '계획 전용 <b>'+area+'㎡('+PY(area)+')</b>로 신청 가능한 유형: <b>'+esc(F.ok.join(' · '))+'</b>',
-          esc(HQ)+' 요건 — '+F.all.map(function(r){return r.t+' '+areaTxt(r);}).join(' · ')
-          +(F.pref?'<br><b style="color:#8A5A00">LH 선호면적 '+esc(F.pref)+'</b> — 요건은 넓지만 실제로 원하는 구간이 따로 있습니다':'')));
-      }else if(F){
+      var sty=(document.getElementById('stype')||{value:'일반'}).value;
+      var F=fitTypes(HQ, area), R=F?F.all.filter(function(x){return x.t===sty;})[0]:null;
+      var others=F?F.ok.filter(function(t){return t!==sty;}):[];
+      var reqTxt=F?(esc(HQ)+' 요건 — '+F.all.map(function(r){return r.t+' '+areaTxt(r);}).join(' · ')):'';
+      if(R&&R.none){
         fail++;
-        H.push(item('유형별 면적 요건','미달','f',
-          '계획 전용 <b>'+area+'㎡('+PY(area)+')</b>로는 '+esc(HQ)+'에서 신청 가능한 유형이 없습니다. '
-          +'지역본부마다 하한이 달라, 다른 지역에서 되던 설계가 여기서는 막힐 수 있습니다.',
-          esc(HQ)+' 요건 — '+F.all.map(function(r){return r.t+' '+areaTxt(r);}).join(' · ')));
+        H.push(item('면적 요건 ('+esc(sty)+'형)','공급하지 않는 유형','f',
+          esc(HQ)+'지역본부는 <b>'+esc(sty)+'형을 공급하지 않습니다.</b>'
+          +(others.length?' 계획 면적으로는 <b>'+esc(others.join(' · '))+'</b>이 가능합니다.':''), reqTxt));
+      }else if(R&&R.pass){
+        pass++;
+        H.push(item('면적 요건 ('+esc(sty)+'형)','충족','p',
+          '계획 전용 <b>'+area+'㎡('+PY(area)+')</b>는 '+esc(sty)+'형 요건 <b>'+areaTxt(R)+'</b>에 들어갑니다.'
+          +(others.length?' 같은 면적으로 '+esc(others.join(' · '))+'형도 가능합니다.':''),
+          reqTxt+(F.pref?'<br><b style="color:#8A5A00">LH 선호면적 '+esc(F.pref)+'</b> — 요건은 넓지만 실제로 원하는 구간이 따로 있어, 하한 근처로 설계하면 심사에서 밀릴 수 있습니다':'')));
+      }else if(R){
+        fail++;
+        H.push(item('면적 요건 ('+esc(sty)+'형)','미달','f',
+          '계획 전용 <b>'+area+'㎡('+PY(area)+')</b>는 '+esc(HQ)+' '+esc(sty)+'형 요건 <b>'+areaTxt(R)+'</b>을 벗어납니다.'
+          +(R.inc?'':' 상한이 <b>미만</b>이라 '+R.hi+'㎡ 정각도 안 됩니다.')
+          +(others.length?' 이 면적으로 가능한 유형은 <b>'+esc(others.join(' · '))+'</b>입니다.':' 이 면적으로 가능한 유형이 없습니다.'),
+          reqTxt));
       }
     }
 
