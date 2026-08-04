@@ -1,0 +1,1 @@
+window.APTALIAS=window.APTALIAS||{};APTALIAS["48240"]={"e편한세상삼천포오션프라임|동금동":{"a":"e편한세상삼천포오션프라임(주상복합)|동금동"}};
