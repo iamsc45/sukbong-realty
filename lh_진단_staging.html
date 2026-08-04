@@ -204,6 +204,12 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
     return {ok:ok, all:all, pref:LD.req[hq].pref};
   }
   function areaTxt(r){return r.none?'해당없음':(r.lo+'~'+r.hi+(r.inc?'㎡':'㎡미만'));}
+  /* 지역명 뒤 조사. '울주군는'처럼 나오면 읽는 사람이 바로 어색해한다 */
+  function josa(w,a,b){
+    var c=(w||'').charCodeAt((w||'').length-1);
+    if(c<0xAC00||c>0xD7A3)return w+a;          /* 한글이 아니면 받침 있는 쪽 */
+    return w+(((c-0xAC00)%28)?a:b);
+  }
 
   function _jsonp(url,cb,onerr){
     var name='_vw'+Date.now()+Math.floor(Math.random()*1e4);
@@ -405,14 +411,14 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
     }else if(J.out){
       fail++;
       H.push(item('관할 지역본부','매입 대상 아님','f',
-        '<b>'+esc(J.sido)+' '+esc(J.sgg)+'</b>는 2026년 지역본부 공고의 매입 대상 지역에 없습니다.'
+        '<b>'+esc(J.sido)+' '+esc(J.sgg)+'</b>'+(josa(J.sgg,'은','는').slice(J.sgg.length))+' 2026년 지역본부 공고의 매입 대상 지역에 없습니다.'
         +(J.need?' 이 시·군은 <b>'+esc(J.need)+'</b>만 대상입니다.'
                 :' 본사 공고 관할표에는 시·도 전체로 적혀 있어도 지역본부가 일부 시·군을 빼는 경우가 있습니다.'),
         esc(J.sido)+'에서 신청 가능한 곳: '+esc(J.avail.join(' · '))));
     }else if(J.cond){
       HQ=J.hq; warn++;
       H.push(item('관할 지역본부','조건부 — 읍·리 확인 필요','w',
-        '<b>'+esc(J.hq)+'지역본부</b> 관할이지만 <b>'+esc(J.sgg)+'</b>는 <b>'+esc(J.detail)+'</b>만 대상입니다. '
+        '<b>'+esc(J.hq)+'지역본부</b> 관할이지만 <b>'+esc(J.sgg)+'</b>'+(josa(J.sgg,'은','는').slice(J.sgg.length))+' <b>'+esc(J.detail)+'</b>만 대상입니다. '
         +'주소에 읍·면·리까지 넣어 다시 확인해 주세요.',
         '근거: '+esc(J.hq)+'지역본부 2026년 매입 공고 원문'+(LD.ver?' · 기준일 '+esc(LD.ver):'')));
     }else{
