@@ -360,7 +360,10 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
       var sido=sidoOf(p.text)||sidoOf(addr);
       var cd=codeOf(p.st||{},p.text+' '+addr);
       if(!cd){
-        out.innerHTML='<div class="msg">주소는 찾았지만(<b>'+esc(p.text)+'</b>) 우리 실거래 데이터의 법정동과 연결하지 못했습니다.<br>동 이름을 포함해 다시 넣어 주세요.</div>';
+        /* 실거래 데이터의 법정동과 못 이어도 관할·면적은 판정할 수 있다(2026-08-04).
+           예전에는 여기서 그냥 멈춰서, 대상 지역이 아니라는 가장 중요한 답조차 못 봤다.
+           온산읍 덕신리처럼 우리 실거래 커버리지가 얇은 곳에서 실제로 그랬다. */
+        judge(p, sido, null);
         return;
       }
       out.innerHTML='<div class="msg">'+esc(p.text)+'<br>인근 실거래를 불러오는 중…</div>';
@@ -375,8 +378,10 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
     });
   }
   function judge(p,sido,cd){
-    var code=cd.code, lat=p.lat, lng=p.lng;
-    var z=zoneCheck(lat,lng), mk=market(lat,lng,code), am=amenity(lat,lng,code);
+    var hasMkt=!!cd;                       /* 실거래 데이터를 붙일 수 있는가 */
+    var code=cd?cd.code:null, lat=p.lat, lng=p.lng;
+    var z=zoneCheck(lat,lng);
+    var mk=hasMkt?market(lat,lng,code):null, am=hasMkt?amenity(lat,lng,code):null;
     var units=+document.getElementById('units').value||0;
     var area=+document.getElementById('area').value||0;
     var kind=document.getElementById('kind').value;
@@ -473,6 +478,11 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
     }
 
     /* 2. 가격 적정성 */
+    if(!hasMkt){
+      H.push(item('가격 적정성 기준선','실거래 연결 안 됨','n',
+        '이 주소를 우리 실거래 데이터의 법정동과 연결하지 못해 인근 시세를 집계하지 못했습니다. '
+        +'관할·면적 판정은 위에 그대로 유효합니다.',''));
+    }else{
     total++;
     if(mk.mmN>=5){
       pass++;
@@ -487,7 +497,9 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
         '표본 지점 '+n(mk.pts)+'곳'));
     }
 
+    }
     /* 3. 임대수요 */
+    if(hasMkt){
     total++;
     var rentN=mk.jeN+mk.woN;
     if(rentN>=20){
@@ -503,7 +515,9 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
         '전세 '+n(mk.jeN)+' · 월세 '+n(mk.woN)));
     }
 
+    }
     /* 4. 생활편의성 */
+    if(hasMkt){
     total++;
     if(am&&am.info){
       var i=am.info, sub=i.subway||'', subT=i.subT||'', edu=i.edu||'', conv=i.conv||'';
@@ -522,6 +536,7 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
         am?('가장 가까운 단지 '+esc(am.nm)+' '+n(am.d)+'m'):''));
     }
 
+    }
     /* 5. 최소 호수
        ⚠️ 2026-08-04 수정: 예전에는 서울 19 / 인천 20 / 경기 50 / 그 외 30으로 박아 뒀는데
        공고문 재추출 결과 근거가 확인된 것은 서울 10(규제지역)·인천 20·전북 10뿐이었다.
