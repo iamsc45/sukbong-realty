@@ -92,19 +92,26 @@ window.SBAuth=(function(){
     client.auth.signInWithOAuth({provider:'kakao',options:{redirectTo:location.href.split('#')[0],scopes:'profile_nickname'}});
   }
   async function logout(){try{await client.auth.signOut();}catch(e){}location.reload();}
-  /* 가입 유도 모달 */
-  function gate(pendingItem,onOk){
+  /* 가입 유도 모달
+     opt로 문구를 갈아끼울 수 있다(2026-08-04). 관심단지 말고 다른 기능에서도 쓰는데
+     "관심단지는 회원 기능입니다"가 그대로 뜨면 무슨 말인지 모른다.
+     opt를 안 주면 기존 문구 그대로라 다른 화면은 영향이 없다. */
+  function gate(pendingItem,onOk,opt){
     if(user){onOk&&onOk();return;}
+    opt=opt||{};
+    var T=opt.title||'관심단지는 회원 기능입니다';
+    var D=opt.desc||'카카오로 3초 만에 시작하세요.<br>관심단지를 어느 기기에서나 보고, 새 실거래 소식을 받아볼 수 있습니다.';
+    var A=opt.agree||'(필수) 개인정보 수집·이용 동의 · 카카오 계정 식별자·닉네임을 회원 식별과 관심단지 서비스 제공 목적으로 수집·이용합니다.';
     var old=document.getElementById('sbGate');if(old)old.remove();
     var w=document.createElement('div');w.id='sbGate';
     w.style.cssText='position:fixed;inset:0;z-index:5000;background:rgba(20,20,20,.55);display:flex;align-items:center;justify-content:center;padding:18px';
     w.innerHTML='<div style="background:#fff;border-radius:18px;max-width:360px;width:100%;padding:26px 24px 22px;font-family:inherit;position:relative">'
       +'<button id="sbGateX" style="position:absolute;top:12px;right:14px;border:0;background:transparent;font-size:19px;color:#999;cursor:pointer">✕</button>'
-      +'<div style="font-size:19px;font-weight:800;letter-spacing:-0.02em">관심단지는 회원 기능입니다</div>'
-      +'<div style="font-size:13px;color:#6b6355;margin-top:6px;line-height:1.6">카카오로 3초 만에 시작하세요.<br>관심단지를 어느 기기에서나 보고, 새 실거래 소식을 받아볼 수 있습니다.</div>'
+      +'<div style="font-size:19px;font-weight:800;letter-spacing:-0.02em">'+T+'</div>'
+      +'<div style="font-size:13px;color:#6b6355;margin-top:6px;line-height:1.6">'+D+'</div>'
       +'<label style="display:flex;gap:8px;align-items:flex-start;margin:16px 0 0;font-size:11.5px;color:#555;line-height:1.55;cursor:pointer">'
       +'<input id="sbGateAgree" type="checkbox" style="margin-top:2px">'
-      +'<span>(필수) 개인정보 수집·이용 동의 — 카카오 계정 식별자·닉네임을 회원 식별과 관심단지 서비스 제공 목적으로 수집·이용합니다. <a href="privacy.html" target="_blank" style="color:#2554E0">자세히</a></span></label>'
+      +'<span>'+A+' <a href="privacy.html" target="_blank" style="color:#2554E0">자세히</a></span></label>'
       +'<button id="sbGateGo" style="display:block;width:100%;margin-top:14px;border:0;border-radius:12px;background:#FEE500;color:#191919;font:inherit;font-size:15px;font-weight:800;padding:14px 0;cursor:pointer">카카오로 시작하기</button>'
       +'<div style="font-size:10.5px;color:#9a938a;margin-top:10px;text-align:center">가입 즉시 이용할 수 있습니다 · 언제든 탈퇴 가능</div></div>';
     document.body.appendChild(w);

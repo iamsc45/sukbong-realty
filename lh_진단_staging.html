@@ -43,6 +43,17 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
 .it .ds{font-size:13px;color:var(--text2);line-height:1.65}
 .it .bs{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.55}
 .it .bs b{color:var(--text2)}
+/* 회원 블록 (2026-08-04). 결과를 다 보여준 뒤에 놓는다 */
+.mem{border:1px solid var(--hair);border-radius:14px;background:#fff;padding:17px 20px;margin:0 0 12px}
+.mem .mtitle{font-size:15px;font-weight:800;letter-spacing:-0.02em}
+.mem .mdesc{margin:5px 0 0;font-size:12.5px;color:var(--muted);line-height:1.7;word-break:keep-all}
+.mem .mbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
+.mem .mb{border:1px solid var(--hair);border-radius:100px;background:#fff;color:var(--text2);
+  font:inherit;font-size:13px;font-weight:700;padding:10px 20px;cursor:pointer;transition:border-color 120ms ease}
+.mem .mb:hover{border-color:var(--muted2)}
+.mem .mb.p{background:var(--text);color:#fff;border-color:var(--text)}
+.mem .mb.done{background:var(--gray);color:var(--muted);border-color:var(--hair);cursor:default}
+.mem .mstate{font-size:12px;color:var(--text2);margin-top:10px;line-height:1.6;min-height:1px}
 .cta{border:1px solid var(--hair);border-left:3px solid var(--acc-blue);background:var(--soft);border-radius:0 14px 14px 0;padding:17px 20px;margin:0 0 10px}
 .cta b{font-size:14.5px}
 .cta p{margin:5px 0 0;font-size:13px;color:var(--muted);line-height:1.65}
@@ -116,6 +127,8 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
   <span>💬 <a href="https://open.kakao.com/o/gt8CTUCi">카카오 오픈채팅</a> · <a href="https://blog.naver.com/seokbongnews">네이버 블로그</a></span>
   <div class="fine">판정 근거: 국토교통부 실거래가 · 공공 정비사업 DB · 공동주택 단지정보 · 지오코딩은 공공 지도데이터 · 편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 참고용이며 심의 결과를 보장하지 않습니다</div>
 </footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets/sb_auth.js?v=3"></script>
 <script src="data/lh_diag.js"></script>
 <script src="data/dongs.js"></script>
 <script src="data/jeongbi_seoul.js"></script>
@@ -660,9 +673,90 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
       +'<button class="ctab" id="askOpen">자금 계획 문의하기</button>'
       +'<div id="askBox" style="display:none"></div></div>';
 
-    out.innerHTML=sum+'<div class="items">'+H.join('')+'</div>'+cta;
+    /* 회원 블록 (2026-08-04 석봉님 확정)
+       판정 결과는 전부 보여준 뒤에 붙인다. 결과를 막고 가입을 받으면
+       처음 온 사람은 이 도구가 쓸 만한지 모르는 채로 떠난다.
+       가입 이유는 두 가지다. 시행사는 한 땅만 보지 않고 여러 개를 비교하므로 '저장'이 필요하고,
+       요건은 차수마다 바뀌므로 '바뀌면 알림'이 실제 가치다. */
+    var mem='<div class="mem" id="memBox">'
+      +'<div class="mtitle">이 사업지, 저장해 두시겠습니까?</div>'
+      +'<p class="mdesc">시행사는 한 땅만 보지 않습니다. 여러 곳을 재 보고 하나를 고르니, '
+      +'판정 결과를 모아 두면 비교가 쉽습니다. 지역본부 요건이 바뀌면 알려드립니다.</p>'
+      +'<div class="mbtns">'
+      +'<button class="mb p" id="memSave">이 사업지 저장</button>'
+      +'<button class="mb" id="memAlert">요건 바뀌면 알림받기</button>'
+      +'</div>'
+      +'<div class="mstate" id="memState"></div></div>';
+
+    out.innerHTML=sum+'<div class="items">'+H.join('')+'</div>'+mem+cta;
     wireAsk(p.text, pass+'/'+total, units, area, kind);
+    wireMember({addr:p.text, hq:HQ||'', units:units, area:area, kind:kind,
+                score:pass+'/'+total, at:new Date().toISOString().slice(0,10)});
     try{if(typeof gtag==='function')gtag('event','lh_selfcheck',{pass:pass,fail:fail});}catch(e){}
+  }
+
+  /* ── 사업지 저장·알림 ────────────────────────────────────────
+     저장은 이 브라우저(localStorage)에 쌓는다. favorites 테이블은 단지용 스키마라
+     (code·nm·dong) 사업지를 넣으면 관심단지 화면에 섞여 나온다. 전용 테이블이 생기면 옮긴다.
+     알림 이메일은 서버에 저장된다(SBAuth.setNotifyEmail). 실제 발송은 주 1회 자동 갱신을
+     붙일 때 시작하므로, 지금은 그 사실을 그대로 밝힌다. 안 보내면서 보낸다고 하면 신뢰를 잃는다. */
+  var LHS='sb_lh_sites';
+  function sitesAll(){try{return JSON.parse(localStorage.getItem(LHS)||'[]');}catch(e){return [];}}
+  function sitesSave(l){try{localStorage.setItem(LHS,JSON.stringify(l.slice(0,50)));}catch(e){}}
+  function wireMember(site){
+    var st=document.getElementById('memState');
+    var bSave=document.getElementById('memSave'), bAlert=document.getElementById('memAlert');
+    if(!st||!bSave)return;
+    function say(h){st.innerHTML=h;}
+    function saved(){
+      return sitesAll().some(function(x){return x.addr===site.addr&&x.area===site.area&&x.units===site.units;});
+    }
+    function paint(){
+      if(saved()){bSave.textContent='저장됨';bSave.classList.add('done');}
+      var n=sitesAll().length;
+      if(n)say('저장한 사업지 <b>'+n+'곳</b>. 이 브라우저에 보관됩니다.');
+    }
+    function doSave(){
+      if(saved()){say('이미 저장한 사업지입니다.');return;}
+      var l=sitesAll();l.unshift(site);sitesSave(l);paint();
+      say('저장했습니다. 저장한 사업지 <b>'+sitesAll().length+'곳</b>.');
+      try{if(typeof gtag==='function')gtag('event','lh_site_save',{hq:site.hq});}catch(e){}
+    }
+    bSave.onclick=function(){
+      if(window.SBAuth&&!SBAuth.isIn()){
+        SBAuth.gate(null,doSave,{
+          title:'사업지 저장은 회원 기능입니다',
+          desc:'카카오로 3초 만에 시작하세요.<br>검토한 사업지를 모아 비교하고, 지역본부 요건이 바뀌면 알려드립니다.',
+          agree:'(필수) 개인정보 수집·이용 동의 · 카카오 계정 식별자·닉네임을 회원 식별과 사업지 저장·알림 목적으로 수집·이용합니다.'});
+        return;
+      }
+      doSave();
+    };
+    bAlert.onclick=function(){
+      function ask(){
+        var cur=(window.SBAuth&&SBAuth.authEmail&&SBAuth.authEmail())||'';
+        var v=prompt('요건이 바뀌면 알려드릴 이메일을 넣어 주세요.', cur);
+        if(v===null)return;
+        v=v.trim();
+        if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){say('이메일 형식을 확인해 주세요.');return;}
+        if(window.SBAuth&&SBAuth.setNotifyEmail){
+          SBAuth.setNotifyEmail(v).then(function(){
+            say('<b>'+esc(v)+'</b>로 신청했습니다. 지역본부 공고가 새로 나와 요건이 바뀌면 알려드립니다. '
+              +'<span style="color:var(--muted)">알림 발송은 준비 중이며, 시작하면 이 주소로 보내드립니다.</span>');
+          }).catch(function(){say('신청에 실패했습니다. 잠시 후 다시 시도해 주세요.');});
+        }
+        try{if(typeof gtag==='function')gtag('event','lh_req_alert',{hq:site.hq});}catch(e){}
+      }
+      if(window.SBAuth&&!SBAuth.isIn()){
+        SBAuth.gate(null,ask,{
+          title:'요건 변경 알림은 회원 기능입니다',
+          desc:'지역본부는 차수마다 공고를 새로 냅니다. 면적 요건이 바뀌면 메일로 알려드립니다.<br>카카오로 3초 만에 시작하세요.',
+          agree:'(필수) 개인정보 수집·이용 동의 · 카카오 계정 식별자·닉네임과 이메일을 회원 식별과 요건 변경 알림 목적으로 수집·이용합니다.'});
+        return;
+      }
+      ask();
+    };
+    if(window.SBAuth&&SBAuth.whenReady)SBAuth.whenReady(paint); else paint();
   }
 
   /* 문의 접수: 홈 광고 문의와 같은 Supabase 테이블을 kind로 구분해 쓴다.
