@@ -195,10 +195,14 @@ window.SBAuth=(function(){
     if(!user)return {ok:false,reason:'login'};
     var left=await reportLeft();
     if(left===0)return {ok:false,reason:'used'};
-    var r=await client.from('inquiries').insert({
-      kind:'보고서 신청', user_id:user.id,
+    var row={kind:'보고서 신청',
       name:(nickname()||'회원').slice(0,100), contact:String(email||'').slice(0,100),
-      msg:('상품: '+prod+'\n희망 지역: '+region).slice(0,2000)});
+      msg:('상품: '+prod+'\n희망 지역: '+region).slice(0,2000)};
+    var r=await client.from('inquiries').insert(Object.assign({user_id:user.id},row));
+    /* user_id 칸을 아직 만들기 전이면(42703) 그것 없이 한 번 더 넣는다.
+       DB 작업 전에 들어온 신청이 통째로 실패하면 안 된다(2026-08-05). */
+    if(r.error&&(r.error.code==='42703'||/user_id/.test(r.error.message||'')))
+      r=await client.from('inquiries').insert(row);
     if(r.error)return {ok:false,reason:'error'};
     return {ok:true,left:(left===null?null:left-1)};
   }
