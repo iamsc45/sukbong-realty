@@ -165,9 +165,10 @@ function render(){
       return (isFinite(z)&&isFinite(st)&&z>0&&st>z*1.2);})();
     h+='<div class="sec"><div class="lab">규모 · 면적</div><div class="grid">'
       +kv('용도지역',d.usezone)
-      +kv('정비구역 면적',_areaConflict?'':m2(d.zone_area))
-      +kv('대지면적',_areaConflict?'':m2(d.site_area))
-      +kv('연면적',m2(d.floor_area))
+      /* 면적 3종은 이름만으로 헷갈린다(석봉님 8/5 지적) — 뜻을 같이 적는다 */
+      +kv('정비구역 면적 · 구역 전체 땅',_areaConflict?'':m2(d.zone_area))
+      +kv('대지면적 · 건물이 앉는 땅',_areaConflict?'':m2(d.site_area))
+      +kv('연면적 · 모든 층 바닥 합계',m2(d.floor_area))
       +kv('건축면적',d.height_area)
       +kv('최고층수',d.floors)
       +kv('최고높이',(function(v){return v?(v<100?v.toFixed(1):Math.round(v).toLocaleString())+'m':'';})(normH(d.height,d.floors)))

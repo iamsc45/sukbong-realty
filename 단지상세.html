@@ -338,7 +338,7 @@ function render(pt,code){
   document.getElementById('loc').innerHTML=esc((pt.dong||'')+' '+(pt.jibun||''))+(info&&info.subway?' · <b style="color:var(--brass)">'+esc(info.subway)+'역</b>':'')+((info&&info.ymd)?' · '+info.ymd+'년 준공':(pt.extra?' · '+esc(pt.extra):''));
   var kp=[[mmpy?comma(mmpy)+'<small style="font-size:11px">만</small>':'·','매매 평당(전용)'],
     [eok(mmamt),'매매 중위 총액'],[eok(jemed),'전세 보증금 중위'],
-    [jr?jr+'%':'·','전세가율'],
+    [jr?jr+'%':'·','전세가율 · 전세÷매매'],
     [(info&&info.se)?comma(info.se):(mm.length+'건'),(info&&info.se)?'세대수':'매매 표본'],
     [(info&&info.ymd)?info.ymd:((je.length+wo.length)+'건'),(info&&info.ymd)?'준공':'전월세 표본']];
   /* 아래 3칸: 최고가·월세·거래활발도 (2026-07-28) */
@@ -381,7 +381,8 @@ function render(pt,code){
       /* 연면적 2차 방어(2026-08-05). K-apt 원천에 자릿수 오류가 있어(마곡센트레빌 20억㎡)
          수집기 fix_area()가 복원·정제하지만, 수집기를 거치지 않은 값이 섞여도 명백한
          오류(세대당 2~2000㎡ 밖)는 화면에서 한 번 더 거른다. 주상복합(상가 포함)은 실값 보존. */
-      +frow(IC.home,'연면적',(function(a,se){
+      /* '연면적'만 있으면 땅 넓이로 오해한다(석봉님 8/5 지적) — 뜻을 같이 적는다 */
+      +frow(IC.home,'연면적 · 모든 층 바닥 합계',(function(a,se){
         if(!a)return '';
         var ok=se?(a/se>=2&&a/se<=2000):(a>=500&&a<=2000000);
         return ok?comma(a)+'㎡('+PY(a)+')':'';
