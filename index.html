@@ -316,6 +316,75 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
 <meta property="og:site_name" content="석봉 부동산 정보방">
 </head>
 <body>
+<!-- ── 첫 방문 이용 안내 팝업 (2026-08-05 석봉님 지시) ────────────────────
+     "기능이 많아 복잡해서 안 쓸 수도 있겠다"는 지적으로 만들었다.
+     ⚠️ 홈 첫 방문에만 뜬다. 검색으로 단지·글 페이지에 바로 들어온 사람은 방해하지 않는다
+        (유입의 대부분이 검색이라 거기에 팝업을 띄우면 보려던 걸 가려 이탈만 는다).
+     ⚠️ 한 번 닫으면 다시 안 뜬다. 다시 보려면 nav의 '이용안내'. -->
+<div id="guidePop" style="display:none">
+  <div class="gp-bg"></div>
+  <div class="gp-box" role="dialog" aria-modal="true" aria-labelledby="gpTitle">
+    <button class="gp-x" id="gpX" aria-label="닫기">✕</button>
+    <div class="gp-k">처음 오셨나요</div>
+    <h2 id="gpTitle">무엇을 볼 수 있는 곳인가요</h2>
+    <p class="gp-d">국토교통부 실거래 신고 자료를 매일 받아 지도와 표로 바꿔 놓았습니다. 전부 무료입니다.</p>
+    <ul class="gp-l">
+      <li><b>실거래지도</b><span>단지·지역을 검색하면 실제 신고된 거래가 지도에 뜹니다</span></li>
+      <li><b>단지 상세</b><span>평형별 시세와 10년 시세 추이, 관리비까지 한 화면에서</span></li>
+      <li><b>청약·경매·재개발</b><span>분양 일정과 경쟁률, 낙찰률, 정비구역 추진 단계</span></li>
+    </ul>
+    <div class="gp-b">
+      <a class="gp-go" href="%EC%9D%B4%EC%9A%A9%EC%95%88%EB%82%B4.html">사용법 자세히 보기</a>
+      <button class="gp-skip" id="gpSkip">둘러볼게요</button>
+    </div>
+  </div>
+</div>
+<style>
+#guidePop{position:fixed;inset:0;z-index:6000;display:flex;align-items:center;justify-content:center;padding:18px}
+#guidePop .gp-bg{position:absolute;inset:0;background:rgba(18,18,18,.55)}
+#guidePop .gp-box{position:relative;background:#fff;border-radius:20px;max-width:430px;width:100%;
+  padding:30px 28px 24px;box-shadow:0 20px 60px rgba(0,0,0,.28);max-height:90vh;overflow-y:auto}
+#guidePop .gp-x{position:absolute;top:13px;right:15px;border:0;background:transparent;font-size:18px;color:#aaa;cursor:pointer;padding:4px}
+#guidePop .gp-k{font-size:11px;font-weight:800;letter-spacing:.13em;color:#a8792c}
+#guidePop h2{font-size:21px;font-weight:800;letter-spacing:-0.03em;margin:6px 0 8px;line-height:1.35}
+#guidePop .gp-d{font-size:13px;color:#6b6355;line-height:1.7;margin:0 0 18px;word-break:keep-all}
+#guidePop .gp-l{list-style:none;padding:0;margin:0 0 20px}
+#guidePop .gp-l li{padding:10px 0;border-top:1px solid #eee}
+#guidePop .gp-l b{display:block;font-size:14px;font-weight:800;margin-bottom:3px}
+#guidePop .gp-l span{display:block;font-size:12.5px;color:#8a8071;line-height:1.6;word-break:keep-all}
+#guidePop .gp-b{display:flex;gap:8px;flex-wrap:wrap}
+#guidePop .gp-go{flex:1;min-width:150px;text-align:center;background:#141414;color:#fff;text-decoration:none;
+  font-size:14px;font-weight:800;border-radius:12px;padding:14px 0}
+#guidePop .gp-skip{flex:0 0 auto;border:1px solid #ddd;background:#fff;color:#666;font:inherit;
+  font-size:13.5px;font-weight:700;border-radius:12px;padding:14px 18px;cursor:pointer}
+@media(max-width:420px){#guidePop .gp-box{padding:26px 20px 20px}#guidePop h2{font-size:19px}}
+</style>
+<script>
+(function(){
+  var K='sb_guide_seen';
+  try{ if(localStorage.getItem(K))return; }catch(e){ return; }   /* 저장을 못 쓰면 아예 안 띄운다 */
+  var p=document.getElementById('guidePop');
+  if(!p)return;
+  function close(){
+    p.style.display='none';
+    try{localStorage.setItem(K,'1');}catch(e){}
+  }
+  /* 첫 화면을 잠깐 보여 준 뒤 띄운다. 열자마자 가리면 광고처럼 느껴진다 */
+  setTimeout(function(){
+    p.style.display='flex';
+    try{if(window.gtag)gtag('event','guide_popup_show');}catch(e){}
+  },1200);
+  document.getElementById('gpX').onclick=close;
+  document.getElementById('gpSkip').onclick=close;
+  p.querySelector('.gp-bg').onclick=close;
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
+  /* 안내로 넘어갈 때도 본 것으로 친다 */
+  p.querySelector('.gp-go').addEventListener('click',function(){
+    try{localStorage.setItem(K,'1');if(window.gtag)gtag('event','guide_popup_open');}catch(e){}
+  });
+})();
+</script>
+
 <script>
 /* 카카오 로그인 복귀 감지 (2026-08-05)
    ─────────────────────────────────────────────────────────
@@ -348,6 +417,7 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
   <a class="lnk" href="apply.html">청약</a>
   <a class="lnk" href="auction.html">경매·공매</a>
   <a class="lnk" href="lh_%EC%A7%84%EB%8B%A8.html">LH매입</a>
+  <a class="lnk" href="%EC%9D%B4%EC%9A%A9%EC%95%88%EB%82%B4.html">이용안내</a>
   <a class="lnk" href="%EA%B8%80.html">리포트</a>
   <a class="lnk" href="favorites.html">★ 관심단지</a>
   <a class="lnk" href="https://blog.naver.com/seokbongnews" target="_blank" rel="noopener">블로그</a>
