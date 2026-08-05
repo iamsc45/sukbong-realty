@@ -45,6 +45,12 @@ textarea{min-height:96px;resize:vertical;line-height:1.6}
 .err{display:none;font-size:13px;color:#c0392b;font-weight:700;margin-top:10px}
 .done{border:1px solid var(--hair);border-radius:14px;background:#fff;padding:40px 24px;text-align:center;margin:20px 0}
 .done .ic{font-size:38px;margin-bottom:12px}
+.done .join{margin:22px auto 0;max-width:420px;text-align:left;background:var(--soft);
+  border:1px solid var(--hair);border-left:3px solid var(--gold,#a8792c);border-radius:12px;
+  padding:14px 16px;font-size:13px;color:var(--muted);line-height:1.7;word-break:keep-all}
+.done .join b{color:var(--text)}
+.done .join a{display:inline-block;margin-top:8px;font-size:13px;font-weight:700;
+  color:var(--acc-blue,#2554E0);text-decoration:none}
 .done h2{font-size:19px;font-weight:800;margin:0 0 8px}
 .done p{font-size:13.5px;color:var(--muted);line-height:1.75;margin:0}
 .notice{font-size:11.5px;color:var(--muted);line-height:1.75;margin:24px 0 40px}
@@ -152,6 +158,10 @@ textarea{min-height:96px;resize:vertical;line-height:1.6}
   <span>💬 <a href="https://open.kakao.com/o/gt8CTUCi">카카오 오픈채팅</a> · <a href="https://blog.naver.com/seokbongnews">네이버 블로그</a></span>
   <div class="fine">편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 방문 통계 수집을 위해 Google Analytics(쿠키)를 사용합니다</div>
 </footer>
+<!-- 로그인은 이 화면에서 요구하지 않는다. 이미 로그인한 분을 회원과 연결하려고 얹을 뿐이라
+     스크립트가 늦게 오거나 실패해도 접수는 그대로 된다(아래 uid()가 빈 값이 될 뿐). -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets/sb_auth.js?v=7"></script>
 <script>
 (function(){
   /* 접수처는 홈 광고 문의·LH 자금 문의와 같은 테이블이다. kind로 구분한다. */
@@ -197,17 +207,33 @@ textarea{min-height:96px;resize:vertical;line-height:1.6}
     if(val('f_msg')){L.push('');L.push('■ 남기신 말씀');L.push('  '+val('f_msg'));}
     if(ctx){L.push('');L.push('(유입: '+ctx+')');}
 
-    fetch(URL,{method:'POST',
+    /* 로그인은 요구하지 않는다(2026-08-05 확정). 돈이 급한 사정은 민감해서 익명으로 남길 수
+       있어야 문의가 줄지 않는다. 다만 이미 로그인한 분이면 회원과 연결해 둔다.
+       user_id 칸이 없거나 비회원이면 그냥 빠진 채로 접수된다. */
+    var row={kind:'담보대출 상담',name:nm.slice(0,100),
+             contact:tel.slice(0,100),msg:L.join('\n').slice(0,2000)};
+    var uid=(window.SBAuth&&SBAuth.uid&&SBAuth.uid())||'';
+    if(uid)row.user_id=uid;
+    function post(body){return fetch(URL,{method:'POST',
       headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
-      body:JSON.stringify({kind:'담보대출 상담',name:nm.slice(0,100),
-                           contact:tel.slice(0,100),msg:L.join('\n').slice(0,2000)})})
+      body:JSON.stringify(body)});}
+    post(row)
+    .then(function(r){
+      if(!r.ok&&uid){var p={};for(var k in row)if(k!=='user_id')p[k]=row[k];return post(p);}
+      return r;
+    })
     .then(function(r){
       if(!r.ok)throw 0;
+      var isIn=!!(window.SBAuth&&SBAuth.isIn&&SBAuth.isIn());
       $('form').innerHTML='<div class="done"><div class="ic">✓</div>'
         +'<h2>접수됐습니다</h2>'
-        +'<p>남겨 주신 번호로 연락드리겠습니다.<br>급하시면 iamsc45@gmail.com 으로 보내셔도 됩니다.</p></div>';
+        +'<p>남겨 주신 번호로 연락드리겠습니다.<br>급하시면 iamsc45@gmail.com 으로 보내셔도 됩니다.</p>'
+        +(isIn?'':'<div class="join"><b>회원가입은 하셨나요?</b><br>'
+          +'가입하시면 지역 시장조사 보고서(약식)를 <b>2회 무료</b>로 받아보시고, 리포트 전문도 읽으실 수 있습니다.'
+          +'<a href="%EA%B8%80.html">리포트 보러 가기 →</a></div>')
+        +'</div>';
       window.scrollTo({top:0,behavior:'smooth'});
-      try{if(window.gtag)gtag('event','loan_inquiry_submit',{ctx:ctx||'(direct)'});}catch(e){}
+      try{if(window.gtag)gtag('event','loan_inquiry_submit',{ctx:ctx||'(direct)',member:isIn?1:0});}catch(e){}
     })
     .catch(function(){
       b.disabled=false; b.textContent='문의 남기기';
