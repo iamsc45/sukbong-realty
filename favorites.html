@@ -113,12 +113,15 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
 <script src="assets/sb_auth.js?v=3"></script>
 <script>
 (function(){
+  /* 지금 LH 탭을 보고 있나 — 관심단지 렌더가 부제를 덮어쓰지 않게 판별한다 */
+  function onLh(){var p=document.getElementById('paneLh');return !!p&&p.style.display!=='none';}
   function esc(s){return (s||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
   function eok(m){if(!m)return '';var v=m/10000;return (v>=100?Math.round(v):(''+v.toFixed(1)).replace(/\.0$/,''))+'억';}
   var list=document.getElementById('list'), cnt=document.getElementById('cnt'), who=document.getElementById('who');
   function guest(){
     who.style.display='none';
-    cnt.textContent='등록한 단지를 어느 기기에서나 확인합니다';
+    /* LH 탭을 보고 있을 때 이 문구가 덮어쓰면 제목과 부제가 어긋난다(2026-08-05) */
+    if(!onLh())cnt.textContent='등록한 단지를 어느 기기에서나 확인합니다';
     list.innerHTML='<div class="emptybox"><b>관심단지는 회원 기능입니다</b>'
       +'카카오로 3초 만에 시작하고, 관심단지의 새 실거래 소식을 받아보세요.<br>'
       +'<button class="kbtn" id="kJoin">카카오로 시작하기</button></div>';
@@ -126,7 +129,7 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
   }
   function draw(extra){
     var l=SBAuth.favAll();
-    cnt.textContent=(l.length?('등록 '+l.length+'개 · '):'')+'어느 기기에서나 같은 목록을 봅니다';
+    if(!onLh())cnt.textContent=(l.length?('등록 '+l.length+'개 · '):'')+'어느 기기에서나 같은 목록을 봅니다';
     who.style.display='flex';
     who.innerHTML='<span><b>'+esc(SBAuth.nickname())+'</b>님</span>'
       +'<button id="btnOut">로그아웃</button><button id="btnQuit">회원 탈퇴</button>';
