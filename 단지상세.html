@@ -373,12 +373,12 @@ function render(pt,code){
       +frow(IC.cal,'준공',info.ymd?info.ymd+'년':'')
       +frow(IC.build,'시공사',info.builder)
       +frow(IC.build,'시행사',info.dev)
-      /* 연면적 원본에 자릿수 오류가 있다(마곡센트레빌 20억㎡, 구의현대13차 24㎡ — 2026-08-05 점검
-         103건). 배율이 제각각이라 환산이 불가능해, 세대당 20~400㎡(세대수 미상이면 500~200만㎡)를
-         벗어나면 표시하지 않는다. 원본 파싱을 고치면 이 가드는 자연히 무해해진다. */
+      /* 연면적 2차 방어(2026-08-05). K-apt 원천에 자릿수 오류가 있어(마곡센트레빌 20억㎡)
+         수집기 fix_area()가 복원·정제하지만, 수집기를 거치지 않은 값이 섞여도 명백한
+         오류(세대당 2~2000㎡ 밖)는 화면에서 한 번 더 거른다. 주상복합(상가 포함)은 실값 보존. */
       +frow(IC.home,'연면적',(function(a,se){
         if(!a)return '';
-        var ok=se?(a/se>=20&&a/se<=400):(a>=500&&a<=2000000);
+        var ok=se?(a/se>=2&&a/se<=2000):(a>=500&&a<=2000000);
         return ok?comma(a)+'㎡('+PY(a)+')':'';
       })(info.area,info.se))
       +frow(IC.heat,'난방',info.heat)
