@@ -79,16 +79,30 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
   <p class="pgsub">실거래·청약·경매 데이터를 직접 뜯어 정리한 글입니다</p>
   <div class="repbox" id="repbox">
     <div class="tx"><b>지역 시장조사 보고서</b>를 이메일로 보내드립니다
-      <small>궁금한 동네와 상품(아파트·상가)을 골라 신청하세요 · 핵심만 간추린 <b>약식 보고서</b>입니다 · 회원 무료</small></div>
+      <small>궁금한 동네와 상품을 골라 신청하세요 (아파트·빌라·상가·토지 등) · 핵심만 간추린 <b>약식 보고서</b>입니다 · 회원 무료</small></div>
     <button id="repBtn" type="button">이메일로 신청하기</button>
   </div>
   <div class="repform" id="repform" hidden>
     <label>어떤 상품이 궁금하세요?</label>
     <select id="repProd">
       <option value="">선택해 주세요</option>
-      <option>아파트 · 주거</option>
-      <option>상가 · 건물</option>
-      <option>토지 · 기타</option>
+      <optgroup label="주거">
+        <option>아파트</option>
+        <option>오피스텔</option>
+        <option>빌라 (연립·다세대)</option>
+        <option>단독·다가구</option>
+      </optgroup>
+      <optgroup label="상업·업무">
+        <option>상가</option>
+        <option>빌딩·사옥</option>
+        <option>지식산업센터</option>
+        <option>공장·창고</option>
+      </optgroup>
+      <optgroup label="토지·개발">
+        <option>토지</option>
+        <option>재개발·재건축 구역</option>
+        <option>분양권·입주권</option>
+      </optgroup>
     </select>
     <label>받아보고 싶은 지역 (동 단위로 적어 주세요)</label>
     <input id="repRegion" maxlength="60" placeholder="예: 마포구 상수동, 하남 감일지구">
