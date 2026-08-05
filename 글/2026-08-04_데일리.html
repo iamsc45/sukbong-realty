@@ -58,6 +58,16 @@ h1.pg{font-size:clamp(27px,4.2vw,42px);letter-spacing:-0.035em;font-weight:800;l
 .pnav{display:flex;justify-content:space-between;gap:12px;margin:30px 0 60px;font-size:13.5px}
 .pnav a{color:var(--muted);text-decoration:none}
 .pnav a:hover{color:var(--text)}
+/* ── 부분 잠금(2026-08-05 석봉님 확정): 앞부분은 누구나, 이후는 카카오 로그인 ── */
+.gate{position:relative;margin:0 0 8px}
+.gate .gfade{height:110px;margin-top:-110px;background:linear-gradient(to bottom,rgba(242,242,239,0),var(--paper,#f2f2ef));position:relative;pointer-events:none}
+.gate .gbox{border:1px solid var(--hair);border-radius:16px;background:var(--soft);padding:26px 22px;text-align:center}
+.gate .gt{font-size:18px;font-weight:800;letter-spacing:-0.02em;color:var(--text)}
+.gate .gd{font-size:13.5px;color:var(--muted);line-height:1.75;margin:8px 0 0}
+.gate .gd b{color:var(--text)}
+.gate .gbtn{display:inline-block;margin-top:16px;border:0;border-radius:12px;background:#FEE500;color:#191919;
+  font:inherit;font-size:15px;font-weight:800;padding:13px 30px;cursor:pointer}
+.gate .gs{font-size:11px;color:var(--muted2);margin-top:9px}
 @media(max-width:640px){
   .post{font-size:16px}
   .post .lead{font-size:16.5px;padding:15px 16px}
@@ -74,7 +84,7 @@ h1.pg{font-size:clamp(27px,4.2vw,42px);letter-spacing:-0.035em;font-weight:800;l
     <a href="../index.html">홈</a>
     <a href="../map.html">실거래지도</a>
     <a href="../apply.html">청약</a>
-    <a href="../auction.html">경매·공매</a><a href="../lh_%EC%A7%84%EB%8B%A8.html">LH매입</a>
+    <a href="../auction.html">경매·공매</a><a href="../lh_%EC%A7%84%EB%8B%A8.html">LH매입</a><a href="../%EC%9D%B4%EC%9A%A9%EC%95%88%EB%82%B4.html">이용안내</a>
     <a href="../%EA%B8%80.html" class="on">리포트</a>
     <a href="../favorites.html">★ 관심단지</a>
     <a href="https://blog.naver.com/seokbongnews" target="_blank" rel="noopener">블로그</a>
@@ -102,7 +112,18 @@ h1.pg{font-size:clamp(27px,4.2vw,42px);letter-spacing:-0.035em;font-weight:800;l
 <p>전체 1,606건 가운데 중개거래가 1,529건(95.2%), 직거래(중개사 없이 당사자끼리 한 거래)가 77건(4.8%), 해제·취소는 9건(0.6%)이었습니다. 지난주 후반 직거래 비중이 19%까지 치솟았던 것과 비교하면 오늘은 평상시 수준으로 돌아왔습니다. 법인 간 통매각 같은 덩어리 신고가 없었다는 뜻입니다.</p>
 <p>다만 작은 덩어리는 하나 있었습니다. 경기 안양 만안구 박달동 <b>적성4차에서 6건이 한꺼번에 직거래</b>로 신고됐는데, 매수자가 전부 '기타'로 잡혔습니다. 이 단지 하나가 만안구 전체 15건의 40%를 차지합니다. 게다가 전용 53.64㎡ 다섯 건의 가격이 2억 2,650만원부터 2억 3,700만원 사이에 거의 균일하게 붙어 있습니다. 1984년 준공 노후단지에서 비슷한 값에 여러 채가 한 번에 손바뀜한 모양새라, 이 가격을 박달동 시세로 읽으면 곤란합니다. 다행히 오늘 지역 순위 상위권에는 이런 쏠림이 없었습니다.</p>
 <p>가격대는 <b>5억 미만이 953건(59.3%)</b>으로 압도적이었고 5~10억이 456건(28.4%)으로 뒤를 이었습니다. 10~15억 115건(7.2%), 15~20억 43건(2.7%), 20억 이상 39건(2.4%)이었습니다. 전국 평균 거래가는 5.5억이었는데, 열 건 중 여섯 건이 5억 아래에서 이뤄진 시장이라 평균값은 상단 몇 건에 끌려 올라간 숫자로 보는 편이 맞습니다.</p>
-
+  </article>
+  <div class="gate" id="postGate">
+  <div class="gfade"></div>
+  <div class="gbox">
+    <div class="gt">여기서부터는 회원에게 보여드립니다</div>
+    <div class="gd">카카오 로그인 3초면 전문을 읽을 수 있습니다. 무료입니다.<br>
+      회원에게는 <b>지역 시장조사 보고서</b>도 요청하시면 이메일로 보내드립니다.</div>
+    <button class="gbtn" id="gateLogin" type="button">카카오로 3초 만에 계속 읽기</button>
+    <div class="gs">이미 회원이면 같은 버튼으로 로그인만 됩니다</div>
+  </div>
+</div>
+  <article class="post gated" id="gatedBody" hidden>
 <h2>어디서 거래됐나: 수도권 46%, 서울 1위는 강북구</h2>
 <figure><img src="../글이미지/20260804/card10_03.webp" alt="서울 구별 거래량" loading="lazy"><figcaption>서울 구별 거래량</figcaption></figure>
 <p>시도별로는 경기 347건, 서울 248건, 인천 145건, 부산 134건, 대구 111건, 광주 97건, 대전 94건 순이었습니다. <b>수도권 합계는 740건으로 46.1%</b>, 나머지 866건(53.9%)이 지방에서 나왔습니다. 지난주 주간 결산에서 수도권 비중이 51.2%였던 것과 견주면 절반 선이 깨진 하루입니다. 대구와 광주, 대전이 나란히 100건 안팎을 채운 것이 차이를 만들었습니다.</p>
@@ -142,5 +163,23 @@ h1.pg{font-size:clamp(27px,4.2vw,42px);letter-spacing:-0.035em;font-weight:800;l
   <span>💬 <a href="https://open.kakao.com/o/gt8CTUCi">카카오 오픈채팅</a> · <a href="https://blog.naver.com/seokbongnews">네이버 블로그</a></span>
   <div class="fine">편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 무단 전재·재배포 금지 · 본 자료는 정보 제공 목적이며 투자 권유가 아닙니다 · 방문 통계 수집을 위해 Google Analytics(쿠키)를 사용합니다</div>
 </footer>
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "[8월 4일 부동산 실거래] 전국 1,606건, 15억 위에 분당 14건", "description": "8월 4일 전국에서 아파트 1,606건이 실거래로 신고됐습니다. 오늘 가장 눈에 걸린 대목은 15억이 넘는 거래 82건의 분포였습니다. 송파구가 14건으로 1위인데, 같은 14건이 성남 분당구에서도 나왔습니다. 강남구는 8건에 그쳤습니다. 서울 안에서도 거래 건수 1위는…", "datePublished": "2026-08-04", "dateModified": "2026-08-04", "author": {"@type": "Organization", "name": "석봉 부동산 정보방"}, "publisher": {"@type": "Organization", "name": "석봉 부동산 정보방"}, "mainEntityOfPage": "https://xn--2q1br1nnrasc92a76myvau64b.com/%EA%B8%80/2026-08-04_%EB%8D%B0%EC%9D%BC%EB%A6%AC.html", "image": "https://xn--2q1br1nnrasc92a76myvau64b.com/%EA%B8%80%EC%9D%B4%EB%AF%B8%EC%A7%80/20260804/card10_01.webp"}</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="../assets/sb_auth.js?v=6"></script>
+<script>
+(function(){
+  var g=document.getElementById('postGate'),b=document.getElementById('gatedBody');
+  if(!g||!b)return;
+  function open(){g.remove();b.hidden=false;}
+  function sync(){if(window.SBAuth&&SBAuth.isIn())open();}
+  if(window.SBAuth){SBAuth.whenReady(sync);SBAuth.onChange(function(u){if(u)open();});}
+  document.getElementById('gateLogin').onclick=function(){
+    if(window.SBAuth&&SBAuth.isIn()){open();return;}
+    if(window.SBAuth)SBAuth.gate(null,open,{
+      title:'회원에게 전문을 보여드립니다',
+      desc:'카카오 로그인 3초, 무료입니다.<br>리포트 전문 열람과 함께 <b>지역 시장조사 보고서</b>를 이메일로 신청하실 수 있습니다.',
+      agree:'(필수) 개인정보 수집·이용 동의 · 카카오 계정 식별자·닉네임을 회원 식별과 콘텐츠 제공 목적으로 수집·이용합니다.'});
+  };
+})();
+</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "[8월 4일 부동산 실거래] 전국 1,606건, 15억 위에 분당 14건", "description": "8월 4일 전국에서 아파트 1,606건이 실거래로 신고됐습니다. 오늘 가장 눈에 걸린 대목은 15억이 넘는 거래 82건의 분포였습니다. 송파구가 14건으로 1위인데, 같은 14건이 성남 분당구에서도 나왔습니다. 강남구는 8건에 그쳤습니다. 서울 안에서도 거래 건수 1위는…", "datePublished": "2026-08-04", "dateModified": "2026-08-04", "author": {"@type": "Organization", "name": "석봉 부동산 정보방"}, "publisher": {"@type": "Organization", "name": "석봉 부동산 정보방"}, "mainEntityOfPage": "https://xn--2q1br1nnrasc92a76myvau64b.com/%EA%B8%80/2026-08-04_%EB%8D%B0%EC%9D%BC%EB%A6%AC.html", "image": "https://xn--2q1br1nnrasc92a76myvau64b.com/%EA%B8%80%EC%9D%B4%EB%AF%B8%EC%A7%80/20260804/card10_01.webp", "isAccessibleForFree": false, "hasPart": {"@type": "WebPageElement", "isAccessibleForFree": false, "cssSelector": ".gated"}}</script>
 </body></html>

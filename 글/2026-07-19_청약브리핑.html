@@ -58,6 +58,16 @@ h1.pg{font-size:clamp(27px,4.2vw,42px);letter-spacing:-0.035em;font-weight:800;l
 .pnav{display:flex;justify-content:space-between;gap:12px;margin:30px 0 60px;font-size:13.5px}
 .pnav a{color:var(--muted);text-decoration:none}
 .pnav a:hover{color:var(--text)}
+/* ── 부분 잠금(2026-08-05 석봉님 확정): 앞부분은 누구나, 이후는 카카오 로그인 ── */
+.gate{position:relative;margin:0 0 8px}
+.gate .gfade{height:110px;margin-top:-110px;background:linear-gradient(to bottom,rgba(242,242,239,0),var(--paper,#f2f2ef));position:relative;pointer-events:none}
+.gate .gbox{border:1px solid var(--hair);border-radius:16px;background:var(--soft);padding:26px 22px;text-align:center}
+.gate .gt{font-size:18px;font-weight:800;letter-spacing:-0.02em;color:var(--text)}
+.gate .gd{font-size:13.5px;color:var(--muted);line-height:1.75;margin:8px 0 0}
+.gate .gd b{color:var(--text)}
+.gate .gbtn{display:inline-block;margin-top:16px;border:0;border-radius:12px;background:#FEE500;color:#191919;
+  font:inherit;font-size:15px;font-weight:800;padding:13px 30px;cursor:pointer}
+.gate .gs{font-size:11px;color:var(--muted2);margin-top:9px}
 @media(max-width:640px){
   .post{font-size:16px}
   .post .lead{font-size:16.5px;padding:15px 16px}
@@ -74,7 +84,7 @@ h1.pg{font-size:clamp(27px,4.2vw,42px);letter-spacing:-0.035em;font-weight:800;l
     <a href="../index.html">홈</a>
     <a href="../map.html">실거래지도</a>
     <a href="../apply.html">청약</a>
-    <a href="../auction.html">경매·공매</a><a href="../lh_%EC%A7%84%EB%8B%A8.html">LH매입</a>
+    <a href="../auction.html">경매·공매</a><a href="../lh_%EC%A7%84%EB%8B%A8.html">LH매입</a><a href="../%EC%9D%B4%EC%9A%A9%EC%95%88%EB%82%B4.html">이용안내</a>
     <a href="../%EA%B8%80.html" class="on">리포트</a>
     <a href="../favorites.html">★ 관심단지</a>
     <a href="https://blog.naver.com/seokbongnews" target="_blank" rel="noopener">블로그</a>
@@ -96,7 +106,18 @@ h1.pg{font-size:clamp(27px,4.2vw,42px);letter-spacing:-0.035em;font-weight:800;l
 </table>
 <p>먼저 기준부터 밝혀두면, 이 글의 경쟁률은 모두 <b>1순위 경쟁률</b>(1순위 접수 건수를 일반공급 세대수로 나눈 값)입니다. 2순위까지 합친 숫자나 특별공급은 포함하지 않아서, 청약홈 표의 총 접수 건수와는 다르게 보일 수 있습니다.</p>
 <p>야목역 단지는 이번 취소분(83세대)만이 아니라 앞서 나온 본물량 241세대도 1순위 0.3대 1로 미달이었습니다. 두 번 연속 수요가 붙지 않은 겁니다. 반대로 동작 센트럴은 72세대 모집에 1순위 통장이 8천 개 넘게 몰렸습니다.</p>
-
+  </article>
+  <div class="gate" id="postGate">
+  <div class="gfade"></div>
+  <div class="gbox">
+    <div class="gt">여기서부터는 회원에게 보여드립니다</div>
+    <div class="gd">카카오 로그인 3초면 전문을 읽을 수 있습니다. 무료입니다.<br>
+      회원에게는 <b>지역 시장조사 보고서</b>도 요청하시면 이메일로 보내드립니다.</div>
+    <button class="gbtn" id="gateLogin" type="button">카카오로 3초 만에 계속 읽기</button>
+    <div class="gs">이미 회원이면 같은 버튼으로 로그인만 됩니다</div>
+  </div>
+</div>
+  <article class="post gated" id="gatedBody" hidden>
 <h2>경쟁률 공식: 가격표가 결과를 먼저 말해준다</h2>
 <figure><img src="../글이미지/20260719/브리핑_갭경쟁률.webp" alt="[주간 청약 브리핑] 미달과 114대 1로 갈린 주, 다음 주 12곳" loading="lazy"></figure>
 <p>석봉 부동산 정보방이 최근 청약 공고 중 분양가와 주변 실거래 시세(같은 시군구의 전용면적당 중위 실거래가)를 비교할 수 있고 1순위 경쟁률까지 확정된 <b>87건</b>을 전수 분석했습니다. 분양가가 시세보다 얼마나 비싼지(갭)에 따라 결과가 이렇게 갈립니다.</p>
@@ -155,5 +176,23 @@ h1.pg{font-size:clamp(27px,4.2vw,42px);letter-spacing:-0.035em;font-weight:800;l
   <span>💬 <a href="https://open.kakao.com/o/gt8CTUCi">카카오 오픈채팅</a> · <a href="https://blog.naver.com/seokbongnews">네이버 블로그</a></span>
   <div class="fine">편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 무단 전재·재배포 금지 · 본 자료는 정보 제공 목적이며 투자 권유가 아닙니다 · 방문 통계 수집을 위해 Google Analytics(쿠키)를 사용합니다</div>
 </footer>
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "[주간 청약 브리핑] 미달과 114대 1로 갈린 주, 다음 주 12곳", "description": "지난주(7월 13~19일) 청약 결과가 나온 수도권 두 단지가 정반대 성적표를 받았습니다. 화성 야목역 단지는 통계상 주변 시세보다 15% 싼데 1순위 0.2대 1로 미달, 서울 동작 단지는 45% 비싼데 1순위 114.8대 1. 이 역설을 데이터로 풀고, 다음 주(7월…", "datePublished": "2026-07-19", "dateModified": "2026-07-19", "author": {"@type": "Organization", "name": "석봉 부동산 정보방"}, "publisher": {"@type": "Organization", "name": "석봉 부동산 정보방"}, "mainEntityOfPage": "https://xn--2q1br1nnrasc92a76myvau64b.com/%EA%B8%80/2026-07-19_%EC%B2%AD%EC%95%BD%EB%B8%8C%EB%A6%AC%ED%95%91.html", "image": "https://xn--2q1br1nnrasc92a76myvau64b.com/%EA%B8%80%EC%9D%B4%EB%AF%B8%EC%A7%80/20260719/%EB%B8%8C%EB%A6%AC%ED%95%91_%EA%B0%AD%EA%B2%BD%EC%9F%81%EB%A5%A0.webp"}</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="../assets/sb_auth.js?v=6"></script>
+<script>
+(function(){
+  var g=document.getElementById('postGate'),b=document.getElementById('gatedBody');
+  if(!g||!b)return;
+  function open(){g.remove();b.hidden=false;}
+  function sync(){if(window.SBAuth&&SBAuth.isIn())open();}
+  if(window.SBAuth){SBAuth.whenReady(sync);SBAuth.onChange(function(u){if(u)open();});}
+  document.getElementById('gateLogin').onclick=function(){
+    if(window.SBAuth&&SBAuth.isIn()){open();return;}
+    if(window.SBAuth)SBAuth.gate(null,open,{
+      title:'회원에게 전문을 보여드립니다',
+      desc:'카카오 로그인 3초, 무료입니다.<br>리포트 전문 열람과 함께 <b>지역 시장조사 보고서</b>를 이메일로 신청하실 수 있습니다.',
+      agree:'(필수) 개인정보 수집·이용 동의 · 카카오 계정 식별자·닉네임을 회원 식별과 콘텐츠 제공 목적으로 수집·이용합니다.'});
+  };
+})();
+</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "[주간 청약 브리핑] 미달과 114대 1로 갈린 주, 다음 주 12곳", "description": "지난주(7월 13~19일) 청약 결과가 나온 수도권 두 단지가 정반대 성적표를 받았습니다. 화성 야목역 단지는 통계상 주변 시세보다 15% 싼데 1순위 0.2대 1로 미달, 서울 동작 단지는 45% 비싼데 1순위 114.8대 1. 이 역설을 데이터로 풀고, 다음 주(7월…", "datePublished": "2026-07-19", "dateModified": "2026-07-19", "author": {"@type": "Organization", "name": "석봉 부동산 정보방"}, "publisher": {"@type": "Organization", "name": "석봉 부동산 정보방"}, "mainEntityOfPage": "https://xn--2q1br1nnrasc92a76myvau64b.com/%EA%B8%80/2026-07-19_%EC%B2%AD%EC%95%BD%EB%B8%8C%EB%A6%AC%ED%95%91.html", "image": "https://xn--2q1br1nnrasc92a76myvau64b.com/%EA%B8%80%EC%9D%B4%EB%AF%B8%EC%A7%80/20260719/%EB%B8%8C%EB%A6%AC%ED%95%91_%EA%B0%AD%EA%B2%BD%EC%9F%81%EB%A5%A0.webp", "isAccessibleForFree": false, "hasPart": {"@type": "WebPageElement", "isAccessibleForFree": false, "cssSelector": ".gated"}}</script>
 </body></html>

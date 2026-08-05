@@ -58,6 +58,16 @@ h1.pg{font-size:clamp(27px,4.2vw,42px);letter-spacing:-0.035em;font-weight:800;l
 .pnav{display:flex;justify-content:space-between;gap:12px;margin:30px 0 60px;font-size:13.5px}
 .pnav a{color:var(--muted);text-decoration:none}
 .pnav a:hover{color:var(--text)}
+/* ── 부분 잠금(2026-08-05 석봉님 확정): 앞부분은 누구나, 이후는 카카오 로그인 ── */
+.gate{position:relative;margin:0 0 8px}
+.gate .gfade{height:110px;margin-top:-110px;background:linear-gradient(to bottom,rgba(242,242,239,0),var(--paper,#f2f2ef));position:relative;pointer-events:none}
+.gate .gbox{border:1px solid var(--hair);border-radius:16px;background:var(--soft);padding:26px 22px;text-align:center}
+.gate .gt{font-size:18px;font-weight:800;letter-spacing:-0.02em;color:var(--text)}
+.gate .gd{font-size:13.5px;color:var(--muted);line-height:1.75;margin:8px 0 0}
+.gate .gd b{color:var(--text)}
+.gate .gbtn{display:inline-block;margin-top:16px;border:0;border-radius:12px;background:#FEE500;color:#191919;
+  font:inherit;font-size:15px;font-weight:800;padding:13px 30px;cursor:pointer}
+.gate .gs{font-size:11px;color:var(--muted2);margin-top:9px}
 @media(max-width:640px){
   .post{font-size:16px}
   .post .lead{font-size:16.5px;padding:15px 16px}
@@ -74,7 +84,7 @@ h1.pg{font-size:clamp(27px,4.2vw,42px);letter-spacing:-0.035em;font-weight:800;l
     <a href="../index.html">홈</a>
     <a href="../map.html">실거래지도</a>
     <a href="../apply.html">청약</a>
-    <a href="../auction.html">경매·공매</a><a href="../lh_%EC%A7%84%EB%8B%A8.html">LH매입</a>
+    <a href="../auction.html">경매·공매</a><a href="../lh_%EC%A7%84%EB%8B%A8.html">LH매입</a><a href="../%EC%9D%B4%EC%9A%A9%EC%95%88%EB%82%B4.html">이용안내</a>
     <a href="../%EA%B8%80.html" class="on">리포트</a>
     <a href="../favorites.html">★ 관심단지</a>
     <a href="https://blog.naver.com/seokbongnews" target="_blank" rel="noopener">블로그</a>
@@ -101,7 +111,18 @@ h1.pg{font-size:clamp(27px,4.2vw,42px);letter-spacing:-0.035em;font-weight:800;l
 <figure><img src="../글이미지/20260730/card10_02.webp" alt="거래유형·가격대" loading="lazy"><figcaption>거래유형·가격대</figcaption></figure>
 <p>전체 1,084건 가운데 중개거래가 1,012건(93.4%)이었습니다. 직거래(중개사를 끼지 않고 당사자끼리 맺은 거래)는 72건으로 6.6%, 해제·취소는 7건(0.6%)에 머물렀습니다. 직거래 비율이 튀면 가족 간 증여성 거래나 기관의 일괄 신고가 섞였는지 따져 봐야 하는데, 오늘은 특정 지역에 몰린 흔적 없이 용인 기흥·부산진·부산 남구에 세 건씩 흩어져 있어 평범한 수준입니다.</p>
 <p>가격대는 <b>5억 미만이 605건(55.8%)</b>으로 절반을 넘었고 5~10억이 338건(31.2%)으로 뒤를 이었습니다. 열 건 중 여덟 건 넘게 10억 아래에서 손이 바뀐 셈입니다. 10~15억 97건(8.9%), 15~20억 28건(2.6%), 20억 이상은 16건(1.5%)뿐이었습니다. 전국 평균 거래가는 5.71억. 뒤에 나올 112억 같은 숫자는 시장의 평균이 아니라 아주 얇은 꼭대기라는 점을 먼저 기억해 두시면 좋습니다.</p>
-
+  </article>
+  <div class="gate" id="postGate">
+  <div class="gfade"></div>
+  <div class="gbox">
+    <div class="gt">여기서부터는 회원에게 보여드립니다</div>
+    <div class="gd">카카오 로그인 3초면 전문을 읽을 수 있습니다. 무료입니다.<br>
+      회원에게는 <b>지역 시장조사 보고서</b>도 요청하시면 이메일로 보내드립니다.</div>
+    <button class="gbtn" id="gateLogin" type="button">카카오로 3초 만에 계속 읽기</button>
+    <div class="gs">이미 회원이면 같은 버튼으로 로그인만 됩니다</div>
+  </div>
+</div>
+  <article class="post gated" id="gatedBody" hidden>
 <h2>어디서 거래됐나: 경기 324건, 서울은 노원 독주</h2>
 <figure><img src="../글이미지/20260730/card10_03.webp" alt="서울 구별 거래량" loading="lazy"><figcaption>서울 구별 거래량</figcaption></figure>
 <p>시도별로는 <b>경기 324건</b>이 1위였습니다. 서울 184건, 부산 94건, 인천 80건이 뒤를 이었고 수도권(서울·경기·인천) 합계는 588건으로 전국의 <b>54.2%</b>였습니다. 절반을 조금 넘는 흔한 수준으로, 오늘은 수도권 쏠림이 특별히 강하지도 약하지도 않았습니다.</p>
@@ -143,5 +164,23 @@ h1.pg{font-size:clamp(27px,4.2vw,42px);letter-spacing:-0.035em;font-weight:800;l
   <span>💬 <a href="https://open.kakao.com/o/gt8CTUCi">카카오 오픈채팅</a> · <a href="https://blog.naver.com/seokbongnews">네이버 블로그</a></span>
   <div class="fine">편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 무단 전재·재배포 금지 · 본 자료는 정보 제공 목적이며 투자 권유가 아닙니다 · 방문 통계 수집을 위해 Google Analytics(쿠키)를 사용합니다</div>
 </footer>
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "[7월 30일 부동산 실거래] 전국 1,084건, 압구정 112억과 노원 28건", "description": "오늘 신고된 전국 아파트 실거래는 1,084건입니다. 서울은 184건으로 전국의 17% 정도에 그쳤지만, 그 얇은 표본 안에서 압구정 112억과 노원 28건이 동시에 나왔습니다. 금액의 최상단과 거래량의 최상단이 서로 다른 동네에서 찍힌 하루였습니다. 숫자로 하나씩 짚어…", "datePublished": "2026-07-30", "dateModified": "2026-07-30", "author": {"@type": "Organization", "name": "석봉 부동산 정보방"}, "publisher": {"@type": "Organization", "name": "석봉 부동산 정보방"}, "mainEntityOfPage": "https://xn--2q1br1nnrasc92a76myvau64b.com/%EA%B8%80/2026-07-30_%EB%8D%B0%EC%9D%BC%EB%A6%AC.html", "image": "https://xn--2q1br1nnrasc92a76myvau64b.com/%EA%B8%80%EC%9D%B4%EB%AF%B8%EC%A7%80/20260730/card10_01.webp"}</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="../assets/sb_auth.js?v=6"></script>
+<script>
+(function(){
+  var g=document.getElementById('postGate'),b=document.getElementById('gatedBody');
+  if(!g||!b)return;
+  function open(){g.remove();b.hidden=false;}
+  function sync(){if(window.SBAuth&&SBAuth.isIn())open();}
+  if(window.SBAuth){SBAuth.whenReady(sync);SBAuth.onChange(function(u){if(u)open();});}
+  document.getElementById('gateLogin').onclick=function(){
+    if(window.SBAuth&&SBAuth.isIn()){open();return;}
+    if(window.SBAuth)SBAuth.gate(null,open,{
+      title:'회원에게 전문을 보여드립니다',
+      desc:'카카오 로그인 3초, 무료입니다.<br>리포트 전문 열람과 함께 <b>지역 시장조사 보고서</b>를 이메일로 신청하실 수 있습니다.',
+      agree:'(필수) 개인정보 수집·이용 동의 · 카카오 계정 식별자·닉네임을 회원 식별과 콘텐츠 제공 목적으로 수집·이용합니다.'});
+  };
+})();
+</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "[7월 30일 부동산 실거래] 전국 1,084건, 압구정 112억과 노원 28건", "description": "오늘 신고된 전국 아파트 실거래는 1,084건입니다. 서울은 184건으로 전국의 17% 정도에 그쳤지만, 그 얇은 표본 안에서 압구정 112억과 노원 28건이 동시에 나왔습니다. 금액의 최상단과 거래량의 최상단이 서로 다른 동네에서 찍힌 하루였습니다. 숫자로 하나씩 짚어…", "datePublished": "2026-07-30", "dateModified": "2026-07-30", "author": {"@type": "Organization", "name": "석봉 부동산 정보방"}, "publisher": {"@type": "Organization", "name": "석봉 부동산 정보방"}, "mainEntityOfPage": "https://xn--2q1br1nnrasc92a76myvau64b.com/%EA%B8%80/2026-07-30_%EB%8D%B0%EC%9D%BC%EB%A6%AC.html", "image": "https://xn--2q1br1nnrasc92a76myvau64b.com/%EA%B8%80%EC%9D%B4%EB%AF%B8%EC%A7%80/20260730/card10_01.webp", "isAccessibleForFree": false, "hasPart": {"@type": "WebPageElement", "isAccessibleForFree": false, "cssSelector": ".gated"}}</script>
 </body></html>

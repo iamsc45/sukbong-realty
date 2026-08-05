@@ -58,6 +58,16 @@ h1.pg{font-size:clamp(27px,4.2vw,42px);letter-spacing:-0.035em;font-weight:800;l
 .pnav{display:flex;justify-content:space-between;gap:12px;margin:30px 0 60px;font-size:13.5px}
 .pnav a{color:var(--muted);text-decoration:none}
 .pnav a:hover{color:var(--text)}
+/* ── 부분 잠금(2026-08-05 석봉님 확정): 앞부분은 누구나, 이후는 카카오 로그인 ── */
+.gate{position:relative;margin:0 0 8px}
+.gate .gfade{height:110px;margin-top:-110px;background:linear-gradient(to bottom,rgba(242,242,239,0),var(--paper,#f2f2ef));position:relative;pointer-events:none}
+.gate .gbox{border:1px solid var(--hair);border-radius:16px;background:var(--soft);padding:26px 22px;text-align:center}
+.gate .gt{font-size:18px;font-weight:800;letter-spacing:-0.02em;color:var(--text)}
+.gate .gd{font-size:13.5px;color:var(--muted);line-height:1.75;margin:8px 0 0}
+.gate .gd b{color:var(--text)}
+.gate .gbtn{display:inline-block;margin-top:16px;border:0;border-radius:12px;background:#FEE500;color:#191919;
+  font:inherit;font-size:15px;font-weight:800;padding:13px 30px;cursor:pointer}
+.gate .gs{font-size:11px;color:var(--muted2);margin-top:9px}
 @media(max-width:640px){
   .post{font-size:16px}
   .post .lead{font-size:16.5px;padding:15px 16px}
@@ -74,7 +84,7 @@ h1.pg{font-size:clamp(27px,4.2vw,42px);letter-spacing:-0.035em;font-weight:800;l
     <a href="../index.html">홈</a>
     <a href="../map.html">실거래지도</a>
     <a href="../apply.html">청약</a>
-    <a href="../auction.html">경매·공매</a><a href="../lh_%EC%A7%84%EB%8B%A8.html">LH매입</a>
+    <a href="../auction.html">경매·공매</a><a href="../lh_%EC%A7%84%EB%8B%A8.html">LH매입</a><a href="../%EC%9D%B4%EC%9A%A9%EC%95%88%EB%82%B4.html">이용안내</a>
     <a href="../%EA%B8%80.html" class="on">리포트</a>
     <a href="../favorites.html">★ 관심단지</a>
     <a href="https://blog.naver.com/seokbongnews" target="_blank" rel="noopener">블로그</a>
@@ -101,7 +111,18 @@ h1.pg{font-size:clamp(27px,4.2vw,42px);letter-spacing:-0.035em;font-weight:800;l
 <h2>4~5월에 몰아치고, 6월에 반토막</h2>
 <p>월별로 쪼개보면 흐름이 뚜렷합니다. 1월 229건, 2월 227건, 3월 167건으로 1분기는 오히려 잠잠했습니다. 그러다 4월 465건, 5월 555건으로 두 달 연속 폭증하더니, 6월엔 258건으로 주저앉았습니다. 5월 대비 <b>54% 줄어든 수치</b>입니다.</p>
 <p>같은 기간 시장 전체를 봐도 확인됩니다. 5월 전국 아파트 매매는 39,046건이었는데 6월엔 34,893건으로 11%만 줄었습니다. 초고가 구간만 다섯 배 가까운 속도로 식었다는 뜻입니다. 4~5월은 종합대책과 세제개편안 발표를 앞둔 시점이었고, 투기적 대출을 조이겠다는 신호가 여러 차례 나온 뒤였습니다. 정책 발표 전에 결정을 서두른 매수세가 4~5월에 몰렸다가, 6월 들어 관망으로 돌아섰다고 읽을 수 있는 그림입니다. 다만 6월 신고분은 계약 후 30일인 신고기한 안에서 아직 조금 더 채워질 수 있다는 점은 감안해야 합니다.</p>
-
+  </article>
+  <div class="gate" id="postGate">
+  <div class="gfade"></div>
+  <div class="gbox">
+    <div class="gt">여기서부터는 회원에게 보여드립니다</div>
+    <div class="gd">카카오 로그인 3초면 전문을 읽을 수 있습니다. 무료입니다.<br>
+      회원에게는 <b>지역 시장조사 보고서</b>도 요청하시면 이메일로 보내드립니다.</div>
+    <button class="gbtn" id="gateLogin" type="button">카카오로 3초 만에 계속 읽기</button>
+    <div class="gs">이미 회원이면 같은 버튼으로 로그인만 됩니다</div>
+  </div>
+</div>
+  <article class="post gated" id="gatedBody" hidden>
 <h2>100억 클럽 17채, 한남동이 가장 많았습니다</h2>
 <figure><img src="../글이미지/20260801/상반기초고가_100억클럽_20260801.webp" alt="100억 클럽 명단" loading="lazy"><figcaption>100억 클럽 명단</figcaption></figure>
 <p>상반기 최고가는 한남동 <b>나인원한남 250억</b>(전용 83평, 6월 18일)이었습니다. 2위는 청담동 <b>에테르노청담 218억</b>(전용 70평, 5월 15일)이었고, 3위와 4위도 다시 나인원한남이 차지했습니다(156.5억, 140.4억). 같은 단지에서 상반기에만 100억 넘는 거래가 세 번 나온 셈입니다. <span class="yt">(🎥 <a href="https://www.youtube.com/watch?v=F1eamVHYz9c" target="_blank">나인원한남 4년 거주후기 영상 보기</a> · <a href="https://www.youtube.com/watch?v=4m7FKpA08og" target="_blank">에테르노청담 영상 보기</a>)</span></p>
@@ -141,5 +162,23 @@ h1.pg{font-size:clamp(27px,4.2vw,42px);letter-spacing:-0.035em;font-weight:800;l
   <span>💬 <a href="https://open.kakao.com/o/gt8CTUCi">카카오 오픈채팅</a> · <a href="https://blog.naver.com/seokbongnews">네이버 블로그</a></span>
   <div class="fine">편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 무단 전재·재배포 금지 · 본 자료는 정보 제공 목적이며 투자 권유가 아닙니다 · 방문 통계 수집을 위해 Google Analytics(쿠키)를 사용합니다</div>
 </footer>
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "상반기 초고가 아파트 1,901건, 5월에 정점 찍고 6월에 얼어붙었습니다", "description": "2026년 상반기(1~6월) 국토교통부 실거래가를 전부 열어 30억 원이 넘는 아파트 매매만 따로 세어봤습니다. 전국에서 1,901건이 나왔고, 그중 50억 이상이 322건, 100억 이상만 17건이었습니다. 흥미로운 건 숫자의 크기가 아니라 흐름입니다. 1분기엔 잠잠하다…", "datePublished": "2026-08-01", "dateModified": "2026-08-01", "author": {"@type": "Organization", "name": "석봉 부동산 정보방"}, "publisher": {"@type": "Organization", "name": "석봉 부동산 정보방"}, "mainEntityOfPage": "https://xn--2q1br1nnrasc92a76myvau64b.com/%EA%B8%80/2026-08-01_%EC%83%81%EB%B0%98%EA%B8%B0%EC%B4%88%EA%B3%A0%EA%B0%80%EC%95%84%ED%8C%8C%ED%8A%B8.html", "image": "https://xn--2q1br1nnrasc92a76myvau64b.com/%EA%B8%80%EC%9D%B4%EB%AF%B8%EC%A7%80/20260801/%EC%83%81%EB%B0%98%EA%B8%B0%EC%B4%88%EA%B3%A0%EA%B0%80_%EC%A2%85%ED%95%A9_20260801.webp"}</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="../assets/sb_auth.js?v=6"></script>
+<script>
+(function(){
+  var g=document.getElementById('postGate'),b=document.getElementById('gatedBody');
+  if(!g||!b)return;
+  function open(){g.remove();b.hidden=false;}
+  function sync(){if(window.SBAuth&&SBAuth.isIn())open();}
+  if(window.SBAuth){SBAuth.whenReady(sync);SBAuth.onChange(function(u){if(u)open();});}
+  document.getElementById('gateLogin').onclick=function(){
+    if(window.SBAuth&&SBAuth.isIn()){open();return;}
+    if(window.SBAuth)SBAuth.gate(null,open,{
+      title:'회원에게 전문을 보여드립니다',
+      desc:'카카오 로그인 3초, 무료입니다.<br>리포트 전문 열람과 함께 <b>지역 시장조사 보고서</b>를 이메일로 신청하실 수 있습니다.',
+      agree:'(필수) 개인정보 수집·이용 동의 · 카카오 계정 식별자·닉네임을 회원 식별과 콘텐츠 제공 목적으로 수집·이용합니다.'});
+  };
+})();
+</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "상반기 초고가 아파트 1,901건, 5월에 정점 찍고 6월에 얼어붙었습니다", "description": "2026년 상반기(1~6월) 국토교통부 실거래가를 전부 열어 30억 원이 넘는 아파트 매매만 따로 세어봤습니다. 전국에서 1,901건이 나왔고, 그중 50억 이상이 322건, 100억 이상만 17건이었습니다. 흥미로운 건 숫자의 크기가 아니라 흐름입니다. 1분기엔 잠잠하다…", "datePublished": "2026-08-01", "dateModified": "2026-08-01", "author": {"@type": "Organization", "name": "석봉 부동산 정보방"}, "publisher": {"@type": "Organization", "name": "석봉 부동산 정보방"}, "mainEntityOfPage": "https://xn--2q1br1nnrasc92a76myvau64b.com/%EA%B8%80/2026-08-01_%EC%83%81%EB%B0%98%EA%B8%B0%EC%B4%88%EA%B3%A0%EA%B0%80%EC%95%84%ED%8C%8C%ED%8A%B8.html", "image": "https://xn--2q1br1nnrasc92a76myvau64b.com/%EA%B8%80%EC%9D%B4%EB%AF%B8%EC%A7%80/20260801/%EC%83%81%EB%B0%98%EA%B8%B0%EC%B4%88%EA%B3%A0%EA%B0%80_%EC%A2%85%ED%95%A9_20260801.webp", "isAccessibleForFree": false, "hasPart": {"@type": "WebPageElement", "isAccessibleForFree": false, "cssSelector": ".gated"}}</script>
 </body></html>

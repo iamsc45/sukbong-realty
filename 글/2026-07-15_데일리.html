@@ -58,6 +58,16 @@ h1.pg{font-size:clamp(27px,4.2vw,42px);letter-spacing:-0.035em;font-weight:800;l
 .pnav{display:flex;justify-content:space-between;gap:12px;margin:30px 0 60px;font-size:13.5px}
 .pnav a{color:var(--muted);text-decoration:none}
 .pnav a:hover{color:var(--text)}
+/* ── 부분 잠금(2026-08-05 석봉님 확정): 앞부분은 누구나, 이후는 카카오 로그인 ── */
+.gate{position:relative;margin:0 0 8px}
+.gate .gfade{height:110px;margin-top:-110px;background:linear-gradient(to bottom,rgba(242,242,239,0),var(--paper,#f2f2ef));position:relative;pointer-events:none}
+.gate .gbox{border:1px solid var(--hair);border-radius:16px;background:var(--soft);padding:26px 22px;text-align:center}
+.gate .gt{font-size:18px;font-weight:800;letter-spacing:-0.02em;color:var(--text)}
+.gate .gd{font-size:13.5px;color:var(--muted);line-height:1.75;margin:8px 0 0}
+.gate .gd b{color:var(--text)}
+.gate .gbtn{display:inline-block;margin-top:16px;border:0;border-radius:12px;background:#FEE500;color:#191919;
+  font:inherit;font-size:15px;font-weight:800;padding:13px 30px;cursor:pointer}
+.gate .gs{font-size:11px;color:var(--muted2);margin-top:9px}
 @media(max-width:640px){
   .post{font-size:16px}
   .post .lead{font-size:16.5px;padding:15px 16px}
@@ -74,7 +84,7 @@ h1.pg{font-size:clamp(27px,4.2vw,42px);letter-spacing:-0.035em;font-weight:800;l
     <a href="../index.html">홈</a>
     <a href="../map.html">실거래지도</a>
     <a href="../apply.html">청약</a>
-    <a href="../auction.html">경매·공매</a><a href="../lh_%EC%A7%84%EB%8B%A8.html">LH매입</a>
+    <a href="../auction.html">경매·공매</a><a href="../lh_%EC%A7%84%EB%8B%A8.html">LH매입</a><a href="../%EC%9D%B4%EC%9A%A9%EC%95%88%EB%82%B4.html">이용안내</a>
     <a href="../%EA%B8%80.html" class="on">리포트</a>
     <a href="../favorites.html">★ 관심단지</a>
     <a href="https://blog.naver.com/seokbongnews" target="_blank" rel="noopener">블로그</a>
@@ -93,7 +103,18 @@ h1.pg{font-size:clamp(27px,4.2vw,42px);letter-spacing:-0.035em;font-weight:800;l
 <figure><img src="../글이미지/20260715/card10_02.webp" alt="거래유형·가격대" loading="lazy"><figcaption>거래유형·가격대</figcaption></figure>
 <p>전체 1,834건 가운데 중개거래가 1,420건(77.4%), 직거래(중개사 없이 당사자끼리 한 거래)가 414건(22.6%)이었습니다. 평소 몇 퍼센트에 그치던 직거래가 다섯 배 넘게 뛴 건데, 뜯어보면 이유가 있습니다. 서울 중랑구 묵동 <b>세이지움에서 공공기관 직거래 278건</b>(2.6~4.5억)이 하루에 일괄 신고됐고, 경북 구미 공단동에서도 대우아파트 50건이 7천만원 균일가로 한꺼번에 직거래 처리됐습니다. 두 건을 걷어내면 시장의 평소 모습과 크게 다르지 않습니다.</p>
 <p>가격대별로는 <b>5억 미만이 1,116건(60.9%)</b>으로 몸통이었고, 5~10억이 480건(26.2%)으로 뒤를 이었습니다. 10억 초과는 다 합쳐 238건(13.0%), 20억 이상은 37건(2.0%)입니다. 해제·취소는 6건(0.3%)뿐 — 신고되는 거래 대부분이 실제 성사되는 진성 거래라는 뜻으로 읽힙니다.</p>
-
+  </article>
+  <div class="gate" id="postGate">
+  <div class="gfade"></div>
+  <div class="gbox">
+    <div class="gt">여기서부터는 회원에게 보여드립니다</div>
+    <div class="gd">카카오 로그인 3초면 전문을 읽을 수 있습니다. 무료입니다.<br>
+      회원에게는 <b>지역 시장조사 보고서</b>도 요청하시면 이메일로 보내드립니다.</div>
+    <button class="gbtn" id="gateLogin" type="button">카카오로 3초 만에 계속 읽기</button>
+    <div class="gs">이미 회원이면 같은 버튼으로 로그인만 됩니다</div>
+  </div>
+</div>
+  <article class="post gated" id="gatedBody" hidden>
 <h2>어디서 거래됐나 — 서울 575건 1위, 중랑구 착시 걷어내면</h2>
 <figure><img src="../글이미지/20260715/card10_03.webp" alt="서울 구별 거래량" loading="lazy"><figcaption>서울 구별 거래량</figcaption></figure>
 <p>시도별로는 <b>서울이 575건</b>으로 전국 1위, 경기 424건, 부산 116건, 인천 109건, 광주 81건 순이었습니다. 수도권(서울·경기·인천) 비중은 <b>60.4%</b> — 다만 서울 1위 자체가 묵동 일괄 신고의 영향이 큽니다.</p>
@@ -128,5 +149,23 @@ h1.pg{font-size:clamp(27px,4.2vw,42px);letter-spacing:-0.035em;font-weight:800;l
   <span>💬 <a href="https://open.kakao.com/o/gt8CTUCi">카카오 오픈채팅</a> · <a href="https://blog.naver.com/seokbongnews">네이버 블로그</a></span>
   <div class="fine">편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 무단 전재·재배포 금지 · 본 자료는 정보 제공 목적이며 투자 권유가 아닙니다 · 방문 통계 수집을 위해 Google Analytics(쿠키)를 사용합니다</div>
 </footer>
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "[7월 15일 부동산 실거래] 전국 1,834건 신고… 중랑구 291건의 진실", "description": "오늘 전국에서 아파트 1,834건이 실거래로 신고됐습니다. 서울 1위는 강남도 노원도 아닌 중랑구 291건 — 그런데 이 숫자, 그대로 믿으면 안 됩니다. 하루 만에 직거래 비중이 22.6%로 뛴 이유도 같은 곳에 있습니다. 오늘 신고분, 숫자 뒤의 사정까지 짚어 드립니다.", "datePublished": "2026-07-15", "dateModified": "2026-07-15", "author": {"@type": "Organization", "name": "석봉 부동산 정보방"}, "publisher": {"@type": "Organization", "name": "석봉 부동산 정보방"}, "mainEntityOfPage": "https://xn--2q1br1nnrasc92a76myvau64b.com/%EA%B8%80/2026-07-15_%EB%8D%B0%EC%9D%BC%EB%A6%AC.html", "image": "https://xn--2q1br1nnrasc92a76myvau64b.com/%EA%B8%80%EC%9D%B4%EB%AF%B8%EC%A7%80/20260715/card10_01.webp"}</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="../assets/sb_auth.js?v=6"></script>
+<script>
+(function(){
+  var g=document.getElementById('postGate'),b=document.getElementById('gatedBody');
+  if(!g||!b)return;
+  function open(){g.remove();b.hidden=false;}
+  function sync(){if(window.SBAuth&&SBAuth.isIn())open();}
+  if(window.SBAuth){SBAuth.whenReady(sync);SBAuth.onChange(function(u){if(u)open();});}
+  document.getElementById('gateLogin').onclick=function(){
+    if(window.SBAuth&&SBAuth.isIn()){open();return;}
+    if(window.SBAuth)SBAuth.gate(null,open,{
+      title:'회원에게 전문을 보여드립니다',
+      desc:'카카오 로그인 3초, 무료입니다.<br>리포트 전문 열람과 함께 <b>지역 시장조사 보고서</b>를 이메일로 신청하실 수 있습니다.',
+      agree:'(필수) 개인정보 수집·이용 동의 · 카카오 계정 식별자·닉네임을 회원 식별과 콘텐츠 제공 목적으로 수집·이용합니다.'});
+  };
+})();
+</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "[7월 15일 부동산 실거래] 전국 1,834건 신고… 중랑구 291건의 진실", "description": "오늘 전국에서 아파트 1,834건이 실거래로 신고됐습니다. 서울 1위는 강남도 노원도 아닌 중랑구 291건 — 그런데 이 숫자, 그대로 믿으면 안 됩니다. 하루 만에 직거래 비중이 22.6%로 뛴 이유도 같은 곳에 있습니다. 오늘 신고분, 숫자 뒤의 사정까지 짚어 드립니다.", "datePublished": "2026-07-15", "dateModified": "2026-07-15", "author": {"@type": "Organization", "name": "석봉 부동산 정보방"}, "publisher": {"@type": "Organization", "name": "석봉 부동산 정보방"}, "mainEntityOfPage": "https://xn--2q1br1nnrasc92a76myvau64b.com/%EA%B8%80/2026-07-15_%EB%8D%B0%EC%9D%BC%EB%A6%AC.html", "image": "https://xn--2q1br1nnrasc92a76myvau64b.com/%EA%B8%80%EC%9D%B4%EB%AF%B8%EC%A7%80/20260715/card10_01.webp", "isAccessibleForFree": false, "hasPart": {"@type": "WebPageElement", "isAccessibleForFree": false, "cssSelector": ".gated"}}</script>
 </body></html>

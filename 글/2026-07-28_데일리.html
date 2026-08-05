@@ -58,6 +58,16 @@ h1.pg{font-size:clamp(27px,4.2vw,42px);letter-spacing:-0.035em;font-weight:800;l
 .pnav{display:flex;justify-content:space-between;gap:12px;margin:30px 0 60px;font-size:13.5px}
 .pnav a{color:var(--muted);text-decoration:none}
 .pnav a:hover{color:var(--text)}
+/* ── 부분 잠금(2026-08-05 석봉님 확정): 앞부분은 누구나, 이후는 카카오 로그인 ── */
+.gate{position:relative;margin:0 0 8px}
+.gate .gfade{height:110px;margin-top:-110px;background:linear-gradient(to bottom,rgba(242,242,239,0),var(--paper,#f2f2ef));position:relative;pointer-events:none}
+.gate .gbox{border:1px solid var(--hair);border-radius:16px;background:var(--soft);padding:26px 22px;text-align:center}
+.gate .gt{font-size:18px;font-weight:800;letter-spacing:-0.02em;color:var(--text)}
+.gate .gd{font-size:13.5px;color:var(--muted);line-height:1.75;margin:8px 0 0}
+.gate .gd b{color:var(--text)}
+.gate .gbtn{display:inline-block;margin-top:16px;border:0;border-radius:12px;background:#FEE500;color:#191919;
+  font:inherit;font-size:15px;font-weight:800;padding:13px 30px;cursor:pointer}
+.gate .gs{font-size:11px;color:var(--muted2);margin-top:9px}
 @media(max-width:640px){
   .post{font-size:16px}
   .post .lead{font-size:16.5px;padding:15px 16px}
@@ -74,7 +84,7 @@ h1.pg{font-size:clamp(27px,4.2vw,42px);letter-spacing:-0.035em;font-weight:800;l
     <a href="../index.html">홈</a>
     <a href="../map.html">실거래지도</a>
     <a href="../apply.html">청약</a>
-    <a href="../auction.html">경매·공매</a><a href="../lh_%EC%A7%84%EB%8B%A8.html">LH매입</a>
+    <a href="../auction.html">경매·공매</a><a href="../lh_%EC%A7%84%EB%8B%A8.html">LH매입</a><a href="../%EC%9D%B4%EC%9A%A9%EC%95%88%EB%82%B4.html">이용안내</a>
     <a href="../%EA%B8%80.html" class="on">리포트</a>
     <a href="../favorites.html">★ 관심단지</a>
     <a href="https://blog.naver.com/seokbongnews" target="_blank" rel="noopener">블로그</a>
@@ -101,7 +111,18 @@ h1.pg{font-size:clamp(27px,4.2vw,42px);letter-spacing:-0.035em;font-weight:800;l
 <figure><img src="../글이미지/20260728/card10_02.webp" alt="거래유형·가격대" loading="lazy"><figcaption>거래유형·가격대</figcaption></figure>
 <p>신고 2,194건 가운데 계약이 살아 있는 유효거래는 2,185건이었고, 취소된 해제는 9건에 그쳤습니다. 가족·지인 간 거래로 보는 직거래(공인중개사를 끼지 않은 거래)는 63건, 유효거래의 <b>2.9%</b>였습니다. 지난주까지 하루 10%를 넘나들던 직거래 비중이 크게 내려앉은 모습입니다.</p>
 <p>가격대는 여전히 중저가에 무게가 실려 있습니다. 3억 미만이 31.5%, 3억~6억이 39.6%로 6억 미만 거래가 전체의 <b>열에 일곱(71.1%)</b>을 차지했습니다. 반대로 15억 이상 고가 거래는 4.1%(89건)뿐입니다. 숫자로 보면 시장의 대부분은 서민·실수요 가격대에서 돌아가고, 뉴스에 오르는 수십억대 거래는 소수라는 점이 오늘도 확인됩니다.</p>
-
+  </article>
+  <div class="gate" id="postGate">
+  <div class="gfade"></div>
+  <div class="gbox">
+    <div class="gt">여기서부터는 회원에게 보여드립니다</div>
+    <div class="gd">카카오 로그인 3초면 전문을 읽을 수 있습니다. 무료입니다.<br>
+      회원에게는 <b>지역 시장조사 보고서</b>도 요청하시면 이메일로 보내드립니다.</div>
+    <button class="gbtn" id="gateLogin" type="button">카카오로 3초 만에 계속 읽기</button>
+    <div class="gs">이미 회원이면 같은 버튼으로 로그인만 됩니다</div>
+  </div>
+</div>
+  <article class="post gated" id="gatedBody" hidden>
 <h2>어디서 거래됐나: 노원·강서 나란히 26건</h2>
 <figure><img src="../글이미지/20260728/card10_03.webp" alt="서울 구별 거래량" loading="lazy"><figcaption>서울 구별 거래량</figcaption></figure>
 <p>지역별로는 경기가 552건으로 가장 많았고 서울 288건, 부산 215건, 인천 187건이 뒤를 이었습니다. 서울·경기·인천을 합친 수도권 비중은 <b>47.0%</b>로, 전국 거래의 절반 가까이가 수도권에서 나왔습니다.</p>
@@ -139,5 +160,23 @@ h1.pg{font-size:clamp(27px,4.2vw,42px);letter-spacing:-0.035em;font-weight:800;l
   <span>💬 <a href="https://open.kakao.com/o/gt8CTUCi">카카오 오픈채팅</a> · <a href="https://blog.naver.com/seokbongnews">네이버 블로그</a></span>
   <div class="fine">편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 무단 전재·재배포 금지 · 본 자료는 정보 제공 목적이며 투자 권유가 아닙니다 · 방문 통계 수집을 위해 Google Analytics(쿠키)를 사용합니다</div>
 </footer>
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "[7월 28일 부동산 실거래] 전국 2,194건, 강남 구축 3인방이 최고가 싹쓸이", "description": "7월 28일 신고된 전국 아파트 실거래는 2,194건입니다. 거래량 상위는 경기(552건)와 서울(288건)이 나눠 가졌고, 서울 안에서는 노원구와 강서구가 26건씩으로 나란히 1위였습니다. 그런데 가격 상단은 이야기가 다릅니다. 오늘 서울 최고가 1~4위 가운데 셋이 강…", "datePublished": "2026-07-28", "dateModified": "2026-07-28", "author": {"@type": "Organization", "name": "석봉 부동산 정보방"}, "publisher": {"@type": "Organization", "name": "석봉 부동산 정보방"}, "mainEntityOfPage": "https://xn--2q1br1nnrasc92a76myvau64b.com/%EA%B8%80/2026-07-28_%EB%8D%B0%EC%9D%BC%EB%A6%AC.html", "image": "https://xn--2q1br1nnrasc92a76myvau64b.com/%EA%B8%80%EC%9D%B4%EB%AF%B8%EC%A7%80/20260728/card10_01.webp"}</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="../assets/sb_auth.js?v=6"></script>
+<script>
+(function(){
+  var g=document.getElementById('postGate'),b=document.getElementById('gatedBody');
+  if(!g||!b)return;
+  function open(){g.remove();b.hidden=false;}
+  function sync(){if(window.SBAuth&&SBAuth.isIn())open();}
+  if(window.SBAuth){SBAuth.whenReady(sync);SBAuth.onChange(function(u){if(u)open();});}
+  document.getElementById('gateLogin').onclick=function(){
+    if(window.SBAuth&&SBAuth.isIn()){open();return;}
+    if(window.SBAuth)SBAuth.gate(null,open,{
+      title:'회원에게 전문을 보여드립니다',
+      desc:'카카오 로그인 3초, 무료입니다.<br>리포트 전문 열람과 함께 <b>지역 시장조사 보고서</b>를 이메일로 신청하실 수 있습니다.',
+      agree:'(필수) 개인정보 수집·이용 동의 · 카카오 계정 식별자·닉네임을 회원 식별과 콘텐츠 제공 목적으로 수집·이용합니다.'});
+  };
+})();
+</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "[7월 28일 부동산 실거래] 전국 2,194건, 강남 구축 3인방이 최고가 싹쓸이", "description": "7월 28일 신고된 전국 아파트 실거래는 2,194건입니다. 거래량 상위는 경기(552건)와 서울(288건)이 나눠 가졌고, 서울 안에서는 노원구와 강서구가 26건씩으로 나란히 1위였습니다. 그런데 가격 상단은 이야기가 다릅니다. 오늘 서울 최고가 1~4위 가운데 셋이 강…", "datePublished": "2026-07-28", "dateModified": "2026-07-28", "author": {"@type": "Organization", "name": "석봉 부동산 정보방"}, "publisher": {"@type": "Organization", "name": "석봉 부동산 정보방"}, "mainEntityOfPage": "https://xn--2q1br1nnrasc92a76myvau64b.com/%EA%B8%80/2026-07-28_%EB%8D%B0%EC%9D%BC%EB%A6%AC.html", "image": "https://xn--2q1br1nnrasc92a76myvau64b.com/%EA%B8%80%EC%9D%B4%EB%AF%B8%EC%A7%80/20260728/card10_01.webp", "isAccessibleForFree": false, "hasPart": {"@type": "WebPageElement", "isAccessibleForFree": false, "cssSelector": ".gated"}}</script>
 </body></html>

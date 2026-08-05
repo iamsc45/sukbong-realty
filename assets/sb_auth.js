@@ -211,7 +211,7 @@ window.SBAuth=(function(){
       +'<div style="font-size:13px;color:#6b6355;margin-top:6px;line-height:1.6">'+D+'</div>'
       +'<label style="display:flex;gap:8px;align-items:flex-start;margin:16px 0 0;font-size:11.5px;color:#555;line-height:1.55;cursor:pointer">'
       +'<input id="sbGateAgree" type="checkbox" style="margin-top:2px">'
-      +'<span>'+A+' <a href="privacy.html" target="_blank" style="color:#2554E0">자세히</a></span></label>'
+      +'<span>'+A+' <a href="/privacy.html" target="_blank" style="color:#2554E0">자세히</a></span></label>'  /* 글/ 하위 페이지에서도 열리게 절대경로(2026-08-05) */
       +'<button id="sbGateGo" style="display:block;width:100%;margin-top:14px;border:0;border-radius:12px;background:#FEE500;color:#191919;font:inherit;font-size:15px;font-weight:800;padding:14px 0;cursor:pointer">카카오로 시작하기</button>'
       +'<div style="font-size:10.5px;color:#9a938a;margin-top:10px;text-align:center">가입 즉시 이용할 수 있습니다 · 언제든 탈퇴 가능</div></div>';
     document.body.appendChild(w);

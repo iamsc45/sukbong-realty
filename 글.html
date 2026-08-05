@@ -38,7 +38,25 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
   display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .pcard .dt{font-size:11.5px;color:var(--muted2);margin-top:9px}
 .empty{color:var(--muted);font-size:14px;padding:30px 0}
-@media(max-width:640px){.plist{grid-template-columns:1fr}}
+/* ── 지역 시장조사 보고서 신청(2026-08-05 석봉님 확정: 회원 요청 → 이메일 발송) ── */
+.repbox{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+  border:1px solid var(--hair);border-left:3px solid var(--gold,#a8792c);border-radius:14px;
+  background:var(--soft);padding:16px 18px;margin:0 0 24px}
+.repbox .tx{font-size:14px;color:var(--text2);line-height:1.65}
+.repbox .tx b{color:var(--text)}
+.repbox .tx small{display:block;font-size:12px;color:var(--muted)}
+.repbox button{border:0;border-radius:100px;background:var(--text);color:#fff;font:inherit;
+  font-size:13px;font-weight:800;padding:11px 22px;cursor:pointer;white-space:nowrap}
+.repform{border:1px solid var(--hair);border-radius:14px;background:#fff;padding:18px;margin:-12px 0 24px}
+.repform label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin:10px 0 4px}
+.repform input{width:100%;box-sizing:border-box;border:1px solid var(--hair);border-radius:9px;
+  padding:10px 12px;font:inherit;font-size:14px}
+.repform .go{margin-top:14px;border:0;border-radius:10px;background:var(--text);color:#fff;
+  font:inherit;font-size:14px;font-weight:800;padding:12px 24px;cursor:pointer}
+.repform .fine{font-size:11.5px;color:var(--muted);margin-top:9px;line-height:1.6}
+.repdone{border:1px solid var(--hair);border-radius:14px;background:var(--soft);padding:20px;
+  margin:-12px 0 24px;font-size:14px;color:var(--text)}
+@media(max-width:640px){.plist{grid-template-columns:1fr}.repbox{flex-direction:column;align-items:flex-start}}
 </style>
 </head>
 <body>
@@ -58,7 +76,20 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
 </header>
 <main class="wrap">
   <h1 class="pg">리포트</h1>
-  <p class="pgsub">실거래·청약·경매 데이터를 직접 뜯어 정리한 글입니다 · 총 39편</p>
+  <p class="pgsub">실거래·청약·경매 데이터를 직접 뜯어 정리한 글입니다</p>
+  <div class="repbox" id="repbox">
+    <div class="tx"><b>지역 시장조사 보고서</b>를 이메일로 보내드립니다
+      <small>궁금한 동네를 적어 신청하시면 정리해 보내드립니다 · 회원 무료</small></div>
+    <button id="repBtn" type="button">이메일로 신청하기</button>
+  </div>
+  <div class="repform" id="repform" hidden>
+    <label>받아보고 싶은 지역 (동 단위로 적어 주세요)</label>
+    <input id="repRegion" maxlength="60" placeholder="예: 마포구 상수동, 하남 감일지구">
+    <label>받으실 이메일</label>
+    <input id="repEmail" maxlength="100" placeholder="you@example.com">
+    <button class="go" id="repGo" type="button">신청하기</button>
+    <div class="fine">신청 내용은 보고서 발송 목적으로만 사용합니다. 카카오 계정 이메일은 수신이 안 되는 경우가 있어 실제 쓰시는 주소를 적어 주세요.</div>
+  </div>
   <div class="filters"><button class="on" data-c="">전체</button><button data-c="데일리">데일리</button><button data-c="경매·공매">경매·공매</button><button data-c="청약">청약</button><button data-c="주간결산">주간결산</button><button data-c="기획">기획</button><button data-c="재개발">재개발</button></div>
   <div class="plist" id="plist"></div>
 </main>
@@ -67,6 +98,53 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
   <span>💬 <a href="https://open.kakao.com/o/gt8CTUCi">카카오 오픈채팅</a> · <a href="https://blog.naver.com/seokbongnews">네이버 블로그</a></span>
   <div class="fine">편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 무단 전재·재배포 금지 · 본 자료는 정보 제공 목적이며 투자 권유가 아닙니다 · 방문 통계 수집을 위해 Google Analytics(쿠키)를 사용합니다</div>
 </footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets/sb_auth.js?v=6"></script>
+<script>
+/* 지역 시장조사 보고서 신청 — 대출 문의와 같은 inquiries 테이블(kind로 구분) + 텔레그램 알림 재사용 */
+(function(){
+  var btn=document.getElementById('repBtn'),form=document.getElementById('repform');
+  function openForm(){
+    form.hidden=false;btn.disabled=true;
+    if(window.SBAuth&&SBAuth.getNotifyEmail){
+      SBAuth.getNotifyEmail().then(function(e){
+        var em=document.getElementById('repEmail');
+        if(e&&!em.value)em.value=e;
+        else if(!em.value&&SBAuth.authEmail&&SBAuth.authEmail())em.value=SBAuth.authEmail();
+      }).catch(function(){});
+    }
+    form.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+  btn.onclick=function(){
+    if(window.SBAuth&&SBAuth.isIn()){openForm();return;}
+    if(window.SBAuth)SBAuth.gate(null,openForm,{
+      title:'지역 시장조사 보고서는 회원에게 보내드립니다',
+      desc:'카카오 로그인 3초, 무료입니다.<br>가입 후 바로 원하시는 지역을 신청하실 수 있습니다.',
+      agree:'(필수) 개인정보 수집·이용 동의 · 카카오 계정 식별자·닉네임과 입력하신 이메일을 회원 식별과 보고서 발송 목적으로 수집·이용합니다.'});
+  };
+  document.getElementById('repGo').onclick=function(){
+    var rg=document.getElementById('repRegion').value.trim();
+    var em=document.getElementById('repEmail').value.trim();
+    if(!rg){alert('받아보고 싶은 지역을 적어 주세요.');return;}
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){alert('이메일 주소를 확인해 주세요.');return;}
+    var g=this;g.disabled=true;g.textContent='접수 중…';
+    var nick=(window.SBAuth&&SBAuth.nickname&&SBAuth.nickname())||'회원';
+    fetch('https://bwgoufxonqamglbqsife.supabase.co/rest/v1/inquiries',{method:'POST',
+      headers:{'apikey':'sb_publishable_kYd1gCyqCR2Qy8Ix6KE6og_FfJUImfR',
+        'Authorization':'Bearer sb_publishable_kYd1gCyqCR2Qy8Ix6KE6og_FfJUImfR',
+        'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({kind:'보고서 신청',name:nick.slice(0,100),contact:em.slice(0,100),
+        msg:('희망 지역: '+rg).slice(0,2000)})})
+    .then(function(r){
+      if(!r.ok)throw 0;
+      form.outerHTML='<div class="repdone">✓ 신청됐습니다. 정리되는 대로 <b>'+em.replace(/[<>&]/g,'')+'</b> 으로 보내드리겠습니다.</div>';
+      try{if(window.gtag)gtag('event','report_request',{region:rg.slice(0,40)});}catch(e){}
+    })
+    .catch(function(){g.disabled=false;g.textContent='신청하기';
+      alert('접수에 실패했습니다. 잠시 후 다시 시도해 주세요.');});
+  };
+})();
+</script>
 <script src="data/posts.js"></script>
 <script>
 (function(){
