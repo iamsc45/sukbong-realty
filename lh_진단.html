@@ -847,15 +847,18 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
     function saved(){
       return sitesAll().some(function(x){return x.addr===site.addr&&x.area===site.area&&x.units===site.units;});
     }
+    /* 저장만 되고 꺼내 볼 곳이 없어 석봉님이 "저장현황 어디서 봐?"라고 물었다(2026-08-05).
+       관심단지 화면의 LH 사업지 탭으로 보내는 링크를 항상 함께 띄운다. */
+    var SEE=' <a href="favorites.html#lh" style="color:var(--acc-blue);font-weight:700;white-space:nowrap">저장한 사업지 보기 →</a>';
     function paint(){
       if(saved()){bSave.textContent='저장됨';bSave.classList.add('done');}
       var n=sitesAll().length;
-      if(n)say('저장한 사업지 <b>'+n+'곳</b>. 이 브라우저에 보관됩니다.');
+      if(n)say('저장한 사업지 <b>'+n+'곳</b>. 이 브라우저에 보관됩니다.'+SEE);
     }
     function doSave(){
-      if(saved()){say('이미 저장한 사업지입니다.');return;}
+      if(saved()){say('이미 저장한 사업지입니다.'+SEE);return;}
       var l=sitesAll();l.unshift(site);sitesSave(l);paint();
-      say('저장했습니다. 저장한 사업지 <b>'+sitesAll().length+'곳</b>.');
+      say('저장했습니다. 저장한 사업지 <b>'+sitesAll().length+'곳</b>.'+SEE);
       try{if(typeof gtag==='function')gtag('event','lh_site_save',{hq:site.hq});}catch(e){}
     }
     bSave.onclick=function(){
@@ -959,6 +962,19 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
   document.getElementById('addr').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('go').click();});
   document.querySelectorAll('.ex a').forEach(function(a){
     a.onclick=function(){document.getElementById('addr').value=a.dataset.s;run(a.dataset.s);};});
+
+  /* 저장한 사업지의 '다시 진단' 링크로 들어온 경우 — 주소·계획을 채우고 바로 돌린다
+     (2026-08-05). 링크만 있고 이걸 안 읽으면 빈 화면이 떠서 링크가 무의미해진다. */
+  (function(){
+    var P=new URLSearchParams(location.search), ad=P.get('addr');
+    if(!ad)return;
+    document.getElementById('addr').value=ad;
+    [['units','units'],['area','area'],['kind','kind'],['stype','stype']].forEach(function(p){
+      var v=P.get(p[0]), el=document.getElementById(p[1]);
+      if(v&&el)el.value=v;
+    });
+    run(ad);
+  })();
 
   /* 각주는 짧게 (2026-08-05 석봉님 지시). 판정 방식을 문단마다 늘어놓을 필요가 없다.
      남기는 것은 세 가지뿐이다. ①무엇을 근거로 했는지와 기준일 ②아직 안 붙은 항목

@@ -37,6 +37,25 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
 .mail .msg{font-size:11.5px;margin-top:8px;font-weight:700}
 .mail .msg.ok{color:#0f7a52}.mail .msg.no{color:#c0392b}
 .mail .warn{margin-top:9px;font-size:11.5px;line-height:1.6;color:#8a5a10;background:#fdf6e3;border:1px solid #f0e0b8;border-radius:9px;padding:9px 11px}
+/* 탭 (2026-08-05). 관심단지는 서버 저장(회원), LH 사업지는 브라우저 저장이라
+   성격이 달라 한 목록에 못 섞는다. 대신 저장한 것을 한 곳에서 찾게 탭으로 나눈다 */
+.tabs{display:flex;gap:8px;margin:0 0 16px;border-bottom:1px solid var(--hair)}
+.tabs button{border:0;background:none;font:inherit;font-size:14px;font-weight:700;color:var(--muted);
+  padding:9px 3px;margin-bottom:-1px;border-bottom:2px solid transparent;cursor:pointer}
+.tabs button.on{color:var(--text);border-bottom-color:var(--text)}
+.tabs .n{font-size:11.5px;font-weight:700;color:var(--muted);margin-left:4px}
+.lhrow{border:1px solid var(--hair);border-radius:12px;background:#fff;padding:13px 15px;margin-bottom:9px}
+.lhrow .a{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+.lhrow .ad{font-size:14.5px;font-weight:800;letter-spacing:-0.01em}
+.lhrow .sc{font-size:11.5px;font-weight:800;padding:2px 9px;border-radius:20px;background:var(--gray);color:var(--text2);white-space:nowrap}
+.lhrow .m{font-size:12px;color:var(--muted);margin-top:5px;line-height:1.6}
+.lhrow .b{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}
+.lhrow .b a,.lhrow .b button{border:1px solid var(--hair);border-radius:100px;background:#fff;color:var(--text2);
+  font:inherit;font-size:12px;font-weight:700;padding:6px 14px;cursor:pointer;text-decoration:none}
+.lhrow .b a.p{background:var(--text);color:#fff;border-color:var(--text)}
+.lhnote{font-size:11.5px;color:var(--muted);line-height:1.65;margin-top:14px}
+.empty{border:1px dashed var(--hair);border-radius:12px;padding:26px 18px;text-align:center;color:var(--muted);font-size:13px;line-height:1.7}
+.empty a{color:var(--acc-blue);font-weight:700}
 </style>
 <meta property="og:title" content="관심단지 · 석봉 부동산 정보방">
 <meta property="og:type" content="website">
@@ -59,8 +78,13 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
   </nav>
 </header>
 <main class="wrap" style="margin:0 auto;padding:0 22px">
-  <h1 class="pg">관심단지</h1>
+  <h1 class="pg" id="pgTitle">관심단지</h1>
   <p class="pgsub" id="cnt">등록한 단지를 어느 기기에서나 확인합니다</p>
+  <div class="tabs">
+    <button id="tabFav" class="on">★ 관심단지</button>
+    <button id="tabLh">LH 사업지<span class="n" id="lhN"></span></button>
+  </div>
+  <div id="paneFav">
   <div class="who" id="who" style="display:none"></div>
   <div id="list"></div>
   <div class="mail" id="mailbox" style="display:none">
@@ -71,6 +95,14 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
     <div class="warn" id="mailWarn" style="display:none"></div>
   </div>
   <p class="notice2" id="note">※ 관심단지는 회원 기능입니다. 카카오 로그인으로 어느 기기에서나 같은 목록을 보고, 새 실거래가 생기면 표시해 드립니다. 단지명을 누르면 실거래·평형별 상세로 이동합니다. <a href="privacy.html" target="_blank">개인정보 처리방침</a></p>
+  </div>
+
+  <div id="paneLh" style="display:none">
+    <div id="lhList"></div>
+    <p class="lhnote">LH 매입약정 셀프진단에서 저장한 사업지입니다.
+      <b>이 브라우저에만 보관되므로 다른 기기에서는 보이지 않습니다.</b>
+      진단 기준은 지역본부 공고 차수마다 바뀌니, 오래된 판정은 다시 진단해 보십시오.</p>
+  </div>
 </main>
 <footer class="site-footer">
   <span>📈 <a href="https://telegram.me/seokbongnews">텔레그램 채널</a></span> ·
@@ -188,6 +220,67 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
   function boot(){ if(SBAuth.isIn()){draw({});badges();mailSetup();} else {mailBox.style.display='none';guest();} }
   if(window.SBAuth){SBAuth.whenReady(boot);SBAuth.onChange(boot);}
   else{list.innerHTML='<div class="emptybox">로그인 모듈을 불러오지 못했습니다. 새로고침해 주세요.</div>';}
+
+  /* ── LH 사업지 탭 (2026-08-05) ────────────────────────────────
+     셀프진단에서 저장한 사업지를 꺼내 보는 곳. 저장은 되는데 볼 화면이 없어
+     석봉님이 "저장현황 어디서 봐?"라고 물어 만들었다.
+     관심단지(서버·회원)와 성격이 달라 목록을 섞지 않고 탭으로 나눈다.
+     저장소는 진단 화면과 같은 localStorage 키를 쓴다. */
+  var LHKEY='sb_lh_sites';
+  var DIAG='lh_%EC%A7%84%EB%8B%A8.html';
+  function lhAll(){try{return JSON.parse(localStorage.getItem(LHKEY)||'[]');}catch(e){return [];}}
+  function lhSave(a){try{localStorage.setItem(LHKEY,JSON.stringify(a));}catch(e){}}
+  function lhLink(s){
+    var q='?addr='+encodeURIComponent(s.addr||'');
+    if(s.units)q+='&units='+encodeURIComponent(s.units);
+    if(s.area)q+='&area='+encodeURIComponent(s.area);
+    if(s.kind)q+='&kind='+encodeURIComponent(s.kind);
+    return DIAG+q;
+  }
+  function lhDraw(){
+    var a=lhAll(), box=document.getElementById('lhList');
+    document.getElementById('lhN').textContent=a.length?' '+a.length:'';
+    if(!a.length){
+      box.innerHTML='<div class="empty">저장한 사업지가 없습니다.<br>'
+        +'<a href="'+DIAG+'">LH 매입약정 셀프진단</a>에서 주소를 넣고 <b>이 사업지 저장</b>을 누르면 여기에 모입니다.</div>';
+      return;
+    }
+    box.innerHTML=a.map(function(s,i){
+      var meta=[];
+      if(s.hq)meta.push(esc(s.hq)+'지역본부');
+      if(s.units)meta.push(esc(s.units)+'호');
+      if(s.area)meta.push('전용 '+esc(s.area)+'㎡');
+      if(s.kind)meta.push(esc(s.kind));
+      if(s.at)meta.push('저장 '+esc(s.at));
+      return '<div class="lhrow"><div class="a"><span class="ad">'+esc(s.addr||'(주소 없음)')+'</span>'
+        +(s.score?'<span class="sc">자동판정 '+esc(s.score)+'</span>':'')+'</div>'
+        +'<div class="m">'+meta.join(' · ')+'</div>'
+        +'<div class="b"><a class="p" href="'+lhLink(s)+'">다시 진단</a>'
+        +'<a href="map.html?q='+encodeURIComponent(s.addr||'')+'" target="_blank" rel="noopener">지도에서 보기</a>'
+        +'<button class="lhdel" data-i="'+i+'">삭제</button></div></div>';
+    }).join('');
+    Array.prototype.forEach.call(box.querySelectorAll('.lhdel'),function(b){
+      b.onclick=function(){
+        var l=lhAll(); l.splice(+b.dataset.i,1); lhSave(l); lhDraw();
+      };
+    });
+  }
+  function tab(which){
+    var f=which==='fav';
+    document.getElementById('paneFav').style.display=f?'':'none';
+    document.getElementById('paneLh').style.display=f?'none':'';
+    document.getElementById('tabFav').classList.toggle('on',f);
+    document.getElementById('tabLh').classList.toggle('on',!f);
+    document.getElementById('pgTitle').textContent=f?'관심단지':'LH 사업지';
+    document.getElementById('cnt').textContent=f?'등록한 단지를 어느 기기에서나 확인합니다'
+                                                :'셀프진단에서 저장한 사업지를 모아 봅니다';
+    if(!f)lhDraw();
+    try{location.hash=f?'':'lh';}catch(e){}
+  }
+  document.getElementById('tabFav').onclick=function(){tab('fav');};
+  document.getElementById('tabLh').onclick=function(){tab('lh');};
+  lhDraw();                                   /* 배지 숫자는 처음부터 보이게 */
+  if(location.hash==='#lh')tab('lh');         /* 진단 화면에서 바로 이 탭으로 온 경우 */
 })();
 </script>
 </body></html>
