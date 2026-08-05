@@ -246,12 +246,15 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
       return;
     }
     box.innerHTML=a.map(function(s,i){
+      /* ⚠️ units·area는 숫자로 저장된다. esc()는 문자열만 받으므로 그대로 넣으면
+         .replace is not a function 으로 목록이 통째로 안 그려진다(2026-08-05 실측). */
+      var E=function(v){return esc(String(v==null?'':v));};
       var meta=[];
-      if(s.hq)meta.push(esc(s.hq)+'지역본부');
-      if(s.units)meta.push(esc(s.units)+'호');
-      if(s.area)meta.push('전용 '+esc(s.area)+'㎡');
-      if(s.kind)meta.push(esc(s.kind));
-      if(s.at)meta.push('저장 '+esc(s.at));
+      if(s.hq)meta.push(E(s.hq)+'지역본부');
+      if(s.units)meta.push(E(s.units)+'호');
+      if(s.area)meta.push('전용 '+E(s.area)+'㎡');
+      if(s.kind)meta.push(E(s.kind));
+      if(s.at)meta.push('저장 '+E(s.at));
       return '<div class="lhrow"><div class="a"><span class="ad">'+esc(s.addr||'(주소 없음)')+'</span>'
         +(s.score?'<span class="sc">자동판정 '+esc(s.score)+'</span>':'')+'</div>'
         +'<div class="m">'+meta.join(' · ')+'</div>'
@@ -279,7 +282,8 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
   }
   document.getElementById('tabFav').onclick=function(){tab('fav');};
   document.getElementById('tabLh').onclick=function(){tab('lh');};
-  lhDraw();                                   /* 배지 숫자는 처음부터 보이게 */
+  /* lhDraw가 죽으면 그 뒤 줄(해시 자동 전환)까지 통째로 안 돈다. 감싸 둔다 */
+  try{lhDraw();}catch(e){}                    /* 배지 숫자는 처음부터 보이게 */
   if(location.hash==='#lh')tab('lh');         /* 진단 화면에서 바로 이 탭으로 온 경우 */
 })();
 </script>
