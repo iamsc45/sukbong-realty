@@ -155,7 +155,7 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
   <div class="fine">판정 근거: 국토교통부 실거래가 · 공공 정비사업 DB · 공동주택 단지정보 · 지오코딩은 공공 지도데이터 · 편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 참고용이며 심의 결과를 보장하지 않습니다</div>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="assets/sb_auth.js?v=3"></script>
+<script src="assets/sb_auth.js?v=4"></script>
 <script src="data/lh_diag.js"></script>
 <script src="data/dongs.js"></script>
 <script src="data/jeongbi_seoul.js"></script>
@@ -863,6 +863,9 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
     }
     bSave.onclick=function(){
       if(window.SBAuth&&!SBAuth.isIn()){
+        /* 가입하러 떠나기 전에 '이 사업지를 저장하려던 참'이라고 적어 둔다(2026-08-05).
+           안 적으면 가입만 되고 저장은 안 된 채 돌아온다(석봉님 제보). */
+        if(SBAuth.setAct)SBAuth.setAct('lh_save',site);
         SBAuth.gate(null,doSave,{
           title:'사업지 저장은 회원 기능입니다',
           desc:'카카오로 3초 만에 시작하세요.<br>검토한 사업지를 모아 비교하고, 지역본부 요건이 바뀌면 알려드립니다.',
@@ -871,6 +874,9 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
       }
       doSave();
     };
+    /* 가입을 마치고 돌아온 경우 — 누르려던 저장을 대신 끝내 준다.
+       PENDSAVE는 아래 부팅 블록이 미리 집어 둔 것이다(여기서 꺼내면 늦다). */
+    if(PENDSAVE&&PENDSAVE.addr===site.addr){PENDSAVE=null;doSave();}
     bAlert.onclick=function(){
       /* prompt()는 브라우저를 통째로 멈추고 모바일에서 조악하다. 인라인 폼으로 받는다 */
       function ask(){
@@ -963,17 +969,33 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
   document.querySelectorAll('.ex a').forEach(function(a){
     a.onclick=function(){document.getElementById('addr').value=a.dataset.s;run(a.dataset.s);};});
 
-  /* 저장한 사업지의 '다시 진단' 링크로 들어온 경우 — 주소·계획을 채우고 바로 돌린다
-     (2026-08-05). 링크만 있고 이걸 안 읽으면 빈 화면이 떠서 링크가 무의미해진다. */
+  /* 부팅: 두 경우에 주소를 되살려 바로 진단한다 (2026-08-05)
+       ①저장 목록의 '다시 진단' 링크 (?addr=...)
+       ②카카오 가입을 마치고 돌아온 경우 — 로그인하러 떠나면 결과가 사라지므로
+         적어 둔 사업지로 다시 판정해야 '저장'을 이어서 끝낼 수 있다.
+     PENDSAVE는 wireMember가 받아 자동 저장에 쓴다. 여기서 미리 집어 둔다. */
+  var PENDSAVE=null;
+  function fill(o){
+    if(o.addr)document.getElementById('addr').value=o.addr;
+    ['units','area','kind','stype'].forEach(function(k){
+      var el=document.getElementById(k);
+      if(o[k]!=null&&o[k]!==''&&el)el.value=o[k];
+    });
+  }
   (function(){
     var P=new URLSearchParams(location.search), ad=P.get('addr');
-    if(!ad)return;
-    document.getElementById('addr').value=ad;
-    [['units','units'],['area','area'],['kind','kind'],['stype','stype']].forEach(function(p){
-      var v=P.get(p[0]), el=document.getElementById(p[1]);
-      if(v&&el)el.value=v;
+    if(ad){
+      fill({addr:ad,units:P.get('units'),area:P.get('area'),kind:P.get('kind'),stype:P.get('stype')});
+      run(ad);
+      return;
+    }
+    if(!window.SBAuth||!SBAuth.takeAct)return;
+    SBAuth.whenReady(function(){
+      if(!SBAuth.isIn())return;                 /* 가입을 취소했으면 그냥 둔다 */
+      var a=SBAuth.takeAct('lh_save');
+      if(!a||!a.addr)return;
+      PENDSAVE=a; fill(a); run(a.addr);
     });
-    run(ad);
   })();
 
   /* 각주는 짧게 (2026-08-05 석봉님 지시). 판정 방식을 문단마다 늘어놓을 필요가 없다.

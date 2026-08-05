@@ -34,12 +34,58 @@ window.SBAuth=(function(){
       if(it&&it.nm)await addFav(it);
     }catch(e){}
   }
+  /* 로그인하려고 자리를 뜨기 전에 '하려던 일'을 적어 둔다 (2026-08-05).
+     돌아와서 이걸 안 이어주면, 가입까지 해 놓고 저장은 안 된 채 화면만 떠 있다.
+     관심단지는 sb_pending으로 이미 이어주고 있었는데 LH 저장에는 안 붙어 있었다.
+     화면마다 처리 방식이 달라 여기서는 보관만 하고, 실행은 각 화면이 가져가 한다. */
+  function setAct(name,data){
+    try{localStorage.setItem('sb_act',JSON.stringify({n:name,d:data,t:Date.now()}));}catch(e){}
+  }
+  function takeAct(name){
+    try{
+      var v=localStorage.getItem('sb_act');
+      if(!v)return null;
+      var o=JSON.parse(v);
+      if(!o||o.n!==name)return null;
+      localStorage.removeItem('sb_act');
+      return (Date.now()-(o.t||0)>600000)?null:(o.d||{});   /* 10분 지나면 무시 */
+    }catch(e){return null;}
+  }
+  /* 로그인 후 원래 보던 화면으로 되돌린다 (2026-08-05)
+     ─────────────────────────────────────────────────────────
+     카카오 로그인은 Supabase가 redirectTo로 돌려보내는데, 그 주소가 대시보드의
+     Redirect URL 허용목록에 없으면 조용히 Site URL(홈)로 떨어진다. 실제로 LH 진단에서
+     '사업지 저장'을 누르면 가입 후 홈이 떠서 하려던 일이 증발했다(석봉님 제보).
+     허용목록 등록이 근본 해결이지만, 대시보드 설정에 기대지 않고도 돌아오게 한다.
+     로그인 직전에 돌아올 주소를 localStorage에 적어 두고(세션 저장소는 리다이렉트를
+     건너뛰며 날아갈 수 있다), 로그인된 채로 아무 페이지나 열리면 그 주소로 되돌린다. */
+  var RET='sb_return';
+  function markReturn(){
+    try{localStorage.setItem(RET,JSON.stringify({u:location.href,t:Date.now()}));}catch(e){}
+  }
+  function takeReturn(){
+    try{
+      var v=localStorage.getItem(RET);
+      if(!v)return null;
+      localStorage.removeItem(RET);
+      var o=JSON.parse(v);
+      /* 10분이 지났으면 그 로그인과 무관한 흔적이다. 엉뚱한 이동을 막는다 */
+      if(!o||!o.u||Date.now()-(o.t||0)>600000)return null;
+      var here=location.href.split('#')[0], there=o.u.split('#')[0];
+      return here===there?null:o.u;      /* 이미 그 자리면 굳이 옮기지 않는다 */
+    }catch(e){return null;}
+  }
+  function backIfNeeded(){
+    var u=takeReturn();
+    if(u)location.replace(u);
+  }
   async function init(){
     if(!ensure()){ready=true;return;}
     try{
       var s=await client.auth.getSession();
       user=(s.data&&s.data.session)?s.data.session.user:null;
-      if(user){await loadFavs();await mergeLocal();await runPending();}
+      if(user){backIfNeeded();await loadFavs();await mergeLocal();await runPending();}
+      else{try{localStorage.removeItem(RET);}catch(e){}}   /* 로그인 안 됐으면 흔적 정리 */
     }catch(e){}
     ready=true;waiters.forEach(function(f){f();});waiters=[];notify();
     client.auth.onAuthStateChange(function(ev,session){
@@ -89,6 +135,7 @@ window.SBAuth=(function(){
   }
   function login(){
     ensure();
+    markReturn();      /* 홈으로 떨어져도 원래 자리로 되돌아오게 (2026-08-05) */
     client.auth.signInWithOAuth({provider:'kakao',options:{redirectTo:location.href.split('#')[0],scopes:'profile_nickname'}});
   }
   async function logout(){try{await client.auth.signOut();}catch(e){}location.reload();}
@@ -128,5 +175,6 @@ window.SBAuth=(function(){
   return {whenReady:whenReady,onChange:onChange,isIn:isIn,nickname:nickname,
     favHas:favHas,favAll:favAll,addFav:addFav,delFav:delFav,setLastN:setLastN,
     authEmail:authEmail,getNotifyEmail:getNotifyEmail,setNotifyEmail:setNotifyEmail,
+    setAct:setAct,takeAct:takeAct,
     login:login,logout:logout,gate:gate};
 })();
