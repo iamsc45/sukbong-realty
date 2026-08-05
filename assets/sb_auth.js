@@ -176,6 +176,32 @@ window.SBAuth=(function(){
   }
 
   function authEmail(){return (user&&user.email)||'';}
+  function uid(){return (user&&user.id)||'';}
+  /* 지역 시장조사 보고서 — 가입 시 2회 무료(기간 제한 없음, 2026-08-05 석봉님 확정).
+     쓴 횟수는 inquiries의 본인 '보고서 신청' 건수로 센다(RLS로 본인 것만 보인다).
+     '보고서 신청(면제)'로 바꿔 둔 건은 카운트에서 빠진다(석봉님이 추가 제공할 때 쓰는 장치). */
+  var REPORT_FREE=2;
+  async function reportUsed(){
+    if(!user)return null;
+    var r=await client.from('inquiries').select('id',{count:'exact',head:true})
+      .eq('user_id',user.id).eq('kind','보고서 신청');
+    return r.error?null:(r.count||0);
+  }
+  async function reportLeft(){
+    var n=await reportUsed();
+    return n===null?null:Math.max(0,REPORT_FREE-n);
+  }
+  async function reportSubmit(prod,region,email){
+    if(!user)return {ok:false,reason:'login'};
+    var left=await reportLeft();
+    if(left===0)return {ok:false,reason:'used'};
+    var r=await client.from('inquiries').insert({
+      kind:'보고서 신청', user_id:user.id,
+      name:(nickname()||'회원').slice(0,100), contact:String(email||'').slice(0,100),
+      msg:('상품: '+prod+'\n희망 지역: '+region).slice(0,2000)});
+    if(r.error)return {ok:false,reason:'error'};
+    return {ok:true,left:(left===null?null:left-1)};
+  }
   async function getNotifyEmail(){
     if(!user)return '';
     var r=await client.from('prefs').select('notify_email').eq('user_id',user.id).maybeSingle();
@@ -227,7 +253,8 @@ window.SBAuth=(function(){
   init();
   return {whenReady:whenReady,onChange:onChange,isIn:isIn,nickname:nickname,
     favHas:favHas,favAll:favAll,addFav:addFav,delFav:delFav,setLastN:setLastN,
-    authEmail:authEmail,getNotifyEmail:getNotifyEmail,setNotifyEmail:setNotifyEmail,
+    authEmail:authEmail,uid:uid,getNotifyEmail:getNotifyEmail,setNotifyEmail:setNotifyEmail,
+    REPORT_FREE:REPORT_FREE,reportUsed:reportUsed,reportLeft:reportLeft,reportSubmit:reportSubmit,
     setAct:setAct,takeAct:takeAct,
     lhList:lhList,lhAdd:lhAdd,lhDel:lhDel,
     login:login,logout:logout,gate:gate};

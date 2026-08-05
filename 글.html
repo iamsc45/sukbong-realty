@@ -54,6 +54,9 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
 .repform .go{margin-top:14px;border:0;border-radius:10px;background:var(--text);color:#fff;
   font:inherit;font-size:14px;font-weight:800;padding:12px 24px;cursor:pointer}
 .repform .fine{font-size:11.5px;color:var(--muted);margin-top:9px;line-height:1.6}
+.repform .repleft{margin-top:14px;font-size:12.5px;color:var(--muted);background:var(--soft);
+  border-radius:9px;padding:9px 12px}
+.repform .repleft b{color:var(--text)}
 .repdone{border:1px solid var(--hair);border-radius:14px;background:var(--soft);padding:20px;
   margin:-12px 0 24px;font-size:14px;color:var(--text)}
 @media(max-width:640px){.plist{grid-template-columns:1fr}.repbox{flex-direction:column;align-items:flex-start}}
@@ -79,8 +82,8 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
   <p class="pgsub">실거래·청약·경매 데이터를 직접 뜯어 정리한 글입니다</p>
   <div class="repbox" id="repbox">
     <div class="tx"><b>지역 시장조사 보고서</b>를 이메일로 보내드립니다
-      <small>궁금한 동네와 상품을 골라 신청하세요 (아파트·빌라·상가·토지 등) · 핵심만 간추린 <b>약식 보고서</b>입니다
-        · 회원 <b>한 달 2회 무료</b></small></div>
+      <small id="repSub">궁금한 동네와 상품을 골라 신청하세요 (아파트·빌라·상가·토지 등) · 핵심만 간추린 <b>약식 보고서</b>입니다
+        · 가입하시면 <b>2회 무료</b>(기간 제한 없음)</small></div>
     <button id="repBtn" type="button">이메일로 신청하기</button>
   </div>
   <div class="repform" id="repform" hidden>
@@ -109,9 +112,10 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
     <input id="repRegion" maxlength="60" placeholder="예: 마포구 상수동, 하남 감일지구">
     <label>받으실 이메일</label>
     <input id="repEmail" maxlength="100" placeholder="you@example.com">
+    <div class="repleft" id="repLeft" hidden></div>
     <button class="go" id="repGo" type="button">신청하기</button>
     <div class="fine">보내드리는 것은 시세·거래 흐름의 핵심만 간추린 <b>약식 보고서</b>입니다(정식 용역 보고서가 아닙니다).
-      <b>회원 한 달 2회까지 무료</b>로 보내드립니다.
+      가입하시면 <b>2회까지 무료</b>이며 기간 제한은 없습니다.
       신청 내용은 보고서 발송 목적으로만 사용합니다. 카카오 계정 이메일은 수신이 안 되는 경우가 있어 실제 쓰시는 주소를 적어 주세요.</div>
   </div>
   <div class="filters"><button class="on" data-c="">전체</button><button data-c="데일리">데일리</button><button data-c="경매·공매">경매·공매</button><button data-c="청약">청약</button><button data-c="주간결산">주간결산</button><button data-c="기획">기획</button><button data-c="재개발">재개발</button></div>
@@ -123,13 +127,25 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
   <div class="fine">편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 무단 전재·재배포 금지 · 본 자료는 정보 제공 목적이며 투자 권유가 아닙니다 · 방문 통계 수집을 위해 Google Analytics(쿠키)를 사용합니다</div>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="assets/sb_auth.js?v=6"></script>
+<script src="assets/sb_auth.js?v=7"></script>
 <script>
-/* 지역 시장조사 보고서 신청 — 대출 문의와 같은 inquiries 테이블(kind로 구분) + 텔레그램 알림 재사용 */
+/* 지역 시장조사 보고서 신청 — 대출 문의와 같은 inquiries 테이블(kind로 구분) + 텔레그램 알림 재사용.
+   가입 2회 무료(기간 제한 없음, 2026-08-05). 남은 횟수는 SBAuth가 본인 신청 이력을 세어 알려준다. */
 (function(){
   var btn=document.getElementById('repBtn'),form=document.getElementById('repform');
+  var leftEl=document.getElementById('repLeft'),LEFT=null;
+  function showLeft(n){
+    LEFT=n;
+    if(n===null){leftEl.hidden=true;return;}
+    leftEl.hidden=false;
+    leftEl.innerHTML=n>0
+      ? '남은 무료 신청 <b>'+n+'회</b> (전체 '+((window.SBAuth&&SBAuth.REPORT_FREE)||2)+'회)'
+      : '무료 신청을 모두 사용하셨습니다. 추가 요청은 <a href="%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html">문의</a>로 남겨 주세요.';
+    document.getElementById('repGo').disabled=(n===0);
+  }
   function openForm(){
     form.hidden=false;btn.disabled=true;
+    if(window.SBAuth&&SBAuth.reportLeft)SBAuth.reportLeft().then(showLeft).catch(function(){});
     if(window.SBAuth&&SBAuth.getNotifyEmail){
       SBAuth.getNotifyEmail().then(function(e){
         var em=document.getElementById('repEmail');
@@ -139,6 +155,15 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
     }
     form.scrollIntoView({behavior:'smooth',block:'center'});
   }
+  /* 로그인 상태면 목록 소개 문구에도 남은 횟수를 얹는다(누르기 전에 알 수 있게) */
+  if(window.SBAuth)SBAuth.whenReady(function(){
+    if(!SBAuth.isIn())return;
+    SBAuth.reportLeft().then(function(n){
+      if(n===null)return;
+      var sub=document.getElementById('repSub');
+      if(sub)sub.innerHTML+=' · <b>남은 무료 신청 '+n+'회</b>';
+    }).catch(function(){});
+  });
   btn.onclick=function(){
     if(window.SBAuth&&SBAuth.isIn()){openForm();return;}
     if(window.SBAuth)SBAuth.gate(null,openForm,{
@@ -153,20 +178,20 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
     if(!pd){alert('궁금하신 상품을 골라 주세요.');return;}
     if(!rg){alert('받아보고 싶은 지역을 적어 주세요.');return;}
     if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){alert('이메일 주소를 확인해 주세요.');return;}
+    if(LEFT===0){alert('무료 신청을 모두 사용하셨습니다.');return;}
     var g=this;g.disabled=true;g.textContent='접수 중…';
-    var nick=(window.SBAuth&&SBAuth.nickname&&SBAuth.nickname())||'회원';
-    fetch('https://bwgoufxonqamglbqsife.supabase.co/rest/v1/inquiries',{method:'POST',
-      headers:{'apikey':'sb_publishable_kYd1gCyqCR2Qy8Ix6KE6og_FfJUImfR',
-        'Authorization':'Bearer sb_publishable_kYd1gCyqCR2Qy8Ix6KE6og_FfJUImfR',
-        'Content-Type':'application/json','Prefer':'return=minimal'},
-      body:JSON.stringify({kind:'보고서 신청',name:nick.slice(0,100),contact:em.slice(0,100),
-        msg:('상품: '+pd+'\n희망 지역: '+rg).slice(0,2000)})})
-    .then(function(r){
-      if(!r.ok)throw 0;
-      form.outerHTML='<div class="repdone">✓ 신청됐습니다. 정리되는 대로 <b>'+em.replace(/[<>&]/g,'')+'</b> 으로 보내드리겠습니다.</div>';
+    SBAuth.reportSubmit(pd,rg,em).then(function(res){
+      if(!res.ok){
+        g.disabled=false;g.textContent='신청하기';
+        if(res.reason==='used'){showLeft(0);alert('무료 신청을 모두 사용하셨습니다.');}
+        else if(res.reason==='login')alert('로그인이 풀렸습니다. 다시 로그인해 주세요.');
+        else alert('접수에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+        return;
+      }
+      var rest=(res.left===null||res.left===undefined)?'':'<br><span style="font-size:12.5px;color:#8a8071">남은 무료 신청 '+res.left+'회</span>';
+      form.outerHTML='<div class="repdone">✓ 신청됐습니다. 정리되는 대로 <b>'+em.replace(/[<>&]/g,'')+'</b> 으로 보내드리겠습니다.'+rest+'</div>';
       try{if(window.gtag)gtag('event','report_request',{region:rg.slice(0,40),prod:pd});}catch(e){}
-    })
-    .catch(function(){g.disabled=false;g.textContent='신청하기';
+    }).catch(function(){g.disabled=false;g.textContent='신청하기';
       alert('접수에 실패했습니다. 잠시 후 다시 시도해 주세요.');});
   };
 })();
