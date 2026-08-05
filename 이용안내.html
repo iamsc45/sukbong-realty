@@ -38,6 +38,8 @@ ul.pt li:before{content:"";position:absolute;left:4px;top:16px;width:5px;height:
 ul.pt li b{color:var(--text)}
 .go{display:inline-block;background:var(--text);color:#fff;text-decoration:none;font-size:13.5px;
   font-weight:700;border-radius:100px;padding:11px 22px}
+.st h3.sub{font-size:16px;font-weight:800;letter-spacing:-0.02em;margin:26px 0 7px;padding-top:20px;
+  border-top:1px solid var(--hair)}
 .tip{background:var(--soft);border:1px solid var(--hair);border-radius:12px;padding:14px 17px;margin:0 0 16px;
   font-size:13px;color:var(--text2);line-height:1.75;word-break:keep-all}
 .tip b{color:var(--text)}
@@ -120,11 +122,46 @@ ul.pt li b{color:var(--text)}
       <div class="cap">색이 사업 종류입니다. 빨강은 재개발, 파랑은 재건축입니다.</div>
     </div>
     <ul class="pt">
-      <li>구역을 누르면 <b>추진 단계</b>가 막대로 보입니다. 지금 어디까지 왔는지 알 수 있습니다</li>
+      <li>구역을 누르면 <b>추진 단계</b>가 한 줄로 보입니다. 지금 어디까지 왔는지 알 수 있습니다</li>
       <li>용적률·건폐율·예정 세대수 같은 <b>정비계획</b>이 확정된 곳은 숫자로 나옵니다</li>
       <li>그 구역 법정동의 <b>시세가 몇 년간 얼마나 올랐는지</b> 그래프로 봅니다</li>
       <li>구역 안팎의 <b>최근 실거래</b>도 함께 붙습니다</li>
     </ul>
+
+    <h3 class="sub">추진 단계는 이렇게 읽습니다</h3>
+    <p class="d">재개발·재건축은 어느 단계에 있느냐가 값을 좌우합니다. 그래서 구역마다 일곱 칸짜리 막대를 두고
+      지나온 칸은 채우고, 지금 있는 칸은 색으로 표시했습니다.</p>
+    <div class="shot">
+      <img src="이용안내/10_stage.webp" alt="구역 상세 화면. 구역지정부터 준공까지 일곱 칸 막대에서 조합설립 칸이 색으로 표시된 모습" loading="lazy">
+      <div class="cap">은마아파트 재건축. 조합설립인가까지 왔다는 뜻입니다.</div>
+    </div>
+    <ul class="pt">
+      <li><b>구역지정</b> 정비구역으로 묶인 단계입니다. 재건축은 안전진단이 여기 들어갑니다</li>
+      <li><b>추진위</b> 주민들이 조합을 만들 준비 기구를 꾸린 단계입니다</li>
+      <li><b>조합설립</b> 조합이 인가를 받았습니다. 사업 주체가 생긴 것이라 여기서 한 번 값이 움직입니다</li>
+      <li><b>사업시행</b> 무엇을 몇 채 짓겠다는 계획을 인가받은 단계입니다</li>
+      <li><b>관리처분</b> 내 몫이 얼마인지, 추가로 낼 돈이 얼마인지 확정됩니다. 불확실성이 크게 줄어드는 지점입니다</li>
+      <li><b>착공</b> 이주와 철거를 마치고 공사가 시작됩니다</li>
+      <li><b>준공</b> 입주입니다</li>
+    </ul>
+    <div class="tip">단계는 공공 정비사업 자료를 <b>주 1회 받아 갱신</b>합니다. 조합 내부 사정으로 실제 진행이 더 빠르거나
+      늦을 수 있으니, 계약을 앞두고 있다면 조합·구청에 한 번 더 확인하십시오.
+      <b>투기과열지구에서는 단계에 따라 조합원 지위 양도가 막힙니다.</b> 이 부분은 아래 기초상식에 정리해 뒀습니다.</div>
+
+    <h3 class="sub">용어가 어려우면 기초상식부터</h3>
+    <p class="d">조합원 입주권, 프리미엄, 비례율, 감정평가액 같은 말이 낯설 수 있습니다.
+      따로 정리해 둔 안내서가 있으니 여기부터 보시면 나머지 화면이 훨씬 잘 읽힙니다.</p>
+    <div class="shot">
+      <img src="이용안내/11_basic.webp" alt="재개발·재건축 기초상식 페이지. 사업 흐름과 용어 설명이 정리된 모습" loading="lazy">
+      <div class="cap">사업 흐름, 값이 뛰는 시점, 사는 방법 세 가지, 자금 계획까지 한 장에 담았습니다.</div>
+    </div>
+    <ul class="pt">
+      <li>재개발과 재건축이 <b>어떻게 다른지</b>부터 시작합니다</li>
+      <li>단계마다 <b>값이 왜 움직이는지</b>, 그리고 <b>거래가 막히는 시점</b>을 짚습니다</li>
+      <li>조합원 물건 매입·지분·일반분양까지 <b>실제로 사는 방법 세 가지</b>를 나눠 설명합니다</li>
+      <li>집값 구간별 대출 상한과 LTV·DSR 같은 <b>자금 계획</b>도 함께 다룹니다</li>
+    </ul>
+    <a class="go" href="%EC%9E%AC%EA%B0%9C%EB%B0%9C_%EA%B8%B0%EC%B4%88%EC%83%81%EC%8B%9D.html">재개발·재건축 기초상식 보기</a>
   </section>
 
   <section class="st" id="apply">
