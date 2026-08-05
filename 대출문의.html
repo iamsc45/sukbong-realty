@@ -3,27 +3,52 @@
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y7P41Z09PV"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-Y7P41Z09PV');</script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>대출 문의 · 석봉 부동산 정보방</title>
-<meta name="description" content="담보대출 상담 서비스를 준비하고 있습니다.">
+<title>담보 상담 문의 · 석봉 부동산 정보방</title>
+<meta name="description" content="담보 조건 상담을 원하시면 내용을 남겨 주세요. 확인 후 연락드립니다.">
 <meta name="robots" content="noindex">
-<!-- ⚠️ 준비 중 안내 페이지(2026-08-02 석봉님 지시: "링크만 주고 준비중이라고 메시지").
-     사이트 곳곳의 '대출 문의' 링크가 전부 이 페이지 하나를 가리킨다.
-     제휴 대부업체 사이트가 라이브되면 **이 파일만** 그쪽으로 리다이렉트(또는 안내 교체)하면
-     전 링크가 일괄 전환된다 — 개별 링크를 고치지 말 것.
-     상세: 사업기획/대부업사이트_초안_20260716/유입동선_설계.md -->
+<!-- ⚠️ 사이트 곳곳의 '대출 문의' 링크가 전부 이 페이지 하나를 가리킨다.
+     제휴 대부업체 사이트가 라이브되면 **이 파일만** 바꾸면 전 링크가 일괄 전환된다.
+     개별 링크를 고치지 말 것. 상세: 사업기획/대부업사이트_초안_20260716/유입동선_설계.md
+
+     2026-08-05 석봉님 지시로 '준비 중' 안내를 접수 폼으로 교체했다.
+     업체와 협의가 끝날 때까지는 석봉님이 직접 문의를 받는다.
+     석봉님 확정 3건: ①연체 여부는 묻지 않는다 ②알림은 즉시 ③법정 문구는 아직 넣지 않는다.
+     ⚠️ 조건·유인 문구를 넣지 말 것("저금리"·"한도 최대"·"당일 실행"·"누구나").
+        넣는 순간 이 사이트가 대부 광고 매체가 되어 광고 규제를 받는다. -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <link rel="stylesheet" href="assets/site.css">
 <style>
-.wrap{max-width:640px;margin:0 auto;padding:0 22px;text-align:center}
-.box{margin:70px 0 60px}
-.ic{font-size:44px;margin-bottom:14px}
-h1.pg{font-size:clamp(24px,4.4vw,36px);letter-spacing:-0.04em;font-weight:800;margin:0 0 12px}
-.pgsub{color:var(--muted);font-size:14.5px;line-height:1.75;margin:0 0 30px;word-break:keep-all}
-.btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-.btns a{display:inline-block;padding:13px 24px;border-radius:100px;text-decoration:none;font-size:14px;font-weight:700}
-.btns a.p{background:var(--text);color:#fff}
-.btns a.l{border:1px solid var(--hair);color:var(--text);background:var(--soft)}
-.notice{font-size:11.5px;color:var(--muted);line-height:1.75;margin:40px 0 60px}
+.wrap{max-width:680px;margin:0 auto;padding:0 22px 70px}
+h1.pg{font-size:clamp(26px,4.4vw,40px);letter-spacing:-0.04em;font-weight:800;margin:44px 0 8px}
+.pgsub{color:var(--muted);font-size:14px;line-height:1.75;margin:0 0 26px;word-break:keep-all}
+.sec{border:1px solid var(--hair);border-radius:14px;background:#fff;padding:18px 20px;margin-bottom:12px}
+.sec h2{font-size:13px;font-weight:800;letter-spacing:-0.01em;margin:0 0 3px}
+.sec .sh{font-size:11.5px;color:var(--muted);margin:0 0 13px;line-height:1.6}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.fg.one{grid-template-columns:1fr}
+label{display:block;font-size:12px;font-weight:700;color:var(--text2);margin:0 0 5px}
+label .req{color:#c0392b;margin-left:2px}
+input,select,textarea{width:100%;border:1px solid var(--hair);border-radius:10px;background:#fff;
+  color:var(--text);font:inherit;font-size:14px;padding:11px 13px;-webkit-appearance:none;appearance:none}
+select{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8'><path d='M1 1l5 5 5-5' stroke='%23999' stroke-width='1.6' fill='none' stroke-linecap='round'/></svg>");
+  background-repeat:no-repeat;background-position:right 13px center;padding-right:32px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--muted2)}
+textarea{min-height:96px;resize:vertical;line-height:1.6}
+.hint{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.5}
+.sub{margin-top:6px}
+.agree{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;color:var(--text2);line-height:1.6;cursor:pointer}
+.agree input{width:auto;margin-top:2px;flex:0 0 auto}
+.agree a{color:var(--acc-blue)}
+.go{width:100%;border:0;border-radius:12px;background:var(--text);color:#fff;font:inherit;
+  font-size:15.5px;font-weight:800;padding:16px 0;cursor:pointer;margin-top:14px}
+.go:disabled{background:var(--muted2);cursor:default}
+.err{display:none;font-size:13px;color:#c0392b;font-weight:700;margin-top:10px}
+.done{border:1px solid var(--hair);border-radius:14px;background:#fff;padding:40px 24px;text-align:center;margin:20px 0}
+.done .ic{font-size:38px;margin-bottom:12px}
+.done h2{font-size:19px;font-weight:800;margin:0 0 8px}
+.done p{font-size:13.5px;color:var(--muted);line-height:1.75;margin:0}
+.notice{font-size:11.5px;color:var(--muted);line-height:1.75;margin:24px 0 40px}
+@media(max-width:560px){.fg{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -42,18 +67,85 @@ h1.pg{font-size:clamp(24px,4.4vw,36px);letter-spacing:-0.04em;font-weight:800;ma
   </nav>
 </header>
 <main class="wrap">
-  <div class="box">
-    <div class="ic">🏦</div>
-    <h1 class="pg">대출 상담 서비스를 준비하고 있습니다</h1>
-    <p class="pgsub">담보 조건 상담을 연결해 드릴 수 있도록 준비 중입니다.<br>
-    오픈되면 이 페이지에서 바로 문의하실 수 있습니다. 조금만 기다려 주세요.</p>
-    <div class="btns">
-      <a class="p" href="map.html">🗺 실거래지도 보기</a>
-      <a class="l" href="auction.html">경매·공매 통계 보기</a>
+  <h1 class="pg">담보 상담 문의</h1>
+  <p class="pgsub">담보 조건을 검토해 드립니다. 아래 내용을 남겨 주시면 확인 후 연락드립니다.<br>
+    상담은 무료이며, 남겨 주신 정보는 상담 회신 목적으로만 씁니다.</p>
+
+  <div id="form">
+    <div class="sec">
+      <h2>연락처</h2>
+      <p class="sh">회신을 위해 필요합니다.</p>
+      <div class="fg">
+        <div><label>성함<span class="req">*</span></label><input id="f_name" maxlength="30" autocomplete="name"></div>
+        <div><label>연락처<span class="req">*</span></label><input id="f_tel" maxlength="30" inputmode="tel" placeholder="010-0000-0000" autocomplete="tel"></div>
+      </div>
+      <div class="fg one sub">
+        <div><label>연락 가능 시간</label>
+          <select id="f_when">
+            <option>아무 때나</option><option>오전 (09~12시)</option>
+            <option>오후 (12~18시)</option><option>저녁 (18시 이후)</option>
+          </select></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h2>담보 물건</h2>
+      <p class="sh">대략만 적어 주셔도 됩니다. 상세 지번은 통화에서 확인합니다.</p>
+      <div class="fg">
+        <div><label>종류<span class="req">*</span></label>
+          <select id="f_kind">
+            <option value="">선택해 주세요</option>
+            <option>아파트</option><option>오피스텔</option><option>빌라·다세대</option>
+            <option>단독·다가구</option><option>상가·오피스</option><option>토지</option><option>기타</option>
+          </select></div>
+        <div><label>소재지<span class="req">*</span></label><input id="f_loc" maxlength="60" placeholder="예: 서울 강남구 논현동"></div>
+      </div>
+      <div class="fg sub">
+        <div><label>단지·건물명</label><input id="f_bld" maxlength="40" placeholder="아는 경우만"></div>
+        <div><label>예상 시세</label><input id="f_val" maxlength="20" inputmode="numeric" placeholder="예: 8억"></div>
+      </div>
+      <div class="fg sub">
+        <div><label>소유 형태</label>
+          <select id="f_own"><option>본인 단독</option><option>배우자·가족 공동</option><option>타인 공동</option><option>가족 명의</option></select></div>
+        <div><label>선순위 대출</label>
+          <select id="f_pri"><option>없음</option><option>있음</option><option>잘 모르겠음</option></select></div>
+      </div>
+      <div class="fg one sub" id="priBox" style="display:none">
+        <div><label>선순위 대출 잔액</label><input id="f_priamt" maxlength="20" placeholder="예: 3억"></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h2>필요 자금</h2>
+      <div class="fg">
+        <div><label>희망 금액<span class="req">*</span></label><input id="f_amt" maxlength="20" placeholder="예: 2억"></div>
+        <div><label>필요 시기</label>
+          <select id="f_time"><option>가능한 빨리</option><option>1개월 이내</option><option>3개월 이내</option><option>아직 미정</option></select></div>
+      </div>
+      <div class="fg one sub">
+        <div><label>자금 용도</label>
+          <select id="f_use"><option>사업 자금</option><option>기존 대출 상환</option><option>부동산 매입</option><option>생활 자금</option><option>기타</option></select></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h2>남기실 말씀</h2>
+      <div class="fg one">
+        <div><textarea id="f_msg" maxlength="1000" placeholder="상황을 적어 주시면 준비해서 연락드립니다. (선택)"></textarea></div>
+      </div>
+      <label class="agree sub" style="font-weight:400">
+        <input type="checkbox" id="f_ok">
+        <span>(필수) 상담 회신을 위한 개인정보 수집·이용에 동의합니다. 남겨 주신 정보는 상담 목적으로만 쓰고,
+          상담이 끝나면 지웁니다. <a href="privacy.html" target="_blank">개인정보 처리방침</a></span>
+      </label>
+      <button class="go" id="f_go">문의 남기기</button>
+      <div class="err" id="f_err"></div>
     </div>
   </div>
-  <p class="notice">※ 시세와 대출 한도 참고치는 각 단지 상세 페이지의 '은행 대출 한도' 항목에서 확인하실 수 있습니다.<br>
-  ※ 정부 서민금융(서민금융진흥원 ☎1397) 이용 가능 여부를 먼저 확인해 보시길 권합니다.</p>
+
+  <p class="notice">※ 상담 신청이며 대출 실행이나 한도를 보장하지 않습니다. 조건은 심사 결과에 따라 달라집니다.<br>
+  ※ 정부 서민금융(서민금융진흥원 ☎1397) 이용 가능 여부를 먼저 확인해 보시길 권합니다.<br>
+  ※ 급하시면 iamsc45@gmail.com 으로 바로 보내셔도 됩니다.</p>
 </main>
 <footer class="site-footer">
   <span>📈 <a href="https://telegram.me/seokbongnews">텔레그램 채널</a></span> ·
@@ -61,9 +153,67 @@ h1.pg{font-size:clamp(24px,4.4vw,36px);letter-spacing:-0.04em;font-weight:800;ma
   <div class="fine">편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 방문 통계 수집을 위해 Google Analytics(쿠키)를 사용합니다</div>
 </footer>
 <script>
-try{
-  var ctx=new URLSearchParams(location.search).get('ctx')||'(direct)';
-  if(window.gtag)gtag('event','loan_inquiry_open',{ctx:ctx});
-}catch(e){}
+(function(){
+  /* 접수처는 홈 광고 문의·LH 자금 문의와 같은 테이블이다. kind로 구분한다. */
+  var URL='https://bwgoufxonqamglbqsife.supabase.co/rest/v1/inquiries';
+  var KEY='sb_publishable_kYd1gCyqCR2Qy8Ix6KE6og_FfJUImfR';
+  var ctx=new URLSearchParams(location.search).get('ctx')||'';
+  try{if(window.gtag)gtag('event','loan_inquiry_open',{ctx:ctx||'(direct)'});}catch(e){}
+
+  var $=function(id){return document.getElementById(id);};
+  /* 선순위 '있음'일 때만 잔액을 묻는다. 처음부터 다 보이면 폼이 길어 보인다 */
+  $('f_pri').onchange=function(){$('priBox').style.display=(this.value==='있음')?'grid':'none';};
+
+  function val(id){return ($(id).value||'').trim();}
+  function fail(m){var e=$('f_err');e.textContent=m;e.style.display='block';}
+
+  $('f_go').onclick=function(){
+    var nm=val('f_name'), tel=val('f_tel');
+    if(!nm){return fail('성함을 넣어 주세요.');}
+    if(!tel||tel.replace(/[^0-9]/g,'').length<9){return fail('연락 가능한 번호를 넣어 주세요.');}
+    if(!val('f_kind')){return fail('담보 물건 종류를 골라 주세요.');}
+    if(!val('f_loc')){return fail('물건 소재지를 넣어 주세요.');}
+    if(!val('f_amt')){return fail('희망 금액을 넣어 주세요.');}
+    if(!$('f_ok').checked){return fail('개인정보 수집·이용에 동의해 주세요.');}
+    $('f_err').style.display='none';
+
+    var b=$('f_go'); b.disabled=true; b.textContent='접수 중…';
+    var L=[];
+    L.push('[담보 상담]');
+    L.push('연락 가능 시간: '+val('f_when'));
+    L.push('');
+    L.push('■ 담보 물건');
+    L.push('  종류: '+val('f_kind'));
+    L.push('  소재지: '+val('f_loc'));
+    if(val('f_bld'))L.push('  단지·건물: '+val('f_bld'));
+    if(val('f_val'))L.push('  예상 시세: '+val('f_val'));
+    L.push('  소유 형태: '+val('f_own'));
+    L.push('  선순위 대출: '+val('f_pri')+(val('f_pri')==='있음'&&val('f_priamt')?(' ('+val('f_priamt')+')'):''));
+    L.push('');
+    L.push('■ 필요 자금');
+    L.push('  희망 금액: '+val('f_amt'));
+    L.push('  필요 시기: '+val('f_time'));
+    L.push('  용도: '+val('f_use'));
+    if(val('f_msg')){L.push('');L.push('■ 남기신 말씀');L.push('  '+val('f_msg'));}
+    if(ctx){L.push('');L.push('(유입: '+ctx+')');}
+
+    fetch(URL,{method:'POST',
+      headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({kind:'담보대출 상담',name:nm.slice(0,100),
+                           contact:tel.slice(0,100),msg:L.join('\n').slice(0,2000)})})
+    .then(function(r){
+      if(!r.ok)throw 0;
+      $('form').innerHTML='<div class="done"><div class="ic">✓</div>'
+        +'<h2>접수됐습니다</h2>'
+        +'<p>남겨 주신 번호로 연락드리겠습니다.<br>급하시면 iamsc45@gmail.com 으로 보내셔도 됩니다.</p></div>';
+      window.scrollTo({top:0,behavior:'smooth'});
+      try{if(window.gtag)gtag('event','loan_inquiry_submit',{ctx:ctx||'(direct)'});}catch(e){}
+    })
+    .catch(function(){
+      b.disabled=false; b.textContent='문의 남기기';
+      fail('접수에 실패했습니다. 잠시 후 다시 시도하시거나 iamsc45@gmail.com 으로 보내 주세요.');
+    });
+  };
+})();
 </script>
 </body></html>
