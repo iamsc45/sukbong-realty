@@ -246,21 +246,32 @@ function trendSvg(s){
       +'<text x="'+(padL-7)+'" y="'+(parseFloat(yy)+3.5)+'" font-size="10" fill="#8a8071" text-anchor="end">'+Math.round(v).toLocaleString()+'</text>';});
   var line=s.map(function(d){return X(d[0]).toFixed(1)+','+Y(d[1]).toFixed(1);}).join(' ');
   var area='M'+X(x0).toFixed(1)+','+(H-padB)+' L'+line.split(' ').join(' L')+' L'+X(x1).toFixed(1)+','+(H-padB)+' Z';
-  var dots=s.map(function(d){return '<circle cx="'+X(d[0]).toFixed(1)+'" cy="'+Y(d[1]).toFixed(1)+'" r="3" fill="#a8792c"><title>'+d[0]+'년 '+d[1].toLocaleString()+'만원/평 · '+d[2]+'건</title></circle>';}).join('');
+  /* 표본 3건 미만 연도는 속을 비운 흐린 점으로 구분한다(2026-08-05).
+     1~2건짜리 중위값이 정상 점처럼 보여 특이 거래 하나가 그 해 시세로 읽히던 문제. */
+  var dots=s.map(function(d){var thin=d[2]<3;
+    return '<circle cx="'+X(d[0]).toFixed(1)+'" cy="'+Y(d[1]).toFixed(1)+'" r="'+(thin?2.5:3)+'"'
+      +(thin?' fill="#f8f6f1" stroke="#c9b183" stroke-width="1.5" opacity=".85"':' fill="#a8792c"')
+      +'><title>'+d[0]+'년 '+d[1].toLocaleString()+'만원/평 · '+d[2]+'건'+(thin?' (표본 적음·참고만)':'')+'</title></circle>';}).join('');
   var xlabs=s.map(function(d,i){return (s.length<=7||i===0||i===s.length-1||i%2===0)?'<text x="'+X(d[0]).toFixed(1)+'" y="'+(H-9)+'" font-size="10" fill="#8a8071" text-anchor="middle">'+d[0]+'</text>':'';}).join('');
-  var first=s[0],last=s[s.length-1],rise=Math.round((last[1]/first[1]-1)*100);
+  /* 상승률은 표본 3건 이상인 해끼리 계산한다(양끝이 1건짜리면 왜곡). 부족하면 전체로. */
+  var solid=s.filter(function(d){return d[2]>=3;});
+  var rb=solid.length>=2?solid:s;
+  var first=rb[0],last=rb[rb.length-1],rise=Math.round((last[1]/first[1]-1)*100);
+  var thinCnt=s.length-solid.length;
   var tot=s.reduce(function(a,d){return a+d[2];},0);
   var head='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">'
-    +'<span style="font-size:12.5px;color:#6b6355">'+first[0]+'~'+last[0]+' · 매매 '+tot.toLocaleString()+'건</span>'
+    +'<span style="font-size:12.5px;color:#6b6355">'+s[0][0]+'~'+s[s.length-1][0]+' · 매매 '+tot.toLocaleString()+'건</span>'
     +'<b style="font-size:16px;color:'+(rise>=0?'#c0562e':'#2b6cb0')+'">'+(rise>=0?'+':'')+rise+'%</b></div>';
   var svg='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="display:block;overflow:visible">'
     +'<text x="6" y="13" font-size="10" fill="#8a8071">만원/평(전용)</text>'
     +grid
     +'<path d="'+area+'" fill="rgba(168,121,44,.12)"/><polyline points="'+line+'" fill="none" stroke="#a8792c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'+dots+xlabs
-    +'<text x="'+X(last[0]).toFixed(1)+'" y="'+(Y(last[1])-9).toFixed(1)+'" font-size="12" font-weight="700" fill="#1a1a1a" text-anchor="end">'+last[1].toLocaleString()+'</text>'
+    +'<text x="'+X(s[s.length-1][0]).toFixed(1)+'" y="'+(Y(s[s.length-1][1])-9).toFixed(1)+'" font-size="12" font-weight="700" fill="#1a1a1a" text-anchor="end">'+s[s.length-1][1].toLocaleString()+'</text>'
     +'</svg>';
   return head+svg+'<div class="note" style="margin-top:4px">Y축=평당 만원(전용) · X축=연도 · '
     +'<b>이 단지</b> 아파트 매매 실거래의 연도별 중위값(해제 건 제외). 점에 마우스를 올리면 연도별 건수가 보입니다. '
+    +(thinCnt?'속이 빈 점은 그 해 거래가 1~2건뿐이라 참고만 하십시오. ':'')
+    +(solid.length>=2&&thinCnt?'상승률은 거래 3건 이상인 해('+first[0]+'~'+last[0]+') 기준입니다. ':'')
     +(tot<10?'표본이 적어 연도별 편차가 클 수 있습니다.':'평형 구성에 따라 연도별 중위값이 흔들릴 수 있습니다.')+'</div>';
 }
 /* 관리비 섹션 — 세대당(메인) · 평당 전용(사이트 단가 기준 통일) · ㎡당 부과면적(공식 대조용) */
@@ -347,9 +358,11 @@ function render(pt,code){
     return '<small>전용 '+(lo===hi?lo+'㎡ · '+PY(a[0]):lo+'~'+hi+'㎡')+'</small>';}
   function cmpr(l,rv,hv,ar){return '<div class="cmpr"><b>'+l+(ar||'')+'</b><span>'+(rv||'·')+'</span><span class="ho">'+(hv||'·')+'</span></div>';}
   var mmR=mmamt?(eok(mmamt)+(mmpy?'<small>'+comma(mmpy)+'만/평</small>':'')):'';
-  var mmH=(A&&A.mm)?(eok(A.mm.med)+(A.mm.py?'<small>'+comma(A.mm.py)+'만/평 · '+A.mm.n+'건</small>':'')):'';
-  var jeR=jemed?eok(jemed):'',jeH=(A&&A.je)?(eok(A.je.med)+'<small>'+A.je.n+'건</small>'):'';
-  var woR=wo.length?(eok(womed)+' / '+womedw+'만'):'',woH=(A&&A.wo)?(eok(A.wo.bo)+' / '+A.wo.wol+'만<small>'+A.wo.n+'건</small>'):'';
+  /* 매물 1건이면 '중위'가 아니라 그 매물 하나다 — 건수를 항상 붙이고 1건은 명시(2026-08-05) */
+  function nlab(n){return n===1?'매물 1건':n+'건';}
+  var mmH=(A&&A.mm)?(eok(A.mm.med)+'<small>'+(A.mm.py?comma(A.mm.py)+'만/평 · ':'')+nlab(A.mm.n)+'</small>'):'';
+  var jeR=jemed?eok(jemed):'',jeH=(A&&A.je)?(eok(A.je.med)+'<small>'+nlab(A.je.n)+'</small>'):'';
+  var woR=wo.length?(eok(womed)+' / '+womedw+'만'):'',woH=(A&&A.wo)?(eok(A.wo.bo)+' / '+A.wo.wol+'만<small>'+nlab(A.wo.n)+'</small>'):'';
   h+='<div class="sec"><div class="lab">실거래 vs 호가 · 매매·전세·월세</div><div class="cmp">'
     +'<div class="cmph"><span></span><span>실거래<small>체결가·중위</small></span><span>호가<small>협상 전·중위</small></span></div>'
     +cmpr('매매',mmR,mmH,arng(mm))+cmpr('전세',jeR,jeH,arng(je))+cmpr('월세',woR,woH,arng(wo))+'</div>'
@@ -360,7 +373,14 @@ function render(pt,code){
       +frow(IC.cal,'준공',info.ymd?info.ymd+'년':'')
       +frow(IC.build,'시공사',info.builder)
       +frow(IC.build,'시행사',info.dev)
-      +frow(IC.home,'연면적',info.area?comma(info.area)+'㎡('+PY(info.area)+')':'')
+      /* 연면적 원본에 자릿수 오류가 있다(마곡센트레빌 20억㎡, 구의현대13차 24㎡ — 2026-08-05 점검
+         103건). 배율이 제각각이라 환산이 불가능해, 세대당 20~400㎡(세대수 미상이면 500~200만㎡)를
+         벗어나면 표시하지 않는다. 원본 파싱을 고치면 이 가드는 자연히 무해해진다. */
+      +frow(IC.home,'연면적',(function(a,se){
+        if(!a)return '';
+        var ok=se?(a/se>=20&&a/se<=400):(a>=500&&a<=2000000);
+        return ok?comma(a)+'㎡('+PY(a)+')':'';
+      })(info.area,info.se))
       +frow(IC.heat,'난방',info.heat)
       +frow(IC.park,'지하주차',info.park?comma(info.park)+'대':'')
       +frow(IC.cctv,'CCTV',info.cctv?comma(info.cctv)+'대':'')

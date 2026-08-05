@@ -120,6 +120,9 @@ function normH(h,floors){
   }
   return (h>=10&&h<=300)?h:'';
 }
+/* 정비계획 수치 범위 가드(2026-08-05). 원본 오기(용적률 4%·건폐율 722%·61,944세대 등)가
+   그대로 노출되던 것 — 상식 범위 밖이면 그 칸을 표시하지 않는다(최고높이와 같은 원칙). */
+function okRange(v,lo,hi){v=parseFloat(String(v||'').replace(/,/g,''));return (isFinite(v)&&v>=lo&&v<=hi)?v:null;}
 /* 대외 출처 순화: 소스명 대신 '공공 DB', 기준일만 유지 */
 function srcLab(s){var m=(s||'').match(/\(([^)]*기준[^)]*)\)/);return '공공 DB'+(m?' ('+m[1]+')':'');}
 function qs(k){var m=new RegExp('[?&]'+k+'=([^&]*)').exec(location.search);return m?decodeURIComponent(m[1].replace(/\+/g,' ')):'';}
@@ -149,10 +152,11 @@ function render(){
   h+='<div class="sec"><div class="lab">추진 단계 · '+srcLab(d.src)+' 최신</div>'+stageBar(d.stage)+'</div>';
 
   if(d.fixed){
+    var _far=okRange(d.far,50,1500),_bcr=okRange(d.bcr,5,90),_un=okRange(d.units,5,20000);
     h+='<div class="sec"><div class="lab">정비계획 핵심 · '+srcLab(d.src)+' 사업개요</div><div class="big">'
-      +(d.far?'<div class="stat"><div class="n">'+d.far+'%</div><div class="l">용적률</div></div>':'')
-      +(d.bcr?'<div class="stat"><div class="n">'+d.bcr+'%</div><div class="l">건폐율</div></div>':'')
-      +(d.units?'<div class="stat"><div class="n">'+num(d.units)+'</div><div class="l">계획 세대수</div></div>':'')
+      +(_far?'<div class="stat"><div class="n">'+_far+'%</div><div class="l">용적률</div></div>':'')
+      +(_bcr?'<div class="stat"><div class="n">'+_bcr+'%</div><div class="l">건폐율</div></div>':'')
+      +(_un?'<div class="stat"><div class="n">'+num(_un)+'</div><div class="l">계획 세대수</div></div>':'')
       +'</div></div>';
     h+='<div class="sec"><div class="lab">규모 · 면적</div><div class="grid">'
       +kv('용도지역',d.usezone)
@@ -167,7 +171,7 @@ function render(){
       +kv('전용 60㎡(18.1평) 이하',d.u60?num(d.u60)+'세대':'')
       +kv('전용 60~85㎡(18.1~25.7평)',d.u6085?num(d.u6085)+'세대':'')
       +kv('전용 85㎡(25.7평) 초과',d.u85?num(d.u85)+'세대':'')
-      +kv('총 세대',d.units?num(d.units)+'세대':'')
+      +kv('총 세대',_un?num(_un)+'세대':'')
       +'</div></div>'):'';
     h+=seh;
     h+='<div class="sec"><div class="lab">권리 관계</div><div class="grid">'
@@ -227,17 +231,26 @@ function trendSvg(s,gu){
       +'<text x="'+(padL-7)+'" y="'+(parseFloat(yy)+3.5)+'" font-size="10" fill="#8a8071" text-anchor="end">'+Math.round(v).toLocaleString()+'</text>';});
   var line=s.map(function(d){return X(d.y).toFixed(1)+','+Y(d.py).toFixed(1);}).join(' ');
   var area='M'+X(x0).toFixed(1)+','+(H-padB)+' L'+line.split(' ').join(' L')+' L'+X(x1).toFixed(1)+','+(H-padB)+' Z';
-  var dots=s.map(function(d){return '<circle cx="'+X(d.y).toFixed(1)+'" cy="'+Y(d.py).toFixed(1)+'" r="3" fill="#a8792c"/>';}).join('');
+  /* 표본 5건 미만 연도는 속 빈 흐린 점 + 툴팁(2026-08-05). 동 단위라 단지(3건)보다 문턱을 높게. */
+  var dots=s.map(function(d){var thin=(d.n||0)<5;
+    return '<circle cx="'+X(d.y).toFixed(1)+'" cy="'+Y(d.py).toFixed(1)+'" r="'+(thin?2.5:3)+'"'
+      +(thin?' fill="#f8f6f1" stroke="#c9b183" stroke-width="1.5" opacity=".85"':' fill="#a8792c"')
+      +'><title>'+d.y+'년 '+d.py.toLocaleString()+'만원/평 · '+(d.n||0)+'건'+(thin?' (표본 적음·참고만)':'')+'</title></circle>';}).join('');
   var xlabs=s.map(function(d,i){return (s.length<=7||i===0||i===s.length-1||i%2===0)?'<text x="'+X(d.y).toFixed(1)+'" y="'+(H-9)+'" font-size="10" fill="#8a8071" text-anchor="middle">'+d.y+'</text>':'';}).join('');
-  var first=s[0],last=s[s.length-1],rise=Math.round((last.py/first.py-1)*100);
-  var head='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><span style="font-size:12.5px;color:#6b6355">'+esc(gu)+' 법정동 · '+first.y+'~'+last.y+'</span><b style="font-size:16px;color:'+(rise>=0?'#c0562e':'#2b6cb0')+'">'+(rise>=0?'+':'')+rise+'%</b></div>';
+  var solid=s.filter(function(d){return (d.n||0)>=5;});
+  var rb=solid.length>=2?solid:s;
+  var first=rb[0],last=rb[rb.length-1],rise=Math.round((last.py/first.py-1)*100);
+  var thinCnt=s.length-solid.length;
+  var head='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><span style="font-size:12.5px;color:#6b6355">'+esc(gu)+' 법정동 · '+s[0].y+'~'+s[s.length-1].y+'</span><b style="font-size:16px;color:'+(rise>=0?'#c0562e':'#2b6cb0')+'">'+(rise>=0?'+':'')+rise+'%</b></div>';
   var svg='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="display:block;overflow:visible">'
     +'<text x="6" y="13" font-size="10" fill="#8a8071">만원/평(전용)</text>'
     +grid
     +'<path d="'+area+'" fill="rgba(168,121,44,.12)"/><polyline points="'+line+'" fill="none" stroke="#a8792c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'+dots+xlabs
-    +'<text x="'+X(last.y).toFixed(1)+'" y="'+(Y(last.py)-9).toFixed(1)+'" font-size="12" font-weight="700" fill="#1a1a1a" text-anchor="end">'+last.py.toLocaleString()+'</text>'
+    +'<text x="'+X(s[s.length-1].y).toFixed(1)+'" y="'+(Y(s[s.length-1].py)-9).toFixed(1)+'" font-size="12" font-weight="700" fill="#1a1a1a" text-anchor="end">'+s[s.length-1].py.toLocaleString()+'</text>'
     +'</svg>';
-  return head+svg+'<div class="note" style="margin-top:4px">Y축=평당 만원(전용) · X축=연도 · 법정동 아파트 매매 실거래 연도별 중위값(해제 제외). 구역 단지가 아닌 동 단위 참고치.</div>';
+  return head+svg+'<div class="note" style="margin-top:4px">Y축=평당 만원(전용) · X축=연도 · 법정동 아파트 매매 실거래 연도별 중위값(해제 제외). 구역 단지가 아닌 동 단위 참고치.'
+    +(thinCnt?' 속이 빈 점은 그 해 거래 5건 미만이라 참고만 하십시오.':'')
+    +(solid.length>=2&&thinCnt?' 상승률은 5건 이상인 해('+first.y+'~'+last.y+') 기준.':'')+'</div>';
 }
 function loadNearTx(nm,gu){
   var d=(window.REDEVDETAIL||{})[nm]||{};
