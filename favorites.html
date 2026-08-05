@@ -56,6 +56,11 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
 .lhnote{font-size:11.5px;color:var(--muted);line-height:1.65;margin-top:14px}
 .empty{border:1px dashed var(--hair);border-radius:12px;padding:26px 18px;text-align:center;color:var(--muted);font-size:13px;line-height:1.7}
 .empty a{color:var(--acc-blue);font-weight:700}
+/* 회원 탈퇴 (2026-08-05). 로그아웃 옆에 있으면 잘못 누른다. 맨 아래 구석에 조용히 둔다 */
+.quitzone{margin:34px 0 60px;padding-top:14px;border-top:1px solid var(--hair);text-align:right}
+.quitzone button{border:0;background:none;color:#b0a99e;font:inherit;font-size:11.5px;
+  text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:4px 2px}
+.quitzone button:hover{color:#c0392b}
 </style>
 <meta property="og:title" content="관심단지 · 석봉 부동산 정보방">
 <meta property="og:type" content="website">
@@ -102,6 +107,9 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
     <p class="lhnote" id="lhNote">LH 매입약정 셀프진단에서 저장한 사업지입니다.
       진단 기준은 지역본부 공고 차수마다 바뀌니, 오래된 판정은 다시 진단해 보십시오.</p>
   </div>
+
+  <!-- 되돌릴 수 없는 동작이라 맨 아래 구석에 둔다 (2026-08-05 석봉님 지적) -->
+  <div class="quitzone" id="quitZone" style="display:none"></div>
 </main>
 <footer class="site-footer">
   <span>📈 <a href="https://telegram.me/seokbongnews">텔레그램 채널</a></span> ·
@@ -109,7 +117,7 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
   <div class="fine">편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 방문 통계 수집을 위해 Google Analytics(쿠키)를 사용합니다</div>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="assets/sb_auth.js?v=5"></script>
+<script src="assets/sb_auth.js?v=6"></script>
 <script>
 (function(){
   /* 지금 LH 탭을 보고 있나 — 관심단지 렌더가 부제를 덮어쓰지 않게 판별한다 */
@@ -130,16 +138,30 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
     var l=SBAuth.favAll();
     if(!onLh())cnt.textContent=(l.length?('등록 '+l.length+'개 · '):'')+'어느 기기에서나 같은 목록을 봅니다';
     who.style.display='flex';
+    /* 탈퇴는 로그아웃 옆에 두지 않는다(2026-08-05 석봉님 지적).
+       나란히 있으면 로그아웃하려다 누르기 쉽고, 되돌릴 수 없는 동작이다.
+       맨 아래 구석에 작은 글자로 내려 두고, 이 자리에는 로그아웃만 남긴다. */
     who.innerHTML='<span><b>'+esc(SBAuth.nickname())+'</b>님</span>'
-      +'<button id="btnOut">로그아웃</button><button id="btnQuit">회원 탈퇴</button>';
+      +'<button id="btnOut">로그아웃</button>';
     document.getElementById('btnOut').onclick=function(){SBAuth.logout();};
-    document.getElementById('btnQuit').onclick=async function(){
-      if(!confirm('탈퇴하면 관심단지 목록이 모두 삭제됩니다. 진행할까요?'))return;
-      var l2=SBAuth.favAll().slice();
-      for(var i=0;i<l2.length;i++){await SBAuth.delFav((l2[i].code||'')+'|'+l2[i].nm);}
-      alert('관심단지 정보가 삭제되었습니다. 로그아웃합니다.\n계정 완전 삭제를 원하시면 iamsc45@gmail.com 으로 요청해 주세요.');
-      SBAuth.logout();
-    };
+    var qz=document.getElementById('quitZone');
+    if(qz){
+      qz.style.display='block';
+      qz.innerHTML='<button id="btnQuit">회원 탈퇴</button>';
+      document.getElementById('btnQuit').onclick=async function(){
+        /* 탈퇴하면 LH 사업지도 함께 지운다. 관심단지만 지우면 계정에 남는다(2026-08-05) */
+        var sites=[];
+        try{sites=await SBAuth.lhList();}catch(e){}
+        var favN=SBAuth.favAll().length;
+        if(!confirm('탈퇴하면 저장한 자료가 모두 삭제됩니다.\n\n'
+          +'  관심단지 '+favN+'개\n  LH 사업지 '+sites.length+'곳\n\n되돌릴 수 없습니다. 진행할까요?'))return;
+        var l2=SBAuth.favAll().slice();
+        for(var i=0;i<l2.length;i++){await SBAuth.delFav((l2[i].code||'')+'|'+l2[i].nm);}
+        for(var j=0;j<sites.length;j++){try{await SBAuth.lhDel(sites[j]);}catch(e){}}
+        alert('저장하신 자료를 삭제했습니다. 로그아웃합니다.\n계정 완전 삭제를 원하시면 iamsc45@gmail.com 으로 요청해 주세요.');
+        SBAuth.logout();
+      };
+    }
     if(!l.length){
       list.innerHTML='<div class="emptybox"><b>아직 등록한 단지가 없습니다</b>'
         +'<a href="map.html">실거래지도</a>에서 단지를 누르고 <b style="display:inline">☆ 관심단지 등록</b> 버튼을 누르면 여기에 모입니다.</div>';
