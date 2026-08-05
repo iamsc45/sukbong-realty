@@ -316,6 +316,31 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
 <meta property="og:site_name" content="석봉 부동산 정보방">
 </head>
 <body>
+<script>
+/* 카카오 로그인 복귀 감지 (2026-08-05)
+   ─────────────────────────────────────────────────────────
+   Supabase는 허용목록에 없는 주소로는 안 돌려보내고 Site URL(이 홈)로 떨군다.
+   그래서 LH 진단에서 '사업지 저장'을 누르고 가입하면 홈이 떠 버렸다(석봉님 제보).
+   홈은 sb_auth.js를 안 싣기 때문에 그 안의 복귀 장치가 돌지 않는다. 여기서 처리한다.
+
+   ⚠️ 조건을 좁게 잡는다. 로그인 직후 URL에 토큰이 실려 올 때만 되돌린다.
+      그냥 홈을 누른 사람까지 끌고 가면 안 된다.
+   토큰은 그대로 달고 가야 도착한 화면에서 세션이 붙는다. */
+(function(){
+  try{
+    var h=location.hash||'', q=location.search||'';
+    if(h.indexOf('access_token=')<0 && !/[?&]code=/.test(q))return;
+    var v=localStorage.getItem('sb_return');
+    if(!v)return;
+    localStorage.removeItem('sb_return');
+    var o=JSON.parse(v);
+    if(!o||!o.u||Date.now()-(o.t||0)>600000)return;   /* 10분 지난 흔적은 무시 */
+    var to=o.u.split('#')[0];
+    if(to.split('?')[0]===location.href.split('?')[0].split('#')[0])return;
+    location.replace(to+(q&&to.indexOf('?')<0?q:'')+h);
+  }catch(e){}
+})();
+</script>
 <nav class="nav"><div class="nav-in">
   <a class="brand" href="index.html">석봉 부동산 정보방</a>
   <a class="lnk on" href="index.html">홈</a>
