@@ -99,8 +99,7 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
 
   <div id="paneLh" style="display:none">
     <div id="lhList"></div>
-    <p class="lhnote">LH 매입약정 셀프진단에서 저장한 사업지입니다.
-      <b>이 브라우저에만 보관되므로 다른 기기에서는 보이지 않습니다.</b>
+    <p class="lhnote" id="lhNote">LH 매입약정 셀프진단에서 저장한 사업지입니다.
       진단 기준은 지역본부 공고 차수마다 바뀌니, 오래된 판정은 다시 진단해 보십시오.</p>
   </div>
 </main>
@@ -110,7 +109,7 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
   <div class="fine">편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 방문 통계 수집을 위해 Google Analytics(쿠키)를 사용합니다</div>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="assets/sb_auth.js?v=4"></script>
+<script src="assets/sb_auth.js?v=5"></script>
 <script>
 (function(){
   /* 지금 LH 탭을 보고 있나 — 관심단지 렌더가 부제를 덮어쓰지 않게 판별한다 */
@@ -229,10 +228,13 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
      석봉님이 "저장현황 어디서 봐?"라고 물어 만들었다.
      관심단지(서버·회원)와 성격이 달라 목록을 섞지 않고 탭으로 나눈다.
      저장소는 진단 화면과 같은 localStorage 키를 쓴다. */
-  var LHKEY='sb_lh_sites';
+  /* 2026-08-05: 브라우저 보관 → 서버(lh_sites) 전환. 로그인하면 어느 기기에서나 같은 목록.
+     비로그인은 그대로 브라우저에 담기고, 로그인하는 순간 SBAuth가 서버로 옮긴다. */
   var DIAG='lh_%EC%A7%84%EB%8B%A8.html';
-  function lhAll(){try{return JSON.parse(localStorage.getItem(LHKEY)||'[]');}catch(e){return [];}}
-  function lhSave(a){try{localStorage.setItem(LHKEY,JSON.stringify(a));}catch(e){}}
+  function lhAll(cb){
+    if(window.SBAuth&&SBAuth.lhList)SBAuth.lhList().then(cb).catch(function(){cb([]);});
+    else cb([]);
+  }
   function lhLink(s){
     var q='?addr='+encodeURIComponent(s.addr||'');
     if(s.units)q+='&units='+encodeURIComponent(s.units);
@@ -240,8 +242,16 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
     if(s.kind)q+='&kind='+encodeURIComponent(s.kind);
     return DIAG+q;
   }
-  function lhDraw(){
-    var a=lhAll(), box=document.getElementById('lhList');
+  function lhDraw(){ lhAll(lhRender); }
+  function lhRender(a){
+    var box=document.getElementById('lhList');
+    /* 로그인 여부에 따라 보관 위치가 달라진다. 사실대로 적는다 */
+    var nt=document.getElementById('lhNote');
+    if(nt)nt.innerHTML='LH 매입약정 셀프진단에서 저장한 사업지입니다. '
+      +(window.SBAuth&&SBAuth.isIn()
+        ? '<b>회원 계정에 저장되어 휴대폰에서도 같은 목록이 보입니다.</b>'
+        : '<b>로그인하지 않으면 이 브라우저에만 남습니다.</b> 로그인하면 지금 목록이 계정으로 옮겨집니다.')
+      +' 진단 기준은 지역본부 공고 차수마다 바뀌니, 오래된 판정은 다시 진단해 보십시오.';
     document.getElementById('lhN').textContent=a.length?' '+a.length:'';
     if(!a.length){
       box.innerHTML='<div class="empty">저장한 사업지가 없습니다.<br>'
@@ -267,7 +277,11 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
     }).join('');
     Array.prototype.forEach.call(box.querySelectorAll('.lhdel'),function(b){
       b.onclick=function(){
-        var l=lhAll(); l.splice(+b.dataset.i,1); lhSave(l); lhDraw();
+        b.disabled=true;b.textContent='삭제 중…';
+        SBAuth.lhDel(a[+b.dataset.i]).then(function(ok){
+          if(ok)lhDraw();
+          else{b.disabled=false;b.textContent='삭제 실패';}
+        });
       };
     });
   }
@@ -286,7 +300,10 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
   document.getElementById('tabFav').onclick=function(){tab('fav');};
   document.getElementById('tabLh').onclick=function(){tab('lh');};
   /* lhDraw가 죽으면 그 뒤 줄(해시 자동 전환)까지 통째로 안 돈다. 감싸 둔다 */
-  try{lhDraw();}catch(e){}                    /* 배지 숫자는 처음부터 보이게 */
+  if(window.SBAuth&&SBAuth.whenReady){        /* 서버 조회라 로그인 확인이 끝난 뒤에 */
+    SBAuth.whenReady(function(){try{lhDraw();}catch(e){}});
+    SBAuth.onChange(function(){try{lhDraw();}catch(e){}});   /* 로그인·로그아웃 시 갱신 */
+  }
   if(location.hash==='#lh')tab('lh');         /* 진단 화면에서 바로 이 탭으로 온 경우 */
 })();
 </script>

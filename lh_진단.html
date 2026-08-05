@@ -155,7 +155,7 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
   <div class="fine">판정 근거: 국토교통부 실거래가 · 공공 정비사업 DB · 공동주택 단지정보 · 지오코딩은 공공 지도데이터 · 편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 참고용이며 심의 결과를 보장하지 않습니다</div>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="assets/sb_auth.js?v=4"></script>
+<script src="assets/sb_auth.js?v=5"></script>
 <script src="data/lh_diag.js"></script>
 <script src="data/dongs.js"></script>
 <script src="data/jeongbi_seoul.js"></script>
@@ -832,34 +832,39 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
   }
 
   /* ── 사업지 저장·알림 ────────────────────────────────────────
-     저장은 이 브라우저(localStorage)에 쌓는다. favorites 테이블은 단지용 스키마라
-     (code·nm·dong) 사업지를 넣으면 관심단지 화면에 섞여 나온다. 전용 테이블이 생기면 옮긴다.
-     알림 이메일은 서버에 저장된다(SBAuth.setNotifyEmail). 실제 발송은 주 1회 자동 갱신을
-     붙일 때 시작하므로, 지금은 그 사실을 그대로 밝힌다. 안 보내면서 보낸다고 하면 신뢰를 잃는다. */
-  var LHS='sb_lh_sites';
-  function sitesAll(){try{return JSON.parse(localStorage.getItem(LHS)||'[]');}catch(e){return [];}}
-  function sitesSave(l){try{localStorage.setItem(LHS,JSON.stringify(l.slice(0,50)));}catch(e){}}
+     2026-08-05: 브라우저 보관 → 서버(lh_sites) 전환. 로그인하면 어느 기기에서나 같은 목록이
+     보인다(석봉님 지시). 저장·조회·삭제는 SBAuth가 맡고, 비로그인일 때만 브라우저에 담았다가
+     로그인하는 순간 서버로 옮겨진다. 알림 이메일은 예전처럼 prefs에 저장하되 발송은 아직이다.
+     안 보내면서 보낸다고 하면 신뢰를 잃으므로 준비 중임을 화면에 밝힌다. */
   function wireMember(site){
     var st=document.getElementById('memState');
     var bSave=document.getElementById('memSave'), bAlert=document.getElementById('memAlert');
     if(!st||!bSave)return;
     function say(h){st.innerHTML=h;}
-    function saved(){
-      return sitesAll().some(function(x){return x.addr===site.addr&&x.area===site.area&&x.units===site.units;});
-    }
-    /* 저장만 되고 꺼내 볼 곳이 없어 석봉님이 "저장현황 어디서 봐?"라고 물었다(2026-08-05).
-       관심단지 화면의 LH 사업지 탭으로 보내는 링크를 항상 함께 띄운다. */
     var SEE=' <a href="favorites.html#lh" style="color:var(--acc-blue);font-weight:700;white-space:nowrap">저장한 사업지 보기 →</a>';
-    function paint(){
-      if(saved()){bSave.textContent='저장됨';bSave.classList.add('done');}
-      var n=sitesAll().length;
-      if(n)say('저장한 사업지 <b>'+n+'곳</b>. 이 브라우저에 보관됩니다.'+SEE);
+    var WHERE=(window.SBAuth&&SBAuth.isIn())?'회원 계정에 저장되어 어느 기기에서나 보입니다.'
+                                            :'이 브라우저에 보관됩니다.';
+    function refresh(){
+      if(!window.SBAuth||!SBAuth.lhList)return;
+      SBAuth.lhList().then(function(l){
+        var mine=l.some(function(x){
+          return x.addr===site.addr&&Number(x.area)===Number(site.area)&&Number(x.units)===Number(site.units);});
+        if(mine){bSave.textContent='저장됨';bSave.classList.add('done');}
+        if(l.length)say('저장한 사업지 <b>'+l.length+'곳</b>. '+WHERE+SEE);
+      }).catch(function(){});
     }
+    function paint(){refresh();}
     function doSave(){
-      if(saved()){say('이미 저장한 사업지입니다.'+SEE);return;}
-      var l=sitesAll();l.unshift(site);sitesSave(l);paint();
-      say('저장했습니다. 저장한 사업지 <b>'+sitesAll().length+'곳</b>.'+SEE);
-      try{if(typeof gtag==='function')gtag('event','lh_site_save',{hq:site.hq});}catch(e){}
+      bSave.disabled=true;
+      SBAuth.lhAdd(site).then(function(ok){
+        bSave.disabled=false;
+        if(!ok){say('저장하지 못했습니다. 잠시 후 다시 시도해 주세요.');return;}
+        bSave.textContent='저장됨';bSave.classList.add('done');
+        SBAuth.lhList().then(function(l){
+          say('저장했습니다. 저장한 사업지 <b>'+l.length+'곳</b>. '+WHERE+SEE);
+        }).catch(function(){say('저장했습니다.'+SEE);});
+        try{if(typeof gtag==='function')gtag('event','lh_site_save',{hq:site.hq});}catch(e){}
+      }).catch(function(){bSave.disabled=false;say('저장하지 못했습니다. 잠시 후 다시 시도해 주세요.');});
     }
     bSave.onclick=function(){
       if(window.SBAuth&&!SBAuth.isIn()){

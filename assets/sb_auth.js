@@ -84,7 +84,7 @@ window.SBAuth=(function(){
     try{
       var s=await client.auth.getSession();
       user=(s.data&&s.data.session)?s.data.session.user:null;
-      if(user){backIfNeeded();await loadFavs();await mergeLocal();await runPending();}
+      if(user){backIfNeeded();await loadFavs();await mergeLocal();await lhMergeLocal();await runPending();}
       else{try{localStorage.removeItem(RET);}catch(e){}}   /* 로그인 안 됐으면 흔적 정리 */
     }catch(e){}
     ready=true;waiters.forEach(function(f){f();});waiters=[];notify();
@@ -92,7 +92,7 @@ window.SBAuth=(function(){
       var u=session?session.user:null;
       if((u&&!user)||(!u&&user)||(u&&user&&u.id!==user.id)){
         user=u;
-        (async function(){if(user){await loadFavs();await mergeLocal();await runPending();}else{favs={};}notify();})();
+        (async function(){if(user){await loadFavs();await mergeLocal();await lhMergeLocal();await runPending();}else{favs={};}notify();})();
       }
     });
   }
@@ -122,6 +122,59 @@ window.SBAuth=(function(){
   }
   /* 알림 받을 이메일 — 카카오가 넘겨주는 계정 이메일(@kakao.com)은 카카오메일을 개설하지
      않은 사람에게는 반송되므로(2026-07-28 실측), 회원이 직접 받을 주소를 지정할 수 있게 한다. */
+  /* ── LH 사업지 (2026-08-05) ──────────────────────────────────
+     셀프진단에서 저장한 사업지. 원래 브라우저(localStorage)에만 담아서 PC에서 저장한 것이
+     휴대폰에서 안 보였다(석봉님 지시로 서버 저장 전환). 표는 public.lh_sites, RLS로 본인 것만.
+     비로그인은 여전히 브라우저에 담고, 로그인하면 그 분량을 서버로 한 번 옮긴다.
+     관심단지(mergeLocal)와 같은 방식이라 사용자는 옮겨진 걸 눈치채지 못한다. */
+  var LHKEY='sb_lh_sites';
+  function lhLocal(){try{return JSON.parse(localStorage.getItem(LHKEY)||'[]');}catch(e){return [];}}
+  function lhLocalSet(a){try{localStorage.setItem(LHKEY,JSON.stringify(a));}catch(e){}}
+  function lhNum(v){var n=parseFloat(v);return isFinite(n)?n:null;}
+  function lhRow(s){                       /* 화면이 쓰는 모양 → 표 컬럼 */
+    return {user_id:user.id, addr:String(s.addr||''), hq:s.hq||null,
+            units:lhNum(s.units), area:lhNum(s.area), kind:s.kind||null,
+            stype:s.stype||null, score:s.score||null};
+  }
+  function lhView(r){                      /* 표 → 화면이 쓰는 모양 */
+    return {id:r.id, addr:r.addr, hq:r.hq||'', units:r.units, area:r.area,
+            kind:r.kind||'', stype:r.stype||'', score:r.score||'',
+            at:(r.created_at||'').slice(0,10)};
+  }
+  async function lhList(){
+    if(!user)return lhLocal();
+    var r=await client.from('lh_sites').select('*').order('created_at',{ascending:false});
+    if(r.error)return lhLocal();           /* 서버가 흔들려도 화면은 뜨게 */
+    return (r.data||[]).map(lhView);
+  }
+  async function lhAdd(s){
+    if(!user){
+      var l=lhLocal();
+      if(l.some(function(x){return x.addr===s.addr&&x.units===s.units&&x.area===s.area;}))return true;
+      l.unshift(s);lhLocalSet(l);return true;
+    }
+    /* 같은 사업지를 두 번 눌러도 유니크 인덱스가 막는다. 그건 실패가 아니다 */
+    var r=await client.from('lh_sites').insert(lhRow(s));
+    return !r.error || (r.error.code==='23505');
+  }
+  async function lhDel(it){
+    if(!user||!it.id){
+      var l=lhLocal().filter(function(x){
+        return !(x.addr===it.addr&&x.units===it.units&&x.area===it.area);});
+      lhLocalSet(l);return true;
+    }
+    var r=await client.from('lh_sites').delete().eq('id',it.id);
+    return !r.error;
+  }
+  async function lhMergeLocal(){           /* 첫 로그인 때 브라우저 분량을 서버로 */
+    try{
+      var l=lhLocal();
+      if(!l.length)return;
+      for(var i=l.length-1;i>=0;i--)await lhAdd(l[i]);   /* 오래된 것부터 넣어 순서 유지 */
+      localStorage.removeItem(LHKEY);
+    }catch(e){}
+  }
+
   function authEmail(){return (user&&user.email)||'';}
   async function getNotifyEmail(){
     if(!user)return '';
@@ -176,5 +229,6 @@ window.SBAuth=(function(){
     favHas:favHas,favAll:favAll,addFav:addFav,delFav:delFav,setLastN:setLastN,
     authEmail:authEmail,getNotifyEmail:getNotifyEmail,setNotifyEmail:setNotifyEmail,
     setAct:setAct,takeAct:takeAct,
+    lhList:lhList,lhAdd:lhAdd,lhDel:lhDel,
     login:login,logout:logout,gate:gate};
 })();
