@@ -49,8 +49,8 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
   font-size:13px;font-weight:800;padding:11px 22px;cursor:pointer;white-space:nowrap}
 .repform{border:1px solid var(--hair);border-radius:14px;background:#fff;padding:18px;margin:-12px 0 24px}
 .repform label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin:10px 0 4px}
-.repform input{width:100%;box-sizing:border-box;border:1px solid var(--hair);border-radius:9px;
-  padding:10px 12px;font:inherit;font-size:14px}
+.repform input,.repform select{width:100%;box-sizing:border-box;border:1px solid var(--hair);border-radius:9px;
+  padding:10px 12px;font:inherit;font-size:14px;background:#fff}
 .repform .go{margin-top:14px;border:0;border-radius:10px;background:var(--text);color:#fff;
   font:inherit;font-size:14px;font-weight:800;padding:12px 24px;cursor:pointer}
 .repform .fine{font-size:11.5px;color:var(--muted);margin-top:9px;line-height:1.6}
@@ -79,16 +79,24 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
   <p class="pgsub">실거래·청약·경매 데이터를 직접 뜯어 정리한 글입니다</p>
   <div class="repbox" id="repbox">
     <div class="tx"><b>지역 시장조사 보고서</b>를 이메일로 보내드립니다
-      <small>궁금한 동네를 적어 신청하시면 정리해 보내드립니다 · 회원 무료</small></div>
+      <small>궁금한 동네와 상품(아파트·상가)을 골라 신청하세요 · 핵심만 간추린 <b>약식 보고서</b>입니다 · 회원 무료</small></div>
     <button id="repBtn" type="button">이메일로 신청하기</button>
   </div>
   <div class="repform" id="repform" hidden>
+    <label>어떤 상품이 궁금하세요?</label>
+    <select id="repProd">
+      <option value="">선택해 주세요</option>
+      <option>아파트 · 주거</option>
+      <option>상가 · 건물</option>
+      <option>토지 · 기타</option>
+    </select>
     <label>받아보고 싶은 지역 (동 단위로 적어 주세요)</label>
     <input id="repRegion" maxlength="60" placeholder="예: 마포구 상수동, 하남 감일지구">
     <label>받으실 이메일</label>
     <input id="repEmail" maxlength="100" placeholder="you@example.com">
     <button class="go" id="repGo" type="button">신청하기</button>
-    <div class="fine">신청 내용은 보고서 발송 목적으로만 사용합니다. 카카오 계정 이메일은 수신이 안 되는 경우가 있어 실제 쓰시는 주소를 적어 주세요.</div>
+    <div class="fine">보내드리는 것은 시세·거래 흐름의 핵심만 간추린 <b>약식 보고서</b>입니다(정식 용역 보고서가 아닙니다).
+      신청 내용은 보고서 발송 목적으로만 사용합니다. 카카오 계정 이메일은 수신이 안 되는 경우가 있어 실제 쓰시는 주소를 적어 주세요.</div>
   </div>
   <div class="filters"><button class="on" data-c="">전체</button><button data-c="데일리">데일리</button><button data-c="경매·공매">경매·공매</button><button data-c="청약">청약</button><button data-c="주간결산">주간결산</button><button data-c="기획">기획</button><button data-c="재개발">재개발</button></div>
   <div class="plist" id="plist"></div>
@@ -123,8 +131,10 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
       agree:'(필수) 개인정보 수집·이용 동의 · 카카오 계정 식별자·닉네임과 입력하신 이메일을 회원 식별과 보고서 발송 목적으로 수집·이용합니다.'});
   };
   document.getElementById('repGo').onclick=function(){
+    var pd=document.getElementById('repProd').value;
     var rg=document.getElementById('repRegion').value.trim();
     var em=document.getElementById('repEmail').value.trim();
+    if(!pd){alert('궁금하신 상품을 골라 주세요.');return;}
     if(!rg){alert('받아보고 싶은 지역을 적어 주세요.');return;}
     if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){alert('이메일 주소를 확인해 주세요.');return;}
     var g=this;g.disabled=true;g.textContent='접수 중…';
@@ -134,11 +144,12 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
         'Authorization':'Bearer sb_publishable_kYd1gCyqCR2Qy8Ix6KE6og_FfJUImfR',
         'Content-Type':'application/json','Prefer':'return=minimal'},
       body:JSON.stringify({kind:'보고서 신청',name:nick.slice(0,100),contact:em.slice(0,100),
-        msg:('희망 지역: '+rg).slice(0,2000)})})
+        msg:('상품: '+pd+'\n희망 지역: '+rg).slice(0,2000)})})
     .then(function(r){
       if(!r.ok)throw 0;
-      form.outerHTML='<div class="repdone">✓ 신청됐습니다. 정리되는 대로 <b>'+em.replace(/[<>&]/g,'')+'</b> 으로 보내드리겠습니다.</div>';
-      try{if(window.gtag)gtag('event','report_request',{region:rg.slice(0,40)});}catch(e){}
+      form.outerHTML='<div class="repdone">✓ 신청됐습니다. 정리되는 대로 <b>'+em.replace(/[<>&]/g,'')+'</b> 으로 보내드리겠습니다.<br>'
+        +'<span style="font-size:12.5px;color:#8a8071">핵심만 간추린 약식 보고서로 보내드리는 점 참고해 주세요.</span></div>';
+      try{if(window.gtag)gtag('event','report_request',{region:rg.slice(0,40),prod:pd});}catch(e){}
     })
     .catch(function(){g.disabled=false;g.textContent='신청하기';
       alert('접수에 실패했습니다. 잠시 후 다시 시도해 주세요.');});
