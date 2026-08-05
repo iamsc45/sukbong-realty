@@ -1053,7 +1053,7 @@ function rcDetailSec(p){
   if(d&&d.fixed){
     var far=d.far?d.far+'%':'', bcr=d.bcr?d.bcr+'%':'';
     var units=d.units?(Number(d.units).toLocaleString()+'세대'):'';
-    var zar=d.zone_area?(Math.round(Number(d.zone_area)).toLocaleString()+'㎡'):'';
+    var zar=d.zone_area?(Math.round(Number(d.zone_area)).toLocaleString()+'㎡('+PY(d.zone_area)+')'):'';
     return '<div class="rc-sec"><div class="rc-lab">정비계획 · '+srcLab(d.src)+'</div><div class="rc-grid">'
       +rw('용적률',far)+rw('건폐율',bcr)+rw('계획세대',units)+rw('용도지역',d.usezone)
       +rw('최고층수',d.floors)+rw('구역면적',zar)
