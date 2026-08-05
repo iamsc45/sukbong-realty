@@ -101,6 +101,25 @@ function stageBar(stage){
     return '<div class="st '+cls+'"><div class="dot"></div><div class="t">'+nm+'</div></div>';}).join('')+'</div>';
 }
 function num(v){return v?Number(v).toLocaleString():'';}
+/* 면적은 평을 병기한다(2026-07-26 원칙). 100㎡ 미만은 소수1자리, 이상은 정수. */
+function PY(m){m=+m;if(!m)return '';var p=m/3.305785;return (p<100?p.toFixed(1):Math.round(p).toLocaleString())+'평';}
+function m2(v){return v?num(Math.round(v))+'㎡('+PY(v)+')':'';}
+/* 최고높이 정규화(2026-08-05).
+   원본 정비몽땅 값이 m·cm·mm가 섞여 들어온다(은마 118400=mm, 신길7 7790=cm).
+   층수를 아는 경우 층당 2.6~6.0m에 들어맞는 배율만 채택하고, 어느 배율도 안 맞으면
+   값 자체를 못 믿는 것이므로 표시하지 않는다(층수를 그대로 적어 넣은 행, 0·1 같은 더미가 있다).
+   층수를 모르면 사람이 사는 건물로 말이 되는 10~300m만 통과시킨다. */
+function normH(h,floors){
+  h=parseFloat(String(h||'').replace(/,/g,''));
+  if(!isFinite(h)||h<=0)return '';
+  var m=/지상[:\s]*(\d+)/.exec(floors||''),up=m?parseInt(m[1],10):0;
+  var cands=[h,h/10,h/100,h/1000];
+  if(up>0){
+    for(var i=0;i<cands.length;i++){var r=cands[i]/up;if(r>=2.6&&r<=6.0)return cands[i];}
+    return '';
+  }
+  return (h>=10&&h<=300)?h:'';
+}
 /* 대외 출처 순화: 소스명 대신 '공공 DB', 기준일만 유지 */
 function srcLab(s){var m=(s||'').match(/\(([^)]*기준[^)]*)\)/);return '공공 DB'+(m?' ('+m[1]+')':'');}
 function qs(k){var m=new RegExp('[?&]'+k+'=([^&]*)').exec(location.search);return m?decodeURIComponent(m[1].replace(/\+/g,' ')):'';}
@@ -137,17 +156,17 @@ function render(){
       +'</div></div>';
     h+='<div class="sec"><div class="lab">규모 · 면적</div><div class="grid">'
       +kv('용도지역',d.usezone)
-      +kv('정비구역 면적',d.zone_area?num(Math.round(d.zone_area))+'㎡':'')
-      +kv('대지면적',d.site_area?num(Math.round(d.site_area))+'㎡':'')
-      +kv('연면적',d.floor_area?num(Math.round(d.floor_area))+'㎡':'')
+      +kv('정비구역 면적',m2(d.zone_area))
+      +kv('대지면적',m2(d.site_area))
+      +kv('연면적',m2(d.floor_area))
       +kv('건축면적',d.height_area)
       +kv('최고층수',d.floors)
-      +kv('최고높이',d.height?num(d.height)+'m':'')
+      +kv('최고높이',(function(v){return v?(v<100?v.toFixed(1):Math.round(v).toLocaleString())+'m':'';})(normH(d.height,d.floors)))
       +'</div></div>';
     var seh=(d.u60||d.u6085||d.u85)?('<div class="sec"><div class="lab">전용면적별 계획 세대</div><div class="grid">'
-      +kv('60㎡ 이하',d.u60?num(d.u60)+'세대':'')
-      +kv('60~85㎡',d.u6085?num(d.u6085)+'세대':'')
-      +kv('85㎡ 초과',d.u85?num(d.u85)+'세대':'')
+      +kv('전용 60㎡(18.1평) 이하',d.u60?num(d.u60)+'세대':'')
+      +kv('전용 60~85㎡(18.1~25.7평)',d.u6085?num(d.u6085)+'세대':'')
+      +kv('전용 85㎡(25.7평) 초과',d.u85?num(d.u85)+'세대':'')
       +kv('총 세대',d.units?num(d.units)+'세대':'')
       +'</div></div>'):'';
     h+=seh;
