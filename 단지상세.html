@@ -361,8 +361,13 @@ function render(pt,code){
   /* 매물 1건이면 '중위'가 아니라 그 매물 하나다 — 건수를 항상 붙이고 1건은 명시(2026-08-05) */
   function nlab(n){return n===1?'매물 1건':n+'건';}
   var mmH=(A&&A.mm)?(eok(A.mm.med)+'<small>'+(A.mm.py?comma(A.mm.py)+'만/평 · ':'')+nlab(A.mm.n)+'</small>'):'';
-  var jeR=jemed?eok(jemed):'',jeH=(A&&A.je)?(eok(A.je.med)+'<small>'+nlab(A.je.n)+'</small>'):'';
-  var woR=wo.length?(eok(womed)+' / '+womedw+'만'):'',woH=(A&&A.wo)?(eok(A.wo.bo)+' / '+A.wo.wol+'만<small>'+nlab(A.wo.n)+'</small>'):'';
+  /* 전세 호가>매매 호가는 면적대가 다른 매물끼리 비교된 것(대형 전세 vs 소형 매매, 116단지 —
+     2026-08-05 대조). 값은 사실이므로 숨기지 않고 이유를 붙인다. */
+  var _jeGtMm=(A&&A.je&&A.mm&&A.je.med>A.mm.med);
+  var jeR=jemed?eok(jemed):'',jeH=(A&&A.je)?(eok(A.je.med)+'<small>'+nlab(A.je.n)+(_jeGtMm?' · 면적대 상이':'')+'</small>'):'';
+  /* 월세 3,000만 초과는 파싱 오류 표본(월세 1.3억 등 18건)이라 표시하지 않는다(2026-08-05) */
+  var _woBad=(A&&A.wo&&A.wo.wol>3000);
+  var woR=wo.length?(eok(womed)+' / '+womedw+'만'):'',woH=(A&&A.wo&&!_woBad)?(eok(A.wo.bo)+' / '+A.wo.wol+'만<small>'+nlab(A.wo.n)+'</small>'):'';
   h+='<div class="sec"><div class="lab">실거래 vs 호가 · 매매·전세·월세</div><div class="cmp">'
     +'<div class="cmph"><span></span><span>실거래<small>체결가·중위</small></span><span>호가<small>협상 전·중위</small></span></div>'
     +cmpr('매매',mmR,mmH,arng(mm))+cmpr('전세',jeR,jeH,arng(je))+cmpr('월세',woR,woH,arng(wo))+'</div>'

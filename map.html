@@ -1215,10 +1215,11 @@ function showAptCard(pt, txs){
     function rrow(l,rv,hv,ar){return '<div style="display:grid;grid-template-columns:52px 1fr 1fr;font-size:12.5px;padding:5px 0;border-bottom:1px dotted #e7e1d4"><b style="color:#6b6355;font-weight:700">'+l+(ar||'')+'</b><span style="text-align:right;font-weight:700">'+(rv||'·')+'</span><span style="text-align:right;font-weight:700;color:#c0562e">'+(hv||'·')+'</span></div>';}
     hoSec='<div class="rc-sec"><div class="rc-lab">실거래 vs 호가 · 중위</div>'
       +'<div style="display:grid;grid-template-columns:52px 1fr 1fr;font-size:10px;color:#8a8071;font-weight:700;padding-bottom:2px"><span></span><span style="text-align:right">실거래</span><span style="text-align:right">호가</span></div>'
-      /* 호가에 건수 병기(2026-08-05). 매물 1건을 '중위'로 내보내던 문제 — 1건은 명시한다. */
+      /* 호가에 건수 병기(2026-08-05). 매물 1건을 '중위'로 내보내던 문제 — 1건은 명시한다.
+         월세 3,000만 초과는 파싱 오류 표본이라 숨김(단지상세와 동일 가드). */
       +rrow('매매',eok2(md(mmT.map(function(t){return t.p;}))),(A&&A.mm)?(eok2(A.mm.med)+'<small style="font-weight:600;color:#a39887"> '+(A.mm.n===1?'매물1건':A.mm.n+'건')+'</small>'):'',arng2(mmT))
       +rrow('전세',eok2(md(jeT.map(function(t){return t.p;}))),(A&&A.je)?(eok2(A.je.med)+'<small style="font-weight:600;color:#a39887"> '+(A.je.n===1?'매물1건':A.je.n+'건')+'</small>'):'',arng2(jeT))
-      +rrow('월세',woT.length?(eok2(md(woT.map(function(t){return t.p;})))+'/'+md(woT.map(function(t){return t.r;}))+'만'):'',(A&&A.wo)?(eok2(A.wo.bo)+'/'+A.wo.wol+'만<small style="font-weight:600;color:#a39887"> '+(A.wo.n===1?'매물1건':A.wo.n+'건')+'</small>'):'',arng2(woT))
+      +rrow('월세',woT.length?(eok2(md(woT.map(function(t){return t.p;})))+'/'+md(woT.map(function(t){return t.r;}))+'만'):'',(A&&A.wo&&A.wo.wol<=3000)?(eok2(A.wo.bo)+'/'+A.wo.wol+'만<small style="font-weight:600;color:#a39887"> '+(A.wo.n===1?'매물1건':A.wo.n+'건')+'</small>'):'',arng2(woT))
       +'<div class="rc-note" style="padding:4px 0 0">거래된 <b>전 평형 중위</b>(특정 평형 아님, 좌측 면적범위 참고) · 호가=협상 전 매물가(주황). '+(A?'체결가와 다를 수 있음.':'이 단지 현재 호가 매물 없음.')+'</div></div>';
   }
   var favId=code+'|'+pt.name;
