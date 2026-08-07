@@ -44,6 +44,25 @@ a{color:inherit}
 .nav a.lnk{font-size:13.5px;color:var(--g2);text-decoration:none;transition:color 150ms ease;
   white-space:nowrap;flex:0 0 auto}
 .nav .brand,.nav .cta,.nav .inq-lnk{flex:0 0 auto;white-space:nowrap}
+/* ── 드롭다운 묶음(2026-08-07): 데이터·콘텐츠. 마우스 올리면 펼침, 모바일은 탭 ── */
+.drop{position:relative;flex:0 0 auto}
+.drop .darr{font-size:10px;color:var(--g3)}
+.dmenu{position:absolute;top:100%;left:-14px;padding-top:10px;display:none;z-index:200}
+.drop:hover .dmenu,.drop:focus-within .dmenu,.drop.open .dmenu{display:block}
+.dmenu a{display:block;background:#fff;border:1px solid #e3e0d8;border-top:none;
+  padding:11px 20px;font-size:13.5px;color:var(--g1);text-decoration:none;white-space:nowrap;min-width:130px}
+.dmenu a:first-child{border-top:1px solid #e3e0d8;border-radius:12px 12px 0 0}
+.dmenu a:last-child{border-radius:0 0 12px 12px;box-shadow:0 10px 24px rgba(0,0,0,.10)}
+.dmenu a:hover{background:#f4f2ec}
+@media(max-width:640px){
+  /* 좁은 화면에선 드롭다운 대신 항목을 그대로 편다(가로 스크롤 nav라 문제 없음) */
+  .drop{display:contents}
+  .drop>.lnk{display:none}
+  .dmenu{display:contents}
+  .dmenu a{display:inline-block;background:transparent;border:none;box-shadow:none;min-width:0;
+    padding:0;font-size:13.5px;color:var(--g2);white-space:nowrap;flex:0 0 auto}
+  .dmenu a:hover{background:transparent}
+}
 .nav a.lnk:hover,.nav a.lnk.on{color:var(--blk)}
 .nav .cta{margin-left:auto;background:var(--blue);color:#fff;font-size:14.5px;font-weight:700;
   padding:12px 26px;border-radius:100px;text-decoration:none;display:inline-flex;align-items:center;gap:7px;
@@ -448,19 +467,32 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
   }catch(e){}
 })();
 </script>
+<!-- 홈 nav 분류(2026-08-07 석봉님 확정): 12개 나열로 '지도 열기'가 잘려서
+     데이터·콘텐츠 두 묶음(드롭다운)으로 최상위 6개로 줄였다. 다른 페이지는 줄바꿈으로
+     문제가 없어 일단 홈만 — 반응 보고 확대 여부 결정. -->
 <nav class="nav"><div class="nav-in">
   <a class="brand" href="index.html">석봉 부동산 정보방</a>
   <a class="lnk on" href="index.html">홈</a>
   <a class="lnk" href="map.html">실거래지도</a>
-  <a class="lnk" href="apply.html">청약</a>
-  <a class="lnk" href="auction.html">경매·공매</a>
-  <a class="lnk" href="%EC%A7%80%ED%91%9C.html">금리·지표</a>
-  <a class="lnk" href="lh_%EC%A7%84%EB%8B%A8.html">LH매입</a>
-  <a class="lnk" href="%EC%9D%B4%EC%9A%A9%EC%95%88%EB%82%B4.html">이용안내</a>
-  <a class="lnk" href="%EA%B8%80.html">리포트</a>
+  <div class="drop">
+    <a class="lnk" href="%EC%A7%80%ED%91%9C.html">데이터 <span class="darr">▾</span></a>
+    <div class="dmenu">
+      <a href="apply.html">청약</a>
+      <a href="auction.html">경매·공매</a>
+      <a href="%EC%A7%80%ED%91%9C.html">금리·지표</a>
+      <a href="lh_%EC%A7%84%EB%8B%A8.html">LH매입</a>
+    </div>
+  </div>
+  <div class="drop">
+    <a class="lnk" href="%EA%B8%80.html">콘텐츠 <span class="darr">▾</span></a>
+    <div class="dmenu">
+      <a href="%EA%B8%80.html">리포트</a>
+      <a href="https://blog.naver.com/seokbongnews" target="_blank" rel="noopener">블로그</a>
+      <a href="channels.html">채널</a>
+      <a href="%EC%9D%B4%EC%9A%A9%EC%95%88%EB%82%B4.html">이용안내</a>
+    </div>
+  </div>
   <a class="lnk" href="favorites.html">★ 관심단지</a>
-  <a class="lnk" href="https://blog.naver.com/seokbongnews" target="_blank" rel="noopener">블로그</a>
-  <a class="lnk" href="channels.html">채널</a>
   <a class="lnk" href="%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html">대출 문의</a>
   <a class="inq-lnk" href="#" id="navInq"><i class="ti ti-speakerphone" aria-hidden="true"></i>광고·제휴 문의</a>
   <a class="cta" href="map.html"><i class="ti ti-map-2" aria-hidden="true"></i>지도 열기</a>
