@@ -189,9 +189,11 @@ details.grp:not([open]) summary{border-bottom:none}
     var html='';
     D.groups.forEach(function(g){
       if(!g.keys.length)return;
+      /* 주택보급률은 연간 통계라 추이·전기 라벨이 다르다(월로 적으면 오해) */
+      var yearly=(g.id==='supply');
       html+='<details class="grp" open><summary><span class="t">'+esc(g.label)+'</span>'
         +'<span class="c">'+g.keys.length+'개</span><span class="arr">▾</span></summary><div class="tbl">'
-        +'<div class="trow head"><span>지표</span><span style="text-align:right">현재</span><span style="text-align:right">전월</span><span style="text-align:right">변동</span><span style="text-align:center">최근 1년</span><span style="text-align:right">기준월</span></div>';
+        +'<div class="trow head"><span>지표</span><span style="text-align:right">현재</span><span style="text-align:right">'+(yearly?'전년':'전월')+'</span><span style="text-align:right">변동</span><span style="text-align:center">'+(yearly?'연도별 추이':'최근 1년')+'</span><span style="text-align:right">'+(yearly?'기준':'기준월')+'</span></div>';
       g.keys.forEach(function(k){
         var it=D.items[k]; if(!it)return;
         var hi=(k==='sb')?' hi':'';   /* 저축은행 담보 — 격차가 논점이라 강조 */
