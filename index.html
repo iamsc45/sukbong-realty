@@ -42,9 +42,10 @@ a{color:inherit}
 .nav-in{max-width:1200px;margin:0 auto;padding:16px 20px;display:flex;align-items:center;
   gap:clamp(13px,1.5vw,24px);scrollbar-width:none}
 .nav-in::-webkit-scrollbar{display:none}
-.brand{font-weight:800;font-size:15px;letter-spacing:.08em;text-decoration:none}
+/* 드롭다운 도입으로 항목이 6개로 줄어 여백이 생김 → 폰트를 키워 채운다(2026-08-07 석봉님 지시) */
+.brand{font-weight:800;font-size:19px;letter-spacing:.05em;text-decoration:none}
 /* 항목이 11개라 nowrap이 없으면 '실거래지/도'처럼 글자가 쪼개진다(2026-08-05) */
-.nav a.lnk{font-size:13.5px;color:var(--g2);text-decoration:none;transition:color 150ms ease;
+.nav a.lnk{font-size:16px;font-weight:600;color:var(--g2);text-decoration:none;transition:color 150ms ease;
   white-space:nowrap;flex:0 0 auto}
 .nav .brand,.nav .cta,.nav .inq-lnk{flex:0 0 auto;white-space:nowrap}
 /* ── 드롭다운 묶음(2026-08-07): 데이터·콘텐츠. 마우스 올리면 펼침, 모바일은 탭 ── */
@@ -53,7 +54,7 @@ a{color:inherit}
 .dmenu{position:absolute;top:100%;left:-14px;padding-top:10px;display:none;z-index:200}
 .drop:hover .dmenu,.drop:focus-within .dmenu,.drop.open .dmenu{display:block}
 .dmenu a{display:block;background:#fff;border:1px solid #e3e0d8;border-top:none;
-  padding:11px 20px;font-size:13.5px;color:var(--g1);text-decoration:none;white-space:nowrap;min-width:130px}
+  padding:13px 22px;font-size:15.5px;font-weight:600;color:var(--g1);text-decoration:none;white-space:nowrap;min-width:150px}
 .dmenu a:first-child{border-top:1px solid #e3e0d8;border-radius:12px 12px 0 0}
 .dmenu a:last-child{border-radius:0 0 12px 12px;box-shadow:0 10px 24px rgba(0,0,0,.10)}
 .dmenu a:hover{background:#f4f2ec}
@@ -67,12 +68,12 @@ a{color:inherit}
   .dmenu a:hover{background:transparent}
 }
 .nav a.lnk:hover,.nav a.lnk.on{color:var(--blk)}
-.nav .cta{margin-left:auto;background:var(--blue);color:#fff;font-size:14.5px;font-weight:700;
-  padding:12px 26px;border-radius:100px;text-decoration:none;display:inline-flex;align-items:center;gap:7px;
+.nav .cta{margin-left:auto;background:var(--blue);color:#fff;font-size:16px;font-weight:700;
+  padding:13px 28px;border-radius:100px;text-decoration:none;display:inline-flex;align-items:center;gap:7px;
   box-shadow:0 6px 18px rgba(37,84,224,.28);transition:opacity 150ms ease,transform 150ms ease}
-.nav .cta i{font-size:18px}
+.nav .cta i{font-size:19px}
 .nav .cta:hover{opacity:.9;transform:translateY(-1px)}
-.nav .inq-lnk{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:800;
+.nav .inq-lnk{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:14.5px;font-weight:800;
   color:var(--blk);border:1.5px solid var(--blk);border-radius:100px;padding:9px 16px;text-decoration:none;
   white-space:nowrap;transition:background 150ms ease,color 150ms ease}
 .nav .inq-lnk i{font-size:16px}
@@ -215,8 +216,10 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
 @media(max-width:720px){
   .nav-in{gap:16px;padding:12px 14px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
   .nav-in::-webkit-scrollbar{display:none}
-  .brand{white-space:nowrap;flex:0 0 auto}
-  .nav a.lnk{white-space:nowrap;flex:0 0 auto}
+  /* 모바일은 12개 평탄화 스크롤이라 데스크톱 확대 폰트(16px)를 되돌린다(2026-08-07) */
+  .brand{white-space:nowrap;flex:0 0 auto;font-size:16px}
+  .nav a.lnk{white-space:nowrap;flex:0 0 auto;font-size:14px}
+  .dmenu a{font-size:14px}
   .nav .cta{display:none}
   /* 포털형: 히어로·대시보드 기본 숨김 (데스크톱 검색창 포함) */
   .hero{display:none}
