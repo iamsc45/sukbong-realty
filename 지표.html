@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Y7P41Z09PV"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-Y7P41Z09PV');</script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>금리·지표 · 석봉 부동산 정보방</title>
+<meta name="description" content="기준금리·COFIX·주담대·저축은행 담보금리부터 미분양·심리지수까지, 부동산에 필요한 금리와 시장 지표를 한 화면에 정리했습니다. 매월 갱신.">
+<link rel="canonical" href="https://xn--2q1br1nnrasc92a76myvau64b.com/%EC%A7%80%ED%91%9C.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="금리·지표 · 석봉 부동산 정보방">
+<meta property="og:description" content="기준금리·COFIX·주담대·2금융 담보금리·미분양·심리지수를 한 화면에.">
+<meta property="og:url" content="https://xn--2q1br1nnrasc92a76myvau64b.com/%EC%A7%80%ED%91%9C.html">
+<meta property="og:image" content="https://xn--2q1br1nnrasc92a76myvau64b.com/assets/og_default.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:site_name" content="석봉 부동산 정보방">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+/* ── 금리·지표 (2026-08-07 신설) ──────────────────────────────
+   설계 원칙(벤치마킹 결론):
+   · 데스크톱 = 표. 띄워 놓고 한눈에 훑는 화면. 지표 20종 + 추이 + 전월 대비.
+   · 모바일 = 같은 마크업을 CSS로 리스트 행으로 재배열. 가로 스크롤 0.
+   · 지표마다 기준월 명시(금리·심리=약 2개월 지연, 미분양=2개월 지연, 실거래=어제).
+   · 값은 서버가 아니라 data/indicators.js(빌더 산출)에서 읽는다. */
+.wrap{max-width:1080px;margin:0 auto;padding:0 22px 80px}
+h1.pg{font-size:clamp(28px,5vw,46px);letter-spacing:-0.04em;font-weight:800;margin:42px 0 8px}
+.pgsub{color:var(--muted);font-size:13.5px;line-height:1.75;margin:0 0 6px;word-break:keep-all}
+.asof{display:inline-block;background:var(--soft);border:1px solid var(--hair);border-radius:100px;
+  font-size:12px;font-weight:700;color:var(--text2);padding:6px 15px;margin:8px 0 20px}
+/* 오늘 요약 */
+.brief{border:1px solid var(--hair);border-left:3px solid var(--gold,#a8792c);border-radius:14px;
+  background:var(--soft);padding:15px 18px;margin:0 0 30px;font-size:14px;line-height:1.8;word-break:keep-all}
+.brief b{color:var(--text)}
+/* 그룹(아코디언) */
+details.grp{margin:0 0 26px;border:1px solid var(--hair);border-radius:14px;background:#fff;overflow:hidden}
+details.grp summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:10px;
+  padding:14px 18px;border-bottom:1px solid var(--hair);background:var(--soft)}
+details.grp summary::-webkit-details-marker{display:none}
+details.grp summary .t{font-size:15.5px;font-weight:800;letter-spacing:-0.02em}
+details.grp summary .c{font-size:11.5px;color:var(--muted)}
+details.grp summary .arr{margin-left:auto;font-size:12px;color:var(--muted);transition:transform 150ms}
+details.grp[open] summary .arr{transform:rotate(180deg)}
+details.grp:not([open]) summary{border-bottom:none}
+/* 표(데스크톱) — 모바일에선 같은 행이 리스트로 재배열된다 */
+.tbl{width:100%}
+.trow{display:grid;grid-template-columns:1.5fr .8fr .8fr .9fr 110px .9fr;align-items:center;
+  padding:10px 18px;border-bottom:1px solid var(--hair);font-size:14px}
+.trow:last-child{border-bottom:none}
+.trow.head{font-size:11px;letter-spacing:.07em;color:var(--muted);font-weight:700;padding:9px 18px;
+  border-bottom:1.5px solid var(--text)}
+.trow .nm{font-weight:700;color:var(--text)}
+.trow .nm small{display:block;font-size:11px;color:var(--muted);font-weight:400;margin-top:1px}
+.trow .cur{font-weight:800;font-variant-numeric:tabular-nums;text-align:right;font-size:15px}
+.trow .prv{color:var(--muted);font-variant-numeric:tabular-nums;text-align:right;font-size:13px}
+.trow .chg{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;font-size:13px}
+.chg.up{color:#c0562e}.chg.dn{color:#2b6cb0}.chg.fl{color:var(--muted);font-weight:500}
+.trow .spk{display:flex;justify-content:center}
+.trow .ym{text-align:right;font-size:11.5px;color:var(--muted)}
+.hi .cur{color:#c0562e}
+/* 데이터 없는 열 숨김용 */
+.spk svg{display:block}
+/* 실거래·경매 요약(간단 카드 2열) */
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:0 0 26px}
+.duo .box{border:1px solid var(--hair);border-radius:14px;background:#fff;padding:16px 18px}
+.duo .box h3{font-size:14.5px;font-weight:800;margin:0 0 4px}
+.duo .box .bd{font-size:13.5px;color:var(--text2);line-height:1.9}
+.duo .box .bd b{color:var(--text);font-variant-numeric:tabular-nums}
+.duo .box .go{display:inline-block;margin-top:10px;font-size:12.5px;font-weight:700;color:var(--acc-blue,#2554E0);text-decoration:none}
+.duo .box .src{font-size:11px;color:var(--muted);margin-top:8px}
+/* CTA */
+.ctas{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:6px 0 0}
+.ctas a{display:block;border:1px solid var(--hair);border-radius:13px;background:var(--soft);
+  padding:15px 17px;text-decoration:none}
+.ctas a b{display:block;font-size:14px;color:var(--text)}
+.ctas a span{display:block;font-size:12px;color:var(--muted);margin-top:3px}
+.ctas a:hover{border-color:var(--text)}
+.note{font-size:12px;color:var(--muted);line-height:1.75;margin:26px 0 0;word-break:keep-all}
+/* ── 모바일: 표 → 리스트 행 (토스식 한 줄 패턴) ── */
+@media(max-width:700px){
+  .trow{grid-template-columns:1fr auto;grid-template-areas:"nm cur" "nm chg";row-gap:1px;padding:11px 15px}
+  .trow.head{display:none}
+  .trow .nm{grid-area:nm}
+  .trow .cur{grid-area:cur;font-size:16px}
+  .trow .chg{grid-area:chg;font-size:12px}
+  .trow .prv,.trow .spk{display:none}
+  .trow .ym{display:none}
+  .trow .nm small{white-space:normal}
+  .trow .nm .mym{display:inline;font-size:10.5px;color:var(--muted2);font-weight:400;margin-left:5px}
+  .duo{grid-template-columns:1fr}
+  .ctas{grid-template-columns:1fr}
+}
+@media(min-width:701px){.trow .nm .mym{display:none}}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html">석봉 부동산 정보방</a>
+  <nav>
+    <a href="index.html">홈</a>
+    <a href="map.html">실거래지도</a>
+    <a href="apply.html">청약</a>
+    <a href="auction.html">경매·공매</a>
+    <a href="%EC%A7%80%ED%91%9C.html" class="on">금리·지표</a>
+    <a href="lh_%EC%A7%84%EB%8B%A8.html">LH매입</a>
+    <a href="%EC%9D%B4%EC%9A%A9%EC%95%88%EB%82%B4.html">이용안내</a>
+    <a href="%EA%B8%80.html">리포트</a>
+    <a href="favorites.html">★ 관심단지</a>
+    <a href="https://blog.naver.com/seokbongnews" target="_blank" rel="noopener">블로그</a>
+    <a href="channels.html">채널</a>
+    <a href="%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html">대출 문의</a>
+  </nav>
+</header>
+<main class="wrap">
+  <h1 class="pg">금리·지표</h1>
+  <p class="pgsub">부동산을 볼 때 같이 봐야 하는 금리와 시장 지표를 한 화면에 모았습니다.
+    금리·심리·미분양은 월 단위 통계라 한두 달 늦게 확정됩니다. 지표마다 기준월을 적어 두었습니다.</p>
+  <div class="asof" id="asof">불러오는 중…</div>
+
+  <div class="brief" id="brief" hidden></div>
+
+  <div id="groups"></div>
+
+  <div class="duo">
+    <div class="box" id="rtBox">
+      <h3>실거래 요약</h3>
+      <div class="bd" id="rtBody">불러오는 중…</div>
+      <a class="go" href="map.html">실거래지도에서 보기 →</a>
+      <div class="src" id="rtSrc"></div>
+    </div>
+    <div class="box" id="auBox">
+      <h3>경매·공매</h3>
+      <div class="bd" id="auBody">불러오는 중…</div>
+      <a class="go" href="auction.html">경매·공매 통계 보기 →</a>
+      <div class="src" id="auSrc"></div>
+    </div>
+  </div>
+
+  <div class="ctas">
+    <a href="%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html"><b>담보대출 상담 문의</b><span>1금융부터 2금융까지, 조건 검토는 무료입니다</span></a>
+    <a href="%EA%B8%80.html"><b>지역 시장조사 보고서 신청</b><span>가입하시면 2회 무료 · 이메일로 보내드립니다</span></a>
+  </div>
+
+  <p class="note">금리 출처: 한국은행 경제통계(ECOS)·은행연합회 공시. 미분양: 국토교통부(KOSIS).
+    실거래: 국토교통부 실거래가 공개시스템(해제 건 제외). 공표 주기상 금리·미분양은 약 1~2개월 지연이 정상입니다.
+    본 화면은 정보 제공 목적이며 투자 권유가 아닙니다.</p>
+</main>
+<footer class="site-footer">
+  <span>📈 <a href="https://telegram.me/seokbongnews">텔레그램 채널</a></span> ·
+  <span>💬 <a href="https://open.kakao.com/o/gt8CTUCi">카카오 오픈채팅</a> · <a href="https://blog.naver.com/seokbongnews">네이버 블로그</a></span>
+  <div class="fine">편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 방문 통계 수집을 위해 Google Analytics(쿠키)를 사용합니다</div>
+</footer>
+<script src="data/indicators.js" onerror="this.dataset.failed=1"></script>
+<script src="data/summary.js" onerror="this.dataset.failed=1"></script>
+<script src="data/stats.js" onerror="this.dataset.failed=1"></script>
+<script src="data/auction.js" onerror="this.dataset.failed=1"></script>
+<script>
+(function(){
+  var D=window.SB&&SB.indicators;
+  var G=document.getElementById('groups');
+  function esc(s){return String(s==null?'':s).replace(/[<>&]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c];});}
+  function fmt(v,unit){
+    if(unit==='호'||Math.abs(v)>=1000)return Math.round(v).toLocaleString();
+    return (Math.round(v*100)/100).toLocaleString();
+  }
+  /* 미니 추세선 — 13개월 값을 폭 96px 선 하나로 */
+  function spark(h){
+    if(!h||h.length<3)return '';
+    var W=96,H=26,P=2;
+    var mn=Math.min.apply(null,h),mx=Math.max.apply(null,h),sp=(mx-mn)||1;
+    var pts=h.map(function(v,i){
+      var x=P+i*(W-2*P)/(h.length-1), y=P+(1-(v-mn)/sp)*(H-2*P);
+      return x.toFixed(1)+','+y.toFixed(1);
+    }).join(' ');
+    var up=h[h.length-1]>=h[0];
+    return '<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'">'
+      +'<polyline points="'+pts+'" fill="none" stroke="'+(up?'#c0562e':'#2b6cb0')+'" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/></svg>';
+  }
+  function chg(it){
+    if(it.prev==null)return '<span class="chg fl">—</span>';
+    var d=it.v-it.prev;
+    if(Math.abs(d)<0.0001)return '<span class="chg fl">동결</span>';
+    var s=(d>0?'▲':'▼')+(it.unit==='호'?Math.abs(Math.round(d)).toLocaleString():(Math.round(Math.abs(d)*1000)/1000));
+    return '<span class="chg '+(d>0?'up':'dn')+'">'+s+'</span>';
+  }
+  if(D&&D.groups){
+    document.getElementById('asof').textContent='지표 갱신 '+D.updated+' · 값마다 기준월 표기';
+    var html='';
+    D.groups.forEach(function(g){
+      if(!g.keys.length)return;
+      html+='<details class="grp" open><summary><span class="t">'+esc(g.label)+'</span>'
+        +'<span class="c">'+g.keys.length+'개</span><span class="arr">▾</span></summary><div class="tbl">'
+        +'<div class="trow head"><span>지표</span><span style="text-align:right">현재</span><span style="text-align:right">전월</span><span style="text-align:right">변동</span><span style="text-align:center">최근 1년</span><span style="text-align:right">기준월</span></div>';
+      g.keys.forEach(function(k){
+        var it=D.items[k]; if(!it)return;
+        var hi=(k==='sb')?' hi':'';   /* 저축은행 담보 — 격차가 논점이라 강조 */
+        html+='<div class="trow'+hi+'">'
+          +'<span class="nm">'+esc(it.label)+'<span class="mym">'+esc(it.ym)+'</span><small>'+esc(it.note)+'</small></span>'
+          +'<span class="cur">'+fmt(it.v,it.unit)+(it.unit?'<small style="font-size:11px;color:var(--muted);font-weight:600">'+it.unit+'</small>':'')+'</span>'
+          +'<span class="prv">'+(it.prev!=null?fmt(it.prev,it.unit):'—')+'</span>'
+          +chg(it)
+          +'<span class="spk">'+spark(it.hist)+'</span>'
+          +'<span class="ym">'+esc(it.ym)+'</span>'
+          +'</div>';
+      });
+      html+='</div></details>';
+    });
+    G.innerHTML=html;
+    /* 오늘 요약 — 데이터에서 자동으로 만든다(손으로 쓰면 낡는다) */
+    try{
+      var it=D.items, parts=[];
+      if(it.base)parts.push('기준금리 <b>'+it.base.v+'%</b>'+(it.base.prev===it.base.v?' 동결':''));
+      if(it.mg&&it.sb)parts.push('담보금리 상호금융 <b>'+it.mg.v+'%</b> vs 저축은행 <b>'+it.sb.v+'%</b> (격차 '+(Math.round((it.sb.v-it.mg.v)*100)/100)+'%p)');
+      if(it.unsold)parts.push('전국 미분양 <b>'+Math.round(it.unsold.v).toLocaleString()+'호</b>'+(it.unsold.prev?(it.unsold.v>it.unsold.prev?' ▲':' ▼'):''));
+      if(it.csi)parts.push('주택가격 전망 <b>'+it.csi.v+'</b>'+(it.csi.v>100?' (상승 전망 우세)':''));
+      if(parts.length){var b=document.getElementById('brief');b.innerHTML=parts.join(' · ');b.hidden=false;}
+    }catch(e){}
+  }else{
+    G.innerHTML='<p style="color:var(--muted)">지표를 불러오지 못했습니다. 잠시 후 다시 열어 주세요.</p>';
+  }
+
+  /* 실거래 요약 — 홈과 같은 summary.js(수집 규모) + stats.js(중위가·전세가율·평당가) 재사용.
+     실거래는 매일 갱신이라 기준일이 금리(월 단위)와 다르다 — 기준일을 따로 명시한다. */
+  try{
+    var S=window.SB&&SB.summary, T=window.SB&&SB.stats;
+    if(S&&S.regions&&T){
+      var tot=0;S.regions.forEach(function(r){tot+=r.n["매매"]+r.n["전세"]+r.n["월세"];});
+      var med=(T.sido||[]).filter(function(x){return x.name==='서울';})[0];
+      var lines=['수집 거래 <b>'+tot.toLocaleString()+'건</b> (매매+전월세)'];
+      if(med&&med.med)lines.push('서울 아파트 매매 중위 <b>'+(Math.round(med.med/1000)/10)+'억</b>');
+      if(T.jr&&T.jr.sale)lines.push('서울 전세가율 <b>'+Math.round(T.jr.je/T.jr.sale*100)+'%</b> (84㎡)');
+      if(T.pdang&&T.pdang.seoul)lines.push('서울 평당가 <b>'+T.pdang.seoul.toLocaleString()+'만/평</b> (전용)');
+      document.getElementById('rtBody').innerHTML=lines.join('<br>');
+      var P=T.period30||T.period||{};
+      document.getElementById('rtSrc').textContent='기준일 '+(S.updated||'-')+' · 중위가 등은 계약일 '+(P.f||'')+' ~ '+(P.t||'')+' · 해제 제외';
+    }else{document.getElementById('rtBody').textContent='자료를 불러오지 못했습니다.';}
+  }catch(e){document.getElementById('rtBody').textContent='자료를 불러오지 못했습니다.';}
+
+  /* 경매·공매 — auction.js 재사용 */
+  try{
+    var A=window.SB&&SB.auction;
+    if(A&&A.auction&&A.auction.rows){
+      var apt=A.auction.rows.filter(function(r){return r.p==='아파트';})[0];
+      var lines=[];
+      if(apt)lines.push('법원경매 아파트 낙찰률 <b>'+apt.rate+'%</b> · 낙찰가율 <b>'+apt.ratio+'%</b>');
+      var on=A.onbid&&A.onbid.rows&&A.onbid.rows.filter(function(r){return /아파트|주거/.test(r.p);})[0];
+      if(on&&on.rate!=null)lines.push('공매 '+on.p+' 낙찰률 <b>'+on.rate+'%</b>');
+      if(!lines.length)lines.push('지표 준비 중입니다.');
+      document.getElementById('auBody').innerHTML=lines.join('<br>');
+      document.getElementById('auSrc').textContent='기준일 '+(A.updated||'-')+' · 낙찰가율=감정가 대비';
+    }else{document.getElementById('auBody').textContent='자료를 불러오지 못했습니다.';}
+  }catch(e){document.getElementById('auBody').textContent='자료를 불러오지 못했습니다.';}
+})();
+</script>
+</body></html>
