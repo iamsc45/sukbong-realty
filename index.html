@@ -36,8 +36,11 @@ a{color:inherit}
 /* ── 내비 ── */
 .nav{position:sticky;top:0;z-index:100;background:rgba(242,242,239,.88);backdrop-filter:blur(12px);
   border-bottom:1px solid var(--hair)}
+/* ⚠️overflow-x:auto를 데스크톱에 두면 절대배치인 드롭다운이 잘려서 몇 px만 보인다
+   (2026-08-07 석봉님 제보). 데스크톱은 6항목이라 스크롤이 필요 없어 걷어냈고,
+   모바일(≤640px) 블록에는 원래대로 overflow-x:auto가 남아 있다. */
 .nav-in{max-width:1200px;margin:0 auto;padding:16px 20px;display:flex;align-items:center;
-  gap:clamp(13px,1.5vw,24px);overflow-x:auto;scrollbar-width:none}
+  gap:clamp(13px,1.5vw,24px);scrollbar-width:none}
 .nav-in::-webkit-scrollbar{display:none}
 .brand{font-weight:800;font-size:15px;letter-spacing:.08em;text-decoration:none}
 /* 항목이 11개라 nowrap이 없으면 '실거래지/도'처럼 글자가 쪼개진다(2026-08-05) */
