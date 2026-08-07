@@ -79,17 +79,38 @@ h1 .thin{color:var(--g3)}
 .btn.o{border:1px solid var(--blk)}.btn.o:hover{background:var(--blk);color:#fff}
 /* ── 블랙 블록 (KPI + 티커) ── */
 .block{background:var(--blk);color:#fff;border-radius:26px;margin:44px 0 0;overflow:hidden}
-.block-in{padding:46px 48px 30px}
-@media(max-width:640px){.block-in{padding:32px 24px 20px}}
+/* 금리 줄을 아래에 붙이면서 위 칸을 눌러 전체 높이를 유지한다(2026-08-06) */
+.block-in{padding:30px 48px 18px}
+@media(max-width:640px){.block-in{padding:22px 24px 14px}}
 .blabel{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#8A8A85}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:0;margin-top:22px}
-.kpi{padding:6px 26px 22px 0;border-left:1px solid #2E2E2B;padding-left:26px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:0;margin-top:14px}
+.kpi{padding:4px 22px 10px 0;border-left:1px solid #2E2E2B;padding-left:22px}
 .kpi:first-child{border-left:none;padding-left:0}
-.kpi .v{font-size:clamp(28px,3.2vw,42px);font-weight:800;letter-spacing:-0.03em;
+.kpi .v{font-size:clamp(23px,2.5vw,32px);font-weight:800;letter-spacing:-0.03em;
   font-variant-numeric:tabular-nums;line-height:1.1}
 .kpi:nth-child(1) .v{color:#6C9EFF}.kpi:nth-child(2) .v{color:#3BD9B7}.kpi:nth-child(3) .v{color:#FFBC5C}
 .kpi .v small{font-size:15px;font-weight:500;color:#8A8A85;margin-left:2px}
 .kpi .l{font-size:12px;color:#8A8A85;margin-top:4px}
+/* ── 금리 줄 (2026-08-06) ──
+   담보대출 주선이 본업이라 실거래 요약 아래에 금리를 나란히 둔다.
+   ⚠️금리는 월 단위 통계라 실거래보다 한두 달 늦다. 값마다 기준월을 반드시 적는다. */
+.rates{border-top:1px solid #2E2E2B;padding:14px 48px 16px}
+@media(max-width:640px){.rates{padding:12px 24px 14px}}
+.rates .rlab{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#8A8A85;margin-bottom:9px}
+.rgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:2px 0}
+.rc{padding:2px 14px;border-left:1px solid #2E2E2B}
+.rc:first-child{border-left:none;padding-left:0}
+.rc .rv{font-size:17px;font-weight:800;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;line-height:1.2;color:#fff}
+.rc .rv small{font-size:11px;font-weight:600;color:#8A8A85;margin-left:1px}
+.rc .rn{font-size:11px;color:#B9B9B4;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rc .rd{font-size:9.5px;color:#6E6E6A;margin-top:1px}
+.rc.hi .rv{color:#FF8A6B}          /* 2금융 고금리 강조 */
+.rc.pt .rv{color:#3BD9B7}          /* 심리지표 */
+@media(max-width:640px){
+  .rgrid{grid-template-columns:repeat(3,1fr);gap:10px 0}
+  .rc{border-left:none;padding:0 8px}
+  .rc .rv{font-size:15px}.rc .rn{font-size:10px}.rc .rd{font-size:9px}
+}
 .ticker{border-top:1px solid #2E2E2B}
 .ticker-in{overflow:hidden;white-space:nowrap;padding:13px 0;font-size:12.5px;color:#B9B9B4}
 .ticker-track{display:inline-block;animation:mv 70s linear infinite}
@@ -470,6 +491,10 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
       <div class="blabel" id="blabel">Live Data</div>
       <div class="kpis" id="kpis"></div>
     </div>
+    <div class="rates" id="ratesRow" hidden>
+      <div class="rlab">금리·시장 지표</div>
+      <div class="rgrid" id="rgrid"></div>
+    </div>
     <div class="ticker"><div class="ticker-in"><div class="ticker-track" id="ticker"></div></div></div>
   </div>
 </header>
@@ -665,6 +690,8 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
 <script src="data/stats.js"></script>
 <script src="data/apply.js"></script>
 <script src="data/hotchip.js" onerror="this.dataset.failed=1"></script>
+<!-- 금리·시장 지표. 없거나 실패해도 홈은 그대로 뜬다(줄만 숨김). -->
+<script src="data/rates.js" onerror="this.dataset.failed=1"></script>
 <script>
 (function(){
 if(!window.SB||!SB.summary||!SB.stats)return;
@@ -691,6 +718,22 @@ kpiCell('<span class="cnt" data-v="'+davg+'">0</span><small> 건/일</small>','�
 kpiCell(seoulMed?eok(seoulMed):"—",'서울 아파트 매매 중위가 · '+PER);
 if(T.jr&&T.jr.sale)kpiCell(Math.round(T.jr.je/T.jr.sale*100)+'<small> %</small>','서울 아파트 전세가율 · 84㎡');
 if(T.pdang&&T.pdang.seoul)kpiCell(T.pdang.seoul.toLocaleString()+'<small> 만/평</small>','서울 아파트 평당가 · 전용');
+/* 금리·시장 지표 줄 (2026-08-06)
+   ⚠️금리는 월 단위 통계다. 실거래(어제치)와 달리 한두 달 늦으므로 기준월을 반드시 같이 적는다.
+   2금융 담보금리는 1금융과 대비되도록 색을 달리해 격차가 눈에 들어오게 한다. */
+(function(){
+  var R=window.SB&&SB.rates, row=document.getElementById("ratesRow"), g=document.getElementById("rgrid");
+  if(!R||!R.order||!R.order.length||!g)return;
+  var HI={mg:1,sb:1}, PT={csi:1};
+  g.innerHTML=R.order.map(function(k){
+    var it=R.items[k]; if(!it)return "";
+    var cls="rc"+(HI[k]?" hi":"")+(PT[k]?" pt":"");
+    var v=(Math.round(it.v*100)/100).toLocaleString();
+    return '<div class="'+cls+'"><div class="rv">'+v+(it.unit?'<small>'+it.unit+'</small>':'')+'</div>'
+      +'<div class="rn">'+it.label+'</div><div class="rd">'+it.ym+' 기준</div></div>';
+  }).join("");
+  row.hidden=false;
+})();
 function countUp(el){var v=+el.dataset.v,t0=null;
   function step(ts){if(!t0)t0=ts;var p=Math.min((ts-t0)/1100,1);p=1-Math.pow(1-p,3);
     el.textContent=Math.round(v*p).toLocaleString();if(p<1)requestAnimationFrame(step);}
