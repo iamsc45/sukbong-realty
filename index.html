@@ -751,6 +751,25 @@ kpiCell('<span class="cnt" data-v="'+davg+'">0</span><small> 건/일</small>','�
 kpiCell(seoulMed?eok(seoulMed):"—",'서울 아파트 매매 중위가 · '+PER);
 if(T.jr&&T.jr.sale)kpiCell(Math.round(T.jr.je/T.jr.sale*100)+'<small> %</small>','서울 아파트 전세가율 · 84㎡');
 if(T.pdang&&T.pdang.seoul)kpiCell(T.pdang.seoul.toLocaleString()+'<small> 만/평</small>','서울 아파트 평당가 · 전용');
+/* nav 드롭다운 백업(2026-08-07): 기본은 CSS :hover지만, 터치 데스크톱 등
+   hover가 없는 환경을 위해 첫 클릭=펼침, 두 번째 클릭=이동으로 동작시킨다. */
+(function(){
+  document.querySelectorAll('.nav .drop').forEach(function(d){
+    var head=d.querySelector(':scope>a.lnk');
+    head.addEventListener('click',function(e){
+      if(window.matchMedia('(max-width:640px)').matches)return; /* 모바일은 평탄화라 그대로 이동 */
+      if(!d.classList.contains('open')){
+        e.preventDefault();
+        document.querySelectorAll('.nav .drop.open').forEach(function(x){x.classList.remove('open');});
+        d.classList.add('open');
+      }
+    });
+  });
+  document.addEventListener('click',function(e){
+    if(!e.target.closest('.nav .drop'))
+      document.querySelectorAll('.nav .drop.open').forEach(function(x){x.classList.remove('open');});
+  });
+})();
 /* 금리·시장 지표 줄 (2026-08-06)
    ⚠️금리는 월 단위 통계다. 실거래(어제치)와 달리 한두 달 늦으므로 기준월을 반드시 같이 적는다.
    2금융 담보금리는 1금융과 대비되도록 색을 달리해 격차가 눈에 들어오게 한다. */
