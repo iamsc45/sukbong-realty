@@ -1285,11 +1285,17 @@ document.querySelectorAll('#rfbar button,#map .rfc.trade').forEach(function(b){b
   if(rf==='trade'){redevShowTrade=!redevShowTrade;b.classList.toggle('on',redevShowTrade);render();}
   else{curRF[rf]=!curRF[rf];b.classList.toggle('on',curRF[rf]);renderRedev();}
 });});
-try{if((new URLSearchParams(location.search)).get('mode')==='redev'){setMode('redev');}}catch(e){}
-/* 뒤로가기 복원: 모드까지 되돌린 뒤 보던 좌표·확대로 이동 */
+/* ⚠️URL이 모드를 명시하면 그게 사용자의 의도다(2026-08-08 모바일 피드백).
+   전에는 아래 뒤로가기 복원이 직전에 보던 모드로 되돌려서, 실거래 지도를 봤던 사람이
+   홈에서 '재개발'을 눌러도 실거래 화면이 떴다. 명시 모드가 있으면 복원은 좌표만 한다. */
+var _urlMode=null;try{_urlMode=(new URLSearchParams(location.search)).get('mode');}catch(e){}
+if(_urlMode==='redev'){setMode('redev');}
+/* 뒤로가기 복원: (명시 모드가 없을 때만) 모드까지 되돌린 뒤 보던 좌표·확대로 이동 */
 if(_BACKVIEW){try{
-  if(_BACKVIEW.m==='redev'&&curMode!=='redev')setMode('redev');
-  else if(_BACKVIEW.m!=='redev'&&curMode==='redev')setMode('trade');
+  if(!_urlMode){
+    if(_BACKVIEW.m==='redev'&&curMode!=='redev')setMode('redev');
+    else if(_BACKVIEW.m!=='redev'&&curMode==='redev')setMode('trade');
+  }
   setTimeout(function(){try{map.invalidateSize();map.setView([_BACKVIEW.lat,_BACKVIEW.lng],_BACKVIEW.z,{animate:false});}catch(e){}},80);
 }catch(e){}}
 
