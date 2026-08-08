@@ -287,6 +287,31 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
   /* 하단 링크 리스트는 퀵 타일과 중복 → 숨김 */
   .links{display:none}
   .notice{margin:30px 0 44px}
+  /* ── 모바일 대시보드 = 리스트+탭 펼침(2026-08-08 석봉님 확정).
+     데스크톱 2단 패널을 그대로 욱여넣던 것을 폐기하고, 항목별 아코디언으로 재조립.
+     접힌 줄에도 대표 수치를 보여준다. 조립은 하단 mdashBuild() 스크립트가 한다. ── */
+  .mdash{border-top:2px solid var(--blk);margin-top:6px}
+  .mdash details{border-bottom:1px solid var(--hair)}
+  .mdash summary{display:flex;align-items:center;gap:10px;padding:14.5px 2px;cursor:pointer;
+    list-style:none;-webkit-tap-highlight-color:transparent}
+  .mdash summary::-webkit-details-marker{display:none}
+  .mdash .mt{font-size:15px;font-weight:700;letter-spacing:-0.02em}
+  .mdash .mv{margin-left:auto;font-size:14.5px;font-weight:800;color:var(--blue);
+    font-variant-numeric:tabular-nums;white-space:nowrap}
+  .mdash .mar{font-size:11px;color:var(--g3);transition:transform 150ms ease;flex:0 0 auto}
+  .mdash details[open] .mar{transform:rotate(180deg)}
+  .mdash .mbd{padding:0 2px 6px}
+  .mdash .mbd .panel{border:none;border-radius:0;background:transparent;padding:4px 0 14px}
+  .mdash .mbd .panel h3{display:none}
+  .mdash .mbd .tglrow{margin:0 0 10px}
+  /* 아코디언으로 옮기고 남은 빈 그리드는 스크립트가 지운다 */
+  /* 지역별 거래량: 시도 카드 17개를 2열 컴팩트로 (데스크톱 크기 그대로면 세로로 너무 김) */
+  .mdash #sido3{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+  .mdash #sido3 .panel{border:1px solid var(--hair);border-radius:12px;padding:11px 12px 9px;background:var(--wh)}
+  .mdash #sido3 .panel .big{font-size:21px}
+  .mdash #sido3 .panel>div:nth-child(3){display:none} /* 카드마다 반복되는 기준 문구는 상단 안내로 갈음 */
+  .mdash #sido3 .panel .row{font-size:10.5px;gap:6px}
+  .mdash #sido3 .panel .row span,.mdash #sido3 .panel .row b{white-space:nowrap}
   /* 모바일은 리빌 애니메이션 비활성(안정성·성능) */
   .rv,.blk-anim{opacity:1!important;transform:none!important;transition:none!important}
 }
@@ -1078,6 +1103,64 @@ addEventListener("scroll",function(){
     ticking=false;
   });
 },{passive:true});
+})();
+</script>
+<script>
+/* ── 모바일 대시보드 아코디언 조립 (2026-08-08 석봉님 확정: 리스트+탭 펼침, 접힌 줄에 대표 수치) ──
+   데스크톱 렌더 결과물(패널)을 데이터 로직 수정 없이 모바일에서만 리스트로 재조립한다. */
+(function(){
+if(!(window.matchMedia&&matchMedia("(max-width:720px)").matches))return;
+function build(){
+  var dash=document.getElementById("dash");
+  if(!dash||document.getElementById("mdash"))return;
+  function q(s,r){return (r||document).querySelector(s);}
+  function bigOf(id){var e=q("#"+id+" .big");if(!e)return"";e=e.cloneNode(true);var s=e.querySelector("small");if(s)s.parentNode.removeChild(s);return e.textContent.trim();}
+  function panelOf(sel){var e=q(sel);return e?(e.closest(".panel")||e):null;}
+  function sidoVal(nm){var out="";document.querySelectorAll("#sido3 .panel").forEach(function(c){
+    var n=q(".nm",c);if(n&&n.textContent.trim()===nm){var b=q(".big",c);if(b)out=b.textContent.trim().replace(/\s+/g," ");}});return out;}
+  var pyPrev="";var pyRows=document.querySelectorAll("#pyeong > div");
+  if(pyRows.length>1&&pyRows[1].lastElementChild)pyPrev="60~84㎡ "+pyRows[1].lastElementChild.textContent.trim();
+  var guPrev="";var gu1=q("#gurank tr td:nth-child(2)");if(gu1)guPrev="1위 "+gu1.textContent.trim();
+  var tdPrev="";var td1=q("#topdeals .deal .p");if(td1)tdPrev=td1.textContent.trim();
+  var items=[
+    {t:"일별 실거래 신고 추이",v:"최근 30일",els:[panelOf("#trend")]},
+    {t:"상품별 거래 비중",v:"",els:[panelOf("#prod")]},
+    {t:"지역별 거래량",v:(sidoVal("서울")?("서울 "+sidoVal("서울")):""),els:[q(".tglrow"),q("#sido3")]},
+    {t:"서울 구별 거래 랭킹",v:guPrev,els:[panelOf("#gurank")]},
+    {t:"최고가 거래",v:tdPrev,els:[panelOf("#topdeals")]},
+    {t:"아파트 평형대별 매매",v:pyPrev,els:[panelOf("#pyeong")]},
+    {t:"매매 가격대 분포",v:"",els:[panelOf("#priceband")]},
+    {t:"임대차 구조",v:(bigOf("rentPanel")?("월세 "+bigOf("rentPanel")):""),els:[q("#rentPanel")]},
+    {t:"전세가율 (84㎡)",v:bigOf("jrPanel"),els:[q("#jrPanel")]},
+    {t:"신축 프리미엄 (84㎡)",v:bigOf("agePanel"),els:[q("#agePanel")]},
+    {t:"아파트 평당가",v:(bigOf("pdPanel")?("서울 "+bigOf("pdPanel")+"/평"):""),els:[q("#pdPanel")]},
+    {t:"비아파트 매매 중위가",v:(bigOf("naPanel")?("오피스텔 "+bigOf("naPanel")):""),els:[q("#naPanel")]},
+    {t:"아파트 임대 중위가",v:(bigOf("rmPanel")?("전세 "+bigOf("rmPanel")):""),els:[q("#rmPanel")]},
+    {t:"다가오는 청약 일정",v:"",els:[panelOf("#applyList")]},
+    {t:"청약 한눈에",v:"",els:[panelOf("#applyStat")]}
+  ];
+  var box=document.createElement("div");box.id="mdash";box.className="mdash";
+  items.forEach(function(it){
+    var els=it.els.filter(function(e){return !!e;});
+    if(!els.length)return;
+    var d=document.createElement("details");
+    var h3=q("h3",els[0]);var title=(h3&&h3.textContent.trim())||it.t;
+    d.innerHTML='<summary><span class="mt"></span><span class="mv"></span><i class="mar ti ti-chevron-down" aria-hidden="true"></i></summary><div class="mbd"></div>';
+    q(".mt",d).textContent=title;
+    q(".mv",d).textContent=it.v||"";
+    var bd=q(".mbd",d);
+    els.forEach(function(e){bd.appendChild(e);});
+    d.addEventListener("toggle",function(){if(d.open)try{window.dispatchEvent(new Event("resize"));}catch(_e){}});
+    box.appendChild(d);
+  });
+  if(!box.children.length)return;
+  var head=q(".dash .sec");
+  if(head)head.insertAdjacentElement("afterend",box); else dash.insertBefore(box,dash.firstChild);
+  /* 옮기고 남은 빈 그리드 제거 */
+  dash.querySelectorAll(".grid").forEach(function(g){if(!g.querySelector(".panel"))g.parentNode.removeChild(g);});
+}
+if(document.readyState==="complete")setTimeout(build,400);
+else window.addEventListener("load",function(){setTimeout(build,400);});
 })();
 </script>
 </body></html>
