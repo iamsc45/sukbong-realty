@@ -2,7 +2,8 @@
 <html lang="ko"><head><meta charset="utf-8">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y7P41Z09PV"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-Y7P41Z09PV');</script>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- minimum-scale=1: 카카오톡 등 인앱 브라우저가 넓은 요소를 만나면 페이지 전체를 축소해 버리는 것 방지(2026-08-08 사고) -->
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1">
 <title>석봉 부동산 정보방 · 실거래가 데이터</title>
 <meta name="naver-site-verification" content="ca0e4a912987db0a6dce52248d41d40dd5d8c37c" />
 <meta name="description" content="국토교통부 실거래 신고 데이터를 매일 수집해 지도와 대시보드로 보여드립니다. 전국 17개 시도 실거래를 지도로 확인하세요.">
@@ -58,14 +59,26 @@ a{color:inherit}
 .dmenu a:first-child{border-top:1px solid #e3e0d8;border-radius:12px 12px 0 0}
 .dmenu a:last-child{border-radius:0 0 12px 12px;box-shadow:0 10px 24px rgba(0,0,0,.10)}
 .dmenu a:hover{background:#f4f2ec}
-@media(max-width:640px){
-  /* 좁은 화면에선 드롭다운 대신 항목을 그대로 편다(가로 스크롤 nav라 문제 없음) */
-  .drop{display:contents}
-  .drop>.lnk{display:none}
-  .dmenu{display:contents}
-  .dmenu a{display:inline-block;background:transparent;border:none;box-shadow:none;min-width:0;
-    padding:0;font-size:13.5px;color:var(--g2);white-space:nowrap;flex:0 0 auto}
-  .dmenu a:hover{background:transparent}
+/* ── 모바일 햄버거 메뉴(2026-08-08): 평탄화 가로 스크롤 폐기.
+   11개를 옆으로 늘어놓으니 nav 내용폭이 981px가 됐고, 카카오톡 인앱 브라우저가
+   그 폭에 맞춰 페이지 전체를 축소하는 사고가 났다(석봉님 캡처 제보).
+   모바일은 브랜드+☰ 버튼만 두고, 누르면 묶음별 패널이 내려온다. ── */
+.m-nav-btn{display:none}
+.m-nav-panel{display:none}
+@media(max-width:720px){
+  .m-nav-btn{display:inline-flex;align-items:center;justify-content:center;margin-left:auto;
+    width:40px;height:40px;border:1.5px solid var(--blk);border-radius:12px;background:var(--wh);
+    color:var(--blk);font-size:21px;cursor:pointer;padding:0;flex:0 0 auto}
+  .nav.m-open .m-nav-btn{background:var(--blk);color:#fff}
+  .nav.m-open .m-nav-panel{display:block;position:absolute;top:100%;left:0;right:0;
+    background:var(--wh);border-bottom:1px solid var(--hair);box-shadow:0 18px 34px rgba(0,0,0,.12);
+    padding:6px 16px 18px;z-index:300}
+  .m-nav-panel .mg{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;
+    color:var(--g3);margin:16px 2px 7px}
+  .m-nav-panel .ml{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .m-nav-panel .ml a{display:block;font-size:14.5px;font-weight:700;color:var(--g1);text-decoration:none;
+    border:1px solid var(--hair);border-radius:12px;padding:11px 14px;background:var(--bg,#fff)}
+  .m-nav-panel .ml a.hot{background:var(--blue);border-color:var(--blue);color:#fff;grid-column:1/-1;text-align:center}
 }
 .nav a.lnk:hover,.nav a.lnk.on{color:var(--blk)}
 .nav .cta{margin-left:auto;background:var(--blue);color:#fff;font-size:16px;font-weight:700;
@@ -214,13 +227,11 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
 .m-home{display:none}
 /* 모바일 (2026-07-17): 포털형 — 지표 스트립 + 목차 링크 + 헤드라인 */
 @media(max-width:720px){
-  .nav-in{gap:16px;padding:12px 14px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-  .nav-in::-webkit-scrollbar{display:none}
-  /* 모바일은 12개 평탄화 스크롤이라 데스크톱 확대 폰트(16px)를 되돌린다(2026-08-07) */
-  .brand{white-space:nowrap;flex:0 0 auto;font-size:16px}
-  .nav a.lnk{white-space:nowrap;flex:0 0 auto;font-size:14px}
-  .dmenu a{font-size:14px}
-  .nav .cta{display:none}
+  /* 햄버거 전환(2026-08-08): 링크는 전부 패널로. 가로로 늘어놓는 항목이 없어
+     nav 내용폭이 화면을 넘지 않는다(카카오 인앱 축소 사고 재발 방지 핵심). */
+  .nav-in{gap:12px;padding:12px 14px;overflow-x:hidden}
+  .brand{white-space:nowrap;flex:0 0 auto;font-size:17px}
+  .nav a.lnk,.nav .drop,.nav .inq-lnk,.nav .cta{display:none}
   /* 포털형: 히어로·대시보드 기본 숨김 (데스크톱 검색창 포함) */
   .hero{display:none}
   .hub{display:none}
@@ -502,7 +513,38 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
   <a class="lnk" href="%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html">대출 문의</a>
   <a class="inq-lnk" href="#" id="navInq"><i class="ti ti-speakerphone" aria-hidden="true"></i>광고·제휴 문의</a>
   <a class="cta" href="map.html"><i class="ti ti-map-2" aria-hidden="true"></i>지도 열기</a>
-</div></nav>
+  <button class="m-nav-btn" id="mNavBtn" aria-label="메뉴 열기" aria-expanded="false"><i class="ti ti-menu-2" aria-hidden="true"></i></button>
+</div>
+<div class="m-nav-panel" id="mNavPanel">
+  <div class="mg">바로가기</div>
+  <div class="ml">
+    <a class="hot" href="map.html">실거래 지도 열기</a>
+    <a href="index.html">홈</a>
+    <a href="favorites.html">★ 관심단지</a>
+  </div>
+  <div class="mg">데이터</div>
+  <div class="ml">
+    <a href="apply.html">청약</a>
+    <a href="auction.html">경매·공매</a>
+    <a href="%EC%A7%80%ED%91%9C.html">금리·지표</a>
+    <a href="lh_%EC%A7%84%EB%8B%A8.html">LH매입</a>
+  </div>
+  <div class="mg">콘텐츠·문의</div>
+  <div class="ml">
+    <a href="%EA%B8%80.html">리포트</a>
+    <a href="https://blog.naver.com/seokbongnews" target="_blank" rel="noopener">블로그</a>
+    <a href="channels.html">채널</a>
+    <a href="%EC%9D%B4%EC%9A%A9%EC%95%88%EB%82%B4.html">이용안내</a>
+    <a href="%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html">대출 문의</a>
+    <a href="#" id="mNavInq">광고·제휴 문의</a>
+  </div>
+</div>
+<script>
+(function(){var b=document.getElementById('mNavBtn'),n=document.querySelector('.nav');
+if(b&&n){b.addEventListener('click',function(){var on=n.classList.toggle('m-open');
+b.setAttribute('aria-expanded',on?'true':'false');});
+document.addEventListener('click',function(e){if(n.classList.contains('m-open')&&!n.contains(e.target))n.classList.remove('m-open');});}})();
+</script></nav>
 
 <header class="hero wrap">
   <div class="bigword" aria-hidden="true">DATA</div>
@@ -696,6 +738,7 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
   var ad=document.getElementById('adDesk'); if(ad){ad.href='#';ad.addEventListener('click',inqOpen);}
   var adm=document.getElementById('adMob'); if(adm)adm.addEventListener('click',inqOpen);
   var ni=document.getElementById('navInq'); if(ni)ni.addEventListener('click',inqOpen);
+  var mni=document.getElementById('mNavInq'); if(mni)mni.addEventListener('click',function(e){e.preventDefault();document.querySelector('.nav').classList.remove('m-open');inqOpen(e);});
   var ix=document.getElementById('inqX'); if(ix)ix.addEventListener('click',inqClose);
   if(inqBg)inqBg.addEventListener('click',function(e){if(e.target===inqBg)inqClose();});
   var im=document.getElementById('inqMailto'); if(im)im.href=mailHref;
