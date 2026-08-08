@@ -1037,7 +1037,10 @@ function loadRedev(cb){
     redevLoading=false;cb();}
   function loadGG(){if(window.REDEVEXT){done();return;}var g2=document.createElement('script');g2.src='data/jeongbi_ext.js';g2.onload=done;g2.onerror=done;document.body.appendChild(g2);}
   function loadTag(){if(window.REDEVTAG){loadGG();return;}var g=document.createElement('script');g.src='data/jeongbi_tag.js';g.onload=loadGG;g.onerror=loadGG;document.body.appendChild(g);}
-  function loadDetail(){if(window.REDEVDETAIL){loadTag();return;}var d=document.createElement('script');d.src='data/jeongbi_detail.js';d.onload=loadTag;d.onerror=loadTag;document.body.appendChild(d);}
+  function loadDetail(){
+    /* 공람안 보강(jeongbi_overlay.js, 수동 관리)도 같이 싣는다(2026-08-08). 실패해도 카드는 정상 동작 */
+    if(!window.REDEVOVR&&!loadDetail._ov){loadDetail._ov=1;var o=document.createElement('script');o.src='data/jeongbi_overlay.js';document.body.appendChild(o);}
+    if(window.REDEVDETAIL){loadTag();return;}var d=document.createElement('script');d.src='data/jeongbi_detail.js';d.onload=loadTag;d.onerror=loadTag;document.body.appendChild(d);}
   function loadMarks(){if(window.REDEVMARK){loadDetail();return;}var m=document.createElement('script');m.src='data/jeongbi_markers.js';m.onload=loadDetail;m.onerror=loadDetail;document.body.appendChild(m);}
   if(window.REDEV){loadMarks();return;}
   var sc=document.createElement('script');sc.src='data/jeongbi_seoul.js';
@@ -1081,6 +1084,14 @@ function rcDetailSec(p){
       +rw('조합원',d.members?Number(d.members).toLocaleString()+'명':'')
       +rw('토지등소유자',d.owners?Number(d.owners).toLocaleString()+'명':'')
       +'</div><div class="rc-note" style="padding:6px 0 0">정비계획 고시 기준(공공 DB 사업개요). 변경계획 진행 시 달라질 수 있습니다.</div></div>';
+  }
+  /* 공람·언론 단계 보강(2026-08-08 석봉님 확정): 확정 전 구역이라도 공람안이 확보돼 있으면
+     출처 구분 라벨과 함께 보여준다. 확정값(위 fixed 분기)과 절대 섞지 않는다. */
+  var ov=(window.REDEVOVR||{})[p.biz||p.nm];
+  if(ov&&ov.rows&&ov.rows.length){
+    return '<div class="rc-sec"><div class="rc-lab">정비계획 · 공람안 기준 (확정 아님)</div><div class="rc-grid">'
+      +ov.rows.slice(0,6).map(function(r){return '<div class="rc-kv"><span>'+r[0]+'</span><span class="v">'+r[1]+'</span></div>';}).join('')
+      +'</div><div class="rc-note" style="padding:6px 0 0">공람·고시 단계 계획('+(ov.asof||'')+')으로 심의 과정에서 달라질 수 있습니다. 전체 항목·출처는 구역 상세에서.</div></div>';
   }
   return '<div class="rc-sec"><div class="rc-lab">정비계획</div>'
     +'<div style="font-size:12.5px;color:#8a8071;line-height:1.5">정비계획 확정 전입니다. 용적률·세대수 등 세부 계획은 사업시행계획 확정·고시 시점에 채워집니다.</div></div>';
