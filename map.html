@@ -400,13 +400,25 @@ function ptTxs(pt){
 }
 function setFcount(msg){var fc=document.getElementById('fcount');if(fc)fc.textContent=msg;}
 function loadDetail(code,cb){
-  if(loaded[code]||loading[code])return;
+  /* ⚠️ 2026-08-08 수정: 종전엔 '로딩 중'이면 콜백을 그냥 버렸다. 검색 딥링크(jumpApt)가
+     카드를 열려고 콜백을 걸어도, render()가 같은 구 파일을 먼저 로드 중이면 콜백이 유실되고
+     900ms 1회 재시도만 남아 느린 회선에서 카드가 영영 안 열렸다(q=삼호3·노원롯데캐슬시그니처
+     제보, 8/4 loadRedev와 같은 패턴). 로딩 중 콜백은 큐에 쌓았다가 onload에서 반드시 부른다. */
+  if(loaded[code]){if(cb)cb();return;}
+  if(loading[code]){
+    if(cb){loadDetail._q=loadDetail._q||{};(loadDetail._q[code]=loadDetail._q[code]||[]).push(cb);}
+    return;
+  }
   if(!(SB.summary.regions.find(function(r){return r.code===code&&r.geo>0;})))return;
   loading[code]=1;
   var s=document.createElement('script');
   s.src='data/detail_'+code+'.js';
-  s.onload=function(){loaded[code]=1;delete loading[code];if(cb)cb();};
-  s.onerror=function(){delete loading[code];};
+  s.onload=function(){
+    loaded[code]=1;delete loading[code];if(cb)cb();
+    var q=loadDetail._q&&loadDetail._q[code];
+    if(q){delete loadDetail._q[code];for(var i=0;i<q.length;i++){try{q[i]();}catch(e){}}}
+  };
+  s.onerror=function(){delete loading[code];if(loadDetail._q)delete loadDetail._q[code];};
   document.body.appendChild(s);
 }
 function visibleRegions(){
