@@ -388,14 +388,12 @@ function render(pt,code){
      집계해 붙인다. 층에 따라 임대료가 몇 배 갈리는 것이 상가의 핵심인데 아파트 화면에는
      그 축이 아예 없었다. 출처는 호가(협상 전)이므로 반드시 그렇게 밝힌다. */
   function _floorSec(){
+    /* ⚠️ 이 화면에는 시군구 목록(summary.js)이 없어 '서울 강남구 역삼동' 같은 문자열을
+       만들 수 없다(2026-08-09 실측). 그래서 집계 키를 '시군구코드|법정동'으로 잡았다. */
     var FZ=window.SANGGAFLOOR||{};
-    var sggNm='', reg=(window.SB&&SB.summary&&SB.summary.regions||[]).find(function(r){return r.code===code;});
-    if(reg)sggNm=(reg.sido+' '+reg.sgg.replace(/_/g,' ')).trim();
-    var dong=pt.dong||'';
-    var cand=[sggNm+' '+dong, (sggNm.split(' ').slice(1).join(' ')+' '+dong).trim(), dong];
-    var z=null,zk='';
-    for(var i=0;i<cand.length;i++){if(FZ[cand[i]]){z=FZ[cand[i]];zk=cand[i];break;}}
+    var z=FZ[code+'|'+(pt.dong||'')];
     if(!z)return '';
+    var zk=z.z||((pt.dong||'')+' 일대');
     var LAB={'B':'지하','1':'1층','2':'2층','3-5':'3~5층','6+':'6층 이상'};
     var rows='';
     ['1','2','3-5','6+','B'].forEach(function(b){
