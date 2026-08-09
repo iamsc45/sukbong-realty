@@ -105,6 +105,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="assets/sb_auth.js?v=8"></script>
 <script src="data/jeongbi_seoul.js"></script>
+<!-- 상가 층별 임대 호가 집계(2026-08-09). 302KB라 상가·빌딩 화면에서만 쓰지만,
+     지연 로드하면 렌더가 두 번 도는 게 더 번거로워 함께 싣는다. -->
+<script src="data/sangga_floor.js"></script>
 <script src="data/jeongbi_markers.js"></script>
 <script>
 function qs(k){var m=new RegExp('[?&]'+k+'=([^&]*)').exec(location.search);return m?decodeURIComponent(m[1].replace(/\+/g,' ')):'';}
@@ -381,6 +384,33 @@ function render(pt,code){
   /* 월세 3,000만 초과는 파싱 오류 표본(월세 1.3억 등 18건)이라 표시하지 않는다(2026-08-05) */
   var _woBad=(A&&A.wo&&A.wo.wol>3000);
   var woR=wo.length?(eok(womed)+' / '+womedw+'만'):'',woH=(A&&A.wo&&!_woBad)?(eok(A.wo.bo)+' / '+A.wo.wol+'만<small>'+nlab(A.wo.n)+'</small>'):'';
+  /* 상가 층별 임대 시세(2026-08-09) — 우리가 매일 쌓는 상가 임대 호가를 법정동×층대로
+     집계해 붙인다. 층에 따라 임대료가 몇 배 갈리는 것이 상가의 핵심인데 아파트 화면에는
+     그 축이 아예 없었다. 출처는 호가(협상 전)이므로 반드시 그렇게 밝힌다. */
+  function _floorSec(){
+    var FZ=window.SANGGAFLOOR||{};
+    var sggNm='', reg=(window.SB&&SB.summary&&SB.summary.regions||[]).find(function(r){return r.code===code;});
+    if(reg)sggNm=(reg.sido+' '+reg.sgg.replace(/_/g,' ')).trim();
+    var dong=pt.dong||'';
+    var cand=[sggNm+' '+dong, (sggNm.split(' ').slice(1).join(' ')+' '+dong).trim(), dong];
+    var z=null,zk='';
+    for(var i=0;i<cand.length;i++){if(FZ[cand[i]]){z=FZ[cand[i]];zk=cand[i];break;}}
+    if(!z)return '';
+    var LAB={'B':'지하','1':'1층','2':'2층','3-5':'3~5층','6+':'6층 이상'};
+    var rows='';
+    ['1','2','3-5','6+','B'].forEach(function(b){
+      var v=z.f[b]; if(!v)return;
+      var val=v.med?(v.med.toLocaleString()+'만/평')
+                   :('표본 '+v.n+'건 · 범위 '+v.lo+'~'+v.hi+'만/평');
+      rows+='<div class="lrow"><span>'+LAB[b]+' <small style="color:#8a8071">'+v.n+'건</small></span>'
+        +'<span class="lv">'+val+(v.med&&v.wol?(' <small style="color:#8a8071">· 월세 중위 '+comma(v.wol)+'만</small>'):'')+'</span></div>';
+    });
+    if(!rows)return '';
+    return '<div class="sec"><div class="lab">층별 임대 시세 · '+esc(zk)+' 상가 호가</div>'+rows
+      +'<div class="note">평당월세는 <b>전용면적 기준</b>이고 <b>호가</b>(네이버부동산 매물, 협상 전)라 체결가와 다릅니다. '
+      +'표본 '+'10건'+' 미만인 층은 중위 대신 범위만 적었습니다. 이 건물이 아니라 <b>같은 법정동 상가 전체</b>의 층별 시세입니다. '
+      +'수집일 '+esc(z.d0||'-')+' ~ '+esc(z.d1||'-')+'.</div></div>';
+  }
   /* 🔴 상품별 요약(2026-08-09 석봉님 지시) — 아파트 기준 화면을 그대로 쓰면
      빌딩·토지·상가에 필요한 정보가 통째로 빠진다. 상품마다 다른 축을 앞에 세운다.
        · 빌딩: 대지 평당가 + 연면적 평당가(상업용 시장의 표준 두 축) + 건물 개요
@@ -410,6 +440,7 @@ function render(pt,code){
           : '구분상가·오피스는 층과 업종에 따라 단가 차이가 큽니다. 전용 평당가는 참고용이며 같은 건물이라도 층이 다르면 크게 달라집니다.')
         +' 지번 일부가 비공개(예: 6**)인 거래가 있어 개별 물건 특정에는 한계가 있습니다.</div></div>';
     }
+    h+=_floorSec();
   }else if(pt.t==='land'){
     var _lz=(pt.extra||''), _m2=med(_mmT.filter(function(t){return t.a;}).map(function(t){return Math.round(t.p/t.a);}));
     var _aMed=med(_mmT.filter(function(t){return t.a;}).map(function(t){return t.a;}));
