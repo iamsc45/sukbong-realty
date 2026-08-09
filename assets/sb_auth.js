@@ -279,14 +279,20 @@ window.SBAuth=(function(){
            카카오 노랑은 로그인 모달의 '카카오로 시작하기' 버튼에만 남기고,
            헤더 버튼은 다른 메뉴와 같은 잉크색 외곽선으로 조용히 둔다. */
         /* 크기는 옆 메뉴에 맞춘다(2026-08-10 석봉님 지적: 모바일에서 로그인만 크다).
-           페이지마다 nav 글자 크기가 달라(단지상세 12px·일반 13.5px) 숫자를 박지 않고
-           font-size:inherit로 부모 nav를 따라가게 하고, 패딩만 최소로 준다. */
+           ⚠️ font-size:inherit는 부모가 nav가 아니라 span이라 body 크기(14px)를 물려받아
+           오히려 더 커졌다(실측). 그래서 같은 nav 안의 실제 링크 크기를 읽어 그대로 쓴다.
+           페이지마다 nav 글자 크기가 달라도(단지상세 12px·일반 13.5px) 자동으로 맞는다. */
+        var _fs='13px';
+        try{
+          var _nav=h.closest?h.closest('nav'):null, _sib=_nav?_nav.querySelector('a'):null;
+          if(_sib&&_sib!==h.firstChild)_fs=getComputedStyle(_sib).fontSize||_fs;
+        }catch(e){}
         h.innerHTML='<a href="#" class="sbAuthA" '
           +'style="display:'+(wide?'block':'inline-flex')+';align-items:center;gap:5px;white-space:nowrap;'
           +'text-align:'+(wide?'center':'left')+';text-decoration:none;font-weight:700;'
-          +'font-size:'+(wide?'14.5px':'inherit')+';line-height:1.2;'
+          +'font-size:'+(wide?'14.5px':_fs)+';line-height:1.25;'
           +'border:1px solid '+(on?'#141414':'#c9c6bd')+';background:'+(on?'#141414':'transparent')+';'
-          +'color:'+(on?'#fff':'#3B3B39')+';border-radius:'+(wide?'12px':'100px')+';padding:'+(wide?'11px 14px':'4px 11px')+';'
+          +'color:'+(on?'#fff':'#3B3B39')+';border-radius:'+(wide?'12px':'100px')+';padding:'+(wide?'11px 14px':'3px 10px')+';'
           +'transition:border-color 150ms ease,color 150ms ease">'
           +(on?(nickname()+'님 · 내정보'):label)+'</a>';
         h.querySelector('.sbAuthA').onclick=open;
