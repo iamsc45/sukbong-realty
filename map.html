@@ -1321,24 +1321,33 @@ function _drawTx(){
   var C=window._CARD; if(!C)return;
   var box=document.getElementById('rcTx'); if(!box)return;
   var all=C.txs||[];
-  /* 평형 묶기 — 전용 1㎡ 반올림 */
+  /* 🔴 축을 상품에 맞게 바꾼다(2026-08-09 석봉님 지시).
+     아파트·오피스텔·빌라는 '평형'이지만 구분상가·오피스는 '층'이 가격을 가른다.
+     빌딩·토지는 평형 개념이 없어 면적 그대로 묶는다(칩이 많으면 자동으로 접힌다). */
+  var _T=(C.pt&&C.pt.t)||'apt';
+  var _byFloor=(_T==='comm');
   var g={},order=[];
-  all.forEach(function(t){var k=(t.a?Math.round(t.a):0);if(!g[k]){g[k]=[];order.push(k);}g[k].push(t);});
-  order.sort(function(x,y){return x-y;});
+  all.forEach(function(t){
+    var k=_byFloor?((t.f&&t.f!=='-')?String(t.f):''):(t.a?Math.round(t.a):0);
+    if(k==='')return;
+    if(!g[k]){g[k]=[];order.push(k);}g[k].push(t);});
+  order.sort(function(x,y){
+    if(_byFloor){var a=parseInt(String(x).replace(/[^0-9-]/g,''))||0,b=parseInt(String(y).replace(/[^0-9-]/g,''))||0;return a-b;}
+    return x-y;});
   var byPy=(C.grp==='all')?all:(g[C.grp]||[]);
   /* 거래유형 칩(2026-08-09 석봉님 지시) — 매매·전세·월세가 한 목록에 섞이면
      평형별 중위가 의미가 흐려진다. 카드 안에서 직접 고르게 한다. */
   var UC={all:byPy.length,'매매':0,'전세':0,'월세':0};
   byPy.forEach(function(t){if(UC[t.u]!==undefined)UC[t.u]++;});
   var list=(C.u==='all')?byPy:byPy.filter(function(t){return t.u===C.u;});
-  var h='<div class="rc-lab">최근 실거래 · 평당 전용기준</div>';
+  var h='<div class="rc-lab">최근 실거래 · '+(_T==='bldg'?'평당 연면적기준':(_T==='land'?'㎡·평당 토지기준':'평당 전용기준'))+'</div>';
   /* 평형이 둘 이상일 때만 칩을 보여준다(1종뿐인 지점이 절반 이상) */
   if(order.length>1){
     h+='<div id="rcPy" style="display:flex;gap:5px;flex-wrap:wrap;margin:0 0 9px">';
     h+='<button data-g="all" class="pychip" style="border:1px solid '+(C.grp==='all'?'#1a1a1a':'#ddd6c8')+';background:'+(C.grp==='all'?'#1a1a1a':'#fff')+';color:'+(C.grp==='all'?'#fff':'#6b6355')+';font:inherit;font-size:11.5px;font-weight:700;border-radius:20px;padding:4px 10px;cursor:pointer">전체 '+all.length+'</button>';
     order.forEach(function(k){
       var on=(String(C.grp)===String(k));
-      h+='<button data-g="'+k+'" class="pychip" style="border:1px solid '+(on?'#1a1a1a':'#ddd6c8')+';background:'+(on?'#1a1a1a':'#fff')+';color:'+(on?'#fff':'#6b6355')+';font:inherit;font-size:11.5px;font-weight:700;border-radius:20px;padding:4px 10px;cursor:pointer">'+k+'㎡·'+PY(k)+' '+g[k].length+'</button>';
+      h+='<button data-g="'+k+'" class="pychip" style="border:1px solid '+(on?'#1a1a1a':'#ddd6c8')+';background:'+(on?'#1a1a1a':'#fff')+';color:'+(on?'#fff':'#6b6355')+';font:inherit;font-size:11.5px;font-weight:700;border-radius:20px;padding:4px 10px;cursor:pointer">'+(_byFloor?(k+'층'):(k+'㎡·'+PY(k)))+' '+g[k].length+'</button>';
     });
     h+='</div>';
   }
@@ -1353,7 +1362,7 @@ function _drawTx(){
     var uu=(C.u==='all')?'매매':C.u;
     var sel=byPy.filter(function(t){return t.u===uu;});
     if(sel.length){
-      var lab='전용 '+C.grp+'㎡('+PY(C.grp)+') · '+uu+' 중위 '+sel.length+'건';
+      var lab=(_byFloor?(C.grp+'층'):('전용 '+C.grp+'㎡('+PY(C.grp)+')'))+' · '+uu+' 중위 '+sel.length+'건';
       var big='', sub='';
       if(uu==='월세'){
         big=_eok(_med(sel.map(function(t){return t.p;})))+'/'+_med(sel.map(function(t){return t.r||0;}))+'만';
