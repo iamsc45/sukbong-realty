@@ -146,9 +146,12 @@ a.hc:hover{border-color:var(--acc-blue)}
     var h=(A.hot&&A.hot.auc)||[];
     if(!h.length){hot.innerHTML='';return;}
     hot.innerHTML='<p class="seg">최근 2주 화제의 매각 결과 · 관심(조회수) 상위</p><div class="hotg">'
-      +h.map(function(x){return card(x.dong, x.sido+' '+x.sgg+' '+x.dong, x.nm, x.use,
+      /* 지번 주소(ad)가 있으면 그것을 넘겨 지도가 그 필지에 핀을 찍게 한다(2026-08-09).
+         종전엔 동 이름만 넘겨 "경매 물건이 어디인지" 표시가 안 됐다. 없으면 종전처럼 동으로. */
+      +h.map(function(x){var hasJibun=!!(x.ad&&/\d/.test(x.ad.split(' ').slice(-1)[0]||''));
+        return card(hasJibun?x.ad:x.dong, x.sido+' '+x.sgg+' '+x.dong, x.nm, x.use,
         x.ap, x.sp, x.ratio, '유찰 '+x.fail+'회 · 조회 '+x.view, x.d);}).join('')
-      +'</div><p class="notice2" style="margin:8px 0 0">※ 낙찰가율은 감정가 대비이며, 감정 시점이 시세와 다를 수 있습니다. 카드를 누르면 실거래지도의 해당 동으로 이동해 주변 시세와 비교할 수 있습니다.</p>';
+      +'</div><p class="notice2" style="margin:8px 0 0">※ 낙찰가율은 감정가 대비이며, 감정 시점이 시세와 다를 수 있습니다. 카드를 누르면 실거래지도에서 그 물건 위치에 핀이 찍히고, 같은 상품 시세만 걸러 보여줍니다.</p>';
   }
   function hotOnbid(){
     var h=(A.hot&&A.hot.gong)||[];
