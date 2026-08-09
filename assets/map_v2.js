@@ -180,7 +180,8 @@
     w.appendChild(sh); bindSort(sh);
     var tog=function(){sh.classList.toggle('min');};
     sh.querySelector('.sh-g').onclick=tog; sh.querySelector('.sh-h').onclick=tog;
-    if(window.innerWidth<=720)sh.classList.add('min');
+    /* 접힌 상태로 시작: B안은 지도가 주인공이고, 좁은 화면에서는 두 안 모두 지도가 먼저다 */
+    if(skin==='b'||window.innerWidth<=720)sh.classList.add('min');
   }
 
   /* ── 갱신 시점: 지도 이동 + 데이터 지연 로드 대응 폴링 ────── */
