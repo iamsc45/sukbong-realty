@@ -681,6 +681,23 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
     if(r&&r.lat){go(r.lat,r.lng,Z_DETAIL+1);}
   });
   fill();
+  /* 🔴 검색 지역 전환 보정(2026-08-08 이용자 제보 "송도동 보다가 석남 검색하면 실거래가 안 뜸").
+     원인: 단지 검색(jumpApt)·주소 검색은 지도만 옮기고 시/도·시군구 필터는 앞 검색 값을 그대로
+     들고 있었다. regionPass가 앞 지역(연수구)만 통과시켜 새 위치에서 지점 0건이 됐다.
+     ①코드를 아는 경우(단지 검색)는 그 구로 필터를 맞추고 ②모르는 경우(주소·좌표 이동)는
+     화면에 지점이 하나도 없을 때만 필터를 '전체'로 풀어 준다(필터를 쓰는 사용자를 방해하지 않게). */
+  window._setRegionByCode=function(code){
+    var r=SB.summary.regions.find(function(x){return x.code===code;});
+    if(!r)return false;
+    curSido=r.sido;curSgg=r.code;s1.value=r.sido;fill();s2.value=r.code;
+    return true;
+  };
+  window._unfilterIfEmpty=function(){
+    if(curSgg==='all'&&curSido==='all')return false;
+    if(window._PTS&&window._PTS.length)return false;
+    curSido='all';curSgg='all';s1.value='all';fill();s2.value='all';render();
+    return true;
+  };
   /* 지역·동 검색 매칭 — URL 딥링크와 지도 상단 검색창이 공용 */
   function fitSido(sd){
     curSido=sd;curSgg='all';s1.value=sd;fill();
@@ -774,6 +791,8 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
     try{map.setView([lat,lng],z||17);}catch(e){}
     setTimeout(function(){try{window._addrMk.openPopup();}catch(e){}},300);
     var st=document.getElementById('stat');if(st)st.textContent='주소: '+label;
+    /* 다른 지역 주소로 건너뛴 경우 앞 검색 필터 때문에 0건이 되는 것을 푼다(2026-08-08) */
+    setTimeout(function(){try{if(window._unfilterIfEmpty)window._unfilterIfEmpty();}catch(e){}},700);
   }
   function _vwGeocode(addr,type,cb,onerr){
     var url='https://api.vworld.kr/req/address?service=address&request=getcoord&version=2.0&crs=epsg:4326'
@@ -861,6 +880,8 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
       tryAddress(v,function(){
         tryRedevZone(v,function(){
           if(!findAndGo(v)){var st=document.getElementById('stat');if(st)st.textContent='"'+v+'" 검색 결과를 찾지 못했습니다';setFcount('"'+v+'" 검색 결과 없음');}
+          /* 지역 이동은 됐는데 앞 검색 필터 탓에 0건인 경우를 푼다(2026-08-08) */
+          else setTimeout(function(){try{if(window._unfilterIfEmpty)window._unfilterIfEmpty();}catch(e){}},700);
         });
       });
     }
@@ -945,6 +966,8 @@ map.on('moveend zoomend',function(){if(popLock)return;render();if(curMode==='red
   }
   function jumpApt(r){   /* r=[name,lat,lng,code,dong] */
     window.closeSac(); sq.value=r[0]; sq.blur();
+    /* 앞 검색의 지역 필터가 남아 있으면 새 단지 주변 실거래가 통째로 안 보인다(2026-08-08) */
+    try{if(window._setRegionByCode)window._setRegionByCode(r[3]);}catch(e){}
     go(r[1],r[2],17);
     var code=r[3];
     function open(){var d=window.SB&&SB.d&&SB.d[code];if(!d)return;
