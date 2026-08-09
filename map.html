@@ -443,10 +443,18 @@ function visibleRegions(){
      빠지고 거래가 하나도 안 그려졌다(고촌↔김포 중심 9.1km. 전국 135개 시군구·지점 4,126개 해당).
      이제는 summary의 b=[남,서,북,동] (그 구 거래 지점이 실제로 퍼진 범위)와 화면이 겹치는지로 본다.
      b가 없는 구(옛 summary 캐시)는 종전 방식으로 폴백한다. */
-  var b=map.getBounds(), m=0.065, MAXR=12;
+  var b=map.getBounds(), m=0.065;
+  /* 🔴 부하 제어(2026-08-10 석봉님 제보 'Page Unresponsive').
+     렌더 자체는 1~2ms인데, 시군구 상세(detail_*.js)를 한꺼번에 받아 파싱하는 것이 문제였다.
+     빌딩 필터로 넓은 화면을 열었을 때 12개 시군구·1.9MB를 동시에 파싱해 메인 스레드가 멎었다.
+     ①확대할수록 상한을 줄이고 ②지금 켠 상품이 아예 없는 시군구는 아예 받지 않는다. */
+  var _z=map.getZoom(), MAXR=(_z>=16?6:(_z>=14?9:12));
   var eb=L.latLngBounds([b.getSouth()-m,b.getWest()-m],[b.getNorth()+m,b.getEast()+m]);
   var out=SB.summary.regions.filter(function(r){
     if(!r.lat||!regionPass(r))return false;
+    /* 상품 필터가 켜져 있으면 그 상품 거래가 0인 시군구는 건너뛴다(요약의 nt가 상품별 건수).
+       예: 빌딩만 볼 때 빌딩 거래가 없는 구의 650KB 파일을 받을 이유가 없다. */
+    if(curTset&&r.nt){var _has=false;for(var _k in curTset){if(r.nt[_k]){_has=true;break;}}if(!_has)return false;}
     /* 지점 범위(b)에는 여유를 더하지 않는다 — 사각형이라 이미 실제보다 넉넉하고,
        여유까지 주면 화면당 로드 대상이 평균 12곳까지 늘어 첫 진입이 느려진다
        (시뮬레이션 5,788건: 여유 있음 평균 12.2·최대 47 / 없음 평균 6.7·최대 24, 누락은 둘 다 0). */
@@ -489,7 +497,16 @@ function render(){
     return;
   }
   var need=visibleRegions(), pending=0;
-  need.forEach(function(r){if(!loaded[r.code]){pending++;loadDetail(r.code,render);}});
+  /* 동시에 여러 개를 받으면 파싱이 겹쳐 화면이 멎는다. 한 번에 3개까지만 시작하고
+     나머지는 로드가 끝날 때마다 render()가 다시 불려 자연히 이어받는다(2026-08-10). */
+  var _start=0;
+  need.forEach(function(r){
+    if(loaded[r.code])return;
+    pending++;
+    if(loading[r.code])return;
+    if(_start>=3)return;
+    _start++; loadDetail(r.code,render);
+  });
   var b=map.getBounds().pad(0.1);
   var pts=[];
   need.forEach(function(r){
