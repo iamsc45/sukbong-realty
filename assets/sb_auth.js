@@ -284,8 +284,18 @@ window.SBAuth=(function(){
            페이지마다 nav 글자 크기가 달라도(단지상세 12px·일반 13.5px) 자동으로 맞는다. */
         var _fs='13px';
         try{
-          var _nav=h.closest?h.closest('nav'):null, _sib=_nav?_nav.querySelector('a'):null;
-          if(_sib&&_sib!==h.firstChild)_fs=getComputedStyle(_sib).fontSize||_fs;
+          /* nav 첫 링크를 그냥 집으면 홈처럼 로고가 먼저 오는 구조에서 19px를 물려받는다(실측).
+             메뉴는 여럿이고 로고는 하나이므로 '가장 많이 쓰인 크기'를 고른다. */
+          var _nav=h.closest?h.closest('nav'):null;
+          if(_nav){
+            var _c={},_best=0,_as=_nav.querySelectorAll('a');
+            for(var _i=0;_i<_as.length;_i++){
+              var _a=_as[_i]; if(_a===h||h.contains(_a)||!_a.offsetParent)continue;
+              var _k=getComputedStyle(_a).fontSize; if(!_k)continue;
+              _c[_k]=(_c[_k]||0)+1;
+              if(_c[_k]>_best||(_c[_k]===_best&&parseFloat(_k)<parseFloat(_fs))){_best=_c[_k];_fs=_k;}
+            }
+          }
         }catch(e){}
         h.innerHTML='<a href="#" class="sbAuthA" '
           +'style="display:'+(wide?'block':'inline-flex')+';align-items:center;gap:5px;white-space:nowrap;'
