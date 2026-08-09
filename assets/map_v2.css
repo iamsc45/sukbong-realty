@@ -1,0 +1,155 @@
+/* 실거래지도 새 스킨(스테이징 전용, 2026-08-10)
+   원본 map.html의 로직·DOM은 건드리지 않고 이 파일과 map_v2.js로만 겉모습을 바꾼다.
+   그래야 매일 도는 지도 갱신·기능 수정과 충돌하지 않고, 채택되면 그때 본편에 옮긴다.
+   skin-a = 네이버부동산형(좌측 목록 + 지도)  /  skin-b = 호갱노노형(지도 전면 + 하단 시트) */
+
+/* ── 0. 화면 뼈대: 지도를 최대로 ───────────────────────────── */
+body.v2 #wrap{position:relative;overflow:hidden}
+body.v2 .site-header{padding-top:7px;padding-bottom:7px;border-bottom:1px solid rgba(20,20,20,.07);
+  box-shadow:0 1px 3px rgba(20,20,20,.04);z-index:1000;position:relative}
+body.v2 #map{flex:1;min-height:0}
+body.v2 .site-footer{display:none}          /* 지도 화면에서는 푸터를 접는다(원본 저작권은 범례로) */
+body.v2 #legend{bottom:14px;left:14px;border-radius:12px;border:0;
+  box-shadow:0 2px 10px rgba(20,20,20,.12);background:rgba(255,255,255,.94);backdrop-filter:blur(6px)}
+
+/* 타일: 채도를 더 낮추고 살짝 밝게 — 마커가 주인공이 되게 */
+body.v2 .leaflet-tile{filter:saturate(.42) brightness(1.06) contrast(.96)}
+body.v2.tile-plain .leaflet-tile{filter:saturate(.9) brightness(1.01)}
+
+/* ── 1. 상단 컨트롤: 지도 위에 떠 있는 캡슐 ────────────────── */
+body.v2 #bar{position:absolute;top:12px;left:12px;z-index:900;
+  background:rgba(255,255,255,.97);backdrop-filter:blur(10px);
+  border:0;border-radius:16px;padding:9px 12px;
+  box-shadow:0 6px 24px rgba(20,20,20,.13),0 1px 3px rgba(20,20,20,.08);
+  max-width:calc(100vw - 24px);row-gap:7px}
+body.v2.skin-a #bar{left:calc(var(--v2-list,352px) + 12px)}
+body.v2 #stat{margin-left:8px}
+
+/* 검색창을 제일 눈에 띄게 */
+body.v2 #sq{width:210px;height:34px;border-radius:10px;border:1.5px solid #e6e2d8;
+  padding:0 13px;font-size:13.5px;background:#fbfaf7;transition:border-color .15s ease,background .15s ease}
+body.v2 #sq:focus{border-color:var(--navy);background:#fff;box-shadow:0 0 0 3px rgba(37,84,224,.1)}
+body.v2 .sbtn{height:34px;border-radius:10px;padding:0 15px;font-size:12.5px}
+body.v2 #fbtn{height:34px;border-radius:10px;padding:0 15px;background:#fff;color:var(--text2);
+  border:1.5px solid #e6e2d8;font-size:12.5px}
+body.v2 #fbtn:hover{border-color:var(--navy);color:var(--navy);opacity:1}
+body.v2 #modes button{height:34px;border-radius:10px;font-size:12.5px}
+body.v2 select{height:34px;border-radius:10px;border:1.5px solid #e6e2d8;font-size:12.5px}
+body.v2 .chip{border-radius:10px;border:1.5px solid #e6e2d8;color:var(--text2);font-weight:600;
+  padding:5px 12px;transition:all .13s ease}
+body.v2 .chip:hover{border-color:var(--navy);color:var(--navy)}
+body.v2 .chip.on{background:var(--navy);border-color:var(--navy);color:#fff}
+body.v2 #fpanel{border:0;border-radius:16px;box-shadow:0 12px 34px rgba(20,20,20,.16)}
+
+/* ── 2. 마커: 가격 말풍선 ────────────────────────────────────
+   원본은 색을 인라인 style로 넣으므로 map_v2.js가 그 값을 --c로 옮기고 배경을 지운다.
+   여기서는 --c만 참조한다(인라인 배경이 남아 있으면 아무 일도 일어나지 않게). */
+body.v2 .pricetag{background:#fff !important;color:#141414;border:0;
+  border-radius:9px;padding:4px 9px 4px 8px;font-size:12.5px;font-weight:800;letter-spacing:-.02em;
+  box-shadow:0 2px 8px rgba(20,20,20,.2),0 0 0 1.5px rgba(20,20,20,.07);
+  position:relative;line-height:1.25;transition:transform .13s cubic-bezier(.2,.8,.3,1.2),box-shadow .13s ease}
+body.v2 .pricetag:before{content:"";position:absolute;left:0;top:5px;bottom:5px;width:3.5px;
+  border-radius:3px;background:var(--c,#2554E0)}
+body.v2 .pricetag:after{content:"";position:absolute;left:50%;bottom:-5px;margin-left:-5px;
+  width:0;height:0;border:5px solid transparent;border-top-color:#fff;
+  filter:drop-shadow(0 2px 1px rgba(20,20,20,.14))}
+body.v2 .pricetag .n{display:block;font-size:9.5px;font-weight:600;color:#8a8378;opacity:1;margin-top:1px}
+body.v2 .pricetag .nm{color:#3B3B39;font-weight:600;font-size:10px}
+body.v2 .pricetag:hover{transform:scale(1.12) translateY(-1px);z-index:10000;
+  box-shadow:0 8px 20px rgba(20,20,20,.26),0 0 0 1.5px var(--c,#2554E0)}
+body.v2 .pricetag.sel{box-shadow:0 8px 20px rgba(20,20,20,.3),0 0 0 2.5px var(--c,#141414)}
+body.v2 .pricetag.apx{border-style:none;opacity:.9}
+body.v2 .pricetag.apx:before{background:repeating-linear-gradient(180deg,var(--c,#2554E0) 0 3px,transparent 3px 6px)}
+/* 목록에서 가리킨 항목 */
+body.v2 .pricetag.hl{transform:scale(1.2) translateY(-2px);z-index:10001;
+  box-shadow:0 10px 22px rgba(20,20,20,.3),0 0 0 2.5px var(--c,#2554E0)}
+
+/* 군집(시군구·동) 원 */
+body.v2 .clus{background:rgba(20,20,20,.9) !important;border:0;
+  box-shadow:0 4px 14px rgba(20,20,20,.28),0 0 0 4px rgba(255,255,255,.55);backdrop-filter:blur(2px)}
+body.v2 .clus.dong{background:rgba(37,84,224,.92) !important}
+body.v2 .clus .cn{font-size:11.5px;font-weight:800;letter-spacing:-.02em}
+body.v2 .clus .cc{font-size:10px;opacity:.9}
+body.v2 .clus:hover{transform:scale(1.08)}
+
+/* ── 3. 좌측 목록 패널 (skin-a) ─────────────────────────────── */
+#v2list{display:none;position:absolute;left:0;top:0;bottom:0;width:var(--v2-list,352px);z-index:880;
+  background:#fff;box-shadow:2px 0 18px rgba(20,20,20,.09);flex-direction:column;overflow:hidden}
+body.v2.skin-a #v2list{display:flex}
+#v2list .v2h{padding:13px 16px 11px;border-bottom:1px solid #eee9dd;flex:0 0 auto}
+#v2list .v2h .t{font-size:15px;font-weight:800;letter-spacing:-.02em;color:#141414}
+#v2list .v2h .s{font-size:11.5px;color:#8a8378;margin-top:3px}
+#v2list .v2sort{display:flex;gap:5px;padding:9px 14px;border-bottom:1px solid #f2eee4;flex:0 0 auto}
+#v2list .v2sort button{border:1.5px solid #e6e2d8;background:#fff;border-radius:8px;padding:4px 11px;
+  font:inherit;font-size:11.5px;font-weight:700;color:#6b6459;cursor:pointer;transition:all .13s ease}
+#v2list .v2sort button.on{background:#141414;border-color:#141414;color:#fff}
+#v2list .v2b{flex:1;overflow-y:auto;overscroll-behavior:contain}
+#v2list .v2i{display:flex;gap:11px;padding:12px 15px;border-bottom:1px solid #f4f0e7;cursor:pointer;
+  transition:background .12s ease}
+#v2list .v2i:hover{background:#fbf9f4}
+#v2list .v2i.on{background:#f5f1e6;box-shadow:inset 3px 0 0 var(--c,#2554E0)}
+#v2list .v2i .ic{flex:0 0 auto;width:38px;height:38px;border-radius:10px;display:flex;
+  align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;letter-spacing:-.03em;
+  background:var(--c,#2554E0)}
+#v2list .v2i .bd{flex:1;min-width:0}
+#v2list .v2i .nm{font-size:13.5px;font-weight:800;color:#141414;letter-spacing:-.02em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#v2list .v2i .ad{font-size:11px;color:#8a8378;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#v2list .v2i .pr{font-size:14px;font-weight:800;color:#141414;margin-top:4px;letter-spacing:-.03em}
+#v2list .v2i .pr .u{font-size:10.5px;font-weight:700;color:#fff;background:var(--c,#2554E0);
+  border-radius:5px;padding:1px 5px;margin-right:5px;vertical-align:1.5px;letter-spacing:0}
+#v2list .v2i .mt{font-size:10.5px;color:#9a938a;margin-top:2px}
+#v2list .v2more{padding:13px;text-align:center;font-size:12px;color:#6b6459;cursor:pointer;font-weight:700}
+#v2list .v2empty{padding:34px 20px;text-align:center;color:#9a938a;font-size:12.5px;line-height:1.7}
+
+/* ── 4. 하단 시트 (skin-b · 모바일 공통) ─────────────────────── */
+#v2sheet{display:none;position:absolute;left:0;right:0;bottom:0;z-index:890;background:#fff;
+  border-radius:18px 18px 0 0;box-shadow:0 -6px 26px rgba(20,20,20,.16);
+  max-height:76%;flex-direction:column;transition:transform .26s cubic-bezier(.2,.8,.3,1)}
+body.v2.skin-b #v2sheet{display:flex}
+#v2sheet .sh-g{padding:8px 0 3px;flex:0 0 auto;cursor:pointer;text-align:center}
+#v2sheet .sh-g i{display:inline-block;width:38px;height:4px;border-radius:4px;background:#ddd7ca}
+#v2sheet .sh-h{display:flex;align-items:baseline;gap:8px;padding:2px 18px 11px;flex:0 0 auto;cursor:pointer}
+#v2sheet .sh-h .t{font-size:14.5px;font-weight:800;letter-spacing:-.02em}
+#v2sheet .sh-h .s{font-size:11.5px;color:#8a8378}
+#v2sheet .sh-h .x{margin-left:auto;font-size:11.5px;color:#8a8378;font-weight:700}
+#v2sheet .v2b{flex:1;overflow-y:auto;overscroll-behavior:contain;border-top:1px solid #f2eee4}
+#v2sheet.min{transform:translateY(calc(100% - 52px))}
+#v2sheet .v2i{display:flex;gap:11px;padding:12px 18px;border-bottom:1px solid #f4f0e7;cursor:pointer}
+#v2sheet .v2i:active{background:#fbf9f4}
+#v2sheet .v2i .ic{flex:0 0 auto;width:38px;height:38px;border-radius:10px;display:flex;align-items:center;
+  justify-content:center;font-size:10px;font-weight:800;color:#fff;background:var(--c,#2554E0)}
+#v2sheet .v2i .nm{font-size:13.5px;font-weight:800;letter-spacing:-.02em}
+#v2sheet .v2i .ad{font-size:11px;color:#8a8378;margin-top:2px}
+#v2sheet .v2i .pr{font-size:14px;font-weight:800;margin-top:4px;letter-spacing:-.03em}
+#v2sheet .v2i .pr .u{font-size:10.5px;font-weight:700;color:#fff;background:var(--c,#2554E0);
+  border-radius:5px;padding:1px 5px;margin-right:5px;vertical-align:1.5px}
+#v2sheet .v2empty{padding:30px 20px;text-align:center;color:#9a938a;font-size:12.5px}
+#v2sheet .v2more{padding:13px;text-align:center;font-size:12px;color:#6b6459;font-weight:700;cursor:pointer}
+
+/* ── 5. 스킨 전환 스위치(스테이징에만 있는 물건) ─────────────── */
+#v2skin{position:absolute;top:12px;right:12px;z-index:1100;display:flex;gap:0;
+  background:rgba(255,255,255,.97);border-radius:12px;padding:4px;
+  box-shadow:0 6px 22px rgba(20,20,20,.14);font-size:11.5px}
+#v2skin button{border:0;background:transparent;font:inherit;font-size:11.5px;font-weight:700;
+  color:#6b6459;padding:6px 12px;border-radius:9px;cursor:pointer;white-space:nowrap}
+#v2skin button.on{background:#141414;color:#fff}
+#v2skin .sep{width:1px;background:#eee9dd;margin:5px 3px}
+
+/* ── 6. 모바일 ──────────────────────────────────────────────── */
+@media (max-width:720px){
+  body.v2 #bar{left:8px;right:8px;top:8px;padding:7px 9px;border-radius:14px}
+  body.v2.skin-a #bar{left:8px}
+  body.v2 #sq{width:auto;height:32px;font-size:12.5px}
+  body.v2 .sbtn,body.v2 #fbtn,body.v2 #modes button,body.v2 select,body.v2 #mcats button{height:32px}
+  /* 목록은 두 스킨 모두 하단 시트로 (좁은 화면에서 좌측 패널은 지도를 다 먹는다) */
+  body.v2.skin-a #v2list{display:none}
+  body.v2.skin-a #v2sheet{display:flex}
+  #v2sheet{max-height:72%}
+  #v2skin{top:auto;bottom:calc(52px + env(safe-area-inset-bottom,0px));right:8px;font-size:11px}
+  #v2skin button{padding:5px 9px;font-size:11px}
+  body.v2 #legend{display:none}
+  body.v2 #loanChip{bottom:auto !important;top:56px !important;right:8px !important}
+  body.v2.skin-b #loanChip,body.v2.skin-a #loanChip{z-index:880}
+  body.v2 .pricetag{font-size:11.5px;padding:3px 8px 3px 7px}
+}

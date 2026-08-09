@@ -275,9 +275,11 @@ window.SBAuth=(function(){
       var on=isIn(), label=on?'내정보':'로그인';
       hosts.forEach(function(h,i){
         var wide=(h.id==='sbAuthBtnM');   /* 패널 안에서는 한 줄 버튼 */
-        /* 색을 사이트 톤에 맞춘다(2026-08-10 석봉님 지적: 노란 버튼만 혼자 튄다).
-           카카오 노랑은 로그인 모달의 '카카오로 시작하기' 버튼에만 남기고,
-           헤더 버튼은 다른 메뉴와 같은 잉크색 외곽선으로 조용히 둔다. */
+        /* 색(2026-08-10 석봉님 최종 지시): 비로그인 '로그인'은 카카오 노랑(#FEE500)으로 통일한다.
+           우리 로그인 수단이 카카오뿐이라 노란색 자체가 "카카오로 들어간다"는 안내가 된다.
+           같은 날 오전에는 톤이 튄다고 잉크색으로 뺐었는데, 크기를 메뉴에 맞추고 나니
+           튀는 원인이 색이 아니라 크기였다(그 판단은 취소).
+           로그인 후 '내정보'는 카카오와 무관하므로 잉크색 그대로 둔다. */
         /* 크기는 옆 메뉴에 맞춘다(2026-08-10 석봉님 지적: 모바일에서 로그인만 크다).
            ⚠️ font-size:inherit는 부모가 nav가 아니라 span이라 body 크기(14px)를 물려받아
            오히려 더 커졌다(실측). 그래서 같은 nav 안의 실제 링크 크기를 읽어 그대로 쓴다.
@@ -301,10 +303,12 @@ window.SBAuth=(function(){
           +'style="display:'+(wide?'block':'inline-flex')+';align-items:center;gap:5px;white-space:nowrap;'
           +'text-align:'+(wide?'center':'left')+';text-decoration:none;font-weight:700;'
           +'font-size:'+(wide?'14.5px':_fs)+';line-height:1.25;'
-          +'border:1px solid '+(on?'#141414':'#c9c6bd')+';background:'+(on?'#141414':'transparent')+';'
-          +'color:'+(on?'#fff':'#3B3B39')+';border-radius:'+(wide?'12px':'100px')+';padding:'+(wide?'11px 14px':'3px 10px')+';'
-          +'transition:border-color 150ms ease,color 150ms ease">'
-          +(on?(nickname()+'님 · 내정보'):label)+'</a>';
+          +'border:1px solid '+(on?'#141414':'#FEE500')+';background:'+(on?'#141414':'#FEE500')+';'
+          +'color:'+(on?'#fff':'#191600')+';border-radius:'+(wide?'12px':'100px')+';padding:'+(wide?'11px 14px':'3px 10px')+';'
+          +'transition:filter 150ms ease,border-color 150ms ease">'
+          +(on?(nickname()+'님 · 내정보')
+              :('<svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true" style="flex:0 0 auto;vertical-align:-.12em">'
+                +'<path fill="#191600" d="M12 3C6.9 3 2.8 6.2 2.8 10.2c0 2.5 1.7 4.7 4.2 6l-1 3.6c-.1.3.2.6.5.4l4.3-2.8c.4 0 .8.1 1.2.1 5.1 0 9.2-3.2 9.2-7.3S17.1 3 12 3z"/></svg> '+label))+'</a>';
         h.querySelector('.sbAuthA').onclick=open;
       });
     }
