@@ -381,6 +381,46 @@ function render(pt,code){
   /* 월세 3,000만 초과는 파싱 오류 표본(월세 1.3억 등 18건)이라 표시하지 않는다(2026-08-05) */
   var _woBad=(A&&A.wo&&A.wo.wol>3000);
   var woR=wo.length?(eok(womed)+' / '+womedw+'만'):'',woH=(A&&A.wo&&!_woBad)?(eok(A.wo.bo)+' / '+A.wo.wol+'만<small>'+nlab(A.wo.n)+'</small>'):'';
+  /* 🔴 상품별 요약(2026-08-09 석봉님 지시) — 아파트 기준 화면을 그대로 쓰면
+     빌딩·토지·상가에 필요한 정보가 통째로 빠진다. 상품마다 다른 축을 앞에 세운다.
+       · 빌딩: 대지 평당가 + 연면적 평당가(상업용 시장의 표준 두 축) + 건물 개요
+       · 상가: 층·전용면적·수익률 감각(월세 중위)
+       · 토지: 지목·용도지역·㎡당 단가
+     표본이 얇으면 단정하지 않고 건수를 함께 적는다(얇은 표본 규칙). */
+  function _pySize(m){return m/3.305785;}
+  function _man(v){return comma(Math.round(v))+'만';}
+  var _mmT=mm;   /* 매매 거래 */
+  if(pt.t==='bldg'||pt.t==='comm'){
+    var _laT=_mmT.filter(function(t){return t.la&&t.p;});
+    var _laPy=med(_laT.map(function(t){return Math.round(t.p/_pySize(t.la));}));
+    var _flPy=med(_mmT.filter(function(t){return t.a;}).map(function(t){return Math.round(t.p/_pySize(t.a));}));
+    var _laMed=med(_laT.map(function(t){return t.la;}));
+    var _flMed=med(_mmT.filter(function(t){return t.a;}).map(function(t){return t.a;}));
+    var _wrMed=med(wo.filter(function(t){return t.r;}).map(function(t){return t.r;}));
+    var _rows='';
+    if(_laPy)_rows+=frow(IC.build,'대지 평당가 · 땅값 기준',_man(_laPy)+' ('+_laT.length+'건)');
+    if(_flPy)_rows+=frow(IC.build,(pt.t==='bldg'?'연면적 평당가 · 건물 바닥 합계 기준':'전용 평당가'),_man(_flPy));
+    if(_laMed)_rows+=frow(IC.home,'대지면적 중위',_laMed.toFixed(1)+'㎡('+PY(_laMed)+')');
+    if(_flMed)_rows+=frow(IC.home,(pt.t==='bldg'?'연면적 중위':'전용면적 중위'),_flMed.toFixed(1)+'㎡('+PY(_flMed)+')');
+    if(_wrMed)_rows+=frow(IC.cal,'월세 중위(참고)',_man(_wrMed)+'/월');
+    if(_rows){
+      h+='<div class="sec"><div class="lab">'+(pt.t==='bldg'?'빌딩 핵심 지표':'상가·오피스 핵심 지표')+'</div><div class="ov">'+_rows+'</div>'
+        +'<div class="note">'+(pt.t==='bldg'
+          ? '빌딩은 <b>대지 평당가</b>가 비교의 기준입니다(같은 값이라도 건물이 크면 연면적 평당가는 낮게 나옵니다). 대지면적은 국토부 실거래 신고 항목이며, 없는 거래는 계산에서 뺐습니다.'
+          : '구분상가·오피스는 층과 업종에 따라 단가 차이가 큽니다. 전용 평당가는 참고용이며 같은 건물이라도 층이 다르면 크게 달라집니다.')
+        +' 지번 일부가 비공개(예: 6**)인 거래가 있어 개별 물건 특정에는 한계가 있습니다.</div></div>';
+    }
+  }else if(pt.t==='land'){
+    var _lz=(pt.extra||''), _m2=med(_mmT.filter(function(t){return t.a;}).map(function(t){return Math.round(t.p/t.a);}));
+    var _aMed=med(_mmT.filter(function(t){return t.a;}).map(function(t){return t.a;}));
+    var _rows2='';
+    _rows2+=frow(IC.build,'지목',pt.name||'');
+    if(_lz)_rows2+=frow(IC.build,'용도지역',_lz);
+    if(_m2)_rows2+=frow(IC.home,'㎡당 단가 중위',_man(_m2)+'/㎡ (평당 '+_man(Math.round(_m2*3.305785))+')');
+    if(_aMed)_rows2+=frow(IC.home,'거래면적 중위',comma(Math.round(_aMed))+'㎡('+PY(_aMed)+')');
+    h+='<div class="sec"><div class="lab">토지 핵심 지표</div><div class="ov">'+_rows2+'</div>'
+      +'<div class="note">토지는 지목·용도지역·도로 접함·행위제한에 따라 같은 동네에서도 단가가 크게 갈립니다. 지분 거래가 섞이면 단가가 왜곡될 수 있습니다. 지번 일부는 비공개입니다.</div></div>';
+  }
   h+='<div class="sec"><div class="lab">실거래 vs 호가 · 매매·전세·월세</div><div class="cmp">'
     +'<div class="cmph"><span></span><span>실거래<small>체결가·중위</small></span><span>호가<small>협상 전·중위</small></span></div>'
     +cmpr('매매',mmR,mmH,arng(mm))+cmpr('전세',jeR,jeH,arng(je))+cmpr('월세',woR,woH,arng(wo))+'</div>'
