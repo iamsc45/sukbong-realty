@@ -254,8 +254,43 @@ window.SBAuth=(function(){
       login();
     };
   }
+  /* ── 헤더 로그인/내정보 버튼 (2026-08-09 석봉님 지시: 모든 페이지에 상시 노출) ──
+     지금까지는 관심단지 탭에 들어가야만 로그인 버튼을 만날 수 있었다. 페이지마다 다르게
+     붙이면 또 어긋나므로 여기서 한 번에 그린다. 각 페이지는 nav 안에 아래 한 줄만 두면 된다:
+       <span id="sbAuthBtn"></span>
+     비로그인=카카오 로그인 열기, 로그인=내정보 페이지로. 위치는 페이지 nav 스타일을 따른다. */
+  function mountHeader(){
+    /* sbAuthBtn=헤더(데스크톱), sbAuthBtnM=모바일 메뉴 패널 등 보조 자리. 있는 것만 그린다. */
+    var hosts=[document.getElementById('sbAuthBtn'),document.getElementById('sbAuthBtnM')].filter(Boolean);
+    if(!hosts.length)return;
+    /* 하위 폴더(글/…)에서도 열리도록 절대경로 */
+    var MY='/'+encodeURIComponent('내정보')+'.html';
+    function open(e){
+      e.preventDefault();
+      if(isIn()){location.href=MY;return;}
+      gate(null,null,{title:'로그인하고 내 정보를 모아보세요',
+        desc:'카카오로 3초 만에 시작합니다.<br>관심단지·저장한 LH 사업지·보고서 신청 이력을 한 화면에서 봅니다.'});
+    }
+    function draw(){
+      var on=isIn(), label=on?'내정보':'로그인';
+      hosts.forEach(function(h,i){
+        var wide=(h.id==='sbAuthBtnM');   /* 패널 안에서는 한 줄 버튼 */
+        h.innerHTML='<a href="#" class="sbAuthA" '
+          +'style="display:'+(wide?'block':'inline-flex')+';align-items:center;gap:5px;white-space:nowrap;'
+          +'text-align:'+(wide?'center':'left')+';text-decoration:none;font-weight:700;font-size:'+(wide?'14.5px':'13px')+';'
+          +'border:1.5px solid '+(on?'#141414':'#FEE500')+';background:'+(on?'transparent':'#FEE500')+';'
+          +'color:#141414;border-radius:'+(wide?'12px':'100px')+';padding:'+(wide?'11px 14px':'7px 13px')+'">'
+          +(on?'👤 '+nickname()+'님 · 내정보':label)+'</a>';
+        h.querySelector('.sbAuthA').onclick=open;
+      });
+    }
+    draw(); onChange(draw); whenReady(draw);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountHeader);
+  else mountHeader();
   init();
-  return {whenReady:whenReady,onChange:onChange,isIn:isIn,nickname:nickname,
+  return {mountHeader:mountHeader,
+    whenReady:whenReady,onChange:onChange,isIn:isIn,nickname:nickname,
     favHas:favHas,favAll:favAll,addFav:addFav,delFav:delFav,setLastN:setLastN,
     authEmail:authEmail,uid:uid,getNotifyEmail:getNotifyEmail,setNotifyEmail:setNotifyEmail,
     REPORT_FREE:REPORT_FREE,reportUsed:reportUsed,reportLeft:reportLeft,reportSubmit:reportSubmit,

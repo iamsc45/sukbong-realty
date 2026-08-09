@@ -70,6 +70,8 @@ textarea{min-height:96px;resize:vertical;line-height:1.6}
     <a href="https://blog.naver.com/seokbongnews" target="_blank" rel="noopener">블로그</a>
     <a href="channels.html">채널</a>
     <a href="%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html" class="on">대출 문의</a>
+  
+    <span id="sbAuthBtn"></span>
   </nav>
 </header>
 <main class="wrap">
@@ -161,7 +163,7 @@ textarea{min-height:96px;resize:vertical;line-height:1.6}
 <!-- 로그인은 이 화면에서 요구하지 않는다. 이미 로그인한 분을 회원과 연결하려고 얹을 뿐이라
      스크립트가 늦게 오거나 실패해도 접수는 그대로 된다(아래 uid()가 빈 값이 될 뿐). -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="assets/sb_auth.js?v=7"></script>
+<script src="assets/sb_auth.js?v=8"></script>
 <script>
 (function(){
   /* 접수처는 홈 광고 문의·LH 자금 문의와 같은 테이블이다. kind로 구분한다. */
