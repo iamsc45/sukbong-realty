@@ -871,8 +871,15 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
     var isDongish=/[동리가]$/.test(lastTok);
     if(!isRoad&&!isDongish){onNo();return;}   /* '흑석11' 같은 구역명 오탐 방지 */
     function vw(){
+      /* 지오코딩 2종(지번·도로명)이 다 실패하면 동 단위로 넘어간다. 이때 아무 말이 없으면
+         경매 카드로 들어온 사람은 "핀이 왜 없지?" 하게 되므로 그 사실을 알려 준다(2026-08-09). */
+      function no(){
+        try{var st=document.getElementById('stat');
+          if(st)st.textContent='"'+vv+'" 위치를 지도에서 찾지 못해 주변 지역으로 이동합니다';}catch(e){}
+        onNo();
+      }
       _vwGeocode(vv,isRoad?'ROAD':'PARCEL',function(p){_addrMark(p.lat,p.lng,p.text);},
-        function(){_vwGeocode(vv,isRoad?'PARCEL':'ROAD',function(p){_addrMark(p.lat,p.lng,p.text);},onNo);});
+        function(){_vwGeocode(vv,isRoad?'PARCEL':'ROAD',function(p){_addrMark(p.lat,p.lng,p.text);},no);});
     }
     if(isRoad||!window.SB||!SB.dongs){vw();return;}
     /* 동+지번: 우리 실거래 데이터에서 정확 매칭 → 건물 카드 */
