@@ -10,6 +10,16 @@
   var lastKey='', hlEl=null;
 
   document.body.classList.add('v2','skin-'+skin);
+
+  /* 헤더 높이는 페이지 폭에 따라 줄바꿈이 생겨 달라진다. 숫자를 박지 않고 실측해서
+     CSS 변수로 넘긴다(안 그러면 떠 있는 컨트롤이 헤더를 덮는다 — 첫 시안에서 그랬다). */
+  function fitTop(){
+    var h=document.querySelector('.site-header');
+    var t=h?Math.round(h.getBoundingClientRect().height):52;
+    document.documentElement.style.setProperty('--v2-top',t+'px');
+    try{if(window.map)setTimeout(function(){window.map.invalidateSize({animate:false});},60);}catch(e){}
+  }
+  window.addEventListener('resize',fitTop);
   if(P.get('tile')==='plain')document.body.classList.add('tile-plain');
 
   /* ── 스킨 전환 스위치(스테이징에만) ───────────────────────── */
@@ -185,5 +195,6 @@
     kick();
   }
 
-  mountSwitch(); mountList(); watchMarkers(); hook();
+  mountSwitch(); mountList(); watchMarkers(); hook(); fitTop();
+  setTimeout(fitTop,400); setTimeout(fitTop,1200);   /* 폰트·닉네임 로드로 헤더 높이가 늦게 바뀐다 */
 })();

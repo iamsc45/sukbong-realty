@@ -17,12 +17,16 @@ body.v2 .leaflet-tile{filter:saturate(.42) brightness(1.06) contrast(.96)}
 body.v2.tile-plain .leaflet-tile{filter:saturate(.9) brightness(1.01)}
 
 /* ── 1. 상단 컨트롤: 지도 위에 떠 있는 캡슐 ────────────────── */
-body.v2 #bar{position:absolute;top:12px;left:12px;z-index:900;
+body.v2 #bar{position:absolute;top:calc(var(--v2-top,52px) + 12px);left:12px;z-index:900;
   background:rgba(255,255,255,.97);backdrop-filter:blur(10px);
   border:0;border-radius:16px;padding:9px 12px;
   box-shadow:0 6px 24px rgba(20,20,20,.13),0 1px 3px rgba(20,20,20,.08);
   max-width:calc(100vw - 24px);row-gap:7px}
 body.v2.skin-a #bar{left:calc(var(--v2-list,352px) + 12px)}
+/* 목록이 지도를 덮지 않게 지도 자체를 옆으로 물린다(네이버부동산과 같은 방식).
+   폭이 바뀌므로 map_v2.js가 invalidateSize()를 부른다. */
+body.v2.skin-a #map{margin-left:var(--v2-list,352px)}
+body.v2.skin-a #legend{left:calc(var(--v2-list,352px) + 14px)}
 body.v2 #stat{margin-left:8px}
 
 /* 검색창을 제일 눈에 띄게 */
@@ -73,7 +77,7 @@ body.v2 .clus .cc{font-size:10px;opacity:.9}
 body.v2 .clus:hover{transform:scale(1.08)}
 
 /* ── 3. 좌측 목록 패널 (skin-a) ─────────────────────────────── */
-#v2list{display:none;position:absolute;left:0;top:0;bottom:0;width:var(--v2-list,352px);z-index:880;
+#v2list{display:none;position:absolute;left:0;top:var(--v2-top,52px);bottom:0;width:var(--v2-list,352px);z-index:880;
   background:#fff;box-shadow:2px 0 18px rgba(20,20,20,.09);flex-direction:column;overflow:hidden}
 body.v2.skin-a #v2list{display:flex}
 #v2list .v2h{padding:13px 16px 11px;border-bottom:1px solid #eee9dd;flex:0 0 auto}
@@ -128,7 +132,7 @@ body.v2.skin-b #v2sheet{display:flex}
 #v2sheet .v2more{padding:13px;text-align:center;font-size:12px;color:#6b6459;font-weight:700;cursor:pointer}
 
 /* ── 5. 스킨 전환 스위치(스테이징에만 있는 물건) ─────────────── */
-#v2skin{position:absolute;top:12px;right:12px;z-index:1100;display:flex;gap:0;
+#v2skin{position:absolute;top:calc(var(--v2-top,52px) + 12px);right:12px;z-index:1100;display:flex;gap:0;
   background:rgba(255,255,255,.97);border-radius:12px;padding:4px;
   box-shadow:0 6px 22px rgba(20,20,20,.14);font-size:11.5px}
 #v2skin button{border:0;background:transparent;font:inherit;font-size:11.5px;font-weight:700;
@@ -144,6 +148,9 @@ body.v2.skin-b #v2sheet{display:flex}
   body.v2 .sbtn,body.v2 #fbtn,body.v2 #modes button,body.v2 select,body.v2 #mcats button{height:32px}
   /* 목록은 두 스킨 모두 하단 시트로 (좁은 화면에서 좌측 패널은 지도를 다 먹는다) */
   body.v2.skin-a #v2list{display:none}
+  body.v2.skin-a #map{margin-left:0}
+  body.v2 #bar{top:calc(var(--v2-top,48px) + 8px)}
+  #v2skin{top:auto}
   body.v2.skin-a #v2sheet{display:flex}
   #v2sheet{max-height:72%}
   #v2skin{top:auto;bottom:calc(52px + env(safe-area-inset-bottom,0px));right:8px;font-size:11px}
