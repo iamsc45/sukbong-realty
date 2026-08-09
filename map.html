@@ -536,7 +536,10 @@ function render(){
     var pop='<div class="pop"><h4>'+pt.name+'<span class="badge" style="background:'+col+'">'+ti[0]+'</span></h4>'
       +'<div class="meta">'+pt.dong+' '+pt.jibun+(pt.extra?' · '+pt.extra:'')+' · '+txs.length+'건'+(pt.ax?' · <b style="color:#D4573F">지번 비공개 · 동 단위 개략 위치</b>':'')+'</div>'
       +'<div class="tw"><table><thead><tr><th>계약</th><th>거래</th><th>면적㎡</th><th>층</th><th>가격</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
-    var mk=L.marker([pt.lat,pt.lng],{icon:icon}).on('click',function(){showAptCard(pt,txs);});
+    /* 카드에는 필터를 걸지 않은 그 지점의 전 거래를 넘긴다(2026-08-09).
+       기본 필터가 '아파트·매매'가 되면서, 마커를 누르면 카드에서도 전세·월세가 사라져
+       검색으로 연 카드(전 거래 표시)와 내용이 달라졌다. 지도는 걸러 보되 카드는 다 보여준다. */
+    var mk=L.marker([pt.lat,pt.lng],{icon:icon}).on('click',function(){showAptCard(pt,(pt.txs||txs).slice());});
     mk.on('popupopen',function(){var el=mk.getElement();if(el){var t=el.querySelector('.pricetag');if(t)t.classList.add('sel');}});
     mk.on('popupclose',function(){var el=mk.getElement();if(el){var t=el.querySelector('.pricetag');if(t)t.classList.remove('sel');}});
     mk.addTo(layer);
