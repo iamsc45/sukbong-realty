@@ -296,7 +296,7 @@ function matchRF(cat,tag){
   return (curRF['재개발']&&cat==='재개발') || (curRF['재건축']&&(cat==='재건축'||cat==='주거환경'))
     || (curRF['신통']&&(tag==='신통'||cat==='신통')) || (curRF['모아']&&tag==='모아');
 }
-try{var P0=new URLSearchParams(location.search);var t0=P0.get('t');if(t0&&TYPE[t0]){curTset={};curTset[t0]=true;}
+try{var P0=new URLSearchParams(location.search);var t0=P0.get('t');if(t0&&TYPE[t0]){curTset={};curTset[t0]=true;window._TPARAM=t0;}
 var u0=P0.get('u');if(u0==='매매'||u0==='전세'||u0==='월세')curU=u0;}catch(e){}
 /* 상세 필터 상태 (매매가·보증금·월세·면적·연식·층) — fXc는 직접 입력 [최소,최대+1) 만원 */
 var fS='all', fB='all', fW='all', fA='all', fY='all', fF='all';
@@ -526,7 +526,9 @@ function mkChips(elId,items,cur,setter){
       else{if(!curTset)curTset={};if(curTset[it[0]])delete curTset[it[0]];else curTset[it[0]]=true;if(Object.keys(curTset).length===0)curTset=null;}
       syncUI();render();});
     el.appendChild(b);});
-  syncUI();})();
+  syncUI();
+  window._syncTypeUI=syncUI;   /* 상품 필터를 코드로 바꿀 때 칩 표시도 맞춘다(2026-08-08) */
+})();
 mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월세','월세']],curU,function(v){curU=v;});
 mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',function(v){curD=v;});
 /* 모바일 카테고리 바텀시트 (누르면 목록에서 선택) */
@@ -792,8 +794,26 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
     setTimeout(function(){try{window._addrMk.openPopup();}catch(e){}},300);
     var st=document.getElementById('stat');if(st)st.textContent='주소: '+label;
     /* 다른 지역 주소로 건너뛴 경우 앞 검색 필터 때문에 0건이 되는 것을 푼다(2026-08-08) */
-    setTimeout(function(){try{if(window._unfilterIfEmpty)window._unfilterIfEmpty();}catch(e){}},700);
+    setTimeout(function(){try{
+      if(window._unfilterIfEmpty)window._unfilterIfEmpty();
+      if(window._relaxTypeIfEmpty)window._relaxTypeIfEmpty(label);
+    }catch(e){}},700);
   }
+  /* 경매·공매에서 넘어온 상품 필터(?t=)로 주변에 그 상품 거래가 하나도 없으면 빈 화면이 된다
+     (시흥 장곡동 근생 낙찰 사례 — 주변에 상가 실거래 0, 아파트만 14곳). 필터를 자동으로 풀고
+     그 사실을 알려 준다. 사용자가 직접 켠 필터는 건드리지 않는다(URL로 들어온 첫 화면 한정). */
+  window._relaxTypeIfEmpty=function(label){
+    if(!window._TPARAM||window._TRELAXED)return false;
+    if(!curTset)return false;
+    if(window._PTS&&window._PTS.length)return false;
+    var kept=TYPE[window._TPARAM]?TYPE[window._TPARAM][0]:'해당 상품';
+    curTset=null;window._TRELAXED=1;
+    try{if(window._syncTypeUI)window._syncTypeUI();}catch(e){}
+    render();
+    var st=document.getElementById('stat');
+    if(st)st.textContent=(label?'주소: '+label+' · ':'')+'주변에 '+kept+' 실거래가 없어 전체 상품을 표시합니다';
+    return true;
+  };
   function _vwGeocode(addr,type,cb,onerr){
     var url='https://api.vworld.kr/req/address?service=address&request=getcoord&version=2.0&crs=epsg:4326'
       +'&address='+encodeURIComponent(addr)+'&refine=true&simple=false&format=json&type='+type+'&key='+VKEY;
@@ -880,8 +900,11 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
       tryAddress(v,function(){
         tryRedevZone(v,function(){
           if(!findAndGo(v)){var st=document.getElementById('stat');if(st)st.textContent='"'+v+'" 검색 결과를 찾지 못했습니다';setFcount('"'+v+'" 검색 결과 없음');}
-          /* 지역 이동은 됐는데 앞 검색 필터 탓에 0건인 경우를 푼다(2026-08-08) */
-          else setTimeout(function(){try{if(window._unfilterIfEmpty)window._unfilterIfEmpty();}catch(e){}},700);
+          /* 지역 이동은 됐는데 앞 검색 필터(또는 경매에서 넘어온 상품 필터) 탓에 0건인 경우를 푼다(2026-08-08) */
+          else setTimeout(function(){try{
+            if(window._unfilterIfEmpty)window._unfilterIfEmpty();
+            if(window._relaxTypeIfEmpty)window._relaxTypeIfEmpty('');
+          }catch(e){}},700);
         });
       });
     }
