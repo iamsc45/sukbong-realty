@@ -308,8 +308,14 @@ function matchRF(cat,tag){
   return (curRF['재개발']&&cat==='재개발') || (curRF['재건축']&&(cat==='재건축'||cat==='주거환경'))
     || (curRF['신통']&&(tag==='신통'||cat==='신통')) || (curRF['모아']&&tag==='모아');
 }
+/* 🔴 첫 화면 기본값 = 아파트·매매 (2026-08-09 석봉님 지시).
+   데이터가 늘면서 전 상품·전 거래유형을 한 번에 그리면 지도가 버벅인다. 가장 많이 보는
+   조합을 기본으로 두고, 나머지는 칩으로 켜게 한다. URL에 t·u가 오면 그쪽이 우선이다
+   (블로그·경매 딥링크가 지정한 상품을 기본값이 덮으면 안 된다). */
 try{var P0=new URLSearchParams(location.search);var t0=P0.get('t');if(t0&&TYPE[t0]){curTset={};curTset[t0]=true;window._TPARAM=t0;}
-var u0=P0.get('u');if(u0==='매매'||u0==='전세'||u0==='월세')curU=u0;}catch(e){}
+else{curTset={apt:true};window._TDEFAULT=1;}
+var u0=P0.get('u');if(u0==='매매'||u0==='전세'||u0==='월세')curU=u0;
+else if(!P0.get('mode')){curU='매매';window._UDEFAULT=1;}}catch(e){curTset={apt:true};curU='매매';window._TDEFAULT=1;window._UDEFAULT=1;}
 /* 상세 필터 상태 (매매가·보증금·월세·면적·연식·층) — fXc는 직접 입력 [최소,최대+1) 만원 */
 var fS='all', fB='all', fW='all', fA='all', fY='all', fF='all';
 var fSc=null, fBc=null, fWc=null;
@@ -551,6 +557,10 @@ function mkChips(elId,items,cur,setter){
       b.classList.add('on');setter(it[0]);render();});
     el.appendChild(b);
   });
+  /* 코드로 값이 바뀌었을 때 칩 표시를 맞추기 위한 동기화기(2026-08-09) */
+  if(elId==='uchips')window._syncUUI=function(){
+    el.querySelectorAll('.chip').forEach(function(x,i){x.classList.toggle('on',items[i][0]===curU);});
+  };
 }
 (function(){var el=document.getElementById('typechips');
   var items=[['all','전체',null]].concat(Object.keys(TYPE).map(function(t){return [t,TYPE[t][0],TYPE[t][1]];}));
@@ -840,11 +850,15 @@ mkChips('dchips',[['all','전체'],['2026-07','7월'],['2026-06','6월']],'all',
      (시흥 장곡동 근생 낙찰 사례 — 주변에 상가 실거래 0, 아파트만 14곳). 필터를 자동으로 풀고
      그 사실을 알려 준다. 사용자가 직접 켠 필터는 건드리지 않는다(URL로 들어온 첫 화면 한정). */
   window._relaxTypeIfEmpty=function(label){
-    if(!window._TPARAM||window._TRELAXED)return false;
+    /* 기본값(아파트)로 들어온 경우도 대상 — 상가·토지 딥링크가 빈 화면이 되면 안 된다(2026-08-09) */
+    if((!window._TPARAM&&!window._TDEFAULT)||window._TRELAXED)return false;
     if(!curTset)return false;
     if(window._PTS&&window._PTS.length)return false;
-    var kept=TYPE[window._TPARAM]?TYPE[window._TPARAM][0]:'해당 상품';
+    var _tk=window._TPARAM||Object.keys(curTset)[0];
+    var kept=TYPE[_tk]?TYPE[_tk][0]:'해당 상품';
     curTset=null;window._TRELAXED=1;
+    /* 기본 거래유형(매매)만 걸려 비어 보이는 경우도 함께 푼다(전세·월세만 있는 지점) */
+    if(window._UDEFAULT&&curU!=='all'){curU='all';try{if(window._syncUUI)window._syncUUI();}catch(e){}}
     try{if(window._syncTypeUI)window._syncTypeUI();}catch(e){}
     render();
     /* 상태줄은 다음 이동에서 덮이므로 배너로도 알린다(2026-08-09) */
