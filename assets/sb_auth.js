@@ -275,12 +275,16 @@ window.SBAuth=(function(){
       var on=isIn(), label=on?'내정보':'로그인';
       hosts.forEach(function(h,i){
         var wide=(h.id==='sbAuthBtnM');   /* 패널 안에서는 한 줄 버튼 */
+        /* 색을 사이트 톤에 맞춘다(2026-08-10 석봉님 지적: 노란 버튼만 혼자 튄다).
+           카카오 노랑은 로그인 모달의 '카카오로 시작하기' 버튼에만 남기고,
+           헤더 버튼은 다른 메뉴와 같은 잉크색 외곽선으로 조용히 둔다. */
         h.innerHTML='<a href="#" class="sbAuthA" '
           +'style="display:'+(wide?'block':'inline-flex')+';align-items:center;gap:5px;white-space:nowrap;'
-          +'text-align:'+(wide?'center':'left')+';text-decoration:none;font-weight:700;font-size:'+(wide?'14.5px':'13px')+';'
-          +'border:1.5px solid '+(on?'#141414':'#FEE500')+';background:'+(on?'transparent':'#FEE500')+';'
-          +'color:#141414;border-radius:'+(wide?'12px':'100px')+';padding:'+(wide?'11px 14px':'7px 13px')+'">'
-          +(on?'👤 '+nickname()+'님 · 내정보':label)+'</a>';
+          +'text-align:'+(wide?'center':'left')+';text-decoration:none;font-weight:700;font-size:'+(wide?'14.5px':'12.5px')+';'
+          +'border:1px solid '+(on?'#141414':'#c9c6bd')+';background:'+(on?'#141414':'transparent')+';'
+          +'color:'+(on?'#fff':'#3B3B39')+';border-radius:'+(wide?'12px':'100px')+';padding:'+(wide?'11px 14px':'6px 13px')+';'
+          +'transition:border-color 150ms ease,color 150ms ease">'
+          +(on?(nickname()+'님 · 내정보'):label)+'</a>';
         h.querySelector('.sbAuthA').onclick=open;
       });
     }
