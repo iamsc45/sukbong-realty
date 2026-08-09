@@ -779,10 +779,24 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
           '근거: 공고문 · '+esc(MU.why)));
       }
     }else{
-      H.push(item('최소 매입 호수','공고문에 기준 없음','n',
-        (HQ?esc(HQ)+'지역본부 ':'')+'공고문에 최소 신청 호수가 명시돼 있지 않습니다. '
-        +'판정하지 않습니다. 근거 없는 숫자로 판단하시면 안 됩니다.',
-        '계획 '+n(units)+'호 · 전용 '+area+'㎡('+PY(area)+') · 방식 '+esc(kind)));
+      /* 공고문에 없더라도 사업설명회 보도로 알려진 참고 기준이 있으면 함께 알린다
+         (2026-08-08 이용자 제보: 경기북부 50호·규제지역 10호 기준이 있는데 "기준 없음"으로 나온다).
+         ⚠️ 참고값은 판정에 쓰지 않는다 — 출처를 밝히고 공고문 확인을 안내하는 데까지만. */
+      var RF=(LD&&LD.minu_ref&&HQ)?LD.minu_ref[HQ]:null;
+      var _nu=(LD&&LD.noticeUrl)||'https://apply.lh.or.kr/lhapply/apply/pch/list.do?mi=1076';
+      var _link='<a href="'+_nu+'" target="_blank" rel="noopener" style="font-weight:700;text-decoration:underline">LH청약플러스 주택매입공고 열기</a>';
+      if(RF){
+        H.push(item('최소 매입 호수','공고문 미확인 · 참고 기준 있음','n',
+          (HQ?esc(HQ)+'지역본부 ':'')+'공고문 원문에서는 최소 호수를 확인하지 못했습니다. 다만 사업설명회 보도로는 <b>'+RF.n+'호 이상</b>이 안내됐습니다. '
+          +'계획 '+n(units)+'호'+(units<RF.n?'는 이 참고 기준에 못 미칩니다.':'는 이 참고 기준을 넘습니다.')
+          +' 참고값이라 판정에는 쓰지 않으니 접수 전 공고문을 직접 확인하십시오. '+_link,
+          '참고 출처: '+esc(RF.src)+' · 계획 '+n(units)+'호 · 전용 '+area+'㎡('+PY(area)+') · 방식 '+esc(kind)));
+      }else{
+        H.push(item('최소 매입 호수','공고문에 기준 없음','n',
+          (HQ?esc(HQ)+'지역본부 ':'')+'공고문에 최소 신청 호수가 명시돼 있지 않습니다. '
+          +'판정하지 않습니다. 근거 없는 숫자로 판단하시면 안 됩니다. '+_link,
+          '계획 '+n(units)+'호 · 전용 '+area+'㎡('+PY(area)+') · 방식 '+esc(kind)));
+      }
     }
 
     /* 아직 자동 판정이 안 되는 두 항목 */

@@ -106,7 +106,9 @@ h1 .thin{color:var(--g3)}
 .hero-sub{font-size:clamp(15px,1.5vw,18px);font-weight:600;color:var(--g1);margin:14px 0 0;word-break:keep-all;line-height:1.5;letter-spacing:-0.02em}
 .prods{display:flex;gap:8px;flex-wrap:wrap;margin:28px 0 0}
 .prod{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--hair);background:var(--wh);
-  border-radius:100px;padding:7px 15px;font-size:12.5px;font-weight:600;color:var(--g1)}
+  border-radius:100px;padding:7px 15px;font-size:12.5px;font-weight:600;color:var(--g1);
+  text-decoration:none;transition:border-color 150ms ease,background 150ms ease}
+.prod:hover{border-color:var(--blk);background:var(--bg)}
 .prod .dot{width:8px;height:8px;border-radius:50%}
 .hero-cta{display:flex;gap:10px}
 .btn{display:inline-block;padding:15px 30px;border-radius:100px;font-size:14.5px;font-weight:700;
@@ -580,17 +582,19 @@ document.addEventListener('click',function(e){if(n.classList.contains('m-open')&
     <input id="dQ" type="search" placeholder="단지·지역·재개발 구역·지번 검색 (예: 헬리오시티, 흑석11, 사당동 1154)" autocomplete="off">
     <button type="submit">검색</button>
   </form>
+  <!-- 상품 칩은 눌리게(2026-08-08 이용자 제보: 버튼처럼 생겼는데 장식이라 헷갈린다).
+       실거래 7종은 지도를 그 상품 필터가 켜진 채로 열고, 나머지 3종은 해당 페이지로 보낸다. -->
   <div class="prods">
-    <span class="prod"><span class="dot" style="background:#2554E0"></span>아파트</span>
-    <span class="prod"><span class="dot" style="background:#7A5AF8"></span>오피스텔</span>
-    <span class="prod"><span class="dot" style="background:#0FA98A"></span>연립·다세대</span>
-    <span class="prod"><span class="dot" style="background:#6E6E6A"></span>단독·다가구</span>
-    <span class="prod"><span class="dot" style="background:#D4573F"></span>빌딩</span>
-    <span class="prod"><span class="dot" style="background:#E8A13A"></span>상가·오피스</span>
-    <span class="prod"><span class="dot" style="background:#4C9A4C"></span>토지</span>
-    <span class="prod"><span class="dot" style="background:#c0562e"></span>재개발·재건축</span>
-    <span class="prod"><span class="dot" style="background:#0F6E56"></span>경매·공매</span>
-    <span class="prod"><span class="dot" style="background:#185FA5"></span>청약·분양</span>
+    <a class="prod" href="map.html?t=apt"><span class="dot" style="background:#2554E0"></span>아파트</a>
+    <a class="prod" href="map.html?t=offi"><span class="dot" style="background:#7A5AF8"></span>오피스텔</a>
+    <a class="prod" href="map.html?t=villa"><span class="dot" style="background:#0FA98A"></span>연립·다세대</a>
+    <a class="prod" href="map.html?t=house"><span class="dot" style="background:#6E6E6A"></span>단독·다가구</a>
+    <a class="prod" href="map.html?t=bldg"><span class="dot" style="background:#D4573F"></span>빌딩</a>
+    <a class="prod" href="map.html?t=comm"><span class="dot" style="background:#E8A13A"></span>상가·오피스</a>
+    <a class="prod" href="map.html?t=land"><span class="dot" style="background:#4C9A4C"></span>토지</a>
+    <a class="prod" href="map.html?mode=redev"><span class="dot" style="background:#c0562e"></span>재개발·재건축</a>
+    <a class="prod" href="auction.html"><span class="dot" style="background:#0F6E56"></span>경매·공매</a>
+    <a class="prod" href="apply.html"><span class="dot" style="background:#185FA5"></span>청약·분양</a>
   </div>
   <div class="block blk-anim">
     <div class="block-in">
