@@ -429,16 +429,55 @@ function render(pt,code){
   var lineup=ars.length?('<div class="sec"><div class="lab">평형 라인업 · 실거래 확인 전용면적 '+ars.length+'종</div><div class="chips">'
     +ars.map(function(a){return '<span class="chip">'+a+'㎡<small>'+PY(a)+'</small></span>';}).join('')
     +'</div><div class="note" style="padding-top:6px">최근 실거래(매매·전월세)에 나타난 전용면적입니다. 거래가 없던 평형은 표시되지 않을 수 있습니다.</div></div>'):'';
-  // 대출
-  var base=mmamt||0,cap=base<=150000?60000:base<=250000?40000:20000;
-  var loan='<div class="loan"><div class="lt">'+(base?'매매 중위 '+eok(base)+' 기준 (규제지역 가정)':'시세 표본 부족')+'</div>'
-    +'<div class="lrow"><span>집값 구간 상한</span><span class="lv">'+(base?eok(cap):'·')+'</span></div>'
-    +'<div class="lrow"><span>LTV 40% 기준</span><span class="lv">'+(base?eok(Math.round(base*0.4)):'·')+'</span></div>'
-    +'<div class="lrow" style="border-top:1px solid #ded8cc;margin-top:3px;padding-top:6px;font-weight:700"><span>은행 예상 한도 (낮은 값)</span><span class="lv">'+(base?eok(Math.min(cap,Math.round(base*0.4))):'·')+'</span></div>'
-    +'<div class="note">2026.04 시행 규제(작성 2026.07.25). 소득(DSR)·은행별로 더 낮아질 수 있고 비규제는 다릅니다. 대출 권유·한도 보장 아님. <a href="재개발_기초상식.html#loan-limit" style="color:var(--brass)">자세히 →</a></div>'
-    /* 대출 문의(2026-08-02 석봉님 지시) — 지금은 준비 중 안내. 목적지 교체는 대출문의.html 한 파일만 */
-    +'<div style="margin-top:8px"><a href="%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html?ctx='+encodeURIComponent(pt.name+' '+(pt.dong||''))+'" style="font-size:12.5px;color:#8a8071;text-decoration:underline" onclick="if(window.gtag)gtag(\'event\',\'loan_inquiry_click\',{from:\'apt_detail\'})">💬 담보 조건 대출 문의</a></div></div>';
-  h+=lineup;
+  /* 🔴 대출 안내는 상품별로 다르다(2026-08-09 석봉님 지시).
+     종전에는 아파트·상가·빌딩·토지에 똑같이 주택 규제(집값 구간 상한 + LTV 40%)를 적용했다.
+     주택 규제는 주택 담보에만 적용되고, 상가·빌딩·토지는 감정가 기준 담보인정비율과
+     임대수입(RTI)·사업성으로 심사한다. 틀린 숫자를 보여주느니 구조를 정확히 알리고
+     정확한 한도는 상담으로 넘긴다(담보대출이 우리 본업이라 신뢰가 곧 매출이다). */
+  var _isHouse=(pt.t==='apt'||pt.t==='offi'||pt.t==='villa'||pt.t==='house'||!pt.t);
+  var _loanTitle='은행 대출 한도 (규제지역 기준)';
+  var loan='';
+  function _lrow(k,v){return '<div class="lrow"><span>'+k+'</span><span class="lv">'+v+'</span></div>';}
+  var _ctaLoan='<div style="margin-top:8px"><a href="%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html?ctx='
+    +encodeURIComponent(pt.name+' '+(pt.dong||''))+'" style="font-size:12.5px;color:#8a8071;text-decoration:underline" '
+    +'onclick="if(window.gtag)gtag(\'event\',\'loan_inquiry_click\',{from:\'detail_'+(pt.t||'apt')+'\'})">💬 이 물건 담보 조건 문의</a></div>';
+  if(_isHouse){
+    var base=mmamt||0,cap=base<=150000?60000:base<=250000?40000:20000;
+    loan='<div class="loan"><div class="lt">'+(base?'매매 중위 '+eok(base)+' 기준 (규제지역 가정)':'시세 표본 부족')+'</div>'
+      +_lrow('집값 구간 상한',(base?eok(cap):'·'))
+      +_lrow('LTV 40% 기준',(base?eok(Math.round(base*0.4)):'·'))
+      +'<div class="lrow" style="border-top:1px solid #ded8cc;margin-top:3px;padding-top:6px;font-weight:700"><span>은행 예상 한도 (낮은 값)</span><span class="lv">'+(base?eok(Math.min(cap,Math.round(base*0.4))):'·')+'</span></div>'
+      +'<div class="note">2026.04 시행 주택담보대출 규제(작성 2026.07.25). 소득(DSR)·은행별로 더 낮아질 수 있고 비규제지역은 다릅니다. 대출 권유·한도 보장 아님. <a href="재개발_기초상식.html#loan-limit" style="color:var(--brass)">자세히 →</a></div>'
+      +_ctaLoan+'</div>';
+  }else if(pt.t==='comm'||pt.t==='bldg'){
+    _loanTitle=(pt.t==='bldg'?'빌딩 담보대출은 이렇게 봅니다':'상가·오피스 담보대출은 이렇게 봅니다');
+    var _mmb=mmamt||0;
+    /* 임대수입 추정: 이 물건의 월세 실거래 중위(보증금 제외 순수 월세) */
+    var _wr=med(wo.filter(function(t){return t.r;}).map(function(t){return t.r;}));
+    var _yr=_wr?Math.round(_wr*12):0;
+    loan='<div class="loan"><div class="lt">주택 규제(LTV·DSR·집값 구간 상한)가 적용되지 않는 상품입니다</div>'
+      +_lrow('한도 기준','매매가가 아니라 <b>감정평가액</b>')
+      +_lrow('심사 축','담보인정비율 + 임대수입(RTI) + 사업성')
+      +(_mmb?_lrow('최근 매매 중위(참고)',eok(_mmb)):'')
+      +(_yr?_lrow('연 임대수입 추정(월세 중위×12)',eok(_yr)):'')
+      +'<div class="note">임대사업자 대출은 연 임대수입이 이자를 얼마나 덮는지(RTI)를 함께 봅니다. 공실·업종·층·권리관계에 따라 한도가 크게 달라져 여기서는 숫자를 단정하지 않습니다. 대출 권유·한도 보장 아님.</div>'
+      +_ctaLoan+'</div>';
+  }else if(pt.t==='land'){
+    _loanTitle='토지 담보대출은 이렇게 봅니다';
+    var _lb=mmamt||0;
+    loan='<div class="loan"><div class="lt">주택 규제가 적용되지 않으며, 땅의 성격에 따라 편차가 가장 큽니다</div>'
+      +_lrow('한도 기준','감정평가액 (공시지가·거래사례 반영)')
+      +_lrow('좌우하는 것','지목 · 용도지역 · 도로 접함 · 행위제한')
+      +(_lb?_lrow('최근 매매 중위(참고)',eok(_lb)):'')
+      +'<div class="note">맹지·개발제한·지분 거래는 담보 가치가 크게 낮아지고 취급이 안 되기도 합니다. 지목과 용도지역이 같아도 위치에 따라 감정가가 달라집니다. 대출 권유·한도 보장 아님.</div>'
+      +_ctaLoan+'</div>';
+  }else{
+    _loanTitle='담보대출 참고';
+    loan='<div class="loan"><div class="lt">이 상품은 물건 성격에 따라 심사 기준이 달라집니다</div>'
+      +'<div class="note">감정평가액과 담보인정비율, 임대수입·사업성을 함께 봅니다. 정확한 조건은 물건별 확인이 필요합니다. 대출 권유·한도 보장 아님.</div>'
+      +_ctaLoan+'</div>';
+  }
+h+=lineup;
   var _fee=findFee(code,pt.name);
   /* 대표 평형 = 거래가 가장 많은 전용면적. 84.66·84.99처럼 소수만 다른 같은 평형이
      따로 세어지면 실제 주력 평형이 밀리므로 1㎡ 단위로 묶어 최빈 구간을 고른다. */
@@ -448,7 +487,7 @@ function render(pt,code){
     return b?s[b]/c[b]:0;})();
   h+=feeSec(_fee,_myA);
   h+='<div class="grid2"><div class="sec"><div class="lab">평형별 시세 (전용)</div>'+(pyr||'<div style="color:#8a8071;padding:8px 2px">최근 매매 표본 부족</div>')+'</div>'
-    +'<div class="sec"><div class="lab">은행 대출 한도 (규제지역 기준)</div>'+loan+'</div></div>';
+    +'<div class="sec"><div class="lab">'+_loanTitle+'</div>'+loan+'</div></div>';
   var _tr=findTrend(code,pt.name,pt.dong);
   h+='<div class="sec"><div class="lab">시세 추이 (평당·연도별)</div>'
     +(_tr?trendSection(_tr):'<div class="soon">'
