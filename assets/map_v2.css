@@ -188,6 +188,8 @@ body.v2 .leaflet-control-zoom a:first-child{border-bottom:1px solid #eee9dd}
     -webkit-overflow-scrolling:touch;scrollbar-width:none;width:100%;padding:2px 12px 1px;gap:13px}
   body.v2 .site-header nav::-webkit-scrollbar{display:none}
   body.v2 .site-header nav a,body.v2 .site-header nav span{flex:0 0 auto}
-  /* 스킨 스위치가 시트 손잡이를 덮어 눌리지 않았다 */
-  #v2skin{bottom:auto;top:calc(var(--v2-top,80px) + 46px);right:8px}
+  /* 스킨 스위치 자리 찾기(모바일): 하단은 시트 손잡이, 상단은 컨트롤바가 이미 쓴다.
+     둘 다 피해 컨트롤바 아래 왼쪽에 붙인다. */
+  #v2skin{bottom:auto;top:calc(var(--v2-top,80px) + 96px);left:8px;right:auto;
+    background:rgba(255,255,255,.94);padding:3px}
 }
