@@ -35,7 +35,7 @@ body.mmap #map .rfc.trade{display:none!important}
 #mlayers button.on i{opacity:1}
 #mlayers button[data-l="trade"].on{background:#2554E0}
 #mlayers button[data-l="redev"].on{background:#C0562E}
-#mlayers button[data-l="poi"].on{background:#0F6E56}
+#mlayers button[data-l="old"].on{background:#A8402A}
 
 /* ── 3. 우측 세로 보조 버튼 ───────────────────────────────── */
 #mtools{position:absolute;right:8px;top:10px;z-index:900;display:flex;flex-direction:column;gap:6px}

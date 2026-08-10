@@ -81,8 +81,20 @@ body.v2 .pricetag .nm{display:none}
 body.v2.z16 .pricetag .nm,body.v2.z17 .pricetag .nm{display:block;font-size:10px;font-weight:500;
   color:#6B707A;max-width:96px;margin:0 auto;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-body.v2 .pricetag:hover{transform:translateY(-1px);z-index:10000;
-  box-shadow:0 4px 12px rgba(16,18,24,.2),0 0 0 1px var(--c,#2554E0)}
+/* 가리킨 물건은 **색을 채운다**(2026-08-10 석봉님: 테두리만으로는 티가 안 난다).
+   흰 카드가 깔린 화면에서 한 장만 상품색으로 물들면 눈이 바로 따라간다.
+   마우스로 올린 것과 목록에서 가리킨 것을 같은 모습으로 맞춘다. */
+body.v2 .pricetag:hover,body.v2 .pricetag.hl{
+  background:var(--c,#2554E0) !important;color:#fff;
+  transform:translateY(-3px) scale(1.14);z-index:10001;
+  box-shadow:0 8px 20px rgba(16,18,24,.32),0 0 0 2px #fff}
+body.v2 .pricetag:hover:before,body.v2 .pricetag.hl:before{background:rgba(255,255,255,.75)}
+body.v2 .pricetag:hover:after,body.v2 .pricetag.hl:after{border-top-color:var(--c,#2554E0)}
+body.v2 .pricetag:hover .n,body.v2 .pricetag.hl .n,
+body.v2 .pricetag:hover .nm,body.v2 .pricetag.hl .nm{color:rgba(255,255,255,.92)}
+/* 확대하지 않은 줌에서도 가리키면 단지명이 보이게 — 어느 단지인지가 궁금해서 올리는 것이다 */
+body.v2 .pricetag:hover .nm,body.v2 .pricetag.hl .nm{display:block;font-size:10px;max-width:120px;
+  margin:0 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 body.v2 .pricetag.sel{box-shadow:0 4px 14px rgba(16,18,24,.24),0 0 0 2px #16181D}
 body.v2 .pricetag.apx{opacity:.9}
 body.v2 .pricetag.apx:before{background:repeating-linear-gradient(90deg,var(--c,#2554E0) 0 4px,transparent 4px 7px)}
@@ -119,8 +131,10 @@ body.v2.skin-a #v2list{display:flex}
 #v2list .v2b{flex:1;overflow-y:auto;overscroll-behavior:contain}
 #v2list .v2i{display:flex;gap:11px;padding:12px 15px;border-bottom:1px solid #F1F3F7;cursor:pointer;
   transition:background .12s ease}
-#v2list .v2i:hover{background:#F7F9FC}
-#v2list .v2i.on{background:#EEF3FF;box-shadow:inset 3px 0 0 var(--c,#2554E0)}
+/* 목록도 지도와 같은 세기로 반응하게(2026-08-10). 전에는 #F7F9FC라 거의 안 보였다. */
+#v2list .v2i:hover{background:#EEF3FF;box-shadow:inset 4px 0 0 var(--c,#2554E0)}
+#v2list .v2i:hover .nm{color:var(--c,#2554E0)}
+#v2list .v2i.on{background:#E3ECFF;box-shadow:inset 4px 0 0 var(--c,#2554E0)}
 #v2list .v2i .ic{flex:0 0 auto;width:38px;height:38px;border-radius:10px;display:flex;
   align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;letter-spacing:-.03em;
   background:var(--c,#2554E0)}

@@ -70,10 +70,11 @@
     var LY=document.createElement('div'); LY.id='mlayers';
     LY.innerHTML=
       '<button type="button" data-l="trade" class="on"><i class="ti ti-home-dollar" aria-hidden="true"></i>실거래</button>'
-     +'<button type="button" data-l="redev"><i class="ti ti-building-community" aria-hidden="true"></i>재개발</button>';
+     +'<button type="button" data-l="redev"><i class="ti ti-building-community" aria-hidden="true"></i>재개발</button>'
+     +'<button type="button" data-l="old"><i class="ti ti-building-warehouse" aria-hidden="true"></i>노후</button>';
     mapEl.appendChild(LY);
 
-    var st={trade:true,redev:false};
+    var st={trade:true,redev:false,old:false};
     function paint(){
       LY.querySelectorAll('button').forEach(function(b){b.classList.toggle('on',!!st[b.dataset.l]);});
     }
@@ -97,7 +98,13 @@
     LY.addEventListener('click',function(e){
       var b=e.target.closest('button'); if(!b)return;
       var k=b.dataset.l;
-      /* 둘 다 꺼지면 빈 지도가 된다. 마지막 하나는 못 끄게 막는다. */
+      /* 노후는 겹쳐 보는 레이어라 실거래·재개발과 상관없이 켜고 끈다 */
+      if(k==='old'){
+        st.old=!st.old;
+        if(window._SBOLD)window._SBOLD.set(st.old);
+        paint(); return;
+      }
+      /* 실거래·재개발 둘 다 꺼지면 빈 지도가 된다. 마지막 하나는 못 끄게 막는다. */
       if(st[k]&&!st[k==='trade'?'redev':'trade'])return;
       st[k]=!st[k]; applyLayers();
     });
@@ -108,6 +115,8 @@
     var TL=document.createElement('div'); TL.id='mtools';
     TL.innerHTML=
       '<button type="button" data-t="sat"><i class="ti ti-satellite" aria-hidden="true"></i>위성</button>'
+     +'<button type="button" data-t="cad"><i class="ti ti-vector-triangle" aria-hidden="true"></i>지적도</button>'
+     +'<button type="button" data-t="nm"><i class="ti ti-tag" aria-hidden="true"></i>단지명</button>'
      +'<button type="button" data-t="loc"><i class="ti ti-current-location" aria-hidden="true"></i>현위치</button>';
     mapEl.appendChild(TL);
 
@@ -125,20 +134,13 @@
     new MutationObserver(place).observe(document.getElementById('bar'),{attributes:true,attributeFilter:['class','style']});
     new MutationObserver(place).observe(document.body,{attributes:true,attributeFilter:['class']});
 
-    var sat=null;
+    /* 위성·지적도·단지명은 map_old.js가 PC와 공용으로 갖고 있다. 여기서는 부르기만 한다. */
     TL.addEventListener('click',function(e){
       var b=e.target.closest('button'); if(!b)return;
-      if(b.dataset.t==='sat'){
-        if(!sat){
-          /* 키를 새로 적지 않고 이미 붙어 있는 배경 타일 주소에서 갈아 끼운다 */
-          var base=null;
-          window.map.eachLayer(function(l){if(!base&&l._url&&l._url.indexOf('/Base/')>0)base=l;});
-          if(!base)return;
-          sat=L.tileLayer(base._url.replace('/Base/','/Satellite/').replace('.png','.jpeg'),
-            {attribution:'&copy; VWorld(국토교통부)',maxZoom:19,maxNativeZoom:18,minZoom:6});
-        }
-        if(window.map.hasLayer(sat)){window.map.removeLayer(sat);b.classList.remove('on');}
-        else{sat.addTo(window.map);sat.bringToBack();b.classList.add('on');}
+      var t=b.dataset.t, T=window._SBTOOL;
+      if(t==='sat'||t==='cad'||t==='nm'){
+        if(!T)return;
+        b.classList.toggle('on', t==='sat'?T.sat():t==='cad'?T.cad():T.names());
         return;
       }
       if(!navigator.geolocation)return;

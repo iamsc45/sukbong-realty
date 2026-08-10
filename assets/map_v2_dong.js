@@ -16,11 +16,11 @@
    - **재개발 모드에서는 끈다** — 구역 폴리곤과 겹쳐 어느 선이 구역계인지 헷갈린다 */
 (function(){
   if(!window.L)return;
-  /* 좁은 화면(휴대폰)에서는 켜지 않는다.
-     ⚠️`(hover:none)`으로 판정하려다 되돌렸다(2026-08-10) — 헤드리스·일부 임베드 브라우저가
-     마우스가 있어도 hover:none으로 답해 데스크톱에서까지 조용히 꺼진다. 사이트의 다른
-     모바일 분기와 같은 기준(max-width:720px)을 쓰는 편이 확실하고 검증도 된다. */
-  if(window.matchMedia&&window.matchMedia('(max-width:720px)').matches)return;
+  /* 모바일에서도 켠다(2026-08-10 2차). 처음엔 "손가락에는 올려놓기가 없다"고 껐는데,
+     **탭하면 이름이 뜨게** 하면 모바일에서도 쓸모가 있다. 대신 파일은 그대로 최대 3개만 받는다.
+     ⚠️`(hover:none)`으로 기기를 판정하지 말 것 — 헤드리스·일부 임베드 브라우저가
+     마우스가 있어도 hover:none으로 답해 PC에서까지 조용히 꺼진다(8/10 시뮬레이션에서 겪음). */
+  var TOUCH=!!(window.matchMedia&&window.matchMedia('(max-width:720px)').matches);
   var Z_MIN=13, MAX_SGG=3, MAX_POLY=90;
   var layer=null, cur=null, tip=null, loading={}, loaded={};
 
@@ -71,17 +71,22 @@
             var poly=L.polygon(ring,{pane:'sbdong',color:'#2554E0',weight:1,opacity:.35,
               fillColor:'#2554E0',fillOpacity:0.001,className:'dongzone'});
             /* ⚠️ fillOpacity가 정확히 0이면 SVG 면이 마우스를 못 받아 호버가 안 걸린다(2026-08-10). */
-            poly.on('mouseover',function(){
+            function mark(e){
               if(cur&&cur!==poly)styleOff(cur);
               cur=poly; poly.setStyle({fillOpacity:.1,weight:2,opacity:.85});
-              if(tip){tip.textContent=name;tip.style.display='block';}
-            });
-            poly.on('mousemove',function(e){
               if(!tip)return;
-              var pt=window.map.latLngToContainerPoint(e.latlng);
-              tip.style.left=(pt.x+14)+'px'; tip.style.top=(pt.y+14)+'px';
-            });
-            poly.on('mouseout',function(){styleOff(poly); if(tip)tip.style.display='none';});
+              tip.textContent=name; tip.style.display='block';
+              if(e&&e.latlng){
+                var pt=window.map.latLngToContainerPoint(e.latlng);
+                tip.style.left=Math.max(8,Math.min(pt.x+14,window.innerWidth-110))+'px';
+                tip.style.top=(pt.y+14)+'px';
+              }
+              if(TOUCH){clearTimeout(poly._t);poly._t=setTimeout(function(){
+                styleOff(poly); if(tip)tip.style.display='none';},2200);}
+            }
+            poly.on('mouseover mousemove',mark);
+            poly.on('click',mark);      /* 모바일은 올려놓기가 없다 — 눌러도 뜨게(2026-08-10) */
+            poly.on('mouseout',function(){if(TOUCH)return;styleOff(poly); if(tip)tip.style.display='none';});
             poly.addTo(layer);
           })(nm);
           if(++n>MAX_POLY)return;

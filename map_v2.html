@@ -11,8 +11,9 @@
 <link rel="stylesheet" href="assets/site.css">
 <!-- 새 지도 디자인(2026-08-10 석봉님 확정): 네이버형 좌측 목록 + 흰 말풍선 마커.
      로직은 이 파일 그대로 두고 겉모습만 아래 두 파일이 얹는다. -->
-<link rel="stylesheet" href="assets/map_v2.css?v=2">
+<link rel="stylesheet" href="assets/map_v2.css?v=3">
 <link rel="stylesheet" href="assets/map_m.css?v=1">
+<link rel="stylesheet" href="assets/map_old.css?v=1">
 <style>
   html,body{height:100%}
   #wrap{display:flex;flex-direction:column;height:100%}
@@ -398,6 +399,10 @@ function ptTxs(pt){
     if(fY==='y5'&&ag>5)return [];
     if(fY==='y10'&&ag>10)return [];
     if(fY==='y20'&&ag<20)return [];
+    /* 30·40년 구간 추가(2026-08-10). 재개발을 보는 사람에게 20년은 의미가 없다.
+       노후·불량건축물 판단선이 30년이라 그 위를 볼 수 있어야 한다. */
+    if(fY==='y30'&&ag<30)return [];
+    if(fY==='y40'&&ag<40)return [];
   }
   var base=pt.txs.filter(txBase);
   var S=fSc||(fS!=='all'?FSR[fS]:null);
@@ -691,7 +696,7 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
   grp('fpB',[['all','전체'],['b1','1억 이하'],['b2','1~3억'],['b3','3~6억'],['b4','6억 이상']],function(){return fB;},function(v){fB=v;});
   grp('fpW',[['all','전체'],['w1','50만 이하'],['w2','50~100만'],['w3','100~200만'],['w4','200만 이상']],function(){return fW;},function(v){fW=v;});
   grp('fpA',[['all','전체'],['a1','60㎡ 미만'],['a2','60~85㎡'],['a3','85~115㎡'],['a4','115㎡ 이상']],function(){return fA;},function(v){fA=v;});
-  grp('fpY',[['all','전체'],['y5','5년 내 신축'],['y10','10년 내'],['y20','20년 이상']],function(){return fY;},function(v){fY=v;});
+  grp('fpY',[['all','전체'],['y5','5년 내 신축'],['y10','10년 내'],['y20','20년 이상'],['y30','30년 이상'],['y40','40년 이상']],function(){return fY;},function(v){fY=v;});
   grp('fpF',[['all','전체'],['f5','5층 이상'],['f15','15층 이상']],function(){return fF;},function(v){fF=v;});
   /* 직접 입력 (설정 시 해당 줄 프리셋 해제, 칩 클릭 시 직접 입력 해제) */
   function wireCustom(boxId,minId,maxId,mult,setC){
@@ -1512,8 +1517,16 @@ function showAptCard(pt, txs){
       if(!a.length)return '';var lo=a[0].toFixed(1),hi=a[a.length-1].toFixed(1);
       return '<span style="display:block;font-size:9.5px;color:#a39887;font-weight:600">'+(lo===hi?lo+'㎡·'+PY(a[0]):lo+'~'+hi+'㎡')+'</span>';}
     function rrow(l,rv,hv,ar){return '<div style="display:grid;grid-template-columns:52px 1fr 1fr;font-size:12.5px;padding:5px 0;border-bottom:1px dotted #e7e1d4"><b style="color:#6b6355;font-weight:700">'+l+(ar||'')+'</b><span style="text-align:right;font-weight:700">'+(rv||'·')+'</span><span style="text-align:right;font-weight:700;color:#c0562e">'+(hv||'·')+'</span></div>';}
+    /* 기준 날짜를 열 제목에 바로 붙인다(2026-08-10 석봉님 지시). 카드 맨 아래 각주로만
+       두면 숫자를 볼 때 눈에 안 들어온다. 실거래와 호가는 시점이 다른 자료라 같이 봐야 한다. */
+    var _md=function(s){s=String(s||'');var m=s.match(/(\d{4})-(\d{2})-(\d{2})/);
+      return m?(m[2].replace(/^0/,'')+'/'+m[3]):'';};
+    var _dTx=_md((window.SB&&SB.summary&&SB.summary.updated)||''), _dHo=_md(window.APTASKDAY||'');
+    var _sub=function(t){return t?'<em style="display:block;font-style:normal;font-weight:600;font-size:9px;color:#a39887;letter-spacing:0">'+t+'</em>':'';};
     hoSec='<div class="rc-sec"><div class="rc-lab">실거래 vs 호가 · 중위</div>'
-      +'<div style="display:grid;grid-template-columns:52px 1fr 1fr;font-size:10px;color:#8a8071;font-weight:700;padding-bottom:2px"><span></span><span style="text-align:right">실거래</span><span style="text-align:right">호가</span></div>'
+      +'<div style="display:grid;grid-template-columns:52px 1fr 1fr;font-size:10px;color:#8a8071;font-weight:700;padding-bottom:2px"><span></span>'
+      +'<span style="text-align:right">실거래'+_sub(_dTx?'신고 '+_dTx+' 기준':'')+'</span>'
+      +'<span style="text-align:right">호가'+_sub(_dHo?'수집 '+_dHo:(A?'':'미수집'))+'</span></div>'
       /* 호가에 건수 병기(2026-08-05). 매물 1건을 '중위'로 내보내던 문제 — 1건은 명시한다.
          월세 3,000만 초과는 파싱 오류 표본이라 숨김(단지상세와 동일 가드). */
       +rrow('매매',eok2(md(mmT.map(function(t){return t.p;}))),(A&&A.mm)?(eok2(A.mm.med)+'<small style="font-weight:600;color:#a39887"> '+(A.mm.n===1?'매물1건':A.mm.n+'건')+'</small>'):'',arng2(mmT))
@@ -1595,9 +1608,10 @@ if(_BACKVIEW){try{
 
 render();
 </script>
-<script src="assets/map_v2.js?v=5"></script>
+<script src="assets/map_v2.js?v=6"></script>
 <script src="assets/map_v2_poi.js?v=2"></script>
-<script src="assets/map_v2_dong.js?v=1"></script>
+<script src="assets/map_v2_dong.js?v=2"></script>
+<script src="assets/map_old.js?v=1"></script>
 <script src="assets/map_m.js?v=1"></script>
 <script src="assets/sb_tabbar.js?v=1"></script>
 </body></html>
