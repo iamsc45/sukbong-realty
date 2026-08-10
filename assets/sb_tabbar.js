@@ -57,6 +57,12 @@
     {k:'all',n:'전체',i:'menu-2'}
   ];
 
+  /* 하위 폴더 페이지(글/2026-08-10_xxx.html 등)에서도 링크가 맞도록 앞에 ../를 붙인다.
+     안 그러면 리포트 글에서 '홈'을 누르면 글/index.html로 가 404가 난다. */
+  var _seg=location.pathname.split('/').filter(function(x){return x;});
+  var UP=new Array(Math.max(0,_seg.length-1)).join('../')+(_seg.length>1?'../':'');
+  function href(h){ return (/^https?:/.test(h)||!UP)?h:UP+h; }
+
   var page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   function isMap(){return page.indexOf('map')===0;}
   function active(){
@@ -136,14 +142,14 @@
     +MENU.map(function(s){
       return '<div class="gp">'+s.g+'</div><div class="gd">'+s.items.map(function(m){
         var on=(m.h||'').toLowerCase().indexOf(page)===0&&page!=='index.html';
-        return '<a href="'+m.h+'"'+(m.blank?' target="_blank" rel="noopener"':'')+(on?' class="on"':'')+'>'
+        return '<a href="'+href(m.h)+'"'+(m.blank?' target="_blank" rel="noopener"':'')+(on?' class="on"':'')+'>'
           +'<i class="ti ti-'+m.i+'" aria-hidden="true"></i>'+m.n+'</a>';
       }).join('')+'</div>';
     }).join('')+'</div>';
   document.body.appendChild(sheet);
 
   var pick=document.createElement('div'); pick.id='sbpick';
-  pick.innerHTML='<a href="apply.html">청약</a><a href="auction.html">경매·공매</a>';
+  pick.innerHTML='<a href="'+href('apply.html')+'">청약</a><a href="'+href('auction.html')+'">경매·공매</a>';
   document.body.appendChild(pick);
 
   function closeAll(){sheet.classList.remove('open');pick.classList.remove('open');}
@@ -162,10 +168,10 @@
       /* 지도에 있으면 검색창으로 바로 커서를 옮긴다(페이지를 다시 받지 않는다) */
       var q=document.getElementById('sq');
       if(q){document.body.classList.remove('barfold');try{q.focus();q.select();}catch(x){} return;}
-      location.href='map.html#search'; return;
+      location.href=href('map.html')+'#search'; return;
     }
     var t=TABS.filter(function(x){return x.k===k;})[0];
-    if(t&&t.h)location.href=t.h;
+    if(t&&t.h)location.href=href(t.h);
   });
 
   /* 지도에 #search로 들어오면 검색창을 열어 준다 */
