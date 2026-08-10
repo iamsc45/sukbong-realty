@@ -1,1 +1,1 @@
-window.APTASK=window.APTASK||{};APTASK["44760"]={"왕궁|부여읍":{"mm":{"med":15350,"py":710,"n":2}},"주공|부여읍":{"mm":{"med":6500,"py":467,"n":1}},"쌍북주공|부여읍":{"mm":{"med":5100,"py":432,"n":1}}};window.APTASKDAY="2026-07-25";
+window.APTASK=window.APTASK||{};APTASK["44760"]={"왕궁|부여읍":{"mm":{"med":15350,"py":710,"n":2}},"주공|부여읍":{"mm":{"med":6500,"py":467,"n":1}},"쌍북주공|부여읍":{"mm":{"med":5100,"py":432,"n":1}}};window.APTASKDAY="2026-08-10";

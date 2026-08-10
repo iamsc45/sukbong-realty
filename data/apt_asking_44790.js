@@ -1,1 +1,1 @@
-window.APTASK=window.APTASK||{};APTASK["44790"]={"천강|청양읍":{"mm":{"med":11700,"py":656,"n":1}}};window.APTASKDAY="2026-07-25";
+window.APTASK=window.APTASK||{};APTASK["44790"]={"천강|청양읍":{"mm":{"med":11700,"py":656,"n":1}}};window.APTASKDAY="2026-08-10";

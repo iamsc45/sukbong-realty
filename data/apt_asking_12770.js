@@ -1,1 +1,1 @@
-window.APTASK=window.APTASK||{};APTASK["12770"]={"한빛맨션|장흥읍":{"mm":{"med":6300,"py":285,"n":1}},"줌파크더센트로|장흥읍":{"mm":{"med":43000,"py":1269,"n":1}}};window.APTASKDAY="2026-07-25";
+window.APTASK=window.APTASK||{};APTASK["12770"]={"한빛맨션|장흥읍":{"mm":{"med":6300,"py":285,"n":1}},"줌파크더센트로|장흥읍":{"mm":{"med":43000,"py":1269,"n":1}}};window.APTASKDAY="2026-08-10";

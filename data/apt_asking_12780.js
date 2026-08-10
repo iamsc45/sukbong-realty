@@ -1,1 +1,1 @@
-window.APTASK=window.APTASK||{};APTASK["12780"]={"강진서성남양휴튼1단지|강진읍":{"mm":{"med":35000,"py":1377,"n":1}}};window.APTASKDAY="2026-07-25";
+window.APTASK=window.APTASK||{};APTASK["12780"]={"강진서성남양휴튼1단지|강진읍":{"mm":{"med":35000,"py":1377,"n":1}}};window.APTASKDAY="2026-08-10";
