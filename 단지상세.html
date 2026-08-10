@@ -65,7 +65,14 @@
 .links a.map{background:linear-gradient(180deg,#1c2b45,#12203a);color:#f7f5f0}
 .links a.info{background:linear-gradient(180deg,#fff,#f1ebdf);border:1px solid #cfc7b6;color:#1a1a1a}
 .src{font-size:11.5px;color:#8a8071;margin-top:18px;border-top:1px solid var(--line);padding-top:11px}
-@media(max-width:720px){.top{flex-direction:column}#map{flex:none;width:100%;height:180px}.grid2{grid-template-columns:1fr}.mast h1{font-size:23px}}
+@media(max-width:720px){.top{flex-direction:column}#map{flex:none;width:100%;height:180px}.grid2{grid-template-columns:1fr}.mast h1{font-size:23px}
+/* 개요 표가 3열이라 좁은 화면에서 '연면적 · 모든 층 바닥 합계' 같은 라벨이 한 글자씩
+   세로로 쪼개졌다(2026-08-11 석봉님 캡처). 좁을 땐 한 줄에 하나씩 놓는다. */
+.ov{grid-template-columns:1fr;gap:0}
+.f{font-size:13.5px;padding:8px 0}
+.f .fl{flex:1;min-width:0}
+.f .fv{flex:0 0 auto;max-width:58%}
+.living{grid-template-columns:1fr}}
 .leaflet-control-attribution{display:none}
 
 /* 전 페이지 공통 내비게이션 (2026-08-03 추가) */
@@ -489,12 +496,11 @@ function render(pt,code){
   /* ── 건축물대장 (2026-08-10) ───────────────────────────────
      지번이 있는 상품(아파트·오피스텔·연립·구분상가)만 붙는다. 국토부가 빌딩·단독·토지의
      지번을 가려서 주기 때문에 그쪽은 원천적으로 조회가 안 된다(그 사실을 아래에 적는다). */
-  h+='<div id="brSec"></div>';
-  setTimeout(function(){_brDaejang(code,pt);},0);
   h+='<div class="sec"><div class="lab">실거래 vs 호가 · 매매·전세·월세</div><div class="cmp">'
     +'<div class="cmph"><span></span><span>실거래<small>체결가·중위</small></span><span>호가<small>협상 전·중위</small></span></div>'
     +cmpr('매매',mmR,mmH,arng(mm))+cmpr('전세',jeR,jeH,arng(je))+cmpr('월세',woR,woH,arng(wo))+'</div>'
     +'<div class="note"><b>면적 기준</b>: 특정 평형이 아니라 <b>거래된 전 평형의 중위값</b>입니다(평형별은 아래 표 참고). 실거래 기준=최근 계약 '+(txs.length?txs.map(function(t){return t.cd;}).sort().pop().replace(/-/g,'.'):'-')+' (국토부 실거래·해제 제외) · 호가 기준=수집일 '+(window.APTASKDAY||'-')+' (네이버 매물·협상 전). 호가는 실제 체결가와 다를 수 있습니다.</div></div>';
+  if(!info){h+='<div id="brSec"></div>';setTimeout(function(){_brDaejang(code,pt);},0);}
   if(info){
     h+='<div class="sec"><div class="lab">단지 개요</div><div class="ov">'
       +frow(IC.home,'세대/동',(info.se?comma(info.se)+'세대':'')+(info.dongCnt?' · '+info.dongCnt+'동':''))
@@ -514,6 +520,10 @@ function render(pt,code){
       +frow(IC.park,'지하주차',info.park?comma(info.park)+'대':'')
       +frow(IC.cctv,'CCTV',info.cctv?comma(info.cctv)+'대':'')
       +'</div></div>';
+    /* 건축물대장은 단지 개요 바로 뒤에 붙인다(2026-08-11 석봉님: 내용이 겹치고 순서가 뒤죽박죽).
+       겹치는 항목(준공·연면적)은 대장 쪽이 정확하므로 대장이 붙으면 개요에서 뺀다. */
+    h+='<div id="brSec"></div>';
+    setTimeout(function(){_brDaejang(code,pt);},0);
     var live=lrow(IC.subway,'교통',info.subway?esc(info.subway)+'역'+(info.subT?' · 도보 '+esc(info.subT):''):(info.busT?'버스 '+esc(info.busT):''))
       +lrow(IC.home,'단지시설',esc(info.welfare))
       +lrow(IC.edu,'교육',esc(info.edu),true)
@@ -654,7 +664,13 @@ function _brDaejang(code,pt){
       +frow(IC.home,'세대 · 호',(d.hh?comma(d.hh)+'세대':'')+(d.ho?(d.hh?' · ':'')+comma(d.ho)+'호':''))
       +frow(IC.build,'승강기 · 주차',(d.el?d.el+'대':'')+(d.pk?(d.el?' · ':'')+'주차 '+comma(d.pk)+'대':''));
     if(!rows){box.innerHTML='';return;}
-    box.innerHTML='<div class="sec"><div class="lab">건축물대장'+(d.nm?' · '+esc(d.nm):'')+'</div><div class="ov">'+rows+'</div>'
+    /* 개요(K-apt)와 겹치는 항목은 대장 쪽이 정확하므로 개요에서 뺀다 */
+    Array.prototype.forEach.call(document.querySelectorAll('.ov .f'),function(f){
+      var l=f.querySelector('.fl'); if(!l)return;
+      var t=l.textContent.trim();
+      if(t==='준공'||t.indexOf('연면적')===0)f.style.display='none';
+    });
+    box.innerHTML='<div class="sec" style="margin-top:-6px"><div class="lab">건축물대장'+(d.nm?' · '+esc(d.nm):'')+'</div><div class="ov">'+rows+'</div>'
       +'<div class="note">국토교통부 건축물대장(표제부) 기준입니다. '
       +'<b>단지 전체가 아니라 '+esc(d.nm||'한 동')+' 한 동의 값</b>입니다. 대장은 동 단위로 나오기 때문입니다'
       +(arr.length>1?'(이 지번에 동이 '+arr.length+'개 이상 등재돼 있어 '+(guessed?'연면적이 가장 큰 동':'이 상품의 용도에 맞는 동')+'을 골랐습니다)':'')

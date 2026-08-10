@@ -592,11 +592,17 @@ body.mmap #rcard #rcClose{right:8px!important;top:9px!important;
     opacity:0;pointer-events:none;transition:opacity .18s ease}
   body.mmap #mlayers,body.mmap #mtools,body.mmap #loanChip{transition:opacity .18s ease}
 
-  /* ① 대출 문의를 오른쪽 위로. 우측 세로 버튼은 그만큼 아래에서 시작한다. */
-  body.mmap #loanChip{top:var(--mtop,110px)!important;bottom:auto!important;
-    left:auto!important;right:8px!important;z-index:901;
-    padding:6px 11px!important;font-size:11px!important}
-  body.mmap #mtools{margin-top:36px}
+  /* ① 대출 문의는 **헤더의 로그인 버튼 옆**에 둔다(map_m.js가 그 자리로 옮긴다).
+        지도 위에 띄우면 어디에 놓아도 검색창이나 마커를 가린다. */
+  body.mmap.loanhdr #loanChip{position:static!important;top:auto!important;bottom:auto!important;
+    left:auto!important;right:auto!important;box-shadow:none!important;
+    padding:5px 10px!important;font-size:11px!important;border-radius:100px!important;
+    background:#F3F0FA!important;border:1px solid #DCD3F0!important;color:#4A3A7A!important;
+    white-space:nowrap;margin-right:2px}
+  body.mmap.loanhdr .site-header nav{display:flex;align-items:center;gap:6px}
+  /* 손잡이 안내는 흘려보지 않게 잉크색으로 */
+  body.mmap #v2sheet .sh-h .x{color:#12203A;font-weight:800}
+  body.mmap #v2sheet .sh-h .x:after{content:''}
 
   /* ④ 목록 정렬 버튼: 회색 사각 → 심플한 알약 */
   #v2sheet .v2sort{display:flex;gap:6px;padding:9px 16px 10px;flex:0 0 auto;

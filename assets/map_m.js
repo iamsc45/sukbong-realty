@@ -130,6 +130,15 @@
      +'<button type="button" data-t="loc"><i class="ti ti-current-location" aria-hidden="true"></i>현위치</button>';
     mapEl.appendChild(TL);
 
+    /* 🔴대출 문의는 **헤더의 로그인 버튼 옆**으로 옮긴다(2026-08-11 석봉님 지적).
+       지도 위에 띄우면 어디에 두든 검색창이나 마커를 가린다. 헤더는 항상 비어 있는 자리다. */
+    (function(){
+      var chip=document.getElementById('loanChip');
+      var nav=document.querySelector('.site-header nav');
+      if(chip&&nav&&!chip._moved){chip._moved=1;nav.insertBefore(chip,nav.firstChild);
+        document.body.classList.add('loanhdr');}
+    })();
+
     /* 새 스킨의 검색 바는 지도 위에 떠 있다. 좌우 세로 버튼을 그 아래에서 시작시킨다. */
     function place(){
       var bb=document.getElementById('bar').getBoundingClientRect();
@@ -166,7 +175,12 @@
          ⚠️'min'과 'half'가 같이 붙으면 half가 이겨서 첫 화면부터 반쯤 열린다. 항상 하나만 남긴다. */
       function syncSheet(){
         /* 시트가 올라와 있으면 좌우 지도 버튼을 숨긴다(제보: 버튼이 목록을 가림) */
-        document.body.classList.toggle('sheetup',!sh.classList.contains('min'));
+        var up=!sh.classList.contains('min');
+        document.body.classList.toggle('sheetup',up);
+        /* 손잡이에 "지금 누르면 어떻게 되는지"를 적는다(2026-08-11 석봉님 제안).
+           '목록 ↕'만 있으면 눌러야 하는 자리라는 걸 알아채기 어렵다. */
+        var x=sh.querySelector('.sh-h .x');
+        if(x)x.textContent=up?'내리기 ▼':'목록 올리기 ▲';
       }
       var next=function(){
         if(sh.classList.contains('min')){sh.classList.remove('min');sh.classList.add('half');}
