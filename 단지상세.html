@@ -497,7 +497,16 @@ function render(pt,code){
      지번이 있는 상품(아파트·오피스텔·연립·구분상가)만 붙는다. 국토부가 빌딩·단독·토지의
      지번을 가려서 주기 때문에 그쪽은 원천적으로 조회가 안 된다(그 사실을 아래에 적는다). */
   h+='<div class="sec"><div class="lab">실거래 vs 호가 · 매매·전세·월세</div><div class="cmp">'
-    +'<div class="cmph"><span></span><span>실거래<small>체결가·중위</small></span><span>호가<small>협상 전·중위</small></span></div>'
+    /* 기준 날짜를 열 제목에 바로 붙인다(2026-08-11 석봉님: 아래에 써 두면 못 읽는다).
+       실거래는 이 단지의 최근 계약일, 호가는 수집일. 두 자료는 시점이 달라 같이 봐야 한다. */
+    +(function(){
+      var md=function(x){var m=String(x||'').match(/(\d{4})-(\d{2})-(\d{2})/);return m?(m[2].replace(/^0/,'')+'/'+m[3]):'';};
+      var last=''; txs.forEach(function(t){if(t.cd&&t.cd>last)last=t.cd;});
+      var dt=md(last), dh=md(window.APTASKDAY||'');
+      return '<div class="cmph"><span></span>'
+        +'<span>실거래<small>체결가·중위'+(dt?' · 최근 '+dt:'')+'</small></span>'
+        +'<span>호가<small>협상 전·중위'+(dh?' · 수집 '+dh:'')+'</small></span></div>';
+    })()
     +cmpr('매매',mmR,mmH,arng(mm))+cmpr('전세',jeR,jeH,arng(je))+cmpr('월세',woR,woH,arng(wo))+'</div>'
     +'<div class="note"><b>면적 기준</b>: 특정 평형이 아니라 <b>거래된 전 평형의 중위값</b>입니다(평형별은 아래 표 참고). 실거래 기준=최근 계약 '+(txs.length?txs.map(function(t){return t.cd;}).sort().pop().replace(/-/g,'.'):'-')+' (국토부 실거래·해제 제외) · 호가 기준=수집일 '+(window.APTASKDAY||'-')+' (네이버 매물·협상 전). 호가는 실제 체결가와 다를 수 있습니다.</div></div>';
   if(!info){h+='<div id="brSec"></div>';setTimeout(function(){_brDaejang(code,pt);},0);}

@@ -185,9 +185,11 @@
       /* 🔴3단계(접힘→반→전체)를 **2단계로 줄인다**(2026-08-11 석봉님).
          손잡이에 '내리기'라고 써 놓고 누르면 한 번 더 올라가서 글자가 거짓말을 했다.
          목록은 시트 안에서 스크롤되므로 '반'이면 충분하다. 누르면 올라오고, 누르면 내려간다. */
+      /* 2026-08-11 2차: '반'을 없애고 **접힘 ↔ 전체**로 간다(석봉님: 반만 열리니 정보 확인이 힘들다).
+         전체로 열면 목록이 한 화면에 여러 개 들어오고, 내리면 지도가 다 보인다. */
       var next=function(){
-        if(sh.classList.contains('min')){sh.classList.remove('min');sh.classList.add('half');}
-        else{sh.classList.remove('half');sh.classList.add('min');}
+        sh.classList.remove('half');
+        sh.classList.toggle('min');
         syncSheet();
       };
       new MutationObserver(syncSheet).observe(sh,{attributes:true,attributeFilter:['class']});
@@ -201,7 +203,7 @@
       });
       /* 지역을 눌러 시트가 열릴 때 map_v2.js가 여기를 본다 — 전체가 아니라 '반'까지만 올린다.
          시트가 화면을 다 덮으면 어디를 눌렀는지 안 보인다. */
-      window._SB_SHEET_HALF=true;
+      window._SB_SHEET_HALF=false;   /* 지역을 눌러 열릴 때도 전체로 */
     }
 
     applyLayers();
