@@ -312,3 +312,16 @@ body.v2 #rcard #rcClose:hover{background:#E4E7EC !important;color:#16181D !impor
   body.v2 #rcard .rc-h h2{font-size:16.5px}
   body.v2 #rcard #rcFav{right:42px;top:12px;font-size:11px !important;padding:4px 9px !important}
 }
+
+/* 넓게 볼 때 목록에 뜨는 지역 순위(2026-08-10) — 단지 목록과 같은 리듬으로 */
+.v2r{display:flex;align-items:center;gap:10px;padding:11px 15px;cursor:pointer;
+  border-bottom:1px solid #F1F3F7;transition:background .12s ease}
+.v2r:hover{background:#F7F9FC}
+.v2r .rk{flex:0 0 auto;width:20px;text-align:center;font-size:11.5px;font-weight:800;color:#B9BEC7;
+  font-variant-numeric:tabular-nums}
+.v2r .rn{flex:1;min-width:0;font-size:13.5px;font-weight:700;color:#16181D;letter-spacing:-.02em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v2r .rn em{font-style:normal;font-size:11px;font-weight:500;color:#9AA0A9;margin-left:6px}
+.v2r .rc{flex:0 0 auto;font-size:13.5px;font-weight:800;color:#2554E0;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums}
+.v2r .rc i{font-style:normal;font-size:10.5px;font-weight:600;color:#9AA0A9;margin-left:2px}

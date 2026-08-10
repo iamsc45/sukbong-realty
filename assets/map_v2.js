@@ -159,7 +159,51 @@
       +'</div></div>';
   }
 
+  /* 넓게 볼 때(줌 13 미만)는 단지 마커가 없어 window._PTS가 비어 있다.
+     그러면 목록이 "표시할 거래 없음"만 띄워, 지도를 처음 연 사람에게는 **왼쪽 목록이
+     아예 안 뜨는 것처럼 보인다**(2026-08-10 석봉님 지적). 이 구간에서는 대신
+     화면 안 시군구를 거래 많은 순으로 세워 준다 — 누르면 그 지역으로 들어간다. */
+  function regionRows(){
+    var out=[];
+    try{
+      var b=window.map.getBounds(), rs=(window.SB&&SB.summary&&SB.summary.regions)||[];
+      for(var i=0;i<rs.length;i++){
+        var r=rs[i]; if(!r.lat||!window.regionPass||!regionPass(r))continue;
+        if(!b.contains([r.lat,r.lng]))continue;
+        var tot=0;
+        if(window.curTset&&r.nt){for(var k in curTset)tot+=(r.nt[k]||0);}
+        else if(r.n)tot=(r.n['매매']||0)+(r.n['전세']||0)+(r.n['월세']||0);
+        if(!tot)continue;
+        out.push({nm:(r.sgg||'').replace(/_/g,' '),sido:r.sido||'',n:tot,lat:r.lat,lng:r.lng});
+      }
+      out.sort(function(x,y){return y.n-x.n;});
+    }catch(e){}
+    return out;
+  }
+  function paintRegionList(){
+    var a=regionRows(), body=document.querySelectorAll('.v2b');
+    var html=a.length?a.slice(0,80).map(function(r,i){
+      return '<div class="v2r" data-ri="'+i+'"><span class="rk">'+(i+1)+'</span>'
+        +'<span class="rn">'+r.nm+'<em>'+r.sido+'</em></span>'
+        +'<span class="rc">'+r.n.toLocaleString()+'<i>건</i></span></div>';
+    }).join(''):'<div class="v2empty">이 화면에는 거래가 없습니다<br>지도를 옮기거나 필터를 넓혀 보세요</div>';
+    for(var i=0;i<body.length;i++)body[i].innerHTML=html;
+    var t=document.getElementById('v2t'),s2=document.getElementById('v2s');
+    var tot=0;a.forEach(function(r){tot+=r.n;});
+    if(t)t.textContent=a.length?(a.length+'개 지역'):'표시할 거래 없음';
+    if(s2)s2.textContent=a.length?('실거래 '+tot.toLocaleString()+'건 · 지역을 누르면 단지별로 보입니다'):'지도를 옮겨 보세요';
+    var st=document.getElementById('v2st'),ss=document.getElementById('v2ss');
+    if(st)st.textContent=a.length?(a.length+'개 지역'):'표시할 거래 없음';
+    if(ss)ss.textContent=a.length?('실거래 '+tot.toLocaleString()+'건'):'';
+    document.querySelectorAll('.v2r').forEach(function(el){
+      el.onclick=function(){var r=a[+el.dataset.ri]; if(!r)return;
+        try{window.go(r.lat,r.lng,14);}catch(e){}};
+    });
+  }
+
   function paintList(force){
+    var _z=0;try{_z=window.map.getZoom();}catch(e){}
+    if(_z<13){lastKey='region'+_z;paintRegionList();return;}
     var list=window._PTS||[];
     var k=key(list); if(!force&&k===lastKey)return; if(k!==lastKey)shown=LIMIT; lastKey=k;
     var a=sorted(list), body=document.querySelectorAll('.v2b');
