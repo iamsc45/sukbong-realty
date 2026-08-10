@@ -162,12 +162,17 @@
       if(!m){warn('지적도를 불러올 수 없습니다');return false;}
       _cad=L.tileLayer.wms('https://api.vworld.kr/req/wms?KEY='+m[1]+'&DOMAIN='+location.hostname,
         {layers:'lp_pa_cbnd_bubun',styles:'lp_pa_cbnd_bubun',format:'image/png',
-         transparent:true,version:'1.3.0',maxZoom:19,minZoom:15,
+         transparent:true,version:'1.3.0',maxZoom:19,minZoom:14,
          attribution:'지적도 &copy; VWorld(국토교통부)',pane:pane('sbcad',405,true)});
     }
     if(window.map.hasLayer(_cad)){window.map.removeLayer(_cad);return false;}
     _cad.addTo(window.map);
-    if(window.map.getZoom()<15)warn('지적도는 더 확대해야 보입니다');
+    /* 🔴 석봉님: "너무 확대해야만 보여서 쓸 일이 없다".
+       경고만 띄우지 말고 **볼 수 있는 배율까지 대신 당겨 준다.** 필지를 보려고 누른 것이다. */
+    if(window.map.getZoom()<14){
+      window.map.setZoom(15);
+      warn('필지가 보이도록 확대했습니다');
+    }
     return true;
   }
   function toggleNames(){

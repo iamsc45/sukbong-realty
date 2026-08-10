@@ -1590,11 +1590,15 @@ function showAptCard(pt, txs){
        두면 숫자를 볼 때 눈에 안 들어온다. 실거래와 호가는 시점이 다른 자료라 같이 봐야 한다. */
     var _md=function(s){s=String(s||'');var m=s.match(/(\d{4})-(\d{2})-(\d{2})/);
       return m?(m[2].replace(/^0/,'')+'/'+m[3]):'';};
-    var _dTx=_md((window.SB&&SB.summary&&SB.summary.updated)||''), _dHo=_md(window.APTASKDAY||'');
+    /* 🔴 2026-08-10 석봉님: "실거래 기준일이 호가와 똑같이 나온다".
+       그건 우리가 자료를 받아 온 날(전 지역 공통)이라 이 단지 얘기가 아니었다.
+       이 단지에서 **가장 최근 계약일**을 적는다. 그게 사람이 궁금해하는 날짜다. */
+    var _last=''; txs.forEach(function(t){if(t.cd&&t.cd>_last)_last=t.cd;});
+    var _dTx=_md(_last), _dHo=_md(window.APTASKDAY||'');
     var _sub=function(t){return t?'<em style="display:block;font-style:normal;font-weight:600;font-size:9px;color:#a39887;letter-spacing:0">'+t+'</em>':'';};
     hoSec='<div class="rc-sec"><div class="rc-lab">실거래 vs 호가 · 중위</div>'
       +'<div style="display:grid;grid-template-columns:52px 1fr 1fr;font-size:10px;color:#8a8071;font-weight:700;padding-bottom:2px"><span></span>'
-      +'<span style="text-align:right">실거래'+_sub(_dTx?'신고 '+_dTx+' 기준':'')+'</span>'
+      +'<span style="text-align:right">실거래'+_sub(_dTx?'최근 '+_dTx+' 계약':'')+'</span>'
       +'<span style="text-align:right">호가'+_sub(_dHo?'수집 '+_dHo:(A?'':'미수집'))+'</span></div>'
       /* 호가에 건수 병기(2026-08-05). 매물 1건을 '중위'로 내보내던 문제 — 1건은 명시한다.
          월세 3,000만 초과는 파싱 오류 표본이라 숨김(단지상세와 동일 가드). */
@@ -1677,7 +1681,7 @@ if(_BACKVIEW){try{
 
 render();
 </script>
-<script src="assets/map_v2.js?v=8"></script>
+<script src="assets/map_v2.js?v=9"></script>
 <script src="assets/map_v2_poi.js?v=2"></script>
 <script src="assets/map_v2_dong.js?v=2"></script>
 <script src="assets/map_old.js?v=2"></script>
