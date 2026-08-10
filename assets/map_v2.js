@@ -23,6 +23,31 @@
   /* 지도 색 비교용(soft=예전 연한 톤 · plain=타일 원본 · vivid=더 진하게) */
   var tone=P.get('tone'); if(tone)document.body.classList.add('tone-'+tone);
 
+
+  /* ── 배경 타일 고르기 (2026-08-10 2차) ─────────────────────────
+     석봉님: "전체적으로 노란색 톤에 검은 텍스트 풍선이라 초등학생 숙제 같다".
+     원인의 절반은 VWorld Base 타일 자체가 누런 베이지라는 것이었다. 채도를 올리면
+     노란기가 더 세지고, 내리면 흐려진다 — 필터로는 못 고친다. 타일을 바꿔야 한다.
+     ?base=voyager|positron|vworld 로 실제로 비교해 고른다. */
+  var BASES={
+    voyager:['https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+             '&copy; OpenStreetMap &copy; CARTO'],
+    positron:['https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+             '&copy; OpenStreetMap &copy; CARTO']
+  };
+  function swapBase(){
+    var b=P.get('base')||'voyager';
+    if(b==='vworld'||!BASES[b])return;               /* 기존 VWorld 유지 */
+    if(!window.map||!window.baseV)return setTimeout(swapBase,150);
+    try{window.map.removeLayer(window.baseV);}catch(e){}
+    var t=BASES[b];
+    window._v2base=L.tileLayer(t[0],{attribution:t[1],maxZoom:20,minZoom:6,
+      subdomains:'abcd',detectRetina:true}).addTo(window.map);
+    try{window._v2base.setZIndex(1);}catch(e){}
+    document.body.classList.add('base-'+b);
+  }
+  swapBase();
+
   /* ── 스킨 전환 스위치(스테이징에만) ───────────────────────── */
   function mountSwitch(){
     var d=document.createElement('div'); d.id='v2skin';
