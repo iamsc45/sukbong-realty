@@ -17,9 +17,12 @@ body.v2 #legend{bottom:14px;left:14px;border-radius:12px;border:0;
    지하철 노선·학교·공원 색이 그 필터에 다 빠져 있었던 것.
    그래서 원본보다 오히려 진하게 간다. ?tone= 으로 비교할 수 있게 세 단계를 둔다. */
 body.v2 .leaflet-tile{filter:saturate(1.18) contrast(1.06) brightness(1.01)}
+/* CARTO 계열은 이미 밝고 정돈된 색이라 손대지 않는 편이 깨끗하다.
+   VWorld를 쓸 때만 위 보정이 의미가 있다(누런 베이지를 살리려던 것). */
+body.v2.base-voyager .leaflet-tile,body.v2.base-positron .leaflet-tile{filter:none}
 body.v2.tone-soft .leaflet-tile{filter:saturate(.72) brightness(1.04)}
 body.v2.tone-plain .leaflet-tile{filter:none}
-body.v2.tone-vivid .leaflet-tile{filter:saturate(1.45) contrast(1.1)}
+body.v2.tone-vivid .leaflet-tile{filter:saturate(1.35) contrast(1.06)}
 
 /* ── 1. 상단 컨트롤: 지도 위에 떠 있는 캡슐 ────────────────── */
 body.v2 #bar{position:absolute;top:calc(var(--v2-top,52px) + 12px);left:12px;z-index:900;
@@ -35,16 +38,16 @@ body.v2.skin-a #legend{left:calc(var(--v2-list,352px) + 14px)}
 body.v2 #stat{margin-left:8px}
 
 /* 검색창을 제일 눈에 띄게 */
-body.v2 #sq{width:210px;height:34px;border-radius:10px;border:1.5px solid #e6e2d8;
-  padding:0 13px;font-size:13.5px;background:#fbfaf7;transition:border-color .15s ease,background .15s ease}
+body.v2 #sq{width:210px;height:34px;border-radius:10px;border:1.5px solid #E3E6EC;
+  padding:0 13px;font-size:13.5px;background:#F6F8FB;transition:border-color .15s ease,background .15s ease}
 body.v2 #sq:focus{border-color:var(--navy);background:#fff;box-shadow:0 0 0 3px rgba(37,84,224,.1)}
 body.v2 .sbtn{height:34px;border-radius:10px;padding:0 15px;font-size:12.5px}
 body.v2 #fbtn{height:34px;border-radius:10px;padding:0 15px;background:#fff;color:var(--text2);
-  border:1.5px solid #e6e2d8;font-size:12.5px}
+  border:1.5px solid #E3E6EC;font-size:12.5px}
 body.v2 #fbtn:hover{border-color:var(--navy);color:var(--navy);opacity:1}
 body.v2 #modes button{height:34px;border-radius:10px;font-size:12.5px}
-body.v2 select{height:34px;border-radius:10px;border:1.5px solid #e6e2d8;font-size:12.5px}
-body.v2 .chip{border-radius:10px;border:1.5px solid #e6e2d8;color:var(--text2);font-weight:600;
+body.v2 select{height:34px;border-radius:10px;border:1.5px solid #E3E6EC;font-size:12.5px}
+body.v2 .chip{border-radius:10px;border:1.5px solid #E3E6EC;color:var(--text2);font-weight:600;
   padding:5px 12px;transition:all .13s ease}
 body.v2 .chip:hover{border-color:var(--navy);color:var(--navy)}
 body.v2 .chip.on{background:var(--navy);border-color:var(--navy);color:#fff}
@@ -53,50 +56,60 @@ body.v2 #fpanel{border:0;border-radius:16px;box-shadow:0 12px 34px rgba(20,20,20
 /* ── 2. 마커: 가격 말풍선 ────────────────────────────────────
    원본은 색을 인라인 style로 넣으므로 map_v2.js가 그 값을 --c로 옮기고 배경을 지운다.
    여기서는 --c만 참조한다(인라인 배경이 남아 있으면 아무 일도 일어나지 않게). */
-body.v2 .pricetag{background:#fff !important;color:#141414;border:0;
-  border-radius:9px;padding:4px 9px 4px 8px;font-size:12.5px;font-weight:800;letter-spacing:-.02em;
-  box-shadow:0 2px 8px rgba(20,20,20,.2),0 0 0 1.5px rgba(20,20,20,.07);
-  position:relative;line-height:1.25;transition:transform .13s cubic-bezier(.2,.8,.3,1.2),box-shadow .13s ease}
-body.v2 .pricetag:before{content:"";position:absolute;left:0;top:5px;bottom:5px;width:3.5px;
-  border-radius:3px;background:var(--c,#2554E0)}
-body.v2 .pricetag:after{content:"";position:absolute;left:50%;bottom:-5px;margin-left:-5px;
-  width:0;height:0;border:5px solid transparent;border-top-color:#fff;
-  filter:drop-shadow(0 2px 1px rgba(20,20,20,.14))}
-body.v2 .pricetag .n{display:block;font-size:9.5px;font-weight:600;color:#8a8378;opacity:1;margin-top:1px}
-body.v2 .pricetag .nm{color:#3B3B39;font-weight:600;font-size:10px}
-body.v2 .pricetag:hover{transform:scale(1.12) translateY(-1px);z-index:10000;
-  box-shadow:0 8px 20px rgba(20,20,20,.26),0 0 0 1.5px var(--c,#2554E0)}
-body.v2 .pricetag.sel{box-shadow:0 8px 20px rgba(20,20,20,.3),0 0 0 2.5px var(--c,#141414)}
-body.v2 .pricetag.apx{border-style:none;opacity:.9}
-body.v2 .pricetag.apx:before{background:repeating-linear-gradient(180deg,var(--c,#2554E0) 0 3px,transparent 3px 6px)}
+/* 가격 마커(2026-08-10 2차 개정) — 석봉님: "검은 텍스트 풍선이 초등학생 숙제 같다".
+   흰 배경 + 색 띠 + 3줄(가격·면적·단지명)은 정보는 많지만 지도 위에서 지저분했다.
+   호갱노노처럼 색을 채운 알약에 가격 한 줄만 크게 두고, 나머지는 확대해야 나온다. */
+body.v2 .pricetag{background:var(--c,#2554E0) !important;color:#fff;border:0;
+  border-radius:100px;padding:5px 12px;font-size:13px;font-weight:800;letter-spacing:-.03em;
+  box-shadow:0 3px 10px rgba(20,20,20,.22),0 0 0 2px rgba(255,255,255,.92);
+  position:relative;line-height:1.15;text-align:center;
+  transition:transform .13s cubic-bezier(.2,.8,.3,1.2),box-shadow .13s ease}
+body.v2 .pricetag:after{content:"";position:absolute;left:50%;bottom:-4px;margin-left:-4px;
+  width:8px;height:8px;background:var(--c,#2554E0);transform:rotate(45deg);border-radius:2px;
+  box-shadow:2px 2px 0 0 rgba(255,255,255,.92)}
+/* 면적·계약일은 크게 확대했을 때만. 평소엔 가격만 읽히는 게 낫다. */
+body.v2 .pricetag .n{display:none;font-size:9.5px;font-weight:600;color:rgba(255,255,255,.88);
+  margin-top:1px;letter-spacing:-.01em}
+body.v2.z17 .pricetag .n{display:block}
+body.v2 .pricetag .nm{display:none}
+body.v2.z16 .pricetag .nm,body.v2.z17 .pricetag .nm{display:block;font-size:10px;font-weight:600;
+  color:rgba(255,255,255,.95);max-width:120px}
+body.v2 .pricetag:hover{transform:scale(1.14) translateY(-2px);z-index:10000;
+  box-shadow:0 10px 24px rgba(20,20,20,.3),0 0 0 2.5px #fff}
+body.v2 .pricetag.sel{box-shadow:0 10px 24px rgba(20,20,20,.34),0 0 0 3px #141414;transform:scale(1.1)}
+body.v2 .pricetag.apx{opacity:.88;box-shadow:0 3px 10px rgba(20,20,20,.2),0 0 0 2px rgba(255,255,255,.7)}
 /* 목록에서 가리킨 항목 */
-body.v2 .pricetag.hl{transform:scale(1.2) translateY(-2px);z-index:10001;
-  box-shadow:0 10px 22px rgba(20,20,20,.3),0 0 0 2.5px var(--c,#2554E0)}
+body.v2 .pricetag.hl{transform:scale(1.22) translateY(-2px);z-index:10001;
+  box-shadow:0 12px 26px rgba(20,20,20,.32),0 0 0 3px #141414}
 
 /* 군집(시군구·동) 원 */
-body.v2 .clus{background:rgba(20,20,20,.9) !important;border:0;
-  box-shadow:0 4px 14px rgba(20,20,20,.28),0 0 0 4px rgba(255,255,255,.55);backdrop-filter:blur(2px)}
-body.v2 .clus.dong{background:rgba(37,84,224,.92) !important}
-body.v2 .clus .cn{font-size:11.5px;font-weight:800;letter-spacing:-.02em}
-body.v2 .clus .cc{font-size:10px;opacity:.9}
-body.v2 .clus:hover{transform:scale(1.08)}
+/* 시군구·동 군집(2026-08-10 2차): 검은 원이 화면을 무겁게 눌렀다.
+   지도 색과 어울리는 파랑 라운드 사각으로 바꾸고 흰 테두리로 띄운다. */
+body.v2 .clus{background:linear-gradient(180deg,#3568F4,#2148C8) !important;border:0;
+  border-radius:12px !important;
+  box-shadow:0 4px 14px rgba(33,72,200,.3),0 0 0 2.5px rgba(255,255,255,.95);
+  backdrop-filter:none}
+body.v2 .clus.dong{background:linear-gradient(180deg,#5B8DEF,#3568F4) !important;border-radius:100px !important}
+body.v2 .clus .cn{font-size:11.5px;font-weight:800;letter-spacing:-.03em}
+body.v2 .clus .cc{font-size:10px;opacity:.92;font-weight:600}
+body.v2 .clus:hover{transform:scale(1.07);box-shadow:0 7px 20px rgba(33,72,200,.4),0 0 0 2.5px #fff}
 
 /* ── 3. 좌측 목록 패널 (skin-a) ─────────────────────────────── */
 #v2list{display:none;position:absolute;left:0;top:var(--v2-top,52px);bottom:0;width:var(--v2-list,352px);z-index:880;
   background:#fff;box-shadow:2px 0 18px rgba(20,20,20,.09);flex-direction:column;overflow:hidden}
 body.v2.skin-a #v2list{display:flex}
-#v2list .v2h{padding:13px 16px 11px;border-bottom:1px solid #eee9dd;flex:0 0 auto}
+#v2list .v2h{padding:13px 16px 11px;border-bottom:1px solid #EDEFF3;flex:0 0 auto}
 #v2list .v2h .t{font-size:15px;font-weight:800;letter-spacing:-.02em;color:#141414}
 #v2list .v2h .s{font-size:11.5px;color:#8a8378;margin-top:3px}
-#v2list .v2sort{display:flex;gap:5px;padding:9px 14px;border-bottom:1px solid #f2eee4;flex:0 0 auto}
-#v2list .v2sort button{border:1.5px solid #e6e2d8;background:#fff;border-radius:8px;padding:4px 11px;
+#v2list .v2sort{display:flex;gap:5px;padding:9px 14px;border-bottom:1px solid #F1F3F7;flex:0 0 auto}
+#v2list .v2sort button{border:1.5px solid #E3E6EC;background:#fff;border-radius:8px;padding:4px 11px;
   font:inherit;font-size:11.5px;font-weight:700;color:#6b6459;cursor:pointer;transition:all .13s ease}
 #v2list .v2sort button.on{background:#141414;border-color:#141414;color:#fff}
 #v2list .v2b{flex:1;overflow-y:auto;overscroll-behavior:contain}
-#v2list .v2i{display:flex;gap:11px;padding:12px 15px;border-bottom:1px solid #f4f0e7;cursor:pointer;
+#v2list .v2i{display:flex;gap:11px;padding:12px 15px;border-bottom:1px solid #F1F3F7;cursor:pointer;
   transition:background .12s ease}
-#v2list .v2i:hover{background:#fbf9f4}
-#v2list .v2i.on{background:#f5f1e6;box-shadow:inset 3px 0 0 var(--c,#2554E0)}
+#v2list .v2i:hover{background:#F7F9FC}
+#v2list .v2i.on{background:#EEF3FF;box-shadow:inset 3px 0 0 var(--c,#2554E0)}
 #v2list .v2i .ic{flex:0 0 auto;width:38px;height:38px;border-radius:10px;display:flex;
   align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;letter-spacing:-.03em;
   background:var(--c,#2554E0)}
@@ -124,7 +137,7 @@ body.v2.skin-b #v2sheet{display:flex}
 #v2sheet .sh-h .x{margin-left:auto;font-size:11.5px;color:#8a8378;font-weight:700}
 #v2sheet .v2b{flex:1;overflow-y:auto;overscroll-behavior:contain;border-top:1px solid #f2eee4}
 #v2sheet.min{transform:translateY(calc(100% - 52px))}
-#v2sheet .v2i{display:flex;gap:11px;padding:12px 18px;border-bottom:1px solid #f4f0e7;cursor:pointer}
+#v2sheet .v2i{display:flex;gap:11px;padding:12px 18px;border-bottom:1px solid #F1F3F7;cursor:pointer}
 #v2sheet .v2i:active{background:#fbf9f4}
 #v2sheet .v2i .ic{flex:0 0 auto;width:38px;height:38px;border-radius:10px;display:flex;align-items:center;
   justify-content:center;font-size:10px;font-weight:800;color:#fff;background:var(--c,#2554E0)}

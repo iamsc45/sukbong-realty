@@ -218,8 +218,13 @@
       clearInterval(poll); var n=0;
       poll=setInterval(function(){ paintList(); if(++n>16)clearInterval(poll); },260);  /* 4초간 따라간다 */
     }
-    window.map.on('moveend zoomend',kick);
-    kick();
+    /* 줌에 따라 마커 안 정보량을 CSS로 조절하려면 body에 표시가 필요하다
+       (원본은 #map.names 하나만 준다) */
+    function zc(){var z=window.map.getZoom();
+      document.body.classList.toggle('z16',z===16);
+      document.body.classList.toggle('z17',z>=17);}
+    window.map.on('moveend zoomend',function(){zc();kick();});
+    zc(); kick();
   }
 
   mountSwitch(); mountList(); watchMarkers(); hook(); fitTop();
