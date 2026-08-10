@@ -867,6 +867,10 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
     return false;
   }
   var VKEY='EBC23601-6E41-3269-9ECB-821DEECCF3F0';
+  /* 이 블록은 함수 스코프 안이라 VKEY·_jsonp가 window에 안 붙는다(2026-08-10 확인).
+     스테이징에서 시험 중인 동 경계 스크립트가 같은 키·같은 JSONP를 쓰려면 노출이 필요하다.
+     키를 다른 파일에 또 적으면 나중에 한쪽만 바뀌므로, 여기 하나만 두고 빌려 쓴다. */
+  window.VKEY=VKEY;
   function _jsonp(url,cb,onerr){
     var name='_vw'+Date.now()+Math.floor(Math.random()*1e4);
     var t=setTimeout(function(){if(window[name]){delete window[name];s.remove();if(onerr)onerr();}},6000);
@@ -875,6 +879,7 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
     s.onerror=function(){clearTimeout(t);delete window[name];s.remove();if(onerr)onerr();};
     document.body.appendChild(s);
   }
+  window._jsonp=_jsonp;
   function _addrMark(lat,lng,label,z){
     if(window._addrMk){try{map.removeLayer(window._addrMk);}catch(e){}}
     window._addrMk=L.circleMarker([lat,lng],{radius:9,color:'#c0392b',weight:3,fillColor:'#fff',fillOpacity:.9}).addTo(map).bindPopup(label);
