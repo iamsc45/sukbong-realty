@@ -390,3 +390,192 @@ body.v2.skin-a #v2empty:hover{transform:translateX(-50%) translateY(-2px)}
 /* ⚠️ fill-opacity가 0이면 SVG 면이 마우스를 못 받아 호버가 안 걸린다(2026-08-10 확인).
    투명하게 두되 pointer-events는 살려야 이름표가 뜬다. */
 .dongzone{cursor:default;pointer-events:all !important}
+
+
+/* ============================================================
+   아래 두 덩어리는 원래 map_old.css · map_m.css로 나뉘어 있었다.
+   2026-08-10 한 파일로 합쳤다. 카카오톡 인앱 브라우저에서 첫 진입 때
+   링크된 CSS 일부만 안 붙어 **옛 상단바 + 새 목록 DOM**이 뒤섞인 화면이
+   나온다는 제보가 있었다(새로고침하면 정상). 파일이 셋이면 그중 하나만
+   실패해도 그 꼴이 나므로, 실패할 수 있는 지점을 하나로 줄인다.
+   ============================================================ */
+/* 노후 건물 레이어 (2026-08-10) — 색칠·범례·말풍선 */
+
+/* PC 도구 칩: 실거래·재개발 칩과 같은 모양으로 옆에 선다 */
+#sbTools{display:inline-flex;gap:5px;margin-right:8px}
+#sbTools button{border:1px solid #d5d9e0;background:#fff;color:#5b6473;font:inherit;font-size:12.5px;
+  font-weight:700;padding:5px 12px;border-radius:20px;cursor:pointer;white-space:nowrap}
+#sbTools button:hover{border-color:#12203a;color:#12203a}
+#sbTools button.on{background:#12203A;color:#fff;border-color:#12203A}
+#sbTools #oldBtn.on{background:#A8402A;border-color:#A8402A}
+body.v2 #sbTools button{border-radius:100px;height:32px;padding:0 13px}
+
+/* 단지명 켜기 — 새 스킨은 평소 이름을 숨기므로 여기서 되살린다 */
+body.v2.shownames .pricetag .nm{display:block;font-size:10px;font-weight:500;color:#6B707A;
+  max-width:110px;margin:0 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.v2.shownames .pricetag:hover .nm,body.v2.shownames .pricetag.hl .nm{color:rgba(255,255,255,.92)}
+
+.oldzone{cursor:default}
+/* ⚠️동 경계(sbdong, z-index 415)가 노후도(412)보다 위에 있고 pointer-events:all이라
+   노후도를 켜면 경계가 마우스를 먼저 먹어 노후 말풍선이 안 떴다(2026-08-10 시뮬레이션에서 확인).
+   노후도를 켠 동안은 경계가 이벤트를 받지 않게 비켜 준다. */
+body.oldon .dongzone{pointer-events:none!important}
+
+/* 말풍선 */
+#oldtip{position:absolute;z-index:935;pointer-events:none;max-width:210px;
+  background:rgba(22,24,29,.94);color:#fff;border-radius:9px;padding:7px 11px;
+  box-shadow:0 6px 18px rgba(16,18,24,.3);letter-spacing:-.02em}
+#oldtip b{display:block;font-size:12.5px;font-weight:800}
+#oldtip span{display:block;font-size:11px;color:rgba(255,255,255,.86);margin-top:2px;line-height:1.45}
+#oldtip span.s{color:rgba(255,255,255,.6);font-size:10.5px}
+#oldtip b.v{display:inline;font-size:12.5px;color:#FFC98A}
+
+/* 범례 */
+/* ⚠️기존 상품 범례(#legend)가 좌하단에 있어 그 위로 올려야 한다(2026-08-10 렌더에서 겹쳤다).
+   새 스킨은 목록 폭만큼 왼쪽을 물리므로 같은 값을 따라간다. */
+#oldLegend{position:absolute;left:14px;bottom:72px;z-index:900;background:rgba(255,255,255,.96);
+  border:1px solid #E4E0D6;border-radius:10px;padding:8px 11px 7px;
+  box-shadow:0 3px 14px rgba(20,20,20,.14);font-size:11px;letter-spacing:-.02em}
+#oldLegend b{display:block;font-size:11.5px;font-weight:800;color:#16181D;margin-bottom:5px}
+#oldLegend i{display:inline-block;width:26px;height:9px;border-radius:2px;vertical-align:1px}
+#oldLegend span{display:block;font-size:10px;color:#8a8378;margin-top:3px}
+#oldLegend span em{float:right;font-style:normal}
+#oldLegend u{display:block;font-size:9.5px;color:#a39887;text-decoration:none;margin-top:5px;line-height:1.4}
+body.v2.skin-a #oldLegend{left:calc(var(--v2-list,352px) + 14px)}
+body.v2.listoff.skin-a #oldLegend{left:14px}
+
+/* 아직 수집 안 된 지역 안내 */
+#oldEmpty{position:absolute;left:50%;top:74px;transform:translateX(-50%);z-index:905;
+  background:rgba(22,24,29,.9);color:#fff;font-size:11.5px;font-weight:700;letter-spacing:-.02em;
+  padding:7px 13px;border-radius:100px;box-shadow:0 4px 14px rgba(16,18,24,.28)}
+
+/* 노후도를 켜면 가격 마커가 색을 가려 읽기 어렵다. 살짝 물러나게 한다. */
+body.oldon .pricetag{opacity:.82}
+body.oldon .pricetag:hover,body.oldon .pricetag.hl{opacity:1}
+
+@media (max-width:720px){
+  #oldLegend{left:8px;bottom:auto;top:auto;
+    bottom:calc(var(--sbtab-h,56px) + 120px);padding:7px 9px 6px;font-size:10.5px}
+  #oldLegend i{width:20px}
+  #oldEmpty{top:auto;bottom:calc(var(--sbtab-h,56px) + 62px);font-size:11px;white-space:nowrap}
+  #oldtip{max-width:180px}
+  /* ⚠️PC용 도구 칩은 모바일에서 **통째로** 숨긴다.
+     `#oldBtn`만 숨겼더니 지적도·단지명·위성 세 칩이 상단 한 줄을 차지해 검색창이 "지"까지
+     줄어들었다(2026-08-10 라이브 확인). 모바일에서는 좌측 세로 토글과 우측 세로 버튼이 대신한다. */
+  body.mmap #sbTools{display:none!important}
+}
+
+/* 실거래지도 모바일 재구성 (2026-08-10 석봉님 지시)
+   호갱노노·재개발닷컴 벤치마킹. 원칙 하나: 지도를 가리지 않는다.
+   상단은 검색+필터 한 줄, 컨트롤은 좌우 가장자리 세로, 목록은 하단 시트.
+   PC(721px 이상)는 이 파일이 아무것도 하지 않는다. */
+@media (max-width:720px){
+
+/* ── 1. 상단 바는 한 줄만 ─────────────────────────────────── */
+body.mmap #bar{display:flex!important;grid-template-columns:none!important;flex-wrap:nowrap!important;
+  gap:7px;padding:7px 9px;align-items:center;background:#fff;border-bottom:1px solid #EFEBE2}
+body.mmap #bar #modes,body.mmap #bar #rfbar,body.mmap #bar #selSido,body.mmap #bar #selSgg,
+body.mmap #bar #mcats,body.mmap #bar #barHandle,body.mmap #bar #stat{display:none!important}
+/* 지도를 움직이면 상단 바가 접히던 동작(barfold)은 이제 필요 없다 — 한 줄이라 가릴 게 없다.
+   접힘이 걸리면 검색창이 통째로 사라져 '필터'만 남는다(2026-08-10 시뮬레이션에서 실제로 그랬다). */
+body.mmap.barfold #sform{display:flex!important}
+body.mmap #sform{flex:1;min-width:0;display:flex;gap:0;position:relative}
+body.mmap #sq{flex:1;min-width:0;height:36px;border-radius:100px;padding:0 40px 0 15px;
+  box-sizing:border-box;font-size:13px;background:#F6F4EF;border:1px solid #EFEBE2}
+body.mmap #sform .sbtn{position:absolute;right:4px;top:4px;height:28px;padding:0 12px;
+  border-radius:100px;font-size:11.5px;font-weight:800}
+/* ⚠️width:100%를 반드시 풀어야 한다 — 옛 6열 그리드용으로 박혀 있어서, 한 줄 flex로 바꾸면
+   필터 버튼이 줄 전체를 먹고 검색창이 0폭으로 짜부라진다(2026-08-10 시뮬레이션에서 확인). */
+body.mmap #fbtn{flex:0 0 auto;width:auto!important;height:36px;margin:0;padding:0 15px;
+  border-radius:100px;font-size:12.5px;font-weight:800}
+/* 겹쳐보기 버튼은 왼쪽 레이어 토글이 대신한다 */
+body.mmap #map .rfc.trade{display:none!important}
+
+/* ── 2. 좌측 세로 레이어 토글 ─────────────────────────────── */
+#mlayers{position:absolute;left:8px;top:10px;z-index:900;display:flex;flex-direction:column;gap:6px}
+#mlayers button{border:1px solid #E4E0D6;background:rgba(255,255,255,.96);color:#6B6459;
+  font:inherit;font-size:11.5px;font-weight:800;letter-spacing:-.03em;line-height:1.15;
+  padding:8px 0;width:52px;border-radius:10px;cursor:pointer;
+  box-shadow:0 2px 8px rgba(20,20,20,.12)}
+#mlayers button i{display:block;font-size:16px;margin-bottom:2px;opacity:.55}
+#mlayers button.on{color:#fff;border-color:transparent}
+#mlayers button.on i{opacity:1}
+#mlayers button[data-l="trade"].on{background:#2554E0}
+#mlayers button[data-l="redev"].on{background:#C0562E}
+#mlayers button[data-l="old"].on{background:#A8402A}
+
+/* ── 3. 우측 세로 보조 버튼 ───────────────────────────────── */
+#mtools{position:absolute;right:8px;top:10px;z-index:900;display:flex;flex-direction:column;gap:6px}
+#mtools button{border:1px solid #E4E0D6;background:rgba(255,255,255,.96);color:#6B6459;
+  font:inherit;font-size:11px;font-weight:800;letter-spacing:-.03em;line-height:1.15;
+  padding:8px 0;width:46px;border-radius:10px;cursor:pointer;box-shadow:0 2px 8px rgba(20,20,20,.12)}
+#mtools button i{display:block;font-size:16px;margin-bottom:2px;opacity:.6}
+#mtools button.on{background:#12203A;color:#fff;border-color:transparent}
+#mtools button.on i{opacity:1}
+
+/* 지도 우상단 줌 버튼이 보조 버튼과 겹치지 않게 아래로 */
+body.mmap .leaflet-top.leaflet-right{top:auto;bottom:96px}
+/* 스테이징 배경 비교 버튼은 모바일에서 숨긴다 — 좁은 화면에서 세로로 접히며 좌측 토글을 덮었다 */
+body.mmap #v2skin{display:none!important}
+/* 대출 문의는 우리 수익 동선이라 계속 보여야 한다. 다만 지금 자리(우상단)는 검색 바를 덮는다.
+   접힌 목록 시트 바로 위로 내리되, 오른쪽 아래는 줌 버튼 자리라 왼쪽에 둔다. */
+body.mmap #loanChip{top:auto!important;bottom:calc(var(--sbtab-h,56px) + 62px)!important;
+  right:auto!important;left:8px!important;z-index:885}
+
+/* ── 4. 필터는 전체화면 바텀시트 ──────────────────────────── */
+body.mmap #fpanel{top:auto!important;left:0!important;right:0!important;bottom:0!important;
+  max-width:none;max-height:88dvh;overflow:auto;border-radius:18px 18px 0 0;
+  border:0;box-shadow:0 -8px 30px rgba(20,20,20,.22);padding:0 14px 14px;z-index:2600}
+body.mmap #fpanel .mfh{position:sticky;top:0;background:#fff;z-index:2;display:flex;
+  align-items:center;justify-content:space-between;padding:14px 0 10px;border-bottom:1px solid #F1EEE6;
+  font-size:15px;font-weight:800;letter-spacing:-.02em}
+body.mmap #fpanel .mfh button{border:0;background:none;font-size:21px;line-height:1;color:#9A938A;cursor:pointer}
+body.mmap #fpanel .mfsel{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:11px 0 4px}
+/* ⚠️grid-column을 되돌려야 한다 — 원래 상단 바 6열 그리드용으로 5/7·1/3이 박혀 있어서
+   그대로 두면 새 2열 그리드에서 시·도가 엉뚱한 칸으로 밀린다(2026-08-10 시뮬레이션에서 확인). */
+body.mmap #fpanel #selSido,body.mmap #fpanel #selSgg{display:block!important;width:100%;height:38px;
+  grid-column:auto!important;grid-row:auto!important;
+  border-radius:10px;font-size:13px;padding:0 8px;box-sizing:border-box}
+body.mmap #fpanel #mcats{display:flex!important;gap:7px;padding:0 0 9px}
+body.mmap #fpanel #mcats button{flex:1;height:38px;border-radius:10px;font-size:12.5px}
+body.mmap #fpanel #rfbar{display:none;width:100%;flex-wrap:wrap;row-gap:6px;padding:2px 0 10px;
+  border-bottom:1px dashed #EFEBE2;margin:0}
+body.mmap.redev #fpanel #rfbar{display:flex!important}
+body.mmap #fpanel .frow{padding:7px 0}
+body.mmap #fpanel .flbl{width:100%;font-size:11px;color:#9A938A;font-weight:700;margin-bottom:3px}
+body.mmap #fpanel .mfoot{position:sticky;bottom:0;background:#fff;padding:10px 0 4px;
+  border-top:1px solid #F1EEE6;display:flex;gap:8px;align-items:center}
+body.mmap #fpanel .mfoot #fcount{flex:1;font-size:11.5px;color:#6B6459}
+body.mmap #fpanel .mfoot .chip{height:40px;border-radius:11px;padding:0 16px;font-size:13px}
+/* 원래 자리에 있던 하단 줄(초기화·닫기)은 map_m.js가 감춘다(선택자로는 못 잡는다) */
+
+/* ── 5. 목록 시트 3단계 ───────────────────────────────────── */
+body.mmap #v2sheet{max-height:82%}
+body.mmap #v2sheet.half{transform:translateY(46%)}
+body.mmap #v2sheet .sh-h .x:after{content:" ↕"}
+
+/* ── 6. 단지 카드 ─────────────────────────────────────────── */
+body.mmap #rcard{height:62%;z-index:2500}
+/* 카드 상단을 더 컴팩트하게(2026-08-10 석봉님: 오른쪽 여백이 넓다).
+   버튼을 오른쪽 끝으로 붙이고, 제목 줄 사이 여백을 줄인다. */
+body.mmap #rcard .rc-h{padding:9px 10px 8px!important}
+body.mmap #rcard .rc-h h2{font-size:16px!important;margin-top:1px!important}
+body.mmap #rcard .rc-h .loc{font-size:11.5px!important;margin-top:1px!important}
+body.mmap #rcard .rc-h .rc-pill,body.mmap #rcard .rc-h .badge{font-size:10px!important;
+  padding:2px 7px!important;margin-top:4px!important}
+body.mmap #rcard #rcFav{right:34px!important;top:9px!important;
+  font-size:10.5px!important;padding:4px 8px!important}
+body.mmap #rcard #rcClose{right:8px!important;top:9px!important;
+  width:24px!important;height:24px!important;font-size:14px!important}
+}
+
+
+/* ── 2026-08-10 후속 수정 ───────────────────────────────────── */
+/* 탭이 6칸이 되면서 글자가 붙는다. 좁은 화면에서만 한 단계 줄인다. */
+@media (max-width:720px){
+  #sbtab button{font-size:10px;padding:6px 0 5px}
+  #sbtab button i{font-size:19px}
+}
+@media (max-width:360px){
+  #sbtab button{font-size:9.5px;letter-spacing:-.04em}
+}

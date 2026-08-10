@@ -1,0 +1,1 @@
+window.OLDZ=window.OLDZ||{};OLDZ["12750"]=[["겸백면",3,-1,3,-1]];

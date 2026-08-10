@@ -93,6 +93,16 @@
           else window.map.removeLayer(window.layer);
         }
       }
+      /* ⚠️버튼 표시를 우리 변수만 믿지 말고 **지도의 실제 모드에서 되읽는다**
+         (2026-08-10 "노후와 재개발을 같이 켜면 재개발이 안 꺼진다" 제보).
+         setMode가 실패하거나 다른 곳에서 모드를 바꾸면 변수와 화면이 어긋난다. */
+      setTimeout(function(){
+        st.redev=(window.curMode==='redev');
+        if(st.redev)st.trade=!!window.redevShowTrade;
+        else st.trade=!!(window.layer&&window.map.hasLayer(window.layer));
+        if(!st.trade&&!st.redev)st.trade=true;
+        paint();
+      },80);
       paint();
     }
     LY.addEventListener('click',function(e){
@@ -143,12 +153,9 @@
         b.classList.toggle('on', t==='sat'?T.sat():t==='cad'?T.cad():T.names());
         return;
       }
-      if(!navigator.geolocation)return;
-      b.classList.add('on');
-      navigator.geolocation.getCurrentPosition(function(p){
-        b.classList.remove('on');
-        window.map.setView([p.coords.latitude,p.coords.longitude],16);
-      },function(){b.classList.remove('on');},{timeout:8000});
+      if(t==='loc'){ if(!T||!T.locate)return; b.classList.add('on');
+        T.locate(function(){b.classList.remove('on');}); return; }
+
     });
 
     /* ── 목록 시트 3단계(접힘 → 반 → 전체) ──────────────────── */

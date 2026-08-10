@@ -121,16 +121,35 @@
   /* ── 지도 도구: 위성 · 지적도 · 단지명 ──────────────────────
      PC와 모바일이 같은 기능을 쓰도록 여기 한 곳에 두고, 모바일 세로 버튼(map_m.js)은
      이걸 불러 쓴다. 배경 타일 주소에 키가 들어 있어 키를 새로 적지 않는다. */
-  var _sat=null,_cad=null;
+  var _sat=null,_cad=null,_baseUrl=null;
+  /* ⚠️배경 타일 주소를 **처음에 붙잡아 둔다**(2026-08-10 "위성·지적도가 안 먹는다" 제보).
+     ①위성을 한 번 켜면 Base 위에 Satellite가 얹히는데, 그 뒤에 다시 찾으면 못 찾을 수 있고
+     ②VWorld 타일이 12번 실패하면 map.html이 CARTO로 갈아타 /Base/ 레이어가 아예 사라진다.
+     그 두 경우 모두 지금까지는 조용히 아무 일도 안 일어났다. */
   function baseTileUrl(){
-    var u=null;
-    window.map.eachLayer(function(l){if(!u&&l._url&&l._url.indexOf('/Base/')>0)u=l._url;});
-    return u;
+    if(_baseUrl)return _baseUrl;
+    window.map.eachLayer(function(l){if(!_baseUrl&&l._url&&l._url.indexOf('/Base/')>0)_baseUrl=l._url;});
+    return _baseUrl;
+  }
+  /* 창은 ready()에서 만들지만, 그 전에 눌릴 수도 있다. 필요할 때 만든다. */
+  function pane(id,z,noEvt){
+    if(!window.map.getPane(id)){
+      window.map.createPane(id);
+      window.map.getPane(id).style.zIndex=z;
+      if(noEvt)window.map.getPane(id).style.pointerEvents='none';
+    }
+    return id;
+  }
+  function warn(msg){
+    var e=document.getElementById('oldEmpty'); if(!e)return;
+    e.textContent=msg; e.style.display='block';
+    clearTimeout(warn._t); warn._t=setTimeout(function(){e.style.display='none';},3200);
   }
   function toggleSat(){
-    var u=baseTileUrl(); if(!u&&!_sat)return false;
+    var u=baseTileUrl();
+    if(!u&&!_sat){warn('이 지역은 위성 사진을 받을 수 없습니다');return false;}
     if(!_sat)_sat=L.tileLayer(u.replace('/Base/','/Satellite/').replace('.png','.jpeg'),
-      {attribution:'&copy; VWorld(국토교통부)',maxZoom:19,maxNativeZoom:18,minZoom:6});
+      {attribution:'&copy; VWorld(국토교통부)',maxZoom:19,maxNativeZoom:18,minZoom:6,pane:pane('sbsat',201,true)});
     if(window.map.hasLayer(_sat)){window.map.removeLayer(_sat);return false;}
     _sat.addTo(window.map); _sat.bringToBack(); return true;
   }
@@ -138,15 +157,18 @@
     /* 지적도(필지 경계). ⚠️타일(WMTS)에는 지적도가 없다 — WMS로 불러야 한다
        (2026-08-10 실호출 확인: WMS는 image/png 정상, 타일 주소 갈아끼우기는 오류 XML). */
     if(!_cad){
-      var u=baseTileUrl(); if(!u)return false;
-      var m=u.match(/wmts\/1\.0\.0\/([^\/]+)\//); if(!m)return false;
+      var u=baseTileUrl();
+      var m=u&&u.match(/wmts\/1\.0\.0\/([^\/]+)\//);
+      if(!m){warn('지적도를 불러올 수 없습니다');return false;}
       _cad=L.tileLayer.wms('https://api.vworld.kr/req/wms?KEY='+m[1]+'&DOMAIN='+location.hostname,
         {layers:'lp_pa_cbnd_bubun',styles:'lp_pa_cbnd_bubun',format:'image/png',
          transparent:true,version:'1.3.0',maxZoom:19,minZoom:15,
-         attribution:'지적도 &copy; VWorld(국토교통부)',pane:'sbcad'});
+         attribution:'지적도 &copy; VWorld(국토교통부)',pane:pane('sbcad',405,true)});
     }
     if(window.map.hasLayer(_cad)){window.map.removeLayer(_cad);return false;}
-    _cad.addTo(window.map); return true;
+    _cad.addTo(window.map);
+    if(window.map.getZoom()<15)warn('지적도는 더 확대해야 보입니다');
+    return true;
   }
   function toggleNames(){
     var v=!document.body.classList.contains('shownames');
@@ -154,7 +176,20 @@
     var mp=document.getElementById('map'); if(mp)mp.classList.toggle('names',v);
     return v;
   }
-  window._SBTOOL={sat:toggleSat,cad:toggleCad,names:toggleNames};
+  function locate(done){
+    /* 현위치는 브라우저 권한이 필요하고, 카카오톡 인앱에서는 앱 권한까지 있어야 한다.
+       지금까지는 실패해도 아무 말이 없어 "안 먹는다"로 보였다(2026-08-10 제보). */
+    if(!navigator.geolocation){warn('이 브라우저는 현위치를 지원하지 않습니다');done&&done(false);return;}
+    var t=setTimeout(function(){warn('현위치를 가져오지 못했습니다 (위치 권한 확인)');done&&done(false);},9000);
+    navigator.geolocation.getCurrentPosition(function(p){
+      clearTimeout(t); window.map.setView([p.coords.latitude,p.coords.longitude],16); done&&done(false);
+    },function(e){
+      clearTimeout(t);
+      warn(e&&e.code===1?'위치 권한이 꺼져 있습니다':'현위치를 가져오지 못했습니다');
+      done&&done(false);
+    },{enableHighAccuracy:true,timeout:8000,maximumAge:60000});
+  }
+  window._SBTOOL={sat:toggleSat,cad:toggleCad,names:toggleNames,locate:locate};
 
   ready(function(){
     window.map.createPane('sbold');
@@ -198,6 +233,7 @@
         modes.parentNode.insertBefore(box,modes.nextSibling);
       }
     }
+    baseTileUrl();          /* 배경이 바뀌기 전에 지금 주소를 붙잡아 둔다 */
     window.map.on('moveend zoomend',function(){ if(on)kickLoad(); });
   });
 })();

@@ -11,8 +11,7 @@
 <link rel="stylesheet" href="assets/site.css">
 <!-- 새 지도 디자인(2026-08-10 석봉님 확정): 네이버형 좌측 목록 + 흰 말풍선 마커.
      로직은 이 파일 그대로 두고 겉모습만 아래 두 파일이 얹는다. -->
-<link rel="stylesheet" href="assets/map_v2.css?v=3">
-<link rel="stylesheet" href="assets/map_old.css?v=2">
+<link rel="stylesheet" href="assets/map_v2.css?v=4">
 <link rel="stylesheet" href="assets/map_m.css?v=1">
 <style>
   html,body{height:100%}
@@ -1022,7 +1021,32 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
            딥링크가 통째로 재개발 모드로 튀었다(블로그 지역 딥링크가 죽은 원인).
            재개발 모드로 들어온 게 아니면 지역을 먼저 찾고, 못 찾을 때만 구역을 본다.
            '아현2구역'처럼 지역명이 아닌 질의는 findAndGo가 실패하므로 그대로 구역으로 넘어간다. */
-        function noHit(){var st=document.getElementById('stat');if(st)st.textContent='"'+v+'" 검색 결과를 찾지 못했습니다';setFcount('"'+v+'" 검색 결과 없음');}
+        /* 🔴 2026-08-10: 못 찾으면 **첫 화면으로 되돌아가지 않는다**.
+           전에는 아무 데도 안 걸리면 전국 초기 화면(58개 지역)이 떠서 "서울 전체가 나온다"는
+           제보가 됐다. 이제는 있던 화면을 그대로 두고, 비슷한 단지를 후보로 띄운다. */
+        function noHit(){
+          var st=document.getElementById('stat');
+          var cand=[];
+          try{ cand=(window._sacMatches?window._sacMatches(v,8):[]); }catch(e){}
+          if(cand.length&&window._jumpApt){
+            var sac=document.getElementById('sac');
+            if(sac){
+              window._sacList=cand;
+              sac.innerHTML='<div class="sach">"'+v+'"와 비슷한 단지 '+cand.length+'곳</div>'
+                +cand.map(function(r,i){return '<div class="sitem" data-i="'+i+'"><b>'+r[0]+'</b><span>'+(r[4]||'')+'</span></div>';}).join('');
+              sac.classList.add('open');
+              Array.prototype.forEach.call(sac.querySelectorAll('.sitem'),function(el){
+                el.addEventListener('mousedown',function(ev){ev.preventDefault();window._jumpApt(window._sacList[+el.getAttribute('data-i')]);});
+                el.addEventListener('click',function(){window._jumpApt(window._sacList[+el.getAttribute('data-i')]);});
+              });
+            }
+            if(st)st.textContent='"'+v+'" 정확히 일치하는 곳이 없어 비슷한 단지를 보여 드립니다';
+            setFcount('"'+v+'" 비슷한 단지 '+cand.length+'곳');
+            return;
+          }
+          if(st)st.textContent='"'+v+'" 검색 결과를 찾지 못했습니다';
+          setFcount('"'+v+'" 검색 결과 없음 · 지도는 보던 자리 그대로입니다');
+        }
         function goRegion(onNo){
           if(!findAndGo(v)){onNo();return;}
           /* 지역 이동은 됐는데 앞 검색 필터(또는 경매에서 넘어온 상품 필터) 탓에 0건인 경우를 푼다(2026-08-08) */
@@ -1106,14 +1130,51 @@ map.on('moveend zoomend',function(){if(popLock)return;render();if(curMode==='red
     s.onerror=function(){idxLoading=false;};
     document.body.appendChild(s);
   }
+  /* 🔴 2026-08-10 개편 — "압구정현대아파트"가 서울 전체 화면으로 튀던 문제.
+     원인 셋: ①실거래 표기가 `현대1차(12,13,21,22,31,32,33동)`이라 '압구정현대'라는 이름이
+     인덱스에 없다 ②검색이 **단지명 글자만** 보고 법정동을 안 봤다(사람들은 '동네+단지'로 부른다)
+     ③동명이단지는 인덱스 순서상 첫 번째를 집어 '현대1차'가 전북으로 갔다.
+     그래서 ①질의를 '동네 + 나머지'로 쪼개 보고 ②법정동을 같이 맞추며 ③서울·수도권을 위로 올린다. */
+  function seoulFirst(a,b){
+    var w=function(r){var c=(r[3]||'')+''; return c.indexOf('11')===0?0:(c.indexOf('41')===0||c.indexOf('28')===0?1:2);};
+    return w(a)-w(b);
+  }
   function matches(q,limit){
     var n=norm(q); if(n.length<2||!window.SB||!SB.aptIdx)return [];
-    var pre=[],inc=[];
-    for(var i=0;i<SB.aptIdx.length;i++){var r=SB.aptIdx[i];var p=norm(r[0]).indexOf(n);
-      if(p<0)continue; if(p===0){pre.push(r);}else{if(inc.length<limit)inc.push(r);}
-      if(pre.length>=limit)break;}
-    return pre.concat(inc).slice(0,limit);
+    /* 사람들은 '압구정현대아파트'라고 치는데 실거래 표기에는 '아파트'가 없다.
+       뒤에 붙은 총칭을 떼고 한 번 더 본다(떼도 2자 이상 남을 때만). */
+    var _t=n.replace(/(아파트|아파트단지|단지)$/,'');
+    if(_t.length>=2&&_t!==n)n=_t;
+    var IDX=SB.aptIdx, pre=[],inc=[],dongHit=[];
+    /* 질의 안에 법정동이 들어 있으면(압구정현대 → 압구정동 + 현대) 그 동으로 먼저 좁힌다 */
+    var seen={},dongs=[];
+    for(var d=0;d<IDX.length;d++){var dn=norm(IDX[d][4]||''); if(dn&&!seen[dn]){seen[dn]=1;dongs.push(dn);}}
+    var useDong='',rest='';
+    for(var k=0;k<dongs.length;k++){
+      var dn2=dongs[k], stem=dn2.replace(/동$/,'');
+      if(stem.length<2)continue;
+      if(n.indexOf(stem)===0&&n.length>stem.length){
+        if(stem.length>useDong.length){useDong=stem;rest=n.slice(stem.length).replace(/^동/,'');}
+      }
+    }
+    if(useDong&&rest.length>=1){
+      for(var i2=0;i2<IDX.length;i2++){var r2=IDX[i2];
+        if(norm(r2[4]||'').indexOf(useDong)!==0)continue;
+        if(norm(r2[0]).indexOf(rest)>=0)dongHit.push(r2);
+        if(dongHit.length>=limit)break;}
+    }
+    for(var i=0;i<IDX.length;i++){var r=IDX[i];var p=norm(r[0]).indexOf(n);
+      if(p<0)continue; if(p===0){pre.push(r);}else{if(inc.length<limit*3)inc.push(r);}
+      if(pre.length>=limit*3)break;}
+    pre.sort(seoulFirst); inc.sort(seoulFirst);
+    var out=dongHit.concat(pre,inc), uniq=[], mark={};
+    for(var u=0;u<out.length&&uniq.length<limit;u++){
+      var key=out[u][0]+'|'+out[u][4]+'|'+out[u][3];
+      if(mark[key])continue; mark[key]=1; uniq.push(out[u]);
+    }
+    return uniq;
   }
+  window._sacMatches=matches;
   function jumpApt(r){   /* r=[name,lat,lng,code,dong] */
     window.closeSac(); sq.value=r[0]; sq.blur();
     /* 앞 검색의 지역 필터가 남아 있으면 새 단지 주변 실거래가 통째로 안 보인다(2026-08-08) */
@@ -1159,7 +1220,15 @@ map.on('moveend zoomend',function(){if(popLock)return;render();if(curMode==='red
        예: 아시아선수촌아파트(잠실동/반여동), 파크뷰(정자동 외 4곳) */
     var IDX=SB.aptIdx, dn=norm(dong||'');
     function match(list){
-      for(var i=0;i<list.length;i++){if(norm(list[i][0])===n)return list[i];}
+      /* 🔴 2026-08-10: 정확매칭이 여럿이면 **첫 번째를 그냥 집지 않는다**.
+         '현대1차'는 전국 11곳인데 인덱스 순서대로 전북이 걸렸다(석봉님 제보).
+         서울 → 수도권 → 그 밖 순으로 골라, 적어도 엉뚱한 지방으로 튀지 않게 한다. */
+      var ex=[];
+      for(var i=0;i<list.length;i++){if(norm(list[i][0])===n)ex.push(list[i]);}
+      if(ex.length){
+        ex.sort(function(a,b){var w=function(r){var c=(r[3]||'')+'';return c.indexOf('11')===0?0:((c.indexOf('41')===0||c.indexOf('28')===0)?1:2);};return w(a)-w(b);});
+        return ex[0];
+      }
       /* 정확매칭 실패 시 부분매칭 폴백: 표기가 살짝 달라도(괄호·단지번호 등) 유일 후보면 그 단지로 */
       var part=[];
       /* ⚠️ '질의가 단지명을 포함' 방향은 짧은 단지명이 긴 문장에 우연히 걸린다(2026-08-09:
@@ -1608,10 +1677,10 @@ if(_BACKVIEW){try{
 
 render();
 </script>
-<script src="assets/map_v2.js?v=6"></script>
+<script src="assets/map_v2.js?v=8"></script>
 <script src="assets/map_v2_poi.js?v=2"></script>
 <script src="assets/map_v2_dong.js?v=2"></script>
-<script src="assets/map_old.js?v=1"></script>
-<script src="assets/map_m.js?v=1"></script>
-<script src="assets/sb_tabbar.js?v=1"></script>
+<script src="assets/map_old.js?v=2"></script>
+<script src="assets/map_m.js?v=2"></script>
+<script src="assets/sb_tabbar.js?v=2"></script>
 </body></html>

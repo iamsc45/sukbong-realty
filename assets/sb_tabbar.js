@@ -50,6 +50,8 @@
   ];
   /* 하단 탭 5칸(석봉님 확정). 지도를 첫 칸에 둔다 — 우리 지표는 지도 체류·재방문이다. */
   var TABS=[
+    /* 홈을 첫 칸에 넣는다(2026-08-10 석봉님 요청). 지도만 보다가 처음으로 돌아갈 길이 없었다. */
+    {k:'home',n:'홈',i:'home',h:'index.html'},
     {k:'map',n:'지도',i:'map-pin',h:'map.html'},
     {k:'search',n:'검색',i:'search'},
     {k:'deal',n:'청약·경매',i:'calendar-event'},
@@ -66,6 +68,7 @@
   var page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   function isMap(){return page.indexOf('map')===0;}
   function active(){
+    if(page==='index.html'||page==='')return 'home';
     if(isMap())return 'map';
     if(page.indexOf('favorites')===0)return 'fav';
     if(page.indexOf('apply')===0||page.indexOf('auction')===0)return 'deal';
@@ -90,8 +93,12 @@
   +'body.sbmap .site-footer{display:none}'
   /* 상단 가로 스크롤 메뉴는 걷어낸다. 좁은 화면에서 뒤쪽 항목이 잘려 안 보였고,
      이제 같은 메뉴를 하단 '전체'가 다 담는다. 로고와 로그인 버튼은 남긴다. */
-  +'.site-header nav a{display:none}'
-  +'.site-header nav{margin-left:auto;padding:0}'
+  /* ⚠️.sbnav도 함께 잡아야 한다 — 단지상세·구역상세·재개발 기초상식은 헤더 클래스가
+     `.site-header`가 아니라 `.sbnav`다. 그래서 그 화면들만 상단 메뉴가 12줄로 남아 있었다
+     (2026-08-10 석봉님 제보, 단지상세 캡처). */
+  +'.site-header nav a,.sbnav nav a{display:none}'
+  +'.site-header nav,.sbnav nav{margin-left:auto;padding:0}'
+  +'.sbnav .in{display:flex;align-items:center;gap:10px;flex-wrap:nowrap}'
   /* 로고와 로그인 버튼이 두 줄로 갈라지면 지도 높이를 40px 더 먹는다 */
   +'.site-header{flex-wrap:nowrap!important;align-items:center}'
   /* 전체 메뉴 시트 */

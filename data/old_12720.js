@@ -1,0 +1,1 @@
+window.OLDZ=window.OLDZ||{};OLDZ["12720"]=[["석곡면",3,-1,0,-1]];

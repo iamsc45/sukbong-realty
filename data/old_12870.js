@@ -1,0 +1,1 @@
+window.OLDZ=window.OLDZ||{};OLDZ["12870"]=[["도초면",1,-1,0,-1]];
