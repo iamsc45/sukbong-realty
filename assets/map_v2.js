@@ -377,6 +377,20 @@
     };
     w.appendChild(grip); syncGrip();
 
+    /* 지역(군집·동 원)이나 상품 마커를 누르면 접어 둔 목록을 다시 편다(2026-08-10 석봉님 요청).
+       무언가를 눌렀다는 건 "여기 뭐가 있나 보자"는 뜻인데, 목록이 접혀 있으면 그 답이 안 보인다.
+       다시 접고 싶으면 손잡이가 그대로 있으니, 편 상태를 기억까지 해 둔다. */
+    function openList(){
+      if(!document.body.classList.contains('listoff'))return;
+      document.body.classList.remove('listoff');
+      try{localStorage.setItem('sb_v2list','on');}catch(e){}
+      syncGrip();
+    }
+    document.getElementById('map').addEventListener('click',function(e){
+      if(!e.target||!e.target.closest)return;
+      if(e.target.closest('.clus')||e.target.closest('.pricetag'))openList();
+    },true);   /* 캡처 단계 — 지도 마커가 이벤트를 멈춰도 먼저 받는다 */
+
     var d=document.createElement('div'); d.id='v2list';
     d.innerHTML='<div class="v2h"><div class="t" id="v2t">불러오는 중</div><div class="s" id="v2s">지도를 움직이면 이 목록도 따라 바뀝니다</div></div>'
       +sortBar()+'<div class="v2b"></div>';
