@@ -24,29 +24,44 @@
   var tone=P.get('tone'); if(tone)document.body.classList.add('tone-'+tone);
 
 
-  /* ── 배경 타일 고르기 (2026-08-10 2차) ─────────────────────────
-     석봉님: "전체적으로 노란색 톤에 검은 텍스트 풍선이라 초등학생 숙제 같다".
-     원인의 절반은 VWorld Base 타일 자체가 누런 베이지라는 것이었다. 채도를 올리면
-     노란기가 더 세지고, 내리면 흐려진다 — 필터로는 못 고친다. 타일을 바꿔야 한다.
-     ?base=voyager|positron|vworld 로 실제로 비교해 고른다. */
+  /* ── 배경 타일 (2026-08-10 3차 · 되돌림) ─────────────────────
+     CARTO Voyager로 갈아탔다가 석봉님 판단으로 **되돌린다**: "새 배경은 실패,
+     지하철 노선 그린 것도 별로다. VWorld 배경 모드를 확인 중이니 정해지면 그쪽으로."
+     그래서 기본을 다시 VWorld로 두고, CARTO는 비교용으로만 남긴다.
+     VWorld는 여러 모드를 제공하므로 결정되는 대로 바로 보도록 파라미터에 다 걸어 둔다.
+       ?base=vworld(기본·일반) | vworld-gray | vworld-midnight | vworld-hybrid | vworld-satellite
+       ?base=voyager | positron  (CARTO, 비교용)
+     ⚠️ VWorld 타일에는 지하철 노선·역·학교가 이미 그려져 있다. 우리가 또 그리면
+     이름이 겹치고 선이 두 겹으로 보이므로, VWorld일 때는 우리 POI를 기본으로 끈다
+     (필요하면 ?poi=on · ?line=on 으로 켠다). */
+  var VW='https://api.vworld.kr/req/wmts/1.0.0/EBC23601-6E41-3269-9ECB-821DEECCF3F0/';
   var BASES={
     voyager:['https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-             '&copy; OpenStreetMap &copy; CARTO'],
+             '&copy; OpenStreetMap &copy; CARTO',{subdomains:'abcd'}],
     positron:['https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-             '&copy; OpenStreetMap &copy; CARTO']
+             '&copy; OpenStreetMap &copy; CARTO',{subdomains:'abcd'}],
+    'vworld-gray':[VW+'gray/{z}/{y}/{x}.png','&copy; VWorld(국토교통부)',{maxNativeZoom:18}],
+    'vworld-midnight':[VW+'midnight/{z}/{y}/{x}.png','&copy; VWorld(국토교통부)',{maxNativeZoom:18}],
+    'vworld-satellite':[VW+'Satellite/{z}/{y}/{x}.jpeg','&copy; VWorld(국토교통부)',{maxNativeZoom:18}],
+    'vworld-hybrid':[VW+'Satellite/{z}/{y}/{x}.jpeg','&copy; VWorld(국토교통부)',{maxNativeZoom:18,overlay:VW+'Hybrid/{z}/{y}/{x}.png'}]
   };
+  var BASE=P.get('base')||'vworld';
   function swapBase(){
-    var b=P.get('base')||'voyager';
-    if(b==='vworld'||!BASES[b])return;               /* 기존 VWorld 유지 */
+    if(BASE==='vworld'||!BASES[BASE]){document.body.classList.add('base-vworld');return;}  /* 원본 VWorld 일반 유지 */
     if(!window.map||!window.baseV)return setTimeout(swapBase,150);
     try{window.map.removeLayer(window.baseV);}catch(e){}
-    var t=BASES[b];
+    var t=BASES[BASE],o=t[2]||{};
     window._v2base=L.tileLayer(t[0],{attribution:t[1],maxZoom:20,minZoom:6,
-      subdomains:'abcd',detectRetina:true}).addTo(window.map);
+      subdomains:o.subdomains||'abc',maxNativeZoom:o.maxNativeZoom,detectRetina:!o.maxNativeZoom}).addTo(window.map);
     try{window._v2base.setZIndex(1);}catch(e){}
-    document.body.classList.add('base-'+b);
+    if(o.overlay)L.tileLayer(o.overlay,{maxZoom:20,minZoom:6,maxNativeZoom:18}).addTo(window.map);
+    document.body.classList.add('base-'+BASE.replace(/[^a-z0-9-]/g,''));
   }
   swapBase();
+  /* 우리 POI(노선·역·학교) 표시 여부를 map_v2_poi.js에 알려 준다 */
+  window._V2POI={line:(P.get('line')==='on'),
+                 poi:(P.get('poi')==='on')||BASE.indexOf('vworld')<0};
+  if(P.get('poi')==='off')window._V2POI.poi=false;
 
   /* ── 스킨 전환 스위치(스테이징에만) ───────────────────────── */
   function mountSwitch(){

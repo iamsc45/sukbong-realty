@@ -10,6 +10,10 @@
    출처: OpenStreetMap 기여자 (ODbL) — 범례에 표기한다. */
 (function(){
   if(!window.L)return;
+  /* 2026-08-10 3차: 배경을 VWorld로 되돌리면서 우리 POI는 기본으로 끈다.
+     VWorld 타일에 노선·역·학교가 이미 그려져 있어 두 겹이 되기 때문이다.
+     ?poi=on(역·학교) · ?line=on(노선)으로 켤 수 있게만 남긴다. */
+  var SW=window._V2POI||{line:false,poi:false};
   var Z_SUB=13, Z_SCH=16, Z_LINE=11;   /* 이 줌부터 보인다 */
   var MAX_SUB=45, MAX_SCH=48, MAX_LINE=700;
   var pane, gSub, gSch, gLine, loading={}, loaded={};
@@ -46,7 +50,7 @@
 
   function drawSub(b,z){
     gSub.clearLayers();
-    if(z<Z_SUB||!window.POISUB)return;
+    if(!SW.poi||z<Z_SUB||!window.POISUB)return;
     var out=[],i;
     for(i=0;i<POISUB.length;i++){
       var r=POISUB[i];
@@ -70,7 +74,7 @@
 
   function drawSch(b,z){
     gSch.clearLayers();
-    if(z<Z_SCH||!window.POISCH)return;
+    if(!SW.poi||z<Z_SCH||!window.POISCH)return;
     var out=[],k,arr,i;
     for(k in POISCH){
       arr=POISCH[k];
@@ -99,7 +103,7 @@
      선은 가격 마커보다 훨씬 아래(pane sbline)에 깔아 읽는 데 방해가 되지 않게 한다. */
   function drawLine(b,z){
     gLine.clearLayers();
-    if(z<Z_LINE||!window.POILINE)return;
+    if(!SW.line||z<Z_LINE||!window.POILINE)return;
     var w=(z>=15?5:(z>=13?4:3)), n=0;
     for(var i=0;i<POILINE.length;i++){
       var r=POILINE[i], g=r[2], hit=false;
@@ -115,7 +119,7 @@
 
   /* 화면에 걸친 시도의 학교 파일만 받아 온다 */
   function needSchool(b,z){
-    if(z<Z_SCH)return;
+    if(!SW.poi||z<Z_SCH)return;
     var n=0;
     for(var c in SIDO){
       var s=SIDO[c];
@@ -144,14 +148,14 @@
     gSub=L.layerGroup([],{pane:'sbpoi'}).addTo(window.map);
     gSch=L.layerGroup([],{pane:'sbpoi'}).addTo(window.map);
     gLine=L.layerGroup([],{pane:'sbline'}).addTo(window.map);
-    loadJS('data/poi_subline.js',refresh);
-    loadJS('data/poi_subway.js',refresh);
+    if(SW.line)loadJS('data/poi_subline.js',refresh);   /* 꺼져 있으면 500KB를 받지도 않는다 */
+    if(SW.poi)loadJS('data/poi_subway.js',refresh);
     window.map.on('moveend zoomend',refresh);
     refresh();
 
     /* 출처 한 줄 (ODbL 의무) */
     var lg=document.getElementById('legend');
-    if(lg&&lg.innerHTML.indexOf('OpenStreetMap')<0){
+    if((SW.poi||SW.line)&&lg&&lg.innerHTML.indexOf('OpenStreetMap')<0){
       var d=document.createElement('div');
       d.style.cssText='margin-top:4px;font-size:9.5px;color:#9a938a';
       d.textContent='지하철 노선·역·학교 ⓒ OpenStreetMap 기여자';
