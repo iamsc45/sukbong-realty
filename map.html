@@ -966,6 +966,13 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
           if(curMode!=='redev')setMode('redev');
           try{map.setView([dloc[1],dloc[2]],15);}catch(e){}
           var st=document.getElementById('stat');if(st)st.textContent=dk.replace(/\s.*/,'')+' · '+dnm+' 일대 (재개발 모드)';
+          /* 지도만 옮기고 끝내면 "구역 카드가 안 열린다"는 말을 듣는다(2026-08-10 원고 세션 지적).
+             구역계·마커 좌표가 없는 곳이라도 정비계획 상세는 있으니 카드는 띄운다.
+             다만 위치는 구역이 아니라 법정동 중심이므로 카드에 그렇게 밝힌다(_approx). */
+          var dv=DD[dk]||{};
+          setTimeout(function(){try{showRcard({nm:dk,biz:dk,cat:dv.cat||'',stage:dv.stage||'',
+            sido:dv.sido||'',gubun:dv.gubun||'',area:dv.area||0,src:dv.src||'',
+            lat:dloc[1],lon:dloc[2],_lat:dloc[1],_lon:dloc[2],_approx:dnm});}catch(e){}},420);
           return;
         }
       }
@@ -976,14 +983,22 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
     function afterIdx(){
       if(window._trySelectApt&&window._trySelectApt(v,dong))return;
       tryAddress(v,function(){
-        tryRedevZone(v,function(){
-          if(!findAndGo(v)){var st=document.getElementById('stat');if(st)st.textContent='"'+v+'" 검색 결과를 찾지 못했습니다';setFcount('"'+v+'" 검색 결과 없음');}
+        /* 🔴 순서 뒤집음(2026-08-10). 전에는 지역보다 재개발 구역을 먼저 맞춰 봤는데,
+           '아현동'·'대치동'처럼 구역명에 동 이름이 들어가는 곳에서 실거래로 들어온
+           딥링크가 통째로 재개발 모드로 튀었다(블로그 지역 딥링크가 죽은 원인).
+           재개발 모드로 들어온 게 아니면 지역을 먼저 찾고, 못 찾을 때만 구역을 본다.
+           '아현2구역'처럼 지역명이 아닌 질의는 findAndGo가 실패하므로 그대로 구역으로 넘어간다. */
+        function noHit(){var st=document.getElementById('stat');if(st)st.textContent='"'+v+'" 검색 결과를 찾지 못했습니다';setFcount('"'+v+'" 검색 결과 없음');}
+        function goRegion(onNo){
+          if(!findAndGo(v)){onNo();return;}
           /* 지역 이동은 됐는데 앞 검색 필터(또는 경매에서 넘어온 상품 필터) 탓에 0건인 경우를 푼다(2026-08-08) */
-          else setTimeout(function(){try{
+          setTimeout(function(){try{
             if(window._unfilterIfEmpty)window._unfilterIfEmpty();
             if(window._relaxTypeIfEmpty)window._relaxTypeIfEmpty('');
           }catch(e){}},700);
-        });
+        }
+        if(curMode==='redev')tryRedevZone(v,function(){goRegion(noHit);});
+        else goRegion(function(){tryRedevZone(v,noHit);});
       });
     }
     /* ⚠️ 단지 검색 모듈(_loadAptIdx/_trySelectApt)은 이 블록보다 뒤에서 정의된다.
@@ -1259,6 +1274,7 @@ function showRcard(p){
     +rcNearTx(p)
     +'<a class="rc-cta" href="구역상세.html?nm='+encodeURIComponent(p.biz||p.nm)+'" style="background:#7a3b12">구역 상세 · 정비계획 전체 보기 →</a>'
     +'<a class="rc-cta" href="재개발_기초상식.html" style="background:#3a4658">재개발·재건축 기초상식 →</a>'
+    +(p._approx?'<div class="rc-note" style="color:#b06a2e">이 구역은 구역계 좌표가 공개되지 않아 지도 위치가 <b>'+p._approx+' 중심</b>으로 표시됩니다. 정비계획 내용은 공개자료 그대로입니다.</div>':'')
     +'<div class="rc-note">추진단계는 '+srcLab(p.src)+' 공개자료 기준이라 시점에 따라 다를 수 있습니다. 구역계·단계는 참고용, 법적효력 없음.</div>';
   var rc=document.getElementById('rcard');rc.innerHTML=html;rc.classList.add('open');
   document.getElementById('rcClose').onclick=function(){rc.classList.remove('open');};
