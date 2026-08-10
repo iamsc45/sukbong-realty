@@ -66,8 +66,12 @@
                  poi:(P.get('poi')==='on')||BASE.indexOf('vworld')<0};
   if(P.get('poi')==='off')window._V2POI.poi=false;
 
-  /* ── 스킨 전환 스위치(스테이징에만) ───────────────────────── */
+  /* ── 스킨 전환 스위치(스테이징에만) ─────────────────────────
+     2026-08-10 본편 반영: 라이브 map.html에서는 '배경 기본/화이트 · 현재 지도' 비교
+     버튼이 보이면 안 된다. 주소로 판단해서 스테이징에서만 붙인다. */
+  var STAGING=(location.pathname.indexOf('map_v2')>=0);
   function mountSwitch(){
+    if(!STAGING)return;
     var d=document.createElement('div'); d.id='v2skin';
     /* 2026-08-10 석봉님 확정: **네이버형으로 간다.** 호갱노노형은 비교 이력으로만 남긴다
        (?skin=b로는 여전히 열리지만 스위치에서는 뺐다 — 고른 안을 매번 다시 고르게 하지 않는다). */
