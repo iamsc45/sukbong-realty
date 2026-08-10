@@ -32,9 +32,9 @@
       polys.forEach(function(rings){
         var ll=rings[0].map(function(c){return [c[1],c[0]];});
         var poly=L.polygon(ll,{pane:'sbdong',color:'#2554E0',weight:1,opacity:.35,
-          fillColor:'#2554E0',fillOpacity:0,className:'dongzone'});
+          fillColor:'#2554E0',fillOpacity:0.001,className:'dongzone'});   /* 0이면 히트 영역이 사라진다 */
         poly.on('mouseover',function(){
-          if(cur&&cur!==poly)cur.setStyle({fillOpacity:0,weight:1,opacity:.35});
+          if(cur&&cur!==poly)cur.setStyle({fillOpacity:0.001,weight:1,opacity:.35});
           cur=poly; poly.setStyle({fillOpacity:.1,weight:2,opacity:.85});
           if(tip){tip.textContent=nm;tip.style.display='block';}
         });
@@ -44,7 +44,7 @@
           tip.style.left=(pt.x+14)+'px'; tip.style.top=(pt.y+14)+'px';
         });
         poly.on('mouseout',function(){
-          poly.setStyle({fillOpacity:0,weight:1,opacity:.35});
+          poly.setStyle({fillOpacity:0.001,weight:1,opacity:.35});
           if(tip)tip.style.display='none';
         });
         poly.addTo(layer);

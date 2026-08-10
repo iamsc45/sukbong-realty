@@ -373,4 +373,6 @@ body.v2.skin-a #v2empty:hover{transform:translateX(-50%) translateY(-2px)}
 #dongtip{position:absolute;z-index:930;pointer-events:none;
   background:rgba(22,24,29,.92);color:#fff;font-size:12px;font-weight:700;letter-spacing:-.02em;
   padding:5px 10px;border-radius:8px;box-shadow:0 4px 14px rgba(16,18,24,.28);white-space:nowrap}
-.dongzone{cursor:default}
+/* ⚠️ fill-opacity가 0이면 SVG 면이 마우스를 못 받아 호버가 안 걸린다(2026-08-10 확인).
+   투명하게 두되 pointer-events는 살려야 이름표가 뜬다. */
+.dongzone{cursor:default;pointer-events:all !important}
