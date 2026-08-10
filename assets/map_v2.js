@@ -386,9 +386,18 @@
       try{localStorage.setItem('sb_v2list','on');}catch(e){}
       syncGrip();
     }
+    /* 모바일에는 좌측 목록 대신 하단 시트가 있다. 지역을 누르면 그 시트를 올린다.
+       ⚠️상품 마커는 제외한다 — 누르면 단지 카드가 뜨는데 시트까지 올라오면 서로 가린다.
+       시트가 접힌 채로 지도가 움직이는 동안 튀지 않도록, 확대가 끝난 뒤에 올린다. */
+    function openSheet(){
+      var sh=document.getElementById('v2sheet');
+      if(!sh||!sh.classList.contains('min'))return;
+      setTimeout(function(){sh.classList.remove('min');},420);
+    }
     document.getElementById('map').addEventListener('click',function(e){
       if(!e.target||!e.target.closest)return;
-      if(e.target.closest('.clus')||e.target.closest('.pricetag'))openList();
+      if(e.target.closest('.clus')){openList();openSheet();return;}
+      if(e.target.closest('.pricetag'))openList();
     },true);   /* 캡처 단계 — 지도 마커가 이벤트를 멈춰도 먼저 받는다 */
 
     var d=document.createElement('div'); d.id='v2list';
