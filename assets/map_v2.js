@@ -109,6 +109,19 @@
     }).observe(pane,{childList:true,subtree:true});
   }
 
+  /* 카드 헤더의 인라인 상품색을 --c로 옮긴다(마커와 같은 방식).
+     헤더 배경은 CSS가 흰색으로 덮으므로, 색을 잃지 않으려면 미리 변수로 빼 놔야 한다. */
+  function watchCard(){
+    var rc=document.getElementById('rcard'); if(!rc)return setTimeout(watchCard,200);
+    function fix(){
+      var h=rc.querySelector('.rc-h'); if(!h)return;
+      var c=h.style.backgroundColor||h.style.background;
+      if(c&&c.indexOf('255, 255, 255')<0)rc.style.setProperty('--c',c);
+    }
+    fix();
+    new MutationObserver(fix).observe(rc,{childList:true,subtree:false});
+  }
+
   /* ── 목록 ────────────────────────────────────────────────── */
   function typeInfo(t){var T=window.TYPE||{};return T[t]||['기타','#6E6E6A'];}
   function money(tx){try{return window.priceLabel(tx);}catch(e){return '';}}
@@ -270,6 +283,6 @@
     zc(); kick();
   }
 
-  mountSwitch(); mountList(); watchMarkers(); hook(); fitTop();
+  mountSwitch(); mountList(); watchMarkers(); watchCard(); hook(); fitTop();
   setTimeout(fitTop,400); setTimeout(fitTop,1200);   /* 폰트·닉네임 로드로 헤더 높이가 늦게 바뀐다 */
 })();
