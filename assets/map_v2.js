@@ -131,7 +131,9 @@
     var kept=[],PAD=6;
     els.forEach(function(e){
       var c=e.parentNode.getBoundingClientRect();
-      kept.push({l:c.left-2,t:c.top-2,r:c.right+2,b:c.bottom+2,circle:1});
+      /* ⚠️ 소유 요소를 같이 담는다. 좌표로 자기 원을 가려내려다 판정이 틀어져
+         라벨 69개가 전부 숨는 사고를 냈다(2026-08-10). 참조 비교가 안전하다. */
+      kept.push({l:c.left-2,t:c.top-2,r:c.right+2,b:c.bottom+2,own:e});
     });
     els.forEach(function(e){
       var lab=e.querySelector('.cn'); if(!lab)return;
@@ -140,7 +142,7 @@
       var box={l:r.left-PAD,t:r.top-2,r:r.right+PAD,b:r.bottom+2},hit=false;
       for(var i=0;i<kept.length;i++){
         var k=kept[i];
-        if(k.circle&&k.l-2===Math.round(e.parentNode.getBoundingClientRect().left)-2)continue; /* 자기 원은 제외 */
+        if(k.own===e)continue;              /* 자기 원과는 겹쳐도 된다 */
         if(!(box.r<k.l||box.l>k.r||box.b<k.t||box.t>k.b)){hit=true;break;}
       }
       if(hit)e.classList.add('nolabel'); else kept.push(box);
