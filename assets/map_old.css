@@ -58,6 +58,8 @@ body.oldon .pricetag:hover,body.oldon .pricetag.hl{opacity:1}
   #oldLegend i{width:20px}
   #oldEmpty{top:auto;bottom:calc(var(--sbtab-h,56px) + 62px);font-size:11px;white-space:nowrap}
   #oldtip{max-width:180px}
-  /* PC용 칩은 모바일에서 숨긴다 — 좌측 세로 토글이 대신한다 */
-  body.mmap #oldBtn{display:none!important}
+  /* ⚠️PC용 도구 칩은 모바일에서 **통째로** 숨긴다.
+     `#oldBtn`만 숨겼더니 지적도·단지명·위성 세 칩이 상단 한 줄을 차지해 검색창이 "지"까지
+     줄어들었다(2026-08-10 라이브 확인). 모바일에서는 좌측 세로 토글과 우측 세로 버튼이 대신한다. */
+  body.mmap #sbTools{display:none!important}
 }
