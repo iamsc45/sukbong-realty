@@ -348,3 +348,23 @@ body.v2 .clus.dong.nolabel .cn{display:none}
   body.v2 .clus.dong .cc{font-size:11.5px}
   body.v2 .clus.dong .cn{font-size:10px}
 }
+
+/* ── 12. 조건 0건 안내 버튼 (2026-08-10) ─────────────────────── */
+#v2empty{display:none;position:absolute;left:50%;transform:translateX(-50%);
+  bottom:34px;z-index:905;border:0;cursor:pointer;font:inherit;text-align:center;
+  background:rgba(22,24,29,.94);color:#fff;border-radius:14px;padding:11px 20px;
+  box-shadow:0 8px 26px rgba(16,18,24,.28);backdrop-filter:blur(6px);
+  transition:transform .13s ease,box-shadow .13s ease}
+body.v2 #v2empty.on{display:block}
+body.v2.skin-a #v2empty{left:calc(50% + var(--v2-list,352px)/2)}
+body.v2.listoff.skin-a #v2empty{left:50%}
+#v2empty b{display:block;font-size:12.5px;font-weight:600;color:rgba(255,255,255,.82);
+  letter-spacing:-.02em}
+#v2empty span{display:block;font-size:13.5px;font-weight:800;margin-top:3px;letter-spacing:-.02em}
+#v2empty:hover{transform:translateX(-50%) translateY(-2px);box-shadow:0 12px 30px rgba(16,18,24,.34)}
+body.v2.skin-a #v2empty:hover{transform:translateX(-50%) translateY(-2px)}
+@media (max-width:720px){
+  #v2empty{bottom:auto;top:calc(var(--v2-top,80px) + 92px);padding:9px 16px;max-width:88vw}
+  body.v2.skin-a #v2empty{left:50%}
+  #v2empty b{font-size:11.5px}#v2empty span{font-size:12.5px}
+}

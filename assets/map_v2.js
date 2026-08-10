@@ -158,6 +158,39 @@
     kick();
   }
 
+  /* ── 조건 일치 0건일 때 '전체로 보기' (2026-08-10 석봉님 확정) ──
+     첫 화면 필터가 '아파트·매매'라(8/9 부하 대책) 오피스텔·빌라·전월세만 있는 동네는
+     화면이 통째로 비어 "정보가 없는 지도"로 보인다. 실제로 논현동을 뒤져 보니
+     아츠논현·현대넥서스는 자료도 좌표도 다 있는데 전월세뿐이라 걸러진 것이었다.
+     그래서 화면에 하나도 안 잡히면 풀어 볼 수 있는 버튼을 띄운다. */
+  function mountEmptyCTA(){
+    var w=document.getElementById('wrap'); if(!w)return;
+    var d=document.createElement('button'); d.id='v2empty'; d.type='button';
+    d.innerHTML='<b>이 화면에 조건에 맞는 거래가 없습니다</b>'
+      +'<span>전체 상품 · 전체 거래로 보기</span>';
+    w.appendChild(d);
+    d.onclick=function(){
+      try{
+        window.curTset=null; window.curU='all';
+        if(window._syncTypeUI)window._syncTypeUI();
+        if(window._syncUUI)window._syncUUI();
+        if(window.render)window.render();
+      }catch(e){}
+      d.classList.remove('on');
+    };
+    return d;
+  }
+  var emptyCTA=null;
+  function checkEmpty(){
+    if(!emptyCTA)emptyCTA=mountEmptyCTA(); if(!emptyCTA)return;
+    var z=0;try{z=window.map.getZoom();}catch(e){}
+    var n=(window._PTS||[]).length;
+    /* 필터가 걸려 있을 때만 권한다. 아무 조건이 없는데 0건이면 정말 거래가 없는 곳이다. */
+    var filtered=!!(window.curTset)||(window.curU&&window.curU!=='all');
+    var redev=document.body.classList.contains('redev');
+    emptyCTA.classList.toggle('on', z>=13 && n===0 && filtered && !redev);
+  }
+
   /* 카드 헤더의 인라인 상품색을 --c로 옮긴다(마커와 같은 방식).
      헤더 배경은 CSS가 흰색으로 덮으므로, 색을 잃지 않으려면 미리 변수로 빼 놔야 한다. */
   function watchCard(){
@@ -252,7 +285,7 @@
 
   function paintList(force){
     var _z=0;try{_z=window.map.getZoom();}catch(e){}
-    if(_z<13){lastKey='region'+_z;paintRegionList();return;}
+    if(_z<13){lastKey='region'+_z;paintRegionList();checkEmpty();return;}
     var list=window._PTS||[];
     var k=key(list); if(!force&&k===lastKey)return; if(k!==lastKey)shown=LIMIT; lastKey=k;
     var a=sorted(list), body=document.querySelectorAll('.v2b');
@@ -305,6 +338,7 @@
     document.querySelectorAll('[data-more]').forEach(function(el){
       el.onclick=function(){shown+=LIMIT;paintList(true);};
     });
+    checkEmpty();
   }
 
   /* ── UI 붙이기 ────────────────────────────────────────────── */
