@@ -10,9 +10,9 @@
    출처: OpenStreetMap 기여자 (ODbL) — 범례에 표기한다. */
 (function(){
   if(!window.L)return;
-  var Z_SUB=13, Z_SCH=16;          /* 이 줌부터 보인다(학교는 z15에서 71개가 깔려 빽빽했다) */
-  var MAX_SUB=45, MAX_SCH=48;      /* 화면당 상한 */
-  var pane, gSub, gSch, loading={}, loaded={};
+  var Z_SUB=13, Z_SCH=16, Z_LINE=11;   /* 이 줌부터 보인다 */
+  var MAX_SUB=45, MAX_SCH=48, MAX_LINE=700;
+  var pane, gSub, gSch, gLine, loading={}, loaded={};
 
   /* 시도 bbox (수집 스크립트와 같은 표) — 남,서,북,동 */
   var SIDO={"11":[37.41,126.76,37.71,127.19],"26":[34.88,128.74,35.40,129.32],
@@ -93,6 +93,26 @@
     }
   }
 
+  /* 지하철 노선(선). 2026-08-10 석봉님: "대중교통은 지도에서 절대 빠지면 안 된다".
+     역 점만으로는 노선이 어디로 흐르는지 안 보이는데, 집을 볼 때 가장 먼저 보는 게
+     역세권이다. 배경 타일(CARTO)에는 노선이 없어서 우리가 직접 그린다.
+     선은 가격 마커보다 훨씬 아래(pane sbline)에 깔아 읽는 데 방해가 되지 않게 한다. */
+  function drawLine(b,z){
+    gLine.clearLayers();
+    if(z<Z_LINE||!window.POILINE)return;
+    var w=(z>=15?5:(z>=13?4:3)), n=0;
+    for(var i=0;i<POILINE.length;i++){
+      var r=POILINE[i], g=r[2], hit=false;
+      for(var j=0;j<g.length;j++){
+        if(g[j][0]>=b.getSouth()&&g[j][0]<=b.getNorth()&&g[j][1]>=b.getWest()&&g[j][1]<=b.getEast()){hit=true;break;}
+      }
+      if(!hit)continue;
+      L.polyline(g,{color:r[0],weight:w,opacity:.85,lineCap:'round',lineJoin:'round',
+        pane:'sbline',interactive:false,smoothFactor:1.6}).addTo(gLine);
+      if(++n>MAX_LINE)break;
+    }
+  }
+
   /* 화면에 걸친 시도의 학교 파일만 받아 온다 */
   function needSchool(b,z){
     if(z<Z_SCH)return;
@@ -110,16 +130,21 @@
     clearTimeout(t);
     t=setTimeout(function(){
       var b=window.map.getBounds(), z=window.map.getZoom();
-      needSchool(b,z); drawSub(b,z); drawSch(b,z);
+      needSchool(b,z); drawLine(b,z); drawSub(b,z); drawSch(b,z);
     },90);
   }
 
   ready(function(){
+    window.map.createPane('sbline');
+    window.map.getPane('sbline').style.zIndex=420;     /* 타일 위, 역·학교 아이콘 아래 */
+    window.map.getPane('sbline').style.pointerEvents='none';
     window.map.createPane('sbpoi');
     window.map.getPane('sbpoi').style.zIndex=450;      /* 타일(200) 위, 가격 마커(600) 아래 */
     window.map.getPane('sbpoi').style.pointerEvents='none';
     gSub=L.layerGroup([],{pane:'sbpoi'}).addTo(window.map);
     gSch=L.layerGroup([],{pane:'sbpoi'}).addTo(window.map);
+    gLine=L.layerGroup([],{pane:'sbline'}).addTo(window.map);
+    loadJS('data/poi_subline.js',refresh);
     loadJS('data/poi_subway.js',refresh);
     window.map.on('moveend zoomend',refresh);
     refresh();
@@ -129,7 +154,7 @@
     if(lg&&lg.innerHTML.indexOf('OpenStreetMap')<0){
       var d=document.createElement('div');
       d.style.cssText='margin-top:4px;font-size:9.5px;color:#9a938a';
-      d.textContent='지하철·학교 위치 ⓒ OpenStreetMap 기여자';
+      d.textContent='지하철 노선·역·학교 ⓒ OpenStreetMap 기여자';
       lg.appendChild(d);
     }
   });
