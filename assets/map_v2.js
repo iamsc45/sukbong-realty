@@ -392,7 +392,12 @@
     function openSheet(){
       var sh=document.getElementById('v2sheet');
       if(!sh||!sh.classList.contains('min'))return;
-      setTimeout(function(){sh.classList.remove('min');},420);
+      setTimeout(function(){
+        sh.classList.remove('min');
+        /* 모바일 재구성(map_m.js)이 켜져 있으면 '반'까지만 올린다 — 지도를 다 덮지 않게.
+           'min'을 먼저 떼고 'half'를 붙여야 한다(둘이 겹치면 half가 이겨 접힘이 풀린다). */
+        if(window._SB_SHEET_HALF)sh.classList.add('half');
+      },420);
     }
     document.getElementById('map').addEventListener('click',function(e){
       if(!e.target||!e.target.closest)return;
