@@ -36,13 +36,13 @@
     {g:'콘텐츠',items:[
       {n:'청약',i:'ticket',h:'apply.html'},
       {n:'경매·공매',i:'gavel',h:'auction.html'},
+      {n:'LH 매입',i:'building-estate',h:LH},
       {n:'리포트',i:'file-text',h:G},
       {n:'블로그',i:'notebook',h:BLOG,blank:1},
       {n:'채널',i:'send',h:'channels.html'}]},
     {g:'내 것',items:[
       {n:'관심단지',i:'star',h:'favorites.html'},
-      {n:'내 정보',i:'user',h:'%EB%82%B4%EC%A0%95%EB%B3%B4.html'},
-      {n:'LH 매입',i:'building-estate',h:LH}]},
+      {n:'내 정보',i:'user',h:'%EB%82%B4%EC%A0%95%EB%B3%B4.html'}]},
     {g:'안내',items:[
       {n:'홈',i:'home',h:'index.html'},
       {n:'이용안내',i:'help-circle',h:USE},

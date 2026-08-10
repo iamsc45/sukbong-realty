@@ -47,6 +47,11 @@
     var foot=document.createElement('div'); foot.className='mfoot';
     foot.appendChild(document.getElementById('fcount'));
     foot.appendChild(document.getElementById('freset'));
+    /* 원래 하단 줄에 있던 '닫기 ✕'는 시트 푸터의 '결과 보기'와 겹친다. 그 줄을 통째로 감춘다.
+       ⚠️CSS `.frow:last-of-type`로 감추려 했더니 안 먹었다 — 푸터를 뒤에 붙이면서 마지막
+       div가 푸터가 돼 버려 선택자가 아무것도 못 잡았다(2026-08-10 잘린 '닫기' 제보). */
+    var fc=document.getElementById('fclose');
+    if(fc&&fc.parentElement)fc.parentElement.style.display='none';
     var done=document.createElement('button');
     done.type='button'; done.className='chip'; done.textContent='결과 보기';
     done.style.background='#12203A'; done.style.color='#fff';

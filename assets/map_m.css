@@ -80,14 +80,24 @@ body.mmap #fpanel .mfoot{position:sticky;bottom:0;background:#fff;padding:10px 0
   border-top:1px solid #F1EEE6;display:flex;gap:8px;align-items:center}
 body.mmap #fpanel .mfoot #fcount{flex:1;font-size:11.5px;color:#6B6459}
 body.mmap #fpanel .mfoot .chip{height:40px;border-radius:11px;padding:0 16px;font-size:13px}
-/* 원래 자리에 있던 하단 줄(초기화·닫기)은 시트 푸터로 옮겨 쓴다 */
-body.mmap #fpanel > .frow:last-of-type{display:none}
+/* 원래 자리에 있던 하단 줄(초기화·닫기)은 map_m.js가 감춘다(선택자로는 못 잡는다) */
 
 /* ── 5. 목록 시트 3단계 ───────────────────────────────────── */
 body.mmap #v2sheet{max-height:82%}
 body.mmap #v2sheet.half{transform:translateY(46%)}
 body.mmap #v2sheet .sh-h .x:after{content:" ↕"}
 
-/* ── 6. 단지 카드가 시트·탭바와 겹치지 않게 ───────────────── */
+/* ── 6. 단지 카드 ─────────────────────────────────────────── */
 body.mmap #rcard{height:62%;z-index:2500}
+/* 카드 상단을 더 컴팩트하게(2026-08-10 석봉님: 오른쪽 여백이 넓다).
+   버튼을 오른쪽 끝으로 붙이고, 제목 줄 사이 여백을 줄인다. */
+body.mmap #rcard .rc-h{padding:9px 10px 8px!important}
+body.mmap #rcard .rc-h h2{font-size:16px!important;margin-top:1px!important}
+body.mmap #rcard .rc-h .loc{font-size:11.5px!important;margin-top:1px!important}
+body.mmap #rcard .rc-h .rc-pill,body.mmap #rcard .rc-h .badge{font-size:10px!important;
+  padding:2px 7px!important;margin-top:4px!important}
+body.mmap #rcard #rcFav{right:34px!important;top:9px!important;
+  font-size:10.5px!important;padding:4px 8px!important}
+body.mmap #rcard #rcClose{right:8px!important;top:9px!important;
+  width:24px!important;height:24px!important;font-size:14px!important}
 }
