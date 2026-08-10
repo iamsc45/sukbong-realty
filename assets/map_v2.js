@@ -125,14 +125,22 @@
       function n(e){var c=e.querySelector('.cc');return c?parseInt(c.textContent.replace(/[^0-9]/g,''),10)||0:0;}
       return n(b)-n(a);
     });
-    var kept=[];
+    /* 이름끼리만이 아니라 **이름 vs 옆 원**도 본다. 이름이 원 아래로 나오다 보니
+       아래쪽 원을 덮는 경우가 많았다(2026-08-10 첫 렌더에서 확인).
+       여백은 6px — 2px로는 글자가 서로 스칠 만큼 붙어 보였다. */
+    var kept=[],PAD=6;
+    els.forEach(function(e){
+      var c=e.parentNode.getBoundingClientRect();
+      kept.push({l:c.left-2,t:c.top-2,r:c.right+2,b:c.bottom+2,circle:1});
+    });
     els.forEach(function(e){
       var lab=e.querySelector('.cn'); if(!lab)return;
       var r=lab.getBoundingClientRect();
       if(!r.width){e.classList.add('nolabel');return;}
-      var box={l:r.left-2,t:r.top-1,r:r.right+2,b:r.bottom+1},hit=false;
+      var box={l:r.left-PAD,t:r.top-2,r:r.right+PAD,b:r.bottom+2},hit=false;
       for(var i=0;i<kept.length;i++){
         var k=kept[i];
+        if(k.circle&&k.l-2===Math.round(e.parentNode.getBoundingClientRect().left)-2)continue; /* 자기 원은 제외 */
         if(!(box.r<k.l||box.l>k.r||box.b<k.t||box.t>k.b)){hit=true;break;}
       }
       if(hit)e.classList.add('nolabel'); else kept.push(box);
