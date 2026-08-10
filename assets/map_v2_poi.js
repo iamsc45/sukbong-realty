@@ -77,9 +77,11 @@
     }
     for(i=0;i<out.length;i++){
       var r=out[i], g=SCH[r[3]]||SCH[3];
-      var nm=r[2].replace(/(초등학교|중학교|고등학교)$/,'');
-      var html='<i style="background:'+g[1]+'">'+g[0]+'</i>'+(z>=16?'<b>'+nm+'</b>':'');
-      L.marker([r[0],r[1]],{icon:icon('poi sch',html,84,18),
+      /* 이름은 배경 타일이 이미 적고 있다. 우리가 또 쓰면 글자가 겹쳐 지저분해져서
+         (2026-08-10 첫 렌더에서 확인) 학교는 색 아이콘만 얹어 눈에 띄게만 한다.
+         역은 이름이 곧 정보라 그대로 둔다. */
+      var html='<i style="background:'+g[1]+'">'+g[0]+'</i>';
+      L.marker([r[0],r[1]],{icon:icon('poi sch',html,18,18),
         pane:'sbpoi',interactive:false,keyboard:false}).addTo(gSch);
     }
   }
