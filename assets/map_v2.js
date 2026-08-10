@@ -113,6 +113,41 @@
     }).observe(pane,{childList:true,subtree:true});
   }
 
+  /* 동 단위 원의 이름표가 서로 겹치면 건수 적은 쪽부터 숨긴다(2026-08-10).
+     이름을 원 밖으로 뺐더니 조밀한 동네에서 라벨끼리 부딪혀 읽을 수가 없었다.
+     지도를 옮길 때마다 화면 좌표로 사각형 충돌만 보면 되므로 가볍다. */
+  function thinLabels(){
+    var els=[].slice.call(document.querySelectorAll('.clus.dong'));
+    if(!els.length)return;
+    els.forEach(function(e){e.classList.remove('nolabel');});
+    /* 건수 많은 곳이 이름을 갖는다 */
+    els.sort(function(a,b){
+      function n(e){var c=e.querySelector('.cc');return c?parseInt(c.textContent.replace(/[^0-9]/g,''),10)||0:0;}
+      return n(b)-n(a);
+    });
+    var kept=[];
+    els.forEach(function(e){
+      var lab=e.querySelector('.cn'); if(!lab)return;
+      var r=lab.getBoundingClientRect();
+      if(!r.width){e.classList.add('nolabel');return;}
+      var box={l:r.left-2,t:r.top-1,r:r.right+2,b:r.bottom+1},hit=false;
+      for(var i=0;i<kept.length;i++){
+        var k=kept[i];
+        if(!(box.r<k.l||box.l>k.r||box.b<k.t||box.t>k.b)){hit=true;break;}
+      }
+      if(hit)e.classList.add('nolabel'); else kept.push(box);
+    });
+  }
+  function watchClusters(){
+    if(!window.map)return setTimeout(watchClusters,150);
+    var t2=null;
+    function kick(){clearTimeout(t2);t2=setTimeout(thinLabels,140);}
+    window.map.on('moveend zoomend',kick);
+    var pane=document.querySelector('.leaflet-marker-pane');
+    if(pane)new MutationObserver(kick).observe(pane,{childList:true});
+    kick();
+  }
+
   /* 카드 헤더의 인라인 상품색을 --c로 옮긴다(마커와 같은 방식).
      헤더 배경은 CSS가 흰색으로 덮으므로, 색을 잃지 않으려면 미리 변수로 빼 놔야 한다. */
   function watchCard(){
@@ -331,6 +366,6 @@
     zc(); kick();
   }
 
-  mountSwitch(); mountList(); watchMarkers(); watchCard(); hook(); fitTop();
+  mountSwitch(); mountList(); watchMarkers(); watchCard(); watchClusters(); hook(); fitTop();
   setTimeout(fitTop,400); setTimeout(fitTop,1200);   /* 폰트·닉네임 로드로 헤더 높이가 늦게 바뀐다 */
 })();

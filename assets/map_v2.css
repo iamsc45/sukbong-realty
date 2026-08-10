@@ -325,3 +325,26 @@ body.v2 #rcard #rcClose:hover{background:#E4E7EC !important;color:#16181D !impor
 .v2r .rc{flex:0 0 auto;font-size:13.5px;font-weight:800;color:#2554E0;letter-spacing:-.02em;
   font-variant-numeric:tabular-nums}
 .v2r .rc i{font-style:normal;font-size:10.5px;font-weight:600;color:#9AA0A9;margin-left:2px}
+
+/* ── 11. 동 단위 원: 이름을 원 밖으로 (2026-08-10 석봉님 "텍스트가 얽혀 보기 싫다") ──
+   원 안에 '동소문동6가' 같은 긴 이름을 우겨넣으니 줄이 접히고 옆 원과 부딪쳤다.
+   네이버·카카오가 쓰는 방식으로 바꾼다: **원에는 건수만, 이름은 원 아래 한 줄.**
+   원 크기를 고정해야 줄지어 놓았을 때 정돈돼 보이므로 건수에 따른 크기 변화는 버린다
+   (건수는 숫자로 이미 읽힌다). 시군구 단계는 이름이 짧아 그대로 둔다. */
+body.v2 .leaflet-marker-icon:has(> .clus.dong){
+  width:34px !important;height:34px !important;
+  margin-left:-17px !important;margin-top:-17px !important;overflow:visible !important}
+body.v2 .clus.dong{width:100% !important;height:100% !important;position:relative;overflow:visible}
+body.v2 .clus.dong .cc{font-size:12.5px;font-weight:800;color:#2554E0;letter-spacing:-.03em}
+body.v2 .clus.dong .cn{position:absolute;top:calc(100% + 3px);left:50%;transform:translateX(-50%);
+  white-space:nowrap;font-size:11px;font-weight:700;color:#16181D;letter-spacing:-.03em;
+  text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 5px #fff,1px 1px 2px #fff,-1px -1px 2px #fff;
+  pointer-events:none}
+/* 겹치는 이름은 map_v2.js가 이 클래스를 붙여 숨긴다(건수 많은 쪽이 남는다) */
+body.v2 .clus.dong.nolabel .cn{display:none}
+@media (max-width:720px){
+  body.v2 .leaflet-marker-icon:has(> .clus.dong){width:30px !important;height:30px !important;
+    margin-left:-15px !important;margin-top:-15px !important}
+  body.v2 .clus.dong .cc{font-size:11.5px}
+  body.v2 .clus.dong .cn{font-size:10px}
+}
