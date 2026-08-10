@@ -10,8 +10,8 @@
    출처: OpenStreetMap 기여자 (ODbL) — 범례에 표기한다. */
 (function(){
   if(!window.L)return;
-  var Z_SUB=13, Z_SCH=15;          /* 이 줌부터 보인다 */
-  var MAX_SUB=45, MAX_SCH=70;      /* 화면당 상한 */
+  var Z_SUB=13, Z_SCH=16;          /* 이 줌부터 보인다(학교는 z15에서 71개가 깔려 빽빽했다) */
+  var MAX_SUB=45, MAX_SCH=48;      /* 화면당 상한 */
   var pane, gSub, gSch, loading={}, loaded={};
 
   /* 시도 bbox (수집 스크립트와 같은 표) — 남,서,북,동 */
@@ -56,8 +56,11 @@
     }
     for(i=0;i<out.length;i++){
       var r=out[i], sub=(r[3]===0);
-      var html='<i class="d'+(sub?'':' tr')+'"></i>'+(z>=14?'<b>'+r[2]+'</b>':'');
-      L.marker([r[0],r[1]],{icon:icon('poi sub'+(sub?'':' train'),html,86,20),
+      /* 역 이름은 중간 줌에서만 우리가 쓴다. 크게 확대하면 배경 타일이 같은 이름을
+         더 크게 적어 "독립문 / 독립문역"처럼 두 번 나온다(2026-08-10 확인). */
+      var html='<i class="d'+(sub?'':' tr')+'"></i>'+((z>=14&&z<=15)?'<b>'+r[2]+'</b>':'');
+      var w=((z>=14&&z<=15)?86:20);
+      L.marker([r[0],r[1]],{icon:icon('poi sub'+(sub?'':' train'),html,w,20),
         pane:'sbpoi',interactive:false,keyboard:false}).addTo(gSub);
     }
   }
