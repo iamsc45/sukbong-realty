@@ -198,6 +198,15 @@ function readout(){
   document.getElementById('ro').textContent=
     cur.c[0].toFixed(4)+', '+cur.c[1].toFixed(4)+' · 줌 '+cur.z;
 }
+
+/* 지도가 크기 0인 상태로 만들어지면(백그라운드 탭, 늦은 폰트 로드 등) 타일이 몇 장만 깔리고
+   그대로 굳는다. 화면이 잡히는 시점마다 크기를 다시 재게 한다. */
+function resizeAll(){maps.forEach(function(m){try{m.invalidateSize({animate:false});}catch(e){}});}
+window.addEventListener('resize',resizeAll);
+window.addEventListener('load',function(){resizeAll();setTimeout(resizeAll,400);});
+document.addEventListener('visibilitychange',function(){if(!document.hidden)setTimeout(resizeAll,120);});
+setTimeout(resizeAll,0); setTimeout(resizeAll,800);
+
 drawSample(); readout(); applyFx(true);
 </script>
 </body>
