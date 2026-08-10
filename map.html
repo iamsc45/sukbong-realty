@@ -844,6 +844,25 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
   }
   /* 검색어 라우팅: 단지 → 주소(지번·도로명) → 재개발 구역 → 지역 */
   function _normz(s){return (s||'').toLowerCase().replace(/[\s·()\-]/g,'');}
+  /* 구역명 매칭(2026-08-10 보강). 전에는 "저장된 이름이 질의를 포함하는가" 하나뿐이라
+     원고 세션이 정비몽땅 사업장명을 그대로 넣으면 카드가 안 열렸다.
+       질의 '아현동 331-29번지 일대 신속통합기획 후보지'
+       저장 '아현동 331-29 신통기획 후보지'   ← 질의가 더 길고 '신통'↔'신속통합'도 다르다
+     그래서 세 가지로 본다: ①저장 ⊃ 질의(기존) ②질의 ⊃ 저장(둘 다 6자 이상일 때)
+     ③동 이름과 지번이 둘 다 들어 있으면 같은 구역으로 본다(지번이 있을 때만 — 지번 없이
+     동 이름만으로 맞추면 엉뚱한 구역이 걸린다). */
+  function _zkey(v){
+    return {t:_normz(v),
+            dong:_normz((String(v).match(/[가-힣]+[동리가]/)||[])[0]||''),
+            num:_normz((String(v).match(/\d+\s*-\s*\d+|\d{2,}/)||[])[0]||'')};
+  }
+  function _zmatch(name,q){
+    var s=_normz(name); if(!s||!q.t)return false;
+    if(s.indexOf(q.t)>=0)return true;
+    if(q.t.length>=6&&s.length>=6&&q.t.indexOf(s)>=0)return true;
+    if(q.dong&&q.num&&s.indexOf(q.dong)>=0&&s.indexOf(q.num)>=0)return true;
+    return false;
+  }
   var VKEY='EBC23601-6E41-3269-9ECB-821DEECCF3F0';
   function _jsonp(url,cb,onerr){
     var name='_vw'+Date.now()+Math.floor(Math.random()*1e4);
@@ -952,13 +971,13 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
   }
   function tryRedevZone(v,onNo){
     loadRedev(function(){
-      var n=_normz(v),hit=null;
-      (redevMarks||[]).forEach(function(m){if(!hit&&m.nm&&_normz(m.nm).indexOf(n)>=0)hit={nm:m.nm,lat:m.lat,lon:m.lon,cat:m.cat,stage:m.stage,gubun:m.gubun,biz:m.nm,sido:m.sido,src:m.src};});
-      if(!hit&&redevData&&redevData.features){redevData.features.forEach(function(f){if(hit)return;var p=f.properties||{},nm=p.nm||'',bz=p.biz||'';if((nm&&_normz(nm).indexOf(n)>=0)||(bz&&_normz(bz).indexOf(n)>=0)){var r0=f.geometry.coordinates[0],cx=0,cy=0,i;for(i=0;i<r0.length;i++){cx+=r0[i][0];cy+=r0[i][1];}cx/=r0.length;cy/=r0.length;hit={nm:nm||bz,lat:cy,lon:cx,cat:p.cat,stage:p.stage,gubun:p.gubun,area:p.area,biz:bz||nm};}});}
+      var n=_normz(v),qz=_zkey(v),hit=null;
+      (redevMarks||[]).forEach(function(m){if(!hit&&m.nm&&_zmatch(m.nm,qz))hit={nm:m.nm,lat:m.lat,lon:m.lon,cat:m.cat,stage:m.stage,gubun:m.gubun,biz:m.nm,sido:m.sido,src:m.src};});
+      if(!hit&&redevData&&redevData.features){redevData.features.forEach(function(f){if(hit)return;var p=f.properties||{},nm=p.nm||'',bz=p.biz||'';if((nm&&_zmatch(nm,qz))||(bz&&_zmatch(bz,qz))){var r0=f.geometry.coordinates[0],cx=0,cy=0,i;for(i=0;i<r0.length;i++){cx+=r0[i][0];cy+=r0[i][1];}cx/=r0.length;cy/=r0.length;hit={nm:nm||bz,lat:cy,lon:cx,cat:p.cat,stage:p.stage,gubun:p.gubun,area:p.area,biz:bz||nm};}});}
       if(hit){focusZone(hit);return;}
       /* 마커·폴리곤 없는 구역(예: 흑석11) — 상세 매칭 후 법정동 좌표로 재개발 모드 이동 */
       var DD=window.REDEVDETAIL||{},dk=null;
-      for(var k in DD){if(_normz(k).indexOf(n)>=0){dk=k;break;}}
+      for(var k in DD){if(_zmatch(k,qz)){dk=k;break;}}
       if(dk){
         var pref=(v.match(/[가-힣]+/)||[''])[0], dloc=null, dnm='';
         if(pref&&window.SB&&SB.dongs){var ks=Object.keys(SB.dongs);for(var j=0;j<ks.length;j++){if(ks[j].indexOf(pref)===0){dloc=SB.dongs[ks[j]];dnm=ks[j];break;}}}

@@ -29,7 +29,10 @@
      지하철 노선 그린 것도 별로다. VWorld 배경 모드를 확인 중이니 정해지면 그쪽으로."
      그래서 기본을 다시 VWorld로 두고, CARTO는 비교용으로만 남긴다.
      VWorld는 여러 모드를 제공하므로 결정되는 대로 바로 보도록 파라미터에 다 걸어 둔다.
-       ?base=vworld(기본·일반) | vworld-gray | vworld-midnight | vworld-hybrid | vworld-satellite
+       ?base=vworld(기본·일반) | vworld-white | vworld-midnight | vworld-hybrid | vworld-satellite
+     ※ 타일 비교 세션이 우리 도메인에서 실측(2026-08-10): Base·white·midnight·Satellite·Hybrid는
+       열리고 **gray는 안 열린다.** 그래서 gray는 뺐다. 후보 1순위는 **white**(누런 베이지를
+       피하면서 국내 타일의 한글 라벨 밀도를 그대로 유지). 비교판 = `지도타일_비교.html`.
        ?base=voyager | positron  (CARTO, 비교용)
      ⚠️ VWorld 타일에는 지하철 노선·역·학교가 이미 그려져 있다. 우리가 또 그리면
      이름이 겹치고 선이 두 겹으로 보이므로, VWorld일 때는 우리 POI를 기본으로 끈다
@@ -40,7 +43,7 @@
              '&copy; OpenStreetMap &copy; CARTO',{subdomains:'abcd'}],
     positron:['https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
              '&copy; OpenStreetMap &copy; CARTO',{subdomains:'abcd'}],
-    'vworld-gray':[VW+'gray/{z}/{y}/{x}.png','&copy; VWorld(국토교통부)',{maxNativeZoom:18}],
+    'vworld-white':[VW+'white/{z}/{y}/{x}.png','&copy; VWorld(국토교통부)',{maxNativeZoom:18}],
     'vworld-midnight':[VW+'midnight/{z}/{y}/{x}.png','&copy; VWorld(국토교통부)',{maxNativeZoom:18}],
     'vworld-satellite':[VW+'Satellite/{z}/{y}/{x}.jpeg','&copy; VWorld(국토교통부)',{maxNativeZoom:18}],
     'vworld-hybrid':[VW+'Satellite/{z}/{y}/{x}.jpeg','&copy; VWorld(국토교통부)',{maxNativeZoom:18,overlay:VW+'Hybrid/{z}/{y}/{x}.png'}]
