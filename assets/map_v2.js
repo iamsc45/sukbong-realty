@@ -20,7 +20,8 @@
     try{if(window.map)setTimeout(function(){window.map.invalidateSize({animate:false});},60);}catch(e){}
   }
   window.addEventListener('resize',fitTop);
-  if(P.get('tile')==='plain')document.body.classList.add('tile-plain');
+  /* 지도 색 비교용(soft=예전 연한 톤 · plain=타일 원본 · vivid=더 진하게) */
+  var tone=P.get('tone'); if(tone)document.body.classList.add('tone-'+tone);
 
   /* ── 스킨 전환 스위치(스테이징에만) ───────────────────────── */
   function mountSwitch(){

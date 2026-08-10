@@ -12,9 +12,14 @@ body.v2 .site-footer{display:none}          /* 지도 화면에서는 푸터를 
 body.v2 #legend{bottom:14px;left:14px;border-radius:12px;border:0;
   box-shadow:0 2px 10px rgba(20,20,20,.12);background:rgba(255,255,255,.94);backdrop-filter:blur(6px)}
 
-/* 타일: 채도를 더 낮추고 살짝 밝게 — 마커가 주인공이 되게 */
-body.v2 .leaflet-tile{filter:saturate(.42) brightness(1.06) contrast(.96)}
-body.v2.tile-plain .leaflet-tile{filter:saturate(.9) brightness(1.01)}
+/* 타일 색(2026-08-10 개정): 처음엔 마커를 돋보이게 하려고 채도를 .42까지 낮췄는데
+   "구식으로 보이고 지하철·학교가 안 보인다"는 지적을 받았다. 배경 타일에 그려진
+   지하철 노선·학교·공원 색이 그 필터에 다 빠져 있었던 것.
+   그래서 원본보다 오히려 진하게 간다. ?tone= 으로 비교할 수 있게 세 단계를 둔다. */
+body.v2 .leaflet-tile{filter:saturate(1.18) contrast(1.06) brightness(1.01)}
+body.v2.tone-soft .leaflet-tile{filter:saturate(.72) brightness(1.04)}
+body.v2.tone-plain .leaflet-tile{filter:none}
+body.v2.tone-vivid .leaflet-tile{filter:saturate(1.45) contrast(1.1)}
 
 /* ── 1. 상단 컨트롤: 지도 위에 떠 있는 캡슐 ────────────────── */
 body.v2 #bar{position:absolute;top:calc(var(--v2-top,52px) + 12px);left:12px;z-index:900;
@@ -192,4 +197,33 @@ body.v2 .leaflet-control-zoom a:first-child{border-bottom:1px solid #eee9dd}
      둘 다 피해 컨트롤바 아래 왼쪽에 붙인다. */
   #v2skin{bottom:auto;top:calc(var(--v2-top,80px) + 96px);left:8px;right:auto;
     background:rgba(255,255,255,.94);padding:3px}
+}
+
+/* ── 8. 생활 POI(지하철·학교) — map_v2_poi.js가 그린다 ─────────
+   네이버·호갱노노에서 가장 눈에 먼저 들어오는 게 역과 학교다. 우리 가격 마커보다
+   한 단계 낮은 위계로: 색은 채우되 크기는 작게, 라벨은 흰 테두리로 지도 위에서 읽히게. */
+.poi{display:flex;align-items:center;gap:4px;white-space:nowrap;pointer-events:none;
+  font-family:'Pretendard','Malgun Gothic',system-ui,sans-serif}
+.poi i{flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+  border-radius:50%;color:#fff;font-style:normal;font-weight:800;
+  box-shadow:0 1px 3px rgba(20,20,20,.35),0 0 0 2px rgba(255,255,255,.9)}
+.poi b{font-weight:700;letter-spacing:-.02em;
+  text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 4px #fff,0 1px 2px rgba(255,255,255,.9)}
+
+/* 지하철: 한국 지하철 표지처럼 동그란 색 원 */
+.poi.sub i{width:15px;height:15px;background:#1B4DE4;font-size:9px}
+.poi.sub i:after{content:"";width:6px;height:6px;border-radius:50%;
+  border:2px solid #fff;display:block}
+.poi.sub b{font-size:11px;color:#16357F}
+.poi.sub.train i{width:13px;height:13px;background:#6B7280}
+.poi.sub.train b{font-size:10.5px;color:#4B5563}
+
+/* 학교: 급별 색 + 초·중·고 한 글자 */
+.poi.sch i{width:14px;height:14px;font-size:8.5px;border-radius:5px}
+.poi.sch b{font-size:10px;color:#5A5348}
+
+@media (max-width:720px){
+  .poi.sub b{font-size:10px}
+  .poi.sch b{font-size:9.5px}
+  .poi.sch i{width:13px;height:13px}
 }

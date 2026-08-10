@@ -1,0 +1,127 @@
+/* 지도 생활 POI(지하철역·학교) 오버레이 — 스테이징 스킨 전용 (2026-08-10)
+   석봉님 지시: "네이버·호갱노노처럼 지하철·학교가 눈에 잘 띄게".
+   배경 타일에도 역·학교가 그려져 있지만 작고 흐려서 눈에 안 들어온다.
+   그래서 좌표를 따로 받아(OSM) 우리가 직접, 크고 또렷하게 그린다.
+
+   원칙
+   - 우리 가격 마커가 주인공이다. POI는 그 아래 pane에 두고 색·크기를 한 단계 낮춘다.
+   - 화면 안에 있는 것만, 개수 상한을 두고 그린다(지도가 무거워지면 안 된다).
+   - 학교는 전국 2만 개라 시도별 파일을 화면에 들어온 시도만 지연 로드한다.
+   출처: OpenStreetMap 기여자 (ODbL) — 범례에 표기한다. */
+(function(){
+  if(!window.L)return;
+  var Z_SUB=13, Z_SCH=15;          /* 이 줌부터 보인다 */
+  var MAX_SUB=45, MAX_SCH=70;      /* 화면당 상한 */
+  var pane, gSub, gSch, loading={}, loaded={};
+
+  /* 시도 bbox (수집 스크립트와 같은 표) — 남,서,북,동 */
+  var SIDO={"11":[37.41,126.76,37.71,127.19],"26":[34.88,128.74,35.40,129.32],
+    "27":[35.60,128.35,36.02,128.77],"28":[37.15,126.35,37.92,126.83],
+    "29":[35.05,126.64,35.26,127.02],"30":[36.18,127.25,36.50,127.56],
+    "31":[35.44,128.95,35.75,129.47],"36":[36.42,127.11,36.75,127.42],
+    "41":[36.89,126.36,38.31,127.87],"42":[37.02,127.07,38.62,129.38],
+    "43":[36.01,127.28,37.26,128.68],"44":[35.98,125.95,37.06,127.63],
+    "45":[35.29,125.95,36.30,127.88],"46":[33.90,125.05,35.50,127.90],
+    "47":[35.60,127.79,37.55,129.60],"48":[34.55,127.55,35.92,129.24],
+    "50":[33.10,126.10,33.60,126.99]};
+
+  var SCH=[['초','#E8891A'],['중','#12A150'],['고','#2554E0'],['교','#8A8378']];
+
+  function ready(cb){ if(window.map)cb(); else setTimeout(function(){ready(cb);},150); }
+
+  function loadJS(src,cb){
+    if(loaded[src])return cb&&cb();
+    if(loading[src])return;
+    loading[src]=1;
+    var s=document.createElement('script'); s.src=src;
+    s.onload=function(){loaded[src]=1;loading[src]=0;cb&&cb();};
+    s.onerror=function(){loaded[src]=1;loading[src]=0;};   /* 없는 시도는 조용히 넘어간다 */
+    document.head.appendChild(s);
+  }
+
+  function icon(cls,html,w,h){
+    return L.divIcon({className:'',html:'<div class="'+cls+'">'+html+'</div>',
+      iconSize:[w,h],iconAnchor:[w/2,h/2]});
+  }
+
+  function drawSub(b,z){
+    gSub.clearLayers();
+    if(z<Z_SUB||!window.POISUB)return;
+    var out=[],i;
+    for(i=0;i<POISUB.length;i++){
+      var r=POISUB[i];
+      if(r[0]<b.getSouth()||r[0]>b.getNorth()||r[1]<b.getWest()||r[1]>b.getEast())continue;
+      if(z<15&&r[3]===1)continue;              /* 넓게 볼 땐 지하철만 */
+      out.push(r); if(out.length>MAX_SUB)break;
+    }
+    for(i=0;i<out.length;i++){
+      var r=out[i], sub=(r[3]===0);
+      var html='<i class="d'+(sub?'':' tr')+'"></i>'+(z>=14?'<b>'+r[2]+'</b>':'');
+      L.marker([r[0],r[1]],{icon:icon('poi sub'+(sub?'':' train'),html,86,20),
+        pane:'sbpoi',interactive:false,keyboard:false}).addTo(gSub);
+    }
+  }
+
+  function drawSch(b,z){
+    gSch.clearLayers();
+    if(z<Z_SCH||!window.POISCH)return;
+    var out=[],k,arr,i;
+    for(k in POISCH){
+      arr=POISCH[k];
+      for(i=0;i<arr.length;i++){
+        var r=arr[i];
+        if(r[0]<b.getSouth()||r[0]>b.getNorth()||r[1]<b.getWest()||r[1]>b.getEast())continue;
+        out.push(r); if(out.length>MAX_SCH)break;
+      }
+      if(out.length>MAX_SCH)break;
+    }
+    for(i=0;i<out.length;i++){
+      var r=out[i], g=SCH[r[3]]||SCH[3];
+      var nm=r[2].replace(/(초등학교|중학교|고등학교)$/,'');
+      var html='<i style="background:'+g[1]+'">'+g[0]+'</i>'+(z>=16?'<b>'+nm+'</b>':'');
+      L.marker([r[0],r[1]],{icon:icon('poi sch',html,84,18),
+        pane:'sbpoi',interactive:false,keyboard:false}).addTo(gSch);
+    }
+  }
+
+  /* 화면에 걸친 시도의 학교 파일만 받아 온다 */
+  function needSchool(b,z){
+    if(z<Z_SCH)return;
+    var n=0;
+    for(var c in SIDO){
+      var s=SIDO[c];
+      if(s[2]<b.getSouth()||s[0]>b.getNorth()||s[3]<b.getWest()||s[1]>b.getEast())continue;
+      loadJS('data/poi_school_'+c+'.js',refresh);
+      if(++n>=2)break;      /* 경계에 걸쳐도 두 개까지만 */
+    }
+  }
+
+  var t=null;
+  function refresh(){
+    clearTimeout(t);
+    t=setTimeout(function(){
+      var b=window.map.getBounds(), z=window.map.getZoom();
+      needSchool(b,z); drawSub(b,z); drawSch(b,z);
+    },90);
+  }
+
+  ready(function(){
+    window.map.createPane('sbpoi');
+    window.map.getPane('sbpoi').style.zIndex=450;      /* 타일(200) 위, 가격 마커(600) 아래 */
+    window.map.getPane('sbpoi').style.pointerEvents='none';
+    gSub=L.layerGroup([],{pane:'sbpoi'}).addTo(window.map);
+    gSch=L.layerGroup([],{pane:'sbpoi'}).addTo(window.map);
+    loadJS('data/poi_subway.js',refresh);
+    window.map.on('moveend zoomend',refresh);
+    refresh();
+
+    /* 출처 한 줄 (ODbL 의무) */
+    var lg=document.getElementById('legend');
+    if(lg&&lg.innerHTML.indexOf('OpenStreetMap')<0){
+      var d=document.createElement('div');
+      d.style.cssText='margin-top:4px;font-size:9.5px;color:#9a938a';
+      d.textContent='지하철·학교 위치 ⓒ OpenStreetMap 기여자';
+      lg.appendChild(d);
+    }
+  });
+})();
