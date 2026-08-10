@@ -10,9 +10,17 @@
    부하 관리
    - 줌 13 미만에서는 아예 끈다(넓게 볼 땐 동 경계가 의미도 없고 폴리곤만 많아진다)
    - 화면에 걸친 시군구 최대 3개까지만 로드하고, 받은 것은 브라우저 메모리에 남는다
-   - 그리는 것도 화면에 걸친 동만 */
+   - 그리는 것도 화면에 걸친 동만
+   - **모바일(터치)에서는 아예 켜지 않는다** — 손가락에는 '올려놓기'가 없어 얻는 게 없는데
+     파일 내려받기와 폴리곤 90개 렌더는 그대로 든다(2026-08-10 라이브 반영 전 점검)
+   - **재개발 모드에서는 끈다** — 구역 폴리곤과 겹쳐 어느 선이 구역계인지 헷갈린다 */
 (function(){
   if(!window.L)return;
+  /* 좁은 화면(휴대폰)에서는 켜지 않는다.
+     ⚠️`(hover:none)`으로 판정하려다 되돌렸다(2026-08-10) — 헤드리스·일부 임베드 브라우저가
+     마우스가 있어도 hover:none으로 답해 데스크톱에서까지 조용히 꺼진다. 사이트의 다른
+     모바일 분기와 같은 기준(max-width:720px)을 쓰는 편이 확실하고 검증도 된다. */
+  if(window.matchMedia&&window.matchMedia('(max-width:720px)').matches)return;
   var Z_MIN=13, MAX_SGG=3, MAX_POLY=90;
   var layer=null, cur=null, tip=null, loading={}, loaded={};
 
@@ -44,6 +52,8 @@
   function draw(){
     if(!layer||!window.map)return;
     layer.clearLayers(); cur=null;
+    if(tip)tip.style.display='none';
+    if(window.curMode==='redev')return;               /* 구역계와 겹치지 않게 */
     var z=window.map.getZoom(); if(z<Z_MIN)return;
     var b=window.map.getBounds(), Z=window.DONGZ||{}, n=0;
     for(var code in Z){
@@ -93,11 +103,13 @@
       clearTimeout(t);
       t=setTimeout(function(){
         var z=window.map.getZoom();
-        if(z<Z_MIN){layer.clearLayers();return;}
+        if(z<Z_MIN||window.curMode==='redev'){layer.clearLayers();if(tip)tip.style.display='none';return;}
         needFiles(window.map.getBounds()); draw();
       },220);
     }
     window.map.on('moveend zoomend',kick);
+    /* 모드 전환은 지도 이동 없이도 일어난다(재개발 ↔ 실거래 칩) */
+    document.querySelectorAll('#modes button').forEach(function(b){b.addEventListener('click',kick);});
     setTimeout(kick,500);
   });
 })();
