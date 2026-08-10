@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>지도 배경 비교 (내부 검토용) · 석봉 부동산 정보방</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+  :root{--ink:#141414;--muted:#6b6b6b;--line:#e3e0da;--paper:#faf8f4;--brass:#9a7b3f}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+  header{border-bottom:2px solid var(--ink);padding:14px 18px 12px}
+  h1{margin:0;font-size:17px;letter-spacing:-.02em;
+    font-family:"Nanum Myeongjo",Batang,serif}
+  .sub{color:var(--muted);font-size:12.5px;margin-top:4px;line-height:1.5}
+  .bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:10px 18px;
+    border-bottom:1px solid var(--line);background:#fff;position:sticky;top:0;z-index:500}
+  .bar b{font-size:11.5px;color:var(--muted);font-weight:600;margin-right:2px}
+  button{font:inherit;font-size:12px;padding:5px 11px;border:1px solid var(--line);
+    background:#fff;border-radius:999px;cursor:pointer;color:var(--ink)}
+  button:hover{border-color:var(--ink)}
+  button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .sep{width:1px;height:18px;background:var(--line);margin:0 6px}
+  .readout{margin-left:auto;font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);
+    border-bottom:1px solid var(--line)}
+  @media(max-width:1180px){.grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:700px){.grid{grid-template-columns:1fr}}
+  .cell{background:#fff;display:flex;flex-direction:column}
+  .cap{padding:8px 11px;border-bottom:1px solid var(--line);display:flex;align-items:baseline;gap:8px}
+  .cap .nm{font-size:13px;font-weight:700}
+  .cap .tag{font-size:10.5px;color:#fff;background:var(--ink);border-radius:3px;padding:1px 5px}
+  .cap .tag.now{background:var(--brass)}
+  .cap .note{font-size:11px;color:var(--muted);margin-left:auto;text-align:right}
+  .mapbox{height:330px;position:relative}
+  .mapbox .dead{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
+    background:#f4f2ee;color:var(--muted);font-size:12.5px;z-index:400}
+  .mapbox.err .dead{display:flex}
+  /* 우리 사이트 마커 표본 (map.html에서 그대로 가져옴) */
+  .pricetag{color:#fff;border-radius:14px;padding:2px 9px;font-size:12px;font-weight:bold;
+    white-space:nowrap;box-shadow:0 1px 4px rgba(18,38,74,.45);border:1.5px solid #fff;text-align:center}
+  .clus{background:#141414;color:#fff;border-radius:50%;display:flex;align-items:center;
+    justify-content:center;font-weight:bold;border:2px solid #fff;font-size:12px;
+    box-shadow:0 1px 5px rgba(20,20,20,.4)}
+  .rzlab span{background:#C2185B;color:#fff;font-size:11px;font-weight:700;padding:2px 7px;
+    border-radius:3px;white-space:nowrap;box-shadow:0 1px 4px rgba(20,20,20,.35)}
+  .leaflet-control-attribution{font-size:9px}
+  footer{padding:14px 18px 30px;font-size:12px;color:var(--muted);line-height:1.65}
+  footer b{color:var(--ink)}
+</style>
+</head>
+<body>
+<header>
+  <h1>지도 배경 비교</h1>
+  <div class="sub">같은 위치, 같은 줌으로 여섯 가지 배경을 나란히 봅니다. 한 지도를 움직이면 나머지가 따라옵니다.
+    우리 사이트에서 쓰는 가격 말풍선과 정비구역 표시를 얹어 뒀으니 <b>배경 자체보다 그 위에 얹힌 글자가 읽히는지</b>를 같이 보시면 됩니다.
+    내부 검토용 페이지이고 검색에는 걸리지 않습니다.</div>
+</header>
+
+<div class="bar">
+  <b>위치</b>
+  <span id="places"></span>
+  <span class="sep"></span>
+  <b>줌</b>
+  <button data-z="13">13 동네</button>
+  <button data-z="15">15 단지</button>
+  <button data-z="17">17 동</button>
+  <span class="sep"></span>
+  <button id="fx" class="on">현재 사이트 보정 적용</button>
+  <button id="ov" class="on">마커 표본 표시</button>
+  <span class="readout" id="ro"></span>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<footer>
+  <b>보는 요령.</b> 우리 지도는 배경 위에 가격 말풍선이 빽빽하게 얹힙니다. 배경이 예뻐도 글자가 묻히면 소용이 없으니
+  줌 15와 17에서 말풍선 주변을 보세요. 그리고 종로 구도심처럼 골목이 촘촘한 곳에서 동 이름과 골목이 얼마나 남는지가
+  해외 타일과 국내 타일의 진짜 차이입니다.<br>
+  <b>참고.</b> VWorld gray는 우리 키로 열리지 않아 뺐습니다. 카카오와 네이버는 타일 주소를 공개하지 않고 자체 SDK로만
+  지도를 띄우게 되어 있어 이 비교에 넣을 수 없습니다.
+</footer>
+
+<script>
+/* 지도 배경 비교 (내부 검토용, 2026-08-10)
+   라이브 map.html은 건드리지 않는다. 여기서 고른 결과를 사이트 세션이 적용한다. */
+var VKEY='EBC23601-6E41-3269-9ECB-821DEECCF3F0';
+function vw(style,ext){return ['https://api.vworld.kr/req/wmts/1.0.0/'+VKEY+'/'+style+'/{z}/{y}/{x}.'+(ext||'png'),
+  '&copy; VWorld(국토교통부)',{maxNativeZoom:18}];}
+var BASES=[
+  {id:'vw-base', nm:'VWorld Base', tag:'현재', now:true, note:'한글 라벨 촘촘함 · 누런 베이지', t:vw('Base')},
+  {id:'vw-white',nm:'VWorld white', tag:'후보', note:'같은 국내 라벨 · 흰 바탕', t:vw('white')},
+  {id:'vw-mid',  nm:'VWorld midnight', tag:'후보', note:'다크 · 색 마커가 튀어 보임', t:vw('midnight')},
+  {id:'ct-voy',  nm:'CARTO Voyager', tag:'해외', note:'맑은 색 · 한글 라벨 성김',
+     t:['https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png','&copy; OpenStreetMap &copy; CARTO',{subdomains:'abcd'}]},
+  {id:'ct-pos',  nm:'CARTO Positron', tag:'해외', note:'거의 무채색 · 사이트 톤과 근접',
+     t:['https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png','&copy; OpenStreetMap &copy; CARTO',{subdomains:'abcd'}]},
+  {id:'vw-hyb',  nm:'VWorld Hybrid', tag:'참고', note:'위성에 라벨 · 성격이 다름', t:vw('Hybrid')}
+];
+var PLACES=[
+  {nm:'대치 은마 일대', c:[37.4995,127.0630]},
+  {nm:'성수전략 정비구역', c:[37.5385,127.0489]},
+  {nm:'목동 신시가지', c:[37.5340,126.8760]},
+  {nm:'종로 구도심', c:[37.5720,126.9910]},
+  {nm:'여의도', c:[37.5250,126.9270]}
+];
+var maps=[], syncing=false, cur={c:PLACES[0].c, z:15}, overlays=[];
+
+/* 패널 만들기 */
+var grid=document.getElementById('grid');
+BASES.forEach(function(b){
+  var cell=document.createElement('div'); cell.className='cell';
+  cell.innerHTML='<div class="cap"><span class="nm">'+b.nm+'</span>'
+    +'<span class="tag'+(b.now?' now':'')+'">'+b.tag+'</span>'
+    +'<span class="note">'+b.note+'</span></div>'
+    +'<div class="mapbox" id="'+b.id+'"><div class="dead">이 배경은 지금 불러오지 못했습니다</div></div>';
+  grid.appendChild(cell);
+  var m=L.map(b.id,{center:cur.c,zoom:cur.z,zoomControl:false,attributionControl:true,
+    preferCanvas:true});
+  var opt=Object.assign({attribution:b.t[1],maxZoom:19,minZoom:6},b.t[2]||{});
+  var layer=L.tileLayer(b.t[0],opt).addTo(m);
+  var errs=0;
+  layer.on('tileerror',function(){if(++errs===8)document.getElementById(b.id).classList.add('err');});
+  m.on('move zoom',function(){
+    if(syncing)return; syncing=true;
+    var c=m.getCenter(), z=m.getZoom();
+    cur={c:[c.lat,c.lng],z:z};
+    maps.forEach(function(o){if(o!==m)o.setView(c,z,{animate:false});});
+    readout(); syncing=false;
+  });
+  maps.push(m);
+});
+
+/* 위치 버튼 */
+var ps=document.getElementById('places');
+PLACES.forEach(function(p,i){
+  var b=document.createElement('button'); b.textContent=p.nm; if(i===0)b.className='on';
+  b.onclick=function(){
+    ps.querySelectorAll('button').forEach(function(x){x.classList.remove('on');});
+    b.classList.add('on');
+    syncing=true; maps.forEach(function(m){m.setView(p.c,cur.z,{animate:false});}); syncing=false;
+    cur.c=p.c; drawSample(); readout();
+  };
+  ps.appendChild(b);
+});
+/* 줌 버튼 */
+document.querySelectorAll('[data-z]').forEach(function(b){
+  if(b.dataset.z==='15')b.classList.add('on');
+  b.onclick=function(){
+    document.querySelectorAll('[data-z]').forEach(function(x){x.classList.remove('on');});
+    b.classList.add('on');
+    var z=+b.dataset.z; cur.z=z;
+    syncing=true; maps.forEach(function(m){m.setView(cur.c,z,{animate:false});}); syncing=false;
+    drawSample(); readout();
+  };
+});
+
+/* 현재 사이트가 타일에 거는 보정을 그대로 재현(map.html 95행) */
+var FX='saturate(.75) grayscale(.12) brightness(1.02)';
+function applyFx(on){
+  document.querySelectorAll('.leaflet-tile').forEach(function(t){t.style.filter=on?FX:'none';});
+}
+var fxOn=true;
+document.getElementById('fx').onclick=function(){
+  fxOn=!fxOn; this.classList.toggle('on',fxOn); applyFx(fxOn);
+};
+maps.forEach(function(m){m.on('layeradd tileload',function(){applyFx(fxOn);});});
+
+/* 우리 마커 표본 얹기 */
+var ovOn=true;
+document.getElementById('ov').onclick=function(){
+  ovOn=!ovOn; this.classList.toggle('on',ovOn); drawSample();
+};
+function tag(txt,col){return L.divIcon({className:'',html:'<div class="pricetag" style="background:'+col+'">'+txt+'</div>',
+  iconSize:[0,0],iconAnchor:[0,0]});}
+function drawSample(){
+  overlays.forEach(function(g){try{g.remove();}catch(e){}}); overlays=[];
+  if(!ovOn)return;
+  var d=0.0016*Math.pow(2,15-cur.z);
+  maps.forEach(function(m){
+    var g=L.layerGroup().addTo(m); overlays.push(g);
+    var c=cur.c;
+    L.marker([c[0]+d*1.1,c[1]-d*1.6],{icon:tag('28억 4,000','#12264a')}).addTo(g);
+    L.marker([c[0]+d*.2, c[1]+d*1.1],{icon:tag('19억','#0f7b6c')}).addTo(g);
+    L.marker([c[0]-d*1.0,c[1]-d*.3], {icon:tag('34억 9,000','#12264a')}).addTo(g);
+    L.marker([c[0]-d*.6, c[1]+d*1.9],{icon:L.divIcon({className:'',
+      html:'<div class="clus" style="width:34px;height:34px">12</div>',iconSize:[0,0],iconAnchor:[0,0]})}).addTo(g);
+    L.polygon([[c[0]+d*.9,c[1]+d*.2],[c[0]+d*.9,c[1]+d*2.4],[c[0]-d*.1,c[1]+d*2.4],[c[0]-d*.1,c[1]+d*.2]],
+      {color:'#E0632E',weight:2,fillColor:'#E0632E',fillOpacity:.18}).addTo(g);
+    L.marker([c[0]+d*.4,c[1]+d*1.3],{icon:L.divIcon({className:'rzlab',
+      html:'<span>정비구역</span>',iconSize:[0,0],iconAnchor:[0,0]})}).addTo(g);
+  });
+}
+function readout(){
+  document.getElementById('ro').textContent=
+    cur.c[0].toFixed(4)+', '+cur.c[1].toFixed(4)+' · 줌 '+cur.z;
+}
+drawSample(); readout(); applyFx(true);
+</script>
+</body>
+</html>
