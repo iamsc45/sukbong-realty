@@ -136,6 +136,7 @@
       var mb=mapEl.getBoundingClientRect();
       var t=Math.max(10,Math.round(bb.bottom-mb.top+10))+'px';
       LY.style.top=t; TL.style.top=t;
+      document.documentElement.style.setProperty('--mtop',t);
     }
     /* 새 스킨(body.v2)이 붙기 전에 재면 바가 아직 높아서 버튼이 아래로 밀린다.
        초반 몇 초 동안 몇 번 더 재서 자리를 잡는다(2026-08-10 시뮬레이션에서 버튼이 움직였다). */
@@ -163,11 +164,18 @@
     if(sh){
       /* 첫 화면은 접힘으로 시작한다 — 지도가 주인공이다.
          ⚠️'min'과 'half'가 같이 붙으면 half가 이겨서 첫 화면부터 반쯤 열린다. 항상 하나만 남긴다. */
+      function syncSheet(){
+        /* 시트가 올라와 있으면 좌우 지도 버튼을 숨긴다(제보: 버튼이 목록을 가림) */
+        document.body.classList.toggle('sheetup',!sh.classList.contains('min'));
+      }
       var next=function(){
         if(sh.classList.contains('min')){sh.classList.remove('min');sh.classList.add('half');}
         else if(sh.classList.contains('half')){sh.classList.remove('half');}
         else{sh.classList.remove('half');sh.classList.add('min');}
+        syncSheet();
       };
+      new MutationObserver(syncSheet).observe(sh,{attributes:true,attributeFilter:['class']});
+      syncSheet();
       /* 원래 걸려 있던 토글(접힘↔전체)을 3단계로 바꾼다.
          노드를 복제해 갈아 끼우면 옛 핸들러가 같이 떨어져 나간다. */
       ['.sh-g','.sh-h'].forEach(function(q){

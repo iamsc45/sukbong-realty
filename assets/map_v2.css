@@ -579,3 +579,32 @@ body.mmap #rcard #rcClose{right:8px!important;top:9px!important;
 @media (max-width:360px){
   #sbtab button{font-size:9.5px;letter-spacing:-.04em}
 }
+
+
+/* ── 2026-08-11 석봉님 제보 반영 ─────────────────────────────── */
+@media (max-width:720px){
+  /* ② 목록 시트가 올라오면 지도 조작 버튼은 비켜 준다.
+        지도가 가려진 상태에서 지도 버튼을 눌러 봐야 소용이 없고, 목록 글자만 가린다.
+        (제보 화면: '실거래·재개발·노후'가 "이 지역 16곳"과 정렬 버튼을 덮고 있었다) */
+  body.mmap #v2sheet:not(.min) ~ #map #mlayers,
+  body.mmap #v2sheet:not(.min) ~ #map #mtools{opacity:0;pointer-events:none}
+  body.mmap.sheetup #mlayers,body.mmap.sheetup #mtools,body.mmap.sheetup #loanChip{
+    opacity:0;pointer-events:none;transition:opacity .18s ease}
+  body.mmap #mlayers,body.mmap #mtools,body.mmap #loanChip{transition:opacity .18s ease}
+
+  /* ① 대출 문의를 오른쪽 위로. 우측 세로 버튼은 그만큼 아래에서 시작한다. */
+  body.mmap #loanChip{top:var(--mtop,110px)!important;bottom:auto!important;
+    left:auto!important;right:8px!important;z-index:901;
+    padding:6px 11px!important;font-size:11px!important}
+  body.mmap #mtools{margin-top:36px}
+
+  /* ④ 목록 정렬 버튼: 회색 사각 → 심플한 알약 */
+  #v2sheet .v2sort{display:flex;gap:6px;padding:9px 16px 10px;flex:0 0 auto;
+    border-bottom:1px solid #F1EEE6}
+  #v2sheet .v2sort button{border:1px solid #E7E3D9;background:#fff;border-radius:100px;
+    padding:6px 13px;font:inherit;font-size:12px;font-weight:700;color:#8A8378;
+    letter-spacing:-.02em;cursor:pointer;transition:all .12s ease}
+  #v2sheet .v2sort button:active{transform:scale(.97)}
+  #v2sheet .v2sort button.on{background:#12203A;border-color:#12203A;color:#fff}
+  #v2sheet .sh-h{padding:2px 16px 10px}
+}

@@ -316,14 +316,26 @@
     if(ss)ss.textContent=sub;
 
     /* 항목 <-> 마커 연결 */
-    document.querySelectorAll('.v2i').forEach(function(el,i){
-      var o=a[i]; if(!o)return;
+    /* 🔴 2026-08-11: 좌측 목록(#v2list)과 하단 시트(#v2sheet)에 **같은 항목이 두 벌** 그려진다.
+       전에는 `.v2i`를 통째로 훑으며 a[i]를 짝지었는데, 앞의 32개가 인덱스를 다 써 버려
+       **뒤에 오는 시트 항목에는 핸들러가 아예 안 붙었다**(모바일에서 목록을 눌러도 아무 일이
+       없던 원인 — 석봉님 제보). 컨테이너별로 따로 세어 짝지어야 한다. */
+    var _els=[];
+    ['#v2list','#v2sheet'].forEach(function(sel){
+      var box=document.querySelector(sel); if(!box)return;
+      Array.prototype.forEach.call(box.querySelectorAll('.v2i'),function(el,i){_els.push([el,i]);});
+    });
+    _els.forEach(function(pair){
+      var el=pair[0], i=pair[1], o=a[i]; if(!o)return;
       el.onclick=function(){
         try{window.go(o.pt.lat,o.pt.lng,Math.max(window.map.getZoom(),17));}catch(e){}
         setTimeout(function(){try{window.showAptCard(o.pt,(o.pt.txs||o.txs).slice());}catch(e){}},420);
         document.querySelectorAll('.v2i.on').forEach(function(x){x.classList.remove('on');});
         el.classList.add('on');
-        var sh=document.getElementById('v2sheet'); if(sh&&window.innerWidth<=720)sh.classList.add('min');
+        /* ⚠️'half'를 같이 지워야 한다(2026-08-11 석봉님 "단지를 눌러도 지도에서 확인이 안 된다").
+           min과 half가 함께 붙으면 half가 이겨 시트가 그대로 화면을 덮고 있었다. */
+        var sh=document.getElementById('v2sheet');
+        if(sh&&window.innerWidth<=720){sh.classList.remove('half');sh.classList.add('min');}
       };
       el.onmouseenter=function(){ /* 목록에 마우스를 올리면 지도의 그 마커가 커진다 */
         if(hlEl)hlEl.classList.remove('hl');
