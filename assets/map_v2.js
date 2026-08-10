@@ -69,7 +69,9 @@
   /* ── 스킨 전환 스위치(스테이징에만) ───────────────────────── */
   function mountSwitch(){
     var d=document.createElement('div'); d.id='v2skin';
-    d.innerHTML='<button data-s="a">네이버형</button><button data-s="b">호갱노노형</button>'
+    /* 2026-08-10 석봉님 확정: **네이버형으로 간다.** 호갱노노형은 비교 이력으로만 남긴다
+       (?skin=b로는 여전히 열리지만 스위치에서는 뺐다 — 고른 안을 매번 다시 고르게 하지 않는다). */
+    d.innerHTML='<button data-s="a">새 디자인(네이버형)</button>'
       +'<span class="sep"></span><button data-s="old">현재 지도</button>';
     document.getElementById('wrap').appendChild(d);
     d.querySelectorAll('button').forEach(function(b){
@@ -212,6 +214,25 @@
   }
   function mountList(){
     var w=document.getElementById('wrap');
+
+    /* 접기·펴기 손잡이(2026-08-10 석봉님 요청). 접힌 상태는 기억해 둔다 —
+       지도를 넓게 쓰려고 닫은 사람은 다음에 들어와도 닫힌 채로 보고 싶어 한다. */
+    var grip=document.createElement('button'); grip.id='v2grip'; grip.type='button';
+    grip.setAttribute('aria-label','매물 목록 접기/펴기');
+    function syncGrip(){
+      var off=document.body.classList.contains('listoff');
+      grip.textContent=off?'›':'‹';
+      grip.title=off?'매물 목록 열기':'매물 목록 접기';
+      try{setTimeout(function(){window.map.invalidateSize({animate:false});},260);}catch(e){}
+    }
+    try{if(localStorage.getItem('sb_v2list')==='off')document.body.classList.add('listoff');}catch(e){}
+    grip.onclick=function(){
+      var off=document.body.classList.toggle('listoff');
+      try{localStorage.setItem('sb_v2list',off?'off':'on');}catch(e){}
+      syncGrip();
+    };
+    w.appendChild(grip); syncGrip();
+
     var d=document.createElement('div'); d.id='v2list';
     d.innerHTML='<div class="v2h"><div class="t" id="v2t">불러오는 중</div><div class="s" id="v2s">지도를 움직이면 이 목록도 따라 바뀝니다</div></div>'
       +sortBar()+'<div class="v2b"></div>';
