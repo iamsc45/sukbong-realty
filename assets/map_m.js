@@ -182,9 +182,11 @@
         var x=sh.querySelector('.sh-h .x');
         if(x)x.textContent=up?'내리기 ▼':'목록 올리기 ▲';
       }
+      /* 🔴3단계(접힘→반→전체)를 **2단계로 줄인다**(2026-08-11 석봉님).
+         손잡이에 '내리기'라고 써 놓고 누르면 한 번 더 올라가서 글자가 거짓말을 했다.
+         목록은 시트 안에서 스크롤되므로 '반'이면 충분하다. 누르면 올라오고, 누르면 내려간다. */
       var next=function(){
         if(sh.classList.contains('min')){sh.classList.remove('min');sh.classList.add('half');}
-        else if(sh.classList.contains('half')){sh.classList.remove('half');}
         else{sh.classList.remove('half');sh.classList.add('min');}
         syncSheet();
       };
