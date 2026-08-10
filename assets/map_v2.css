@@ -20,6 +20,8 @@ body.v2 .leaflet-tile{filter:saturate(1.18) contrast(1.06) brightness(1.01)}
 /* CARTO 계열은 이미 밝고 정돈된 색이라 손대지 않는 편이 깨끗하다.
    VWorld를 쓸 때만 위 보정이 의미가 있다(누런 베이지를 살리려던 것). */
 body.v2.base-voyager .leaflet-tile,body.v2.base-positron .leaflet-tile{filter:none}
+/* VWorld white는 이미 백지 톤이라 채도 보정을 걸면 오히려 탁해진다(2026-08-10). */
+body.v2.base-vworld-white .leaflet-tile{filter:none}
 body.v2.tone-soft .leaflet-tile{filter:saturate(.72) brightness(1.04)}
 body.v2.tone-plain .leaflet-tile{filter:none}
 body.v2.tone-vivid .leaflet-tile{filter:saturate(1.35) contrast(1.06)}
@@ -165,6 +167,7 @@ body.v2.skin-b #v2sheet{display:flex}
 #v2skin button{border:0;background:transparent;font:inherit;font-size:11.5px;font-weight:700;
   color:#6b6459;padding:6px 12px;border-radius:9px;cursor:pointer;white-space:nowrap}
 #v2skin button.on{background:#141414;color:#fff}
+#v2skin .lbl{align-self:center;font-size:10.5px;color:#9a938a;padding:0 6px 0 2px;white-space:nowrap}
 #v2skin .sep{width:1px;background:#eee9dd;margin:5px 3px}
 
 /* ── 6. 모바일 ──────────────────────────────────────────────── */

@@ -71,15 +71,19 @@
     var d=document.createElement('div'); d.id='v2skin';
     /* 2026-08-10 석봉님 확정: **네이버형으로 간다.** 호갱노노형은 비교 이력으로만 남긴다
        (?skin=b로는 여전히 열리지만 스위치에서는 뺐다 — 고른 안을 매번 다시 고르게 하지 않는다). */
-    d.innerHTML='<button data-s="a">새 디자인(네이버형)</button>'
+    /* 배경 고르기도 여기서(2026-08-10 석봉님: "이 상태에서 화이트로 바꿔 볼 수 있게").
+       주소를 손으로 고치지 않고 눌러서 오갈 수 있어야 비교가 된다. */
+    d.innerHTML='<span class="lbl">배경</span>'
+      +'<button data-b="vworld">기본</button><button data-b="vworld-white">화이트</button>'
       +'<span class="sep"></span><button data-s="old">현재 지도</button>';
     document.getElementById('wrap').appendChild(d);
     d.querySelectorAll('button').forEach(function(b){
-      if(b.dataset.s===skin)b.classList.add('on');
+      if(b.dataset.b&&b.dataset.b===BASE)b.classList.add('on');
       b.onclick=function(){
         var q=new URLSearchParams(location.search);
         if(b.dataset.s==='old'){location.href='map.html'+(q.get('q')?'?q='+encodeURIComponent(q.get('q')):'');return;}
-        q.set('skin',b.dataset.s); location.href='map_v2.html?'+q.toString();
+        if(b.dataset.b==='vworld')q.delete('base'); else q.set('base',b.dataset.b);
+        location.href='map_v2.html'+(q.toString()?'?'+q.toString():'');
       };
     });
   }
