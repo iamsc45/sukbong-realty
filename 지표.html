@@ -14,11 +14,11 @@
 <link rel="icon" href="/icons/favicon-32.png" sizes="32x32">
 <script>if('serviceWorker' in navigator){addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}</script>
 <title>금리·지표 · 석봉 부동산 정보방</title>
-<meta name="description" content="기준금리·COFIX·주담대·저축은행 담보금리부터 미분양·심리지수까지, 부동산에 필요한 금리와 시장 지표를 한 화면에 정리했습니다. 매월 갱신.">
+<meta name="description" content="주간 아파트가격지수부터 기준금리·COFIX·주담대·저축은행 담보금리, 인허가·착공·준공, 상가·오피스 공실률까지 부동산에 필요한 지표를 한 화면에. 지표마다 집계 주기와 다음 갱신일을 표기합니다.">
 <link rel="canonical" href="https://xn--2q1br1nnrasc92a76myvau64b.com/%EC%A7%80%ED%91%9C.html">
 <meta property="og:type" content="website">
 <meta property="og:title" content="금리·지표 · 석봉 부동산 정보방">
-<meta property="og:description" content="기준금리·COFIX·주담대·2금융 담보금리·미분양·심리지수를 한 화면에.">
+<meta property="og:description" content="주간 아파트가격지수·기준금리·COFIX·2금융 담보금리·주택 공급·상가 공실률을 한 화면에.">
 <meta property="og:url" content="https://xn--2q1br1nnrasc92a76myvau64b.com/%EC%A7%80%ED%91%9C.html">
 <meta property="og:image" content="https://xn--2q1br1nnrasc92a76myvau64b.com/assets/og_default.png">
 <meta property="og:image:width" content="1200">
@@ -68,9 +68,31 @@ details.grp:not([open]) summary{border-bottom:none}
 .chg.up{color:#c0562e}.chg.dn{color:#2b6cb0}.chg.fl{color:var(--muted);font-weight:500}
 .trow .spk{display:flex;justify-content:center}
 .trow .ym{text-align:right;font-size:11.5px;color:var(--muted)}
+.trow .cur .u{font-size:11px;color:var(--muted);font-weight:600;margin-left:1px}
 .hi .cur{color:#c0562e}
 /* 데이터 없는 열 숨김용 */
 .spk svg{display:block}
+/* 집계 주기 안내(그룹 머리) — "8월인데 왜 6월 자료냐"를 여기서 미리 푼다 */
+.cyc{display:flex;flex-wrap:wrap;gap:3px 12px;align-items:baseline;
+  padding:8px 18px;border-bottom:1px solid var(--hair);background:#fcfcfa;
+  font-size:11.5px;line-height:1.6;word-break:keep-all}
+.cyc .cy{color:var(--text2);font-weight:600}
+.cyc .nx{color:var(--gold,#a8792c);font-weight:700}
+/* 하단 집계 주기 모음(접이식) */
+.cycbox{margin:26px 0 0;border:1px solid var(--hair);border-radius:14px;background:#fff}
+.cycbox>summary{list-style:none;cursor:pointer;padding:14px 18px;font-size:13.5px;font-weight:700;
+  letter-spacing:-0.02em;display:flex;align-items:center;gap:8px}
+.cycbox>summary::-webkit-details-marker{display:none}
+.cycbox>summary::after{content:'▾';margin-left:auto;color:var(--muted);font-size:12px}
+.cycbox[open]>summary::after{content:'▴'}
+.cycbox[open]>summary{border-bottom:1px solid var(--hair)}
+.cycbox .lead{margin:0;padding:14px 18px 4px;font-size:12.5px;line-height:1.8;color:var(--muted);word-break:keep-all}
+.cyrow{padding:11px 18px;border-top:1px solid var(--hair);font-size:12.5px;line-height:1.75;word-break:keep-all}
+.cyrow:first-child{border-top:none}
+.cyrow b{display:block;font-size:13px;letter-spacing:-0.02em}
+.cyrow .c1{display:block;color:var(--text2);margin-top:1px}
+.cyrow .c1 i{font-style:normal;color:var(--gold,#a8792c);font-weight:700}
+.cyrow .c2{display:block;color:var(--muted);margin-top:3px}
 /* 실거래·경매 요약(간단 카드 2열) */
 .duo{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:0 0 26px}
 .duo .box{border:1px solid var(--hair);border-radius:14px;background:#fff;padding:16px 18px}
@@ -87,20 +109,32 @@ details.grp:not([open]) summary{border-bottom:none}
 .ctas a span{display:block;font-size:12px;color:var(--muted);margin-top:3px}
 .ctas a:hover{border-color:var(--text)}
 .note{font-size:12px;color:var(--muted);line-height:1.75;margin:26px 0 0;word-break:keep-all}
-/* ── 모바일: 표 → 리스트 행 (토스식 한 줄 패턴) ── */
+/* ── 모바일: 표 → 리스트 행 (토스식 한 줄 패턴) ──────────────────
+   2026-08-11 재작성. 전에는 값 열이 auto 라 행마다 폭이 달라 우측 정렬이
+   어긋나 보였고, 열 사이 간격이 0이라 좁은 화면(320px)에서 지표명과 값이
+   맞닿아 겹쳐 보였다. 값 열을 고정폭으로 못 박고 간격을 준다. */
 @media(max-width:700px){
-  .trow{grid-template-columns:1fr auto;grid-template-areas:"nm cur" "nm chg";row-gap:1px;padding:11px 15px}
+  .trow{grid-template-columns:minmax(0,1fr) 98px;column-gap:12px;
+    grid-template-areas:"nm cur" "nm chg";row-gap:2px;padding:12px 15px;align-items:start}
   .trow.head{display:none}
-  .trow .nm{grid-area:nm}
-  .trow .cur{grid-area:cur;font-size:16px}
-  .trow .chg{grid-area:chg;font-size:12px}
-  .trow .prv,.trow .spk{display:none}
-  .trow .ym{display:none}
-  .trow .nm small{white-space:normal}
-  .trow .nm .mym{display:inline;font-size:10.5px;color:var(--muted2);font-weight:400;margin-left:5px}
+  .trow .nm{grid-area:nm;min-width:0;font-size:14px;line-height:1.4;word-break:keep-all}
+  .trow .nm small{display:block;white-space:normal;line-height:1.5;margin-top:2px}
+  .trow .cur{grid-area:cur;font-size:16.5px;white-space:nowrap;line-height:1.35}
+  .trow .chg{grid-area:chg;font-size:12.5px;white-space:nowrap;line-height:1.5}
+  .trow .prv,.trow .spk,.trow .ym{display:none}
+  .trow .nm .mym{display:inline}          /* 기준시점은 설명 줄 끝에 붙인다 */
+  .cyc{padding:8px 15px;font-size:11px}
+  .cycbox .lead,.cyrow{padding-left:15px;padding-right:15px}
   .duo{grid-template-columns:1fr}
   .ctas{grid-template-columns:1fr}
 }
+/* 아주 좁은 기기(≤340px)에서는 값 열을 조금 줄여 지표명 자리를 남긴다 */
+@media(max-width:340px){
+  .trow{grid-template-columns:minmax(0,1fr) 88px;column-gap:9px;padding:12px 13px}
+  .trow .nm{font-size:13.5px}
+  .trow .cur{font-size:15.5px}
+}
+/* 데스크톱은 기준월 전용 열이 따로 있으므로 설명 줄의 기준 표기는 감춘다 */
 @media(min-width:701px){.trow .nm .mym{display:none}}
 </style>
 </head>
@@ -113,7 +147,7 @@ details.grp:not([open]) summary{border-bottom:none}
     <a href="apply.html">청약</a>
     <a href="auction.html">경매·공매</a>
     <a href="%EC%A7%80%ED%91%9C.html" class="on">금리·지표</a>
-    <a href="lh_%EC%A7%84%EB%8B%A8.html">LH매입</a>
+    <a href="lh_%EC%A7%84%EB%8B%A8.html">LH매입</a><a href="%ED%86%A0%EC%A7%80.html">땅값</a>
     <a href="%EC%9D%B4%EC%9A%A9%EC%95%88%EB%82%B4.html">이용안내</a>
     <a href="%EA%B8%80.html">리포트</a>
     <a href="favorites.html">★ 관심단지</a>
@@ -126,8 +160,9 @@ details.grp:not([open]) summary{border-bottom:none}
 </header>
 <main class="wrap">
   <h1 class="pg">금리·지표</h1>
-  <p class="pgsub">부동산을 볼 때 같이 봐야 하는 금리와 시장 지표를 한 화면에 모았습니다.
-    금리·심리·미분양은 월 단위 통계라 한두 달 늦게 확정됩니다. 지표마다 기준월을 적어 두었습니다.</p>
+  <p class="pgsub">부동산을 볼 때 같이 봐야 하는 지표를 한 화면에 모았습니다. 아파트 가격은 주간, 금리와 공급은 월간,
+    상업용 공실률은 분기, 주택보급률은 연간으로 나옵니다. 그래서 값마다 기준시점이 다릅니다.
+    그룹마다 집계 주기와 다음 갱신일을 적어 두었습니다.</p>
   <div class="asof" id="asof">불러오는 중…</div>
 
   <div class="brief" id="brief" hidden></div>
@@ -154,8 +189,16 @@ details.grp:not([open]) summary{border-bottom:none}
     <a href="%EA%B8%80.html"><b>지역 시장조사 보고서 신청</b><span>가입하시면 2회 무료 · 이메일로 보내드립니다</span></a>
   </div>
 
-  <p class="note">금리 출처: 한국은행 경제통계(ECOS)·은행연합회 공시. 미분양: 국토교통부(KOSIS).
-    실거래: 국토교통부 실거래가 공개시스템(해제 건 제외). 공표 주기상 금리·미분양은 약 1~2개월 지연이 정상입니다.
+  <details class="cycbox" id="cycBox" hidden>
+    <summary>지난달 자료가 왜 최신인가요? 지표별 집계 주기 보기</summary>
+    <p class="lead">국가 통계는 종류마다 공표 일정이 다릅니다. 아래 주기보다 앞선 자료는 아직 세상에 나오지 않은 값입니다.
+      저희는 각 기관이 내는 즉시 받아 반영하고, 지연이 있는 값은 기준시점을 함께 적어 두었습니다.</p>
+    <div id="cycList"></div>
+  </details>
+
+  <p class="note">금리 출처: 한국은행 경제통계(ECOS)·은행연합회 공시. 공급·미분양: 국토교통부(KOSIS).
+    아파트 가격·상업용 공실률: 한국부동산원. 실거래: 국토교통부 실거래가 공개시스템(해제 건 제외).
+    상업용 임대료는 임대면적 기준이라 전용면적 기준 자료와 직접 비교할 수 없습니다.
     본 화면은 정보 제공 목적이며 투자 권유가 아닙니다.</p>
 </main>
 <footer class="site-footer">
@@ -201,17 +244,24 @@ details.grp:not([open]) summary{border-bottom:none}
     var html='';
     D.groups.forEach(function(g){
       if(!g.keys.length)return;
-      /* 주택보급률은 연간 통계라 추이·전기 라벨이 다르다(월로 적으면 오해) */
-      var yearly=(g.id==='supply');
+      /* 전기·추이 라벨은 그룹마다 다르다(주간/월간/분기/연간). 빌더가 넣어 준다. */
+      var pl=g.prevLabel||'전월', hl=g.histLabel||'최근 1년';
       html+='<details class="grp" open><summary><span class="t">'+esc(g.label)+'</span>'
-        +'<span class="c">'+g.keys.length+'개</span><span class="arr">▾</span></summary><div class="tbl">'
-        +'<div class="trow head"><span>지표</span><span style="text-align:right">현재</span><span style="text-align:right">'+(yearly?'전년':'전월')+'</span><span style="text-align:right">변동</span><span style="text-align:center">'+(yearly?'연도별 추이':'최근 1년')+'</span><span style="text-align:right">'+(yearly?'기준':'기준월')+'</span></div>';
+        +'<span class="c">'+g.keys.length+'개</span><span class="arr">▾</span></summary>';
+      /* 집계 주기 안내 — "8월인데 왜 6월 자료냐"는 오해를 여기서 미리 푼다 */
+      if(g.cyc){
+        html+='<div class="cyc"'+(g.why?' title="'+esc(g.why)+'"':'')+'><span class="cy">'+esc(g.cyc)+'</span>'
+          +(g.nxt?'<span class="nx">다음 갱신 '+esc(g.nxt)+'</span>':'')+'</div>';
+      }
+      html+='<div class="tbl">'
+        +'<div class="trow head"><span>지표</span><span style="text-align:right">현재</span><span style="text-align:right">'+pl+'</span><span style="text-align:right">변동</span><span style="text-align:center">'+hl+'</span><span style="text-align:right">기준</span></div>';
       g.keys.forEach(function(k){
         var it=D.items[k]; if(!it)return;
         var hi=(k==='sb')?' hi':'';   /* 저축은행 담보 — 격차가 논점이라 강조 */
         html+='<div class="trow'+hi+'">'
-          +'<span class="nm">'+esc(it.label)+'<span class="mym">'+esc(it.ym)+'</span><small>'+esc(it.note)+'</small></span>'
-          +'<span class="cur">'+fmt(it.v,it.unit)+(it.unit?'<small style="font-size:11px;color:var(--muted);font-weight:600">'+it.unit+'</small>':'')+'</span>'
+          +'<span class="nm">'+esc(it.label)
+            +'<small>'+esc(it.note)+'<span class="mym"> · '+esc(it.ym)+' 기준</span></small></span>'
+          +'<span class="cur">'+fmt(it.v,it.unit)+(it.unit?'<small class="u">'+esc(it.unit)+'</small>':'')+'</span>'
           +'<span class="prv">'+(it.prev!=null?fmt(it.prev,it.unit):'—')+'</span>'
           +chg(it)
           +'<span class="spk">'+spark(it.hist)+'</span>'
@@ -221,9 +271,22 @@ details.grp:not([open]) summary{border-bottom:none}
       html+='</div></details>';
     });
     G.innerHTML=html;
+    /* 하단 '집계 주기 한눈에' — 그룹 안내를 한 번 더 모아 둔다 */
+    try{
+      var cy=document.getElementById('cycList'), rows='';
+      D.groups.forEach(function(g){
+        if(!g.cyc)return;
+        rows+='<div class="cyrow"><b>'+esc(g.label)+'</b>'
+          +'<span class="c1">'+esc(g.cyc)+(g.nxt?' · <i>다음 갱신 '+esc(g.nxt)+'</i>':'')+'</span>'
+          +(g.why?'<span class="c2">'+esc(g.why)+'</span>':'')+'</div>';
+      });
+      if(rows){cy.innerHTML=rows;document.getElementById('cycBox').hidden=false;}
+    }catch(e){}
     /* 오늘 요약 — 데이터에서 자동으로 만든다(손으로 쓰면 낡는다) */
     try{
       var it=D.items, parts=[];
+      /* 가장 신선한 값(지연 일주일)을 맨 앞에 둔다 */
+      if(it.apt_s_m)parts.push('서울 아파트 매매 주간 <b>'+(it.apt_s_m.v>0?'+':'')+it.apt_s_m.v+'%</b>');
       if(it.base)parts.push('기준금리 <b>'+it.base.v+'%</b>'+(it.base.prev===it.base.v?' 동결':''));
       if(it.mg&&it.sb)parts.push('담보금리 상호금융 <b>'+it.mg.v+'%</b> vs 저축은행 <b>'+it.sb.v+'%</b> (격차 '+(Math.round((it.sb.v-it.mg.v)*100)/100)+'%p)');
       if(it.unsold)parts.push('전국 미분양 <b>'+Math.round(it.unsold.v).toLocaleString()+'호</b>'+(it.unsold.prev?(it.unsold.v>it.unsold.prev?' ▲':' ▼'):''));
