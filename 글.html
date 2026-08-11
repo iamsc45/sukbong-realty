@@ -11,7 +11,7 @@
 <meta property="og:description" content="실거래·청약·경매 데이터를 직접 뜯어 정리한 리포트 모음입니다. 국토교통부 실거래가와 공공 데이터가 근거입니다.">
 <meta property="og:url" content="https://xn--2q1br1nnrasc92a76myvau64b.com/%EA%B8%80.html">
 <meta property="og:image" content="https://xn--2q1br1nnrasc92a76myvau64b.com/assets/og_default.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:site_name" content="석봉 부동산 정보방"><meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
 <link rel="stylesheet" href="assets/site.css">
 <!-- 모바일 하단 탭바. 리포트 목록·글에만 빠져 있어 휴대폰에서 들어오면 나갈 길이 없었다
      (2026-08-11 확인). defer 를 붙여 본문이 다 그려진 뒤 붙게 한다. -->
@@ -56,9 +56,12 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
 .repbox{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
   border:1px solid var(--hair);border-left:3px solid var(--gold,#a8792c);border-radius:14px;
   background:var(--soft);padding:16px 18px;margin:0 0 24px}
-.repbox .tx{font-size:14px;color:var(--text2);line-height:1.65}
+/* word-break:keep-all 이 빠져 있어 '핵심만'이 '핵심 / 만'으로 쪼개졌다(2026-08-11 석봉님 지적).
+   한글은 기본값(normal)이면 단어 한가운데서도 줄이 넘어간다. 사이트 다른 화면은 다 넣어 뒀는데
+   이 박스만 누락됐다. 새로 만드는 문단에도 잊지 말 것. */
+.repbox .tx{font-size:14px;color:var(--text2);line-height:1.65;word-break:keep-all}
 .repbox .tx b{color:var(--text)}
-.repbox .tx small{display:block;font-size:12px;color:var(--muted)}
+.repbox .tx small{display:block;font-size:12px;color:var(--muted);word-break:keep-all}
 .repbox button{border:0;border-radius:100px;background:var(--text);color:#fff;font:inherit;
   font-size:13px;font-weight:800;padding:11px 22px;cursor:pointer;white-space:nowrap}
 .repform{border:1px solid var(--hair);border-radius:14px;background:#fff;padding:18px;margin:-12px 0 24px}

@@ -16,7 +16,7 @@
 <title>실거래지도 · 석봉 부동산 정보방</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
 <link rel="stylesheet" href="assets/site.css">
 <!-- 새 지도 디자인(2026-08-10 석봉님 확정): 네이버형 좌측 목록 + 흰 말풍선 마커.
      로직은 이 파일 그대로 두고 겉모습만 아래 두 파일이 얹는다. -->
@@ -1067,6 +1067,40 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
         else goRegion(function(){tryRedevZone(v,noHit);});
       });
     }
+    /* 🔴 법정동을 아는 딥링크는 검색 인덱스를 받지 않는다 (2026-08-11 석봉님 "지도 로딩이 너무 느림").
+       블로그·리포트 딥링크는 `?q=<단지명>&dong=<법정동>` 형태다. 그런데 이 경로도 아래
+       일반 검색과 똑같이 `data/apt_index.js`(전송 1.09MB·원본 3.9MB, 전국 단지 인덱스)를
+       통째로 받아야 단지를 찾을 수 있었다. 3Mbps에서 그 파일 하나가 16.7초 걸렸다(실측).
+       법정동만 있으면 그럴 필요가 없다. `dongs.js`(첫 화면에서 이미 받은 158KB)에
+       법정동→시군구코드가 들어 있으므로, 그 시군구 실거래 파일 하나(수백 KB)만 받으면 된다.
+       못 찾으면 아무 일 없었던 것처럼 원래 인덱스 경로로 넘어간다. */
+    function _nm(s){return (s||'').toLowerCase().replace(/[\s·().,\-]/g,'');}
+    function fastByDong(){
+      if(!dong||!window.SB||!SB.dongs)return false;
+      var e=SB.dongs[dong]; if(!e||!e[0])return false;
+      var code=e[0], q=_nm(v);
+      if(q.length<2)return false;
+      try{if(window._setRegionByCode)window._setRegionByCode(code);}catch(x){}
+      if(e[1])go(e[1],e[2],16);
+      function pick(){
+        var d=window.SB&&SB.d&&SB.d[code];
+        if(!d){afterIdx();return;}
+        var hit=null;
+        for(var i=0;i<d.length;i++){
+          if(d[i].dong!==dong)continue;
+          var n2=_nm(d[i].name);
+          if(n2===q){hit=d[i];break;}
+          if(!hit&&(n2.indexOf(q)>=0||q.indexOf(n2)>=0))hit=d[i];
+        }
+        if(!hit){afterIdx();return;}          /* 그 동에 없으면 원래 경로로 */
+        go(hit.lat,hit.lng,17);
+        showAptCard(hit,(hit.txs||[]).slice());
+      }
+      if(loaded[code])pick(); else loadDetail(code,pick);
+      return true;
+    }
+    if(fastByDong())return;
+
     /* ⚠️ 단지 검색 모듈(_loadAptIdx/_trySelectApt)은 이 블록보다 뒤에서 정의된다.
        딥링크가 먼저 실행되면 _loadAptIdx가 아직 undefined라 인덱스를 안 싣고
        단지 매칭을 통째로 건너뛴다 → 지도만 이동하고 단지 카드가 안 열림
