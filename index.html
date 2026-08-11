@@ -101,7 +101,12 @@ a{color:inherit}
   white-space:nowrap;transition:background 150ms ease,color 150ms ease}
 .nav .inq-lnk i{font-size:16px}
 .nav .inq-lnk:hover{background:var(--blk);color:#fff}
-.nav .inq-lnk+.cta{margin-left:0}
+/* 🔴세 버튼을 한 덩어리로 붙인다(2026-08-11 석봉님 지적: "간격도 맞춰줘").
+   '광고·제휴 문의'와 '지도 열기' 둘 다 margin-left:auto 를 갖고 있었는데, 둘 사이에
+   로그인 자리(.authslot)가 끼어 있어 `.inq-lnk+.cta` 규칙이 안 먹었다. 그래서 '지도 열기'만
+   따로 오른쪽 끝까지 밀려 간격이 21.6px 대 85.8px 로 벌어졌다(실측).
+   맨 앞 하나만 auto 로 밀고 나머지는 0 — 그러면 셋 다 nav 기본 간격으로 고르게 붙는다. */
+.nav .inq-lnk~.cta,.nav .inq-lnk~.authslot{margin-left:0}
 /* 상단 버튼 3종 규격 통일(2026-08-10 석봉님: "세 개 다 크기가 제각각이다").
    높이 42px · 글자 15px · 완전 둥근 모서리로 맞춘다. 여백만 역할에 따라 다르게 준다
    (주 버튼인 '지도 열기'가 조금 더 넓다). 로그인은 sb_auth.js가 인라인 style로 그리므로
@@ -109,16 +114,18 @@ a{color:inherit}
 .nav .inq-lnk,.nav .cta,.nav .authslot .sbAuthA{
   height:42px;box-sizing:border-box;display:inline-flex;align-items:center;
   border-radius:100px;font-size:15px;line-height:1;white-space:nowrap}
+/* 좌우 여백도 셋을 같은 값으로 둔다(글자 수가 달라 폭은 자연히 달라지지만, 여백이 다르면
+   버튼마다 크기가 제각각으로 보인다). 2026-08-11 개정: 18 / 24 / 17 → 셋 다 18. */
 .nav .inq-lnk{padding:0 18px;font-weight:700;gap:7px}
-.nav .cta{padding:0 24px;font-weight:700;gap:7px}
-.nav .authslot .sbAuthA{height:42px !important;padding:0 17px !important;
+.nav .cta{padding:0 18px;font-weight:700;gap:7px}
+.nav .authslot .sbAuthA{height:42px !important;padding:0 18px !important;
   font-size:15px !important;font-weight:700 !important;border-radius:100px !important;
   gap:6px !important;justify-content:center}
 .nav .inq-lnk i,.nav .cta i{font-size:17px}
 @media(max-width:720px){
   .nav .inq-lnk,.nav .cta,.nav .authslot .sbAuthA{height:36px;font-size:13px}
   .nav .inq-lnk{padding:0 13px}
-  .nav .cta{padding:0 16px}
+  .nav .cta{padding:0 13px}
   .nav .authslot .sbAuthA{height:36px !important;padding:0 13px !important;font-size:13px !important}
 }
 @media(max-width:720px){.nav .inq-lnk{padding:7px 12px;font-size:12px}}
@@ -251,7 +258,10 @@ table.rank{width:100%;border-collapse:collapse;font-size:13px}
 /* 인기 지역 칩(PC, 2026-08-11). ⚠️이 규칙은 **미디어쿼리 밖**에 있어야 한다 —
    처음에 .m-hot 옆에 넣었더니 그게 max-width:720px 블록 안이라 PC에서 스타일이
    통째로 안 먹어 글자만 줄줄이 붙어 나왔다(석봉님 캡처). */
-.d-hot{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;align-items:center;margin:16px 0 0}
+/* 검색창과 같은 폭·같은 왼쪽 선에 맞춘다. 전에는 가운데 정렬이라 화면 폭(1200)의 한가운데,
+   즉 검색창(780) 오른쪽으로 밀려 보였다(2026-08-11 석봉님 지적). */
+.d-hot{display:flex;gap:8px;justify-content:flex-start;flex-wrap:wrap;align-items:center;
+  margin:16px 0 0;max-width:780px}
 .d-hot .lb{font-size:12.5px;color:var(--g3);margin-right:4px;letter-spacing:-.02em}
 .d-hot a{font-size:13px;color:var(--g2);border:1px solid var(--hair);border-radius:100px;
   padding:7px 15px;text-decoration:none;background:#fff;line-height:1.2;
@@ -415,6 +425,11 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
 .tile-m.soon .ic{color:var(--g3)!important}
 .tile-m.soon .tn{color:var(--g3)}
 .tile-m .badge{position:absolute;top:6px;right:6px;width:6px;height:6px;border-radius:50%;background:var(--g3)}
+/* 앱 다운로드 — 마지막 줄을 통째로 쓴다 */
+.tile-m.wide{grid-column:1/-1;flex-direction:row;justify-content:center;gap:8px;padding:13px 10px}
+.tile-m.wide .ic{font-size:19px}
+.tile-m.wide .tn{font-size:13px;font-weight:800}
+.tile-m.wide .tn:after{content:" · 홈 화면에 추가";font-weight:600;color:var(--g2)}
 .m-ad{display:flex;align-items:center;justify-content:center;gap:6px;margin:12px 0 0;padding:11px;
   border:1px dashed var(--g3);color:var(--g2);font-size:12px;text-decoration:none;font-weight:700}
 .m-ad i{font-size:15px}
@@ -469,6 +484,14 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
     </ul>
     <div class="gp-promo">가입하시면 <b>지역 시장조사 보고서</b>(약식)를 <b>2회 무료</b>로 받아보실 수 있습니다.
       <a href="%EA%B8%80.html">신청하러 가기 →</a></div>
+    <!-- 앱 설치 안내(2026-08-11 석봉님 지시). 팝업을 하나 더 띄우지 않고 여기 한 줄로 넣는다
+         ("심플한 게 컨셉"). 이미 앱으로 열고 있으면 스크립트가 이 줄을 지운다. -->
+    <div class="gp-app" id="gpApp">
+      <img src="icons/icon-192.png" alt="" width="38" height="38">
+      <div class="gp-app-t"><b>앱처럼 쓰실 수 있습니다</b>
+        <span>홈 화면에 아이콘을 두면 주소창 없이 바로 열립니다</span></div>
+      <a class="gp-app-b" id="gpAppBtn" href="%EC%95%B1%EC%84%A4%EC%B9%98.html">추가</a>
+    </div>
     <div class="gp-b">
       <a class="gp-go" href="%EC%9D%B4%EC%9A%A9%EC%95%88%EB%82%B4.html">사용법 자세히 보기</a>
       <button class="gp-skip" id="gpSkip">둘러볼게요</button>
@@ -492,6 +515,14 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
 #guidePop .gp-l li{padding:10px 0;border-top:1px solid #eee}
 #guidePop .gp-l b{display:block;font-size:14px;font-weight:800;margin-bottom:3px}
 #guidePop .gp-l span{display:block;font-size:12.5px;color:#8a8071;line-height:1.6;word-break:keep-all}
+#guidePop .gp-app{display:flex;align-items:center;gap:11px;border:1px solid #eee;border-radius:12px;
+  padding:10px 12px;margin:0 0 16px}
+#guidePop .gp-app img{border-radius:9px;flex:0 0 auto}
+#guidePop .gp-app-t{flex:1;min-width:0}
+#guidePop .gp-app-t b{display:block;font-size:13px;font-weight:800;letter-spacing:-.02em}
+#guidePop .gp-app-t span{display:block;font-size:11.5px;color:#8a8071;line-height:1.5;margin-top:2px;word-break:keep-all}
+#guidePop .gp-app-b{flex:0 0 auto;background:#2554E0;color:#fff;text-decoration:none;font-size:12.5px;
+  font-weight:800;border-radius:100px;padding:8px 15px;white-space:nowrap}
 #guidePop .gp-b{display:flex;gap:8px;flex-wrap:wrap}
 #guidePop .gp-go{flex:1;min-width:150px;text-align:center;background:#141414;color:#fff;text-decoration:none;
   font-size:14px;font-weight:800;border-radius:12px;padding:14px 0}
@@ -501,10 +532,30 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
 </style>
 <script>
 (function(){
-  var K='sb_guide_seen';
+  /* 키를 sb_guide_seen → sb_guide_seen2 로 올렸다(2026-08-11). 앱 설치 안내가 새로 들어갔으므로
+     이미 팝업을 본 분들께도 딱 한 번 더 보여 드려야 한다. 앞으로도 팝업 내용을 크게 바꾸면
+     숫자를 올릴 것(안 올리면 기존 방문자는 영영 못 본다). */
+  var K='sb_guide_seen2';
   try{ if(localStorage.getItem(K))return; }catch(e){ return; }   /* 저장을 못 쓰면 아예 안 띄운다 */
   var p=document.getElementById('guidePop');
   if(!p)return;
+
+  /* 앱 설치 줄 — 이미 앱으로 열고 있으면 지운다(할 일이 없는 안내는 방해만 된다) */
+  var app=document.getElementById('gpApp');
+  var standalone=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
+  if(app&&standalone)app.parentNode.removeChild(app);
+  /* 안드로이드 크롬이 설치 가능 신호를 주면 그 자리에서 바로 설치되게 한다.
+     신호가 없으면 그냥 안내 페이지로 보낸다(누르면 아무 일도 안 하는 버튼은 만들지 않는다). */
+  var deferred=null;
+  window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferred=e;});
+  var ab=document.getElementById('gpAppBtn');
+  if(ab)ab.addEventListener('click',function(e){
+    try{if(window.gtag)gtag('event','app_install_click',{from:'guide_popup'});}catch(x){}
+    if(!deferred)return;                     /* 안내 페이지로 그대로 이동 */
+    e.preventDefault();
+    deferred.prompt();
+    deferred.userChoice.then(function(){deferred=null;close();});
+  });
   function close(){
     p.style.display='none';
     try{localStorage.setItem(K,'1');}catch(e){}
@@ -786,10 +837,14 @@ document.addEventListener('click',function(e){if(n.classList.contains('m-open')&
     {n:'블로그',d:'네이버 블로그',i:'notebook',c:'#03C75A',h:'https://blog.naver.com/seokbongnews',blank:true},
     {n:'관심단지',d:'내가 찜한 단지',i:'star',c:'#D9A514',h:'favorites.html'},
     {n:'대출 문의',d:'담보 조건 상담 연결',i:'building-bank',c:'#5B4A9E',h:'%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html?ctx=home'},
+    /* 앱 설치(2026-08-11 석봉님 지시). 모바일에서는 마지막 줄을 통째로 쓰는 띠로 그린다 —
+       4칸 격자에 열세 번째 타일 하나만 덩그러니 남으면 보기 싫고, 설치는 휴대폰에서
+       가장 필요한 일이라 눈에 띄는 편이 맞다. */
+    {n:'앱 다운로드',d:'홈 화면에 추가',i:'download',c:'#2554E0',h:'%EC%95%B1%EC%84%A4%EC%B9%98.html',wide:true},
     {n:'커뮤니티',d:'동네 이야기',i:'messages',c:'#8A8A85',soon:true}
   ];
   function tile(t,idx,mob){
-    var cls=(mob?'tile-m':'tile')+(t.soon?' soon':'');
+    var cls=(mob?'tile-m':'tile')+(t.soon?' soon':'')+(t.wide&&mob?' wide':'');
     var num=('0'+(idx+1)).slice(-2);
     var inner='<span class="num">'+num+'</span>'
       +'<i class="ti ti-'+t.i+' ic" aria-hidden="true" style="color:'+t.c+'"></i>'
@@ -805,7 +860,10 @@ document.addEventListener('click',function(e){if(n.classList.contains('m-open')&
     return '<a class="'+cls+'" href="'+t.h+'"'+tgt+'>'+inner+'</a>';
   }
   var hd=document.getElementById('hubDesk'); if(hd)hd.innerHTML=HUB.map(function(t,i){return tile(t,i,false);}).join('');
-  var hm=document.getElementById('hubMob'); if(hm)hm.innerHTML=HUB.map(function(t,i){return tile(t,i,true);}).join('');
+  /* 모바일은 4칸 격자라 폭을 다 쓰는 타일(앱 다운로드)이 중간에 끼면 줄이 깨진다. 맨 뒤로 보낸다.
+     데스크톱은 5칸이라 순서 그대로 두고, 대신 '준비중'인 커뮤니티가 마지막에 오게 했다. */
+  var HUB_M=HUB.filter(function(t){return !t.wide;}).concat(HUB.filter(function(t){return t.wide;}));
+  var hm=document.getElementById('hubMob'); if(hm)hm.innerHTML=HUB_M.map(function(t,i){return tile(t,i,true);}).join('');
   /* 광고·제휴 문의 모달: 폼 접수(Supabase)→운영자 이메일 통보, 메일 직접 보내기 병행 */
   var INQ_URL='https://bwgoufxonqamglbqsife.supabase.co/rest/v1/inquiries';
   var INQ_KEY='sb_publishable_kYd1gCyqCR2Qy8Ix6KE6og_FfJUImfR';
