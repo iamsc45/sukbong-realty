@@ -87,7 +87,13 @@
   +'#sbtab button.on{color:#12203A;font-weight:800}'
   +'body{padding-bottom:var(--sbtab-h,56px)}'
   +'body.sbmap{padding-bottom:0}'
-  +'body.sbmap #wrap{height:calc(100% - var(--sbtab-h,56px))}'
+  /* 🔴화면 높이를 100%로 잡으면 인앱 브라우저에서 지도 아래가 텅 빈다(2026-08-11 석봉님 캡처).
+     카카오톡·사파리 같은 인앱/모바일 브라우저는 주소창·툴바가 접혔다 펴지면서
+     **눈에 보이는 높이와 100%가 서로 다르다.** 그래서 JS로 실제 보이는 높이를 재
+     --vh 에 넣고 그 값을 쓴다(dvh를 지원하면 그걸 먼저 쓴다). */
+  +'body.sbmap #wrap{height:calc(100dvh - var(--sbtab-h,56px));'
+  +'height:calc(var(--vh,100vh) - var(--sbtab-h,56px))}'
+  +'@supports (height:100dvh){body.sbmap #wrap{height:calc(100dvh - var(--sbtab-h,56px))}}'
   /* 화면 아래에 고정돼 있던 것들은 탭바 위로 올린다(안 그러면 탭바에 가린다) */
   +'body.sbmap #fpanel,body.sbmap #rcard,body.sbmap #msheet .ms-in{bottom:var(--sbtab-h,56px)!important}'
   +'body.sbmap .site-footer{display:none}'
@@ -133,15 +139,33 @@
       +'<i class="ti ti-'+t.i+'" aria-hidden="true"></i>'+t.n+'</button>';
   }).join('');
   document.body.appendChild(bar);
-  if(isMap())document.body.classList.add('sbmap');
+  if(isMap()){
+    document.body.classList.add('sbmap');
+    /* map.html은 html,body에 height:100%가 걸려 있다. 인앱 브라우저에서는 그 100%가
+       눈에 보이는 높이보다 커서 지도 아래가 텅 빈다. 여기서 풀고 #wrap만 재서 채운다.
+       (CSS로는 못 푼다 — 'body.sbmap html' 같은 선택자는 성립하지 않는다) */
+    document.documentElement.style.height='auto';
+    document.body.style.height='auto';
+    document.body.style.overflow='hidden';
+  }
   /* 높이는 재서 쓴다 — 글자 크기 설정이나 safe-area에 따라 기기마다 다르다 */
   function measure(){
     var h=bar.offsetHeight||56;
     document.documentElement.style.setProperty('--sbtab-h',h+'px');
+    /* 실제로 보이는 높이. visualViewport가 있으면 그게 가장 정확하다(툴바 접힘까지 반영). */
+    var vh=(window.visualViewport&&window.visualViewport.height)||window.innerHeight||0;
+    if(vh)document.documentElement.style.setProperty('--vh',Math.round(vh)+'px');
     if(window.map&&window.map.invalidateSize)setTimeout(function(){try{window.map.invalidateSize({animate:false});}catch(e){}},80);
   }
   measure(); window.addEventListener('resize',measure);
+  window.addEventListener('orientationchange',function(){setTimeout(measure,250);});
   window.addEventListener('load',measure);
+  /* 인앱 브라우저는 스크롤하면 툴바가 접히며 높이가 바뀐다. 그때마다 다시 잰다. */
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize',measure);
+    window.visualViewport.addEventListener('scroll',measure);
+  }
+  [300,1200,3000].forEach(function(ms){setTimeout(measure,ms);});
 
   /* ── 전체 메뉴 시트 ───────────────────────────────────────── */
   var sheet=document.createElement('div'); sheet.id='sbsheet';
