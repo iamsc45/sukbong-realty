@@ -272,6 +272,13 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
   .m-search input::placeholder{color:var(--g3)}
   .m-search button{border:0;background:var(--blk);color:#fff;font:inherit;font-size:13px;font-weight:700;
     padding:0 20px;border-radius:100px;margin:4px;cursor:pointer}
+.d-hot{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:14px 0 0}
+.d-hot .lb{font-size:12.5px;color:var(--g3);align-self:center;margin-right:2px;letter-spacing:-.02em}
+.d-hot a{font-size:13px;color:var(--g2);border:1px solid var(--hair);border-radius:100px;
+  padding:6px 14px;text-decoration:none;background:#fff;transition:all .12s ease;letter-spacing:-.02em}
+.d-hot a:hover{border-color:var(--ink);color:var(--ink)}
+.d-hot a b{font-weight:700;color:var(--ink)}
+@media(max-width:720px){.d-hot{display:none}}
   .m-hot{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin:12px 0 0}
   .m-hot a{font-size:11.5px;color:var(--g2);border:1px solid var(--hair);border-radius:100px;
     padding:5px 12px;text-decoration:none;background:var(--wh)}
@@ -606,6 +613,9 @@ document.addEventListener('click',function(e){if(n.classList.contains('m-open')&
     <input id="dQ" type="search" placeholder="단지·지역·재개발 구역·지번 검색 (예: 헬리오시티, 흑석11, 사당동 1154)" autocomplete="off">
     <button type="submit">검색</button>
   </form>
+  <!-- 인기 지역 칩(2026-08-11): 모바일에만 있던 것을 PC에도 붙인다.
+       최근 2주 검색이 많았던 지역 + 거래 많은 지역 폴백(data/hotchip.js). -->
+  <div class="d-hot" id="dHot"></div>
   <!-- 상품 칩은 눌리게(2026-08-08 이용자 제보: 버튼처럼 생겼는데 장식이라 헷갈린다).
        실거래 7종은 지도를 그 상품 필터가 켜진 채로 열고, 나머지 3종은 해당 페이지로 보낸다. -->
   <div class="prods">
@@ -1088,6 +1098,19 @@ try{
     a.addEventListener("click",function(e){e.preventDefault();goMap(r,"chip");});
     hot.appendChild(a);
   });
+  /* PC에도 같은 칩(2026-08-11). 모바일에만 있는 게 이상했다. */
+  var dhot=document.getElementById("dHot");
+  if(dhot&&chips.length){
+    var lb=document.createElement("span");lb.className="lb";lb.textContent="많이 찾는 지역";
+    dhot.appendChild(lb);
+    chips.forEach(function(c){
+      var r=c.t;if(!r)return;
+      var a=document.createElement("a");a.href="#";a.textContent=r;
+      a.title=c.src==="log"?"최근 2주 검색이 많았던 지역":(c.src==="trade"?"최근 30일 거래가 많은 지역":"");
+      a.addEventListener("click",function(e){e.preventDefault();goMap(r,"chip");});
+      dhot.appendChild(a);
+    });
+  }
   var df=document.getElementById("dSearch");
   if(df)df.addEventListener("submit",function(e){
     e.preventDefault();
