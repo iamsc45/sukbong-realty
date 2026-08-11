@@ -833,8 +833,13 @@ document.addEventListener('click',function(e){if(n.classList.contains('m-open')&
     {n:'청약',d:'분양 일정·경쟁률',i:'ticket',c:'#185FA5',h:'apply.html'},
     {n:'시세·통계',d:'평당가·전세가율',i:'chart-histogram',c:'#0FA98A',h:'#dash',dash:true},
     {n:'상가·빌딩',d:'상업용 실거래',i:'building-store',c:'#E8A13A',h:'map.html?t=comm'},
+    /* 금리·지표(2026-08-11 석봉님 지시). 전체 메뉴에만 있고 홈 타일에는 빠져 있었다.
+       담보대출 주선이 본업이라 금리는 첫 화면에서 바로 닿아야 한다. */
+    {n:'금리·지표',d:'기준금리·대출금리',i:'percentage',c:'#7A5AF8',h:'%EC%A7%80%ED%91%9C.html'},
     {n:'리포트',d:'우리가 쓴 분석 글',i:'file-text',c:'#6E6E6A',h:'%EA%B8%80.html'},
-    {n:'블로그',d:'네이버 블로그',i:'notebook',c:'#03C75A',h:'https://blog.naver.com/seokbongnews',blank:true},
+    /* 모바일에서는 뺀다(deskOnly) — 아래 채널 버튼(텔레그램·오픈채팅·블로그)에 이미 있어 중복이고,
+       금리·지표를 넣으면서 4칸 격자가 한 칸 어긋나던 것도 이걸로 맞는다(2026-08-11). */
+    {n:'블로그',d:'네이버 블로그',i:'notebook',c:'#03C75A',h:'https://blog.naver.com/seokbongnews',blank:true,deskOnly:true},
     {n:'관심단지',d:'내가 찜한 단지',i:'star',c:'#D9A514',h:'favorites.html'},
     {n:'대출 문의',d:'담보 조건 상담 연결',i:'building-bank',c:'#5B4A9E',h:'%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html?ctx=home'},
     /* 앱 설치(2026-08-11 석봉님 지시). 모바일에서는 마지막 줄을 통째로 쓰는 띠로 그린다 —
@@ -862,7 +867,7 @@ document.addEventListener('click',function(e){if(n.classList.contains('m-open')&
   var hd=document.getElementById('hubDesk'); if(hd)hd.innerHTML=HUB.map(function(t,i){return tile(t,i,false);}).join('');
   /* 모바일은 4칸 격자라 폭을 다 쓰는 타일(앱 다운로드)이 중간에 끼면 줄이 깨진다. 맨 뒤로 보낸다.
      데스크톱은 5칸이라 순서 그대로 두고, 대신 '준비중'인 커뮤니티가 마지막에 오게 했다. */
-  var HUB_M=HUB.filter(function(t){return !t.wide;}).concat(HUB.filter(function(t){return t.wide;}));
+  var HUB_M=HUB.filter(function(t){return !t.wide&&!t.deskOnly;}).concat(HUB.filter(function(t){return t.wide;}));
   var hm=document.getElementById('hubMob'); if(hm)hm.innerHTML=HUB_M.map(function(t,i){return tile(t,i,true);}).join('');
   /* 광고·제휴 문의 모달: 폼 접수(Supabase)→운영자 이메일 통보, 메일 직접 보내기 병행 */
   var INQ_URL='https://bwgoufxonqamglbqsife.supabase.co/rest/v1/inquiries';
