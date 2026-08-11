@@ -1,0 +1,1 @@
+window.OLDZ=window.OLDZ||{};OLDZ["44710"]=[["군북면",1,-1,0,-1]];

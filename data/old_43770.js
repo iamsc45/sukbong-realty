@@ -1,0 +1,1 @@
+window.OLDZ=window.OLDZ||{};OLDZ["43770"]=[["금왕읍",1,-1,1,-1]];

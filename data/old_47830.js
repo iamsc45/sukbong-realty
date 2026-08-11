@@ -1,0 +1,1 @@
+window.OLDZ=window.OLDZ||{};OLDZ["47830"]=[["개진면",2,-1,0,-1]];
