@@ -92,7 +92,7 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
 
 <div class="cta">
   <a class="p" href="%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html">담보 대출 상담 문의</a>
-  <a class="l" href="map.html">실거래지도 보기</a>
+  <a class="l" href="map.html" id="mapLink">실거래지도 보기</a>
 </div>
 </main>
 <footer class="site-footer">
@@ -256,7 +256,7 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
     var p=toPnu(v);
     if(p.err){$('state').className='err';$('state').textContent=p.err;$('out').innerHTML='';return;}
     $('go').disabled=true;
-    $('state').className='';$('state').textContent=p.label+' 조회 중입니다… (정부 API를 불러와 10초쯤 걸립니다)';
+    $('state').className='';$('state').textContent=p.label+' 조회 중…';
     $('out').innerHTML='';
     try{
       var sess=await myClient.auth.getSession();
@@ -267,7 +267,16 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
         body:JSON.stringify({pnu:p.pnu,gu:p.gu})});
       var d=await res.json();
       if(!d.ok){$('state').className='err';$('state').textContent=d.error||'조회하지 못했습니다.';return;}
-      $('state').textContent=p.label+' · PNU '+p.pnu;
+      $('state').textContent=p.label;
+      /* 지도 링크를 조회한 동네로 연결 — 동명만 넘기면 동명이동(신사동 등)으로 샐 수 있어
+         시도 약칭+시군구를 반드시 붙인다(dongs.js가 동명 하나에 한 곳만 담는 한계). */
+      var SIDO_SHORT={'서울특별시':'서울','부산광역시':'부산','대구광역시':'대구','인천광역시':'인천',
+        '광주광역시':'광주','대전광역시':'대전','울산광역시':'울산','세종특별자치시':'세종','경기도':'경기',
+        '강원특별자치도':'강원','충청북도':'충북','충청남도':'충남','전북특별자치도':'전북','전라남도':'전남',
+        '전남광주통합특별시':'전남','경상북도':'경북','경상남도':'경남','제주특별자치도':'제주'};
+      var ss=SIDO_SHORT[p.sido]||p.sido.slice(0,2);
+      $('mapLink').href='map.html?q='+encodeURIComponent(ss+' '+p.gu+' '+p.dong);
+      $('mapLink').textContent=p.dong+' 실거래지도 보기';
       try{if(typeof gtag==='function')gtag('event','land_lookup',{search_term:p.label});}catch(_e){}
       render(d,p);
     }catch(e){
