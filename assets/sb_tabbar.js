@@ -11,7 +11,7 @@
      - 좁은 화면(720px 이하)에서만 붙는다. PC는 한 픽셀도 안 바뀐다.
      - 지도(#wrap이 height:100%인 페이지)는 탭바 높이만큼 줄여 준다.
      - 일반 스크롤 페이지는 body 아래 여백으로 밀어 준다.
-     - iOS 사파리 하단 툴바에 가리지 않게 safe-area를 더한다. */
+     - ⚠️safe-area-inset 은 쓰지 않는다(아래 #sbtab 주석에 이유를 길게 적어 뒀다). */
 (function(){
   var MQ='(max-width:720px)';
   if(!window.matchMedia||!window.matchMedia(MQ).matches)return;
@@ -78,13 +78,18 @@
   /* ── 스타일 ───────────────────────────────────────────────── */
   var css=document.createElement('style');
   css.textContent=
-   /* 🔴카카오톡 같은 인앱 브라우저는 **눈에 보이는 화면이 레이아웃 화면보다 짧다**.
-      그래서 bottom:0에 붙이면 탭바가 보이는 영역보다 아래로 내려가 그 위에 회색 띠가 생긴다
-      (2026-08-11 석봉님 캡처, 홈 화면). 아래 --vvgap 이 그 차이를 담고, 그만큼 끌어올린다.
-      일반 브라우저에서는 --vvgap 이 0이라 아무 일도 일어나지 않는다. */
+   /* 🔴safe-area-inset-bottom 을 쓰지 않는다 (2026-08-11 석봉님 캡처 픽셀 실측으로 원인 확정).
+      증상: 모든 페이지 아래에 흰 띠가 남고 지도는 그만큼 좁아졌다.
+      원인: 탭바에 padding-bottom:env(safe-area-inset-bottom) 이 걸려 있었는데, 카카오톡
+            안드로이드 웹뷰가 이 값을 약 48px로 돌려준다. 그런데 그 웹뷰의 화면은 이미
+            브라우저 툴바 위에서 끝나 있어서 피할 시스템 영역이 없다. 결국 탭바 안쪽에
+            48px짜리 빈 흰 칸만 생겼다(캡처에서 탭바 윗선부터 툴바까지 흰색이 끊김 없이 이어졌다).
+      근거: safe-area 값은 <meta viewport>에 viewport-fit=cover 를 넣은 문서에서만 의미가 있다.
+            우리 사이트는 어느 페이지에도 그것을 쓰지 않으므로 원래 0이어야 하고,
+            iOS도 이 경우 홈 인디케이터 위에서 화면이 끝나 별도 여백이 필요 없다.
+            즉 이 값은 어느 브라우저에서도 필요 없고, 버그가 있는 웹뷰에서만 해를 끼친다. */
    '#sbtab{position:fixed;left:0;right:0;bottom:0;z-index:3000;display:flex;background:#fff;'
-  +'border-top:1px solid #E9E6DE;padding-bottom:env(safe-area-inset-bottom,0px);'
-  +'transform:translateY(calc(-1 * var(--vvgap,0px)));'
+  +'border-top:1px solid #E9E6DE;padding-bottom:0;'
   +'box-shadow:0 -2px 12px rgba(20,20,20,.06)}'
   +'#sbtab button{flex:1;border:0;background:none;padding:7px 0 6px;font:inherit;font-size:10.5px;'
   +'font-weight:600;color:#9A938A;cursor:pointer;letter-spacing:-.02em;line-height:1.35}'
@@ -116,7 +121,7 @@
   +'#sbsheet{position:fixed;inset:0;z-index:3100;background:rgba(20,20,20,.42);display:none}'
   +'#sbsheet.open{display:block}'
   +'#sbsheet .in{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:18px 18px 0 0;'
-  +'max-height:82%;overflow:auto;padding-bottom:calc(18px + env(safe-area-inset-bottom,0px))}'
+  +'max-height:82%;overflow:auto;padding-bottom:18px}'
   +'#sbsheet .hd{display:flex;align-items:center;justify-content:space-between;padding:15px 18px 11px;'
   +'position:sticky;top:0;background:#fff;border-bottom:1px solid #F1EEE6;font-size:15px;font-weight:800}'
   +'#sbsheet .hd button{border:0;background:none;font-size:22px;line-height:1;color:#9A938A;cursor:pointer}'
@@ -129,8 +134,7 @@
   +'#sbsheet a.on{border-color:#12203A;background:#F5F7FB}'
   /* 청약·경매 미니 선택 */
   +'#sbpick{position:fixed;left:10px;right:10px;z-index:3050;display:none;'
-  +'bottom:calc(64px + env(safe-area-inset-bottom,0px));gap:8px;'
-  +'transform:translateY(calc(-1 * var(--vvgap,0px)))}'
+  +'bottom:calc(var(--sbtab-h,56px) + 8px);gap:8px}'
   +'#sbpick.open{display:flex}'
   +'#sbpick a{flex:1;background:#12203A;color:#fff;text-decoration:none;border-radius:12px;'
   +'padding:14px 10px;text-align:center;font-size:13.5px;font-weight:800;letter-spacing:-.02em}';
@@ -154,7 +158,22 @@
     document.body.style.height='auto';
     document.body.style.overflow='hidden';
   }
-  /* 높이는 재서 쓴다 — 글자 크기 설정이나 safe-area에 따라 기기마다 다르다 */
+  /* 내용이 한 화면에 못 미치는 페이지(로그인 전 관심단지 등)는 푸터가 화면 중간에서 끝나고
+     그 아래가 배경색으로 텅 빈다. 남는 만큼을 푸터 아래 여백으로 넘겨 푸터가 탭바까지
+     이어지게 한다. 푸터가 없는 화면에서는 아무것도 하지 않는다. (2026-08-11 석봉님 제보) */
+  function fillShort(){
+    var f=document.querySelector('.site-footer')||document.querySelector('body>footer');
+    if(!f)return;
+    f.style.paddingBottom='';                      /* 먼저 원래대로 돌려 놓고 다시 잰다 */
+    var base=parseFloat(getComputedStyle(f).paddingBottom)||0;
+    /* ⚠️documentElement.scrollHeight 로는 못 잰다 — 내용이 짧아도 화면 높이 밑으로는
+       안 내려가서 항상 딱 맞는 것처럼 나온다(2026-08-11 검증에서 걸림). body 실제 높이로 잰다. */
+    var docBottom=document.body.offsetTop+document.body.offsetHeight;
+    var short=Math.round((window.innerHeight||0)-docBottom);
+    if(short>2&&short<800)f.style.paddingBottom=(base+short)+'px';
+  }
+
+  /* 높이는 재서 쓴다 — 글자 크기 설정에 따라 기기마다 다르다 */
   function measure(){
     var h=bar.offsetHeight||56;
     document.documentElement.style.setProperty('--sbtab-h',h+'px');
@@ -162,15 +181,9 @@
     var vv=window.visualViewport;
     var vh=(vv&&vv.height)||window.innerHeight||0;
     if(vh)document.documentElement.style.setProperty('--vh',Math.round(vh)+'px');
-    /* 레이아웃 화면과 보이는 화면의 아래쪽 차이. 인앱 브라우저에서만 0보다 커진다. */
-    var gap=0;
-    if(vv){
-      gap=Math.round((document.documentElement.clientHeight||0) - (vv.height + (vv.offsetTop||0)));
-      if(!(gap>0)||gap>240)gap=0;      /* 음수·비정상 값은 무시(키보드가 뜬 경우 등) */
-    }
-    document.documentElement.style.setProperty('--vvgap',gap+'px');
-    /* 스크롤 페이지는 탭바가 올라온 만큼 아래 여백도 더 준다 */
-    if(!isMap())document.body.style.paddingBottom=(h+gap)+'px';
+    /* 스크롤 페이지는 탭바에 가리지 않게 딱 탭바 높이만큼만 아래 여백을 준다.
+       ⚠️여기에 무언가를 더하지 말 것 — 더한 만큼 그대로 빈 칸으로 보인다(2026-08-11). */
+    if(!isMap()){document.body.style.paddingBottom=h+'px';fillShort();}
     if(window.map&&window.map.invalidateSize)setTimeout(function(){try{window.map.invalidateSize({animate:false});}catch(e){}},80);
   }
   measure(); window.addEventListener('resize',measure);

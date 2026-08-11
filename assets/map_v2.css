@@ -197,7 +197,8 @@ body.v2.skin-b #v2sheet{display:flex}
   #v2skin{top:auto}
   body.v2.skin-a #v2sheet{display:flex}
   #v2sheet{max-height:72%}
-  #v2skin{top:auto;bottom:calc(52px + env(safe-area-inset-bottom,0px));right:8px;font-size:11px}
+  /* safe-area-inset 은 쓰지 않는다 — 카카오 인앱 웹뷰가 엉뚱한 값을 돌려준다(2026-08-11, sb_tabbar.js 주석 참고) */
+  #v2skin{top:auto;bottom:52px;right:8px;font-size:11px}
   #v2skin button{padding:5px 9px;font-size:11px}
   body.v2 #legend{display:none}
   body.v2 #loanChip{bottom:auto !important;top:56px !important;right:8px !important}
