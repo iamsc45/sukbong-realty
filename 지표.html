@@ -66,7 +66,8 @@ details.grp:not([open]) summary{border-bottom:none}
 .trow .prv{color:var(--muted);font-variant-numeric:tabular-nums;text-align:right;font-size:13px}
 .trow .chg{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;font-size:13px}
 .chg.up{color:#c0562e}.chg.dn{color:#2b6cb0}.chg.fl{color:var(--muted);font-weight:500}
-.trow .spk{display:flex;justify-content:center}
+.trow .spk{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.trow .spk .hs{font-style:normal;font-size:10px;color:var(--muted);letter-spacing:-0.01em;white-space:nowrap}
 .trow .ym{text-align:right;font-size:11.5px;color:var(--muted)}
 .trow .cur .u{font-size:11px;color:var(--muted);font-weight:600;margin-left:1px}
 .hi .cur{color:#c0562e}
@@ -264,7 +265,10 @@ details.grp:not([open]) summary{border-bottom:none}
           +'<span class="cur">'+fmt(it.v,it.unit)+(it.unit?'<small class="u">'+esc(it.unit)+'</small>':'')+'</span>'
           +'<span class="prv">'+(it.prev!=null?fmt(it.prev,it.unit):'—')+'</span>'
           +chg(it)
-          +'<span class="spk">'+spark(it.hist)+'</span>'
+          /* 그룹 안에서 항목마다 추이 기간이 다르면(예: 1금융은 COFIX만 7개월,
+             상업용은 4분기와 8분기가 섞임) 그 줄에 실제 기간을 적어 준다 */
+          +'<span class="spk">'+spark(it.hist)
+            +(g.histMixed&&it.hspan?'<i class="hs">'+esc(it.hspan)+'</i>':'')+'</span>'
           +'<span class="ym">'+esc(it.ym)+'</span>'
           +'</div>';
       });
