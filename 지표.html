@@ -64,6 +64,7 @@ details.grp:not([open]) summary{border-bottom:none}
 .trow .nm small{display:block;font-size:11px;color:var(--muted);font-weight:400;margin-top:1px}
 .trow .cur{font-weight:800;font-variant-numeric:tabular-nums;text-align:right;font-size:15px}
 .trow .prv{color:var(--muted);font-variant-numeric:tabular-nums;text-align:right;font-size:13px}
+.trow .prv i{display:none}   /* 데스크톱은 '전월' 같은 열 머리글이 있어 라벨이 필요 없다 */
 .trow .chg{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;font-size:13px}
 .chg.up{color:#c0562e}.chg.dn{color:#2b6cb0}.chg.fl{color:var(--muted);font-weight:500}
 .trow .spk{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
@@ -115,14 +116,20 @@ details.grp:not([open]) summary{border-bottom:none}
    어긋나 보였고, 열 사이 간격이 0이라 좁은 화면(320px)에서 지표명과 값이
    맞닿아 겹쳐 보였다. 값 열을 고정폭으로 못 박고 간격을 준다. */
 @media(max-width:700px){
+  /* 2026-08-12: 직전 값 줄을 되살렸다. 데스크톱은 '전월'·'변동' 열 머리글이 있어
+     ▲0.04가 무엇 대비인지 바로 읽히지만, 모바일은 머리글을 감추므로 같은 숫자가
+     기준 없이 떠 있었다. 오른쪽 칸을 현재값 / 변동 / 직전값 세 줄로 쌓는다. */
   .trow{grid-template-columns:minmax(0,1fr) 98px;column-gap:12px;
-    grid-template-areas:"nm cur" "nm chg";row-gap:2px;padding:12px 15px;align-items:start}
+    grid-template-areas:"nm cur" "nm chg" "nm prv";row-gap:2px;padding:12px 15px;align-items:start}
   .trow.head{display:none}
-  .trow .nm{grid-area:nm;min-width:0;font-size:14px;line-height:1.4;word-break:keep-all}
+  .trow .nm{grid-area:nm;min-width:0;font-size:14px;line-height:1.4;word-break:keep-all;align-self:center}
   .trow .nm small{display:block;white-space:normal;line-height:1.5;margin-top:2px}
   .trow .cur{grid-area:cur;font-size:16.5px;white-space:nowrap;line-height:1.35}
   .trow .chg{grid-area:chg;font-size:12.5px;white-space:nowrap;line-height:1.5}
-  .trow .prv,.trow .spk,.trow .ym{display:none}
+  .trow .prv{grid-area:prv;display:block;font-size:10.5px;text-align:right;
+    white-space:nowrap;line-height:1.45;color:var(--muted2,#9a9a94)}
+  .trow .prv i{display:inline;font-style:normal}
+  .trow .spk,.trow .ym{display:none}
   .trow .nm .mym{display:inline}          /* 기준시점은 설명 줄 끝에 붙인다 */
   .cyc{padding:8px 15px;font-size:11px}
   .cycbox .lead,.cyrow{padding-left:15px;padding-right:15px}
@@ -263,7 +270,11 @@ details.grp:not([open]) summary{border-bottom:none}
           +'<span class="nm">'+esc(it.label)
             +'<small>'+esc(it.note)+'<span class="mym"> · '+esc(it.ym)+' 기준</span></small></span>'
           +'<span class="cur">'+fmt(it.v,it.unit)+(it.unit?'<small class="u">'+esc(it.unit)+'</small>':'')+'</span>'
-          +'<span class="prv">'+(it.prev!=null?fmt(it.prev,it.unit):'—')+'</span>'
+          /* 직전 값. 데스크톱은 '전월/전 영업일' 같은 열 머리글이 있지만 모바일은 머리글을
+             감추므로, 무엇 대비인지 라벨(<i>)을 같이 넣고 데스크톱에서만 숨긴다 */
+          +'<span class="prv">'+(it.prev!=null
+              ?'<i>'+pl+'</i> '+fmt(it.prev,it.unit)
+              :'<i>'+pl+'</i> —')+'</span>'
           +chg(it)
           /* 그룹 안에서 항목마다 추이 기간이 다르면(예: 1금융은 COFIX만 7개월,
              상업용은 4분기와 8분기가 섞임) 그 줄에 실제 기간을 적어 준다 */
