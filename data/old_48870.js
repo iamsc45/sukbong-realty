@@ -1,0 +1,1 @@
+window.OLDZ=window.OLDZ||{};OLDZ["48870"]=[["안의면",1,-1,1,-1]];

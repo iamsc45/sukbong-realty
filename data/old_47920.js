@@ -1,0 +1,1 @@
+window.OLDZ=window.OLDZ||{};OLDZ["47920"]=[["명호면",1,-1,1,-1]];
