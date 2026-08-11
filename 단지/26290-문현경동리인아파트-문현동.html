@@ -11,7 +11,7 @@
 <meta property="og:site_name" content="석봉 부동산 정보방">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y7P41Z09PV"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-Y7P41Z09PV');</script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
 <link rel="stylesheet" href="../assets/site.css">
 <style>
 .wrap{max-width:840px;margin:0 auto;padding:0 22px 60px}
@@ -53,9 +53,13 @@ ul.near span{color:var(--muted);font-size:11.5px;margin-left:6px}
     <a href="../index.html">홈</a>
     <a href="../map.html">실거래지도</a>
     <a href="../apply.html">청약</a>
+    <a href="../auction.html">경매·공매</a><a href="../%EC%A7%80%ED%91%9C.html">금리·지표</a><a href="../lh_%EC%A7%84%EB%8B%A8.html">LH매입</a><a href="../%EC%9D%B4%EC%9A%A9%EC%95%88%EB%82%B4.html">이용안내</a>
+    <a href="../%EA%B8%80.html">리포트</a>
     <a href="../favorites.html">★ 관심단지</a>
+    <a href="https://blog.naver.com/seokbongnews" target="_blank" rel="noopener">블로그</a>
     <a href="../channels.html">채널</a>
-  </nav>
+    <a href="../%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html">대출 문의</a>
+  <span id="sbAuthBtn"></span></nav>
 </header>
 <main class="wrap">
   <h1>문현경동리인아파트</h1>
@@ -71,7 +75,7 @@ ul.near span{color:var(--muted);font-size:11.5px;margin-left:6px}
   <p class="src">최근 6개월 국토교통부 실거래 신고분 기준입니다(해제 건 제외). 평당 단가는 전용면적 기준입니다.</p>
 
   <h2>연도별 시세 추이</h2><table class="t2"><thead><tr><th>연도</th><th>평당(전용)</th><th>매매</th></tr></thead><tbody><tr><td>2020년</td><td>1,692만원</td><td>4건</td></tr><tr><td>2021년</td><td>2,021만원</td><td>4건</td></tr><tr><td>2022년</td><td>1,952만원</td><td>7건</td></tr><tr><td>2023년</td><td>1,806만원</td><td>17건</td></tr><tr><td>2024년</td><td>1,734만원</td><td>28건</td></tr><tr><td>2025년</td><td>1,731만원</td><td>27건</td></tr><tr><td>2026년</td><td>1,757만원</td><td>27건</td></tr></tbody></table><p class="src">국토교통부 매매 실거래의 연도별 중위값입니다. 해제 건은 뺐습니다. 평형 구성에 따라 연도별 값이 흔들릴 수 있습니다.</p>
-  <h2>가까운 단지</h2><ul class="near"><li><a href="26290-%EA%B8%88%ED%98%B8%EC%B2%9C%EC%A7%80%EB%A7%A8%EC%85%98-%EB%AC%B8%ED%98%84%EB%8F%99.html">금호천지맨션</a> <span>문현동 · 평당 933만원</span></li><li><a href="26290-%EB%8C%80%EB%8F%84%EB%9D%BC%EC%9D%B4%ED%94%84%ED%83%80%EC%9A%B4-%EB%AC%B8%ED%98%84%EB%8F%99.html">대도라이프타운</a> <span>문현동 · 평당 816만원</span></li><li><a href="26290-%EB%B2%A0%EC%8A%A4%ED%8B%B0%EC%9B%80-%EB%AC%B8%ED%98%84%EB%8F%99.html">베스티움</a> <span>문현동 · 평당 2,751만원</span></li><li><a href="26290-%EB%8C%80%EC%97%B0%EB%8F%99%EC%97%90%EC%8A%A4%EC%BC%80%EC%9D%B4%EB%B7%B0-%EB%8C%80%EC%97%B0%EB%8F%99.html">대연동에스케이뷰</a> <span>대연동 · 평당 1,304만원</span></li><li><a href="26290-%EA%B8%80%EB%A1%9C%ED%95%98%EC%9E%84%EB%B9%8CA-%EB%AC%B8%ED%98%84%EB%8F%99.html">글로하임빌(A)</a> <span>문현동 · 거래 표본 적음</span></li><li><a href="26290-%ED%95%9C%EC%96%91-%EB%AC%B8%ED%98%84%EB%8F%99.html">한양</a> <span>문현동 · 평당 1,186만원</span></li></ul>
+  <h2>가까운 단지</h2><ul class="near"><li><a href="26290-%EA%B8%88%ED%98%B8%EC%B2%9C%EC%A7%80%EB%A7%A8%EC%85%98-%EB%AC%B8%ED%98%84%EB%8F%99.html">금호천지맨션</a> <span>문현동 · 평당 933만원</span></li><li><a href="26290-%EB%8C%80%EB%8F%84%EB%9D%BC%EC%9D%B4%ED%94%84%ED%83%80%EC%9A%B4-%EB%AC%B8%ED%98%84%EB%8F%99.html">대도라이프타운</a> <span>문현동 · 평당 816만원</span></li><li><a href="26290-%ED%95%9C%EB%A7%A5%ED%98%84%EB%8C%80-%EB%AC%B8%ED%98%84%EB%8F%99.html">한맥현대</a> <span>문현동 · 거래 표본 적음</span></li><li><a href="26290-%EB%B2%A0%EC%8A%A4%ED%8B%B0%EC%9B%80-%EB%AC%B8%ED%98%84%EB%8F%99.html">베스티움</a> <span>문현동 · 평당 2,632만원</span></li><li><a href="26290-%EB%8C%80%EC%97%B0%EB%8F%99%EC%97%90%EC%8A%A4%EC%BC%80%EC%9D%B4%EB%B7%B0-%EB%8C%80%EC%97%B0%EB%8F%99.html">대연동에스케이뷰</a> <span>대연동 · 평당 1,287만원</span></li><li><a href="26290-%EA%B8%80%EB%A1%9C%ED%95%98%EC%9E%84%EB%B9%8CA-%EB%AC%B8%ED%98%84%EB%8F%99.html">글로하임빌(A)</a> <span>문현동 · 거래 표본 적음</span></li></ul>
 
   <div class="cta">
     <a class="p" href="../%EB%8B%A8%EC%A7%80%EC%83%81%EC%84%B8.html?code=26290&nm=%EB%AC%B8%ED%98%84%EA%B2%BD%EB%8F%99%EB%A6%AC%EC%9D%B8%EC%95%84%ED%8C%8C%ED%8A%B8&dong=%EB%AC%B8%ED%98%84%EB%8F%99">실거래 이력·시세 그래프 전체 보기 →</a>
@@ -79,11 +83,13 @@ ul.near span{color:var(--muted);font-size:11.5px;margin-left:6px}
   </div>
 
   <p class="src" style="margin-top:24px">자료: 국토교통부 실거래가 · 공동주택 단지정보 · 공동주택 관리비(공공 DB) ·
-  기준일 2026-08-02. 참고용이며 법적 효력이 없습니다. 실제 거래 전에는 반드시 현장과 원문을 확인하십시오.</p>
+  기준일 2026-08-12. 참고용이며 법적 효력이 없습니다. 실제 거래 전에는 반드시 현장과 원문을 확인하십시오.</p>
 </main>
 <footer class="site-footer">
   <span>📈 <a href="https://telegram.me/seokbongnews">텔레그램 채널</a></span> ·
   <span>💬 <a href="https://open.kakao.com/o/gt8CTUCi">카카오 오픈채팅</a> · <a href="https://blog.naver.com/seokbongnews">네이버 블로그</a></span>
   <div class="fine">편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 방문 통계 수집을 위해 Google Analytics(쿠키)를 사용합니다</div>
 </footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../assets/sb_auth.js?v=8"></script>
 </body></html>
