@@ -784,6 +784,50 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
     curSido='all';curSgg='all';s1.value='all';fill();s2.value='all';render();
     return true;
   };
+  /* 🔴지역을 고른 뒤 지도를 다른 동네로 옮기면 화면이 통째로 빈다(2026-08-11 석봉님 제보).
+     제보 화면: 지역 선택이 '경기 · 용인 처인구'인데 지도는 서울 용산이라 아무것도 안 떴고,
+     목록은 "지도를 더 확대하면 단지별로 보입니다"라고 **틀린 안내**를 하고 있었다(확대해도 안 나온다).
+     '지역 선택'은 그리로 가겠다는 뜻이지 다른 데서도 그 지역만 보겠다는 뜻이 아니다.
+     ⚠️짐작으로 풀지 않는다 — 지역 조건만 빼고 실제로 세어 보고, 그래서 보일 것이 있을 때만 푼다. */
+  /* 지금 보고 있는 자리가 어느 시군구인가 — 화면 중심에서 가장 가까운 시군구로 판단한다.
+     ⚠️"지역 조건만 빼고 세어 보기"로 만들었다가 실패했다(2026-08-11 1차 시도).
+       지역 필터가 걸려 있으면 다른 지역 실거래 파일을 애초에 받지 않아, 세어 봐야 늘 0이라
+       "지역 탓이 아니다"로 잘못 결론이 났다. 데이터 유무와 무관한 좌표 비교로 바꿨다. */
+  function _regionMismatch(){
+    if(curSgg==='all'&&curSido==='all')return false;
+    var c=map.getCenter(), best=null, bd=1e18;
+    try{
+      SB.summary.regions.forEach(function(r){
+        if(!r.lat)return;
+        var dx=r.lat-c.lat, dy=(r.lng-c.lng)*0.79;   /* 위도 37도대의 경도 축소 보정 */
+        var d=dx*dx+dy*dy;
+        if(d<bd){bd=d;best=r;}
+      });
+    }catch(e){}
+    if(!best)return false;
+    return curSgg!=='all' ? (best.code!==curSgg) : (best.sido!==curSido);
+  }
+  window._regionRelaxIfBlocking=function(){
+    if(curSgg==='all'&&curSido==='all')return false;
+    if(map.getZoom()<Z_DETAIL)return false;         /* 넓게 볼 때는 지역 묶음이 정상 동작한다 */
+    if(_hasMarkers())return false;
+    if(!_regionMismatch())return false;             /* 고른 지역 안에 있으면 건드리지 않는다 */
+    var was='';
+    try{
+      var o2=s2.options[s2.selectedIndex], o1=s1.options[s1.selectedIndex];
+      was=(curSgg!=='all'&&o2?o2.text:(o1?o1.text:''));
+    }catch(e){}
+    curSido='all';curSgg='all';s1.value='all';fill();s2.value='all';
+    render();
+    var msg='지역 선택'+(was?'('+was+')':'')+'이 이 화면과 달라 풀고 표시합니다';
+    var put=function(){var st=document.getElementById('stat');if(st)st.textContent=msg;};
+    [0,400,1000].forEach(function(ms){setTimeout(put,ms);});
+    try{if(window._toast)window._toast(msg,5000);}catch(e){}
+    return true;
+  };
+  map.on('moveend zoomend',function(){
+    setTimeout(function(){try{window._regionRelaxIfBlocking();}catch(e){}},260);
+  });
   /* 지역·동 검색 매칭 — URL 딥링크와 지도 상단 검색창이 공용 */
   function fitSido(sd){
     curSido=sd;curSgg='all';s1.value=sd;fill();
@@ -1913,7 +1957,7 @@ if(_BACKVIEW){try{
 
 render();
 </script>
-<script src="assets/map_v2.js?v=13"></script>
+<script src="assets/map_v2.js?v=14"></script>
 <script src="assets/map_v2_poi.js?v=2"></script>
 <script src="assets/map_v2_dong.js?v=2"></script>
 <script src="assets/map_old.js?v=2"></script>

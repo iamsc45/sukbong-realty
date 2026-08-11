@@ -293,7 +293,20 @@
     var head, sub;
     if(!a.length){
       head='이 화면에는 표시할 거래가 없어요';
-      sub=(z<15?'지도를 더 확대하면 단지별로 보입니다':'필터를 넓히거나 지도를 옮겨 보세요');
+      /* 🔴빈 이유를 맞게 말한다(2026-08-11 석봉님 제보). 지역 선택이 지도와 어긋나 비었는데도
+         "지도를 더 확대하면 단지별로 보입니다"라고 안내해, 확대해도 안 나오는 상황이 됐다.
+         걸려 있는 조건을 그대로 읽어 무엇 때문인지 짚어 준다. */
+      var why=[];
+      try{
+        var _s1=document.getElementById('selSido'), _s2=document.getElementById('selSgg');
+        if(_s2&&_s2.value&&_s2.value!=='all')why.push('지역: '+_s2.options[_s2.selectedIndex].text);
+        else if(_s1&&_s1.value&&_s1.value!=='all')why.push('지역: '+_s1.options[_s1.selectedIndex].text);
+        var _t=document.getElementById('mcType'), _u=document.getElementById('mcU');
+        if(_t&&_t.textContent&&_t.textContent!=='전체')why.push('상품: '+_t.textContent);
+        if(_u&&_u.textContent&&_u.textContent!=='전체')why.push('거래: '+_u.textContent);
+      }catch(e){}
+      if(why.length)sub='걸려 있는 조건 — '+why.join(' · ')+'. 조건을 넓혀 보세요';
+      else sub=(z<15?'지도를 더 확대하면 단지별로 보입니다':'필터를 넓히거나 지도를 옮겨 보세요');
     }else{
       head=a.length.toLocaleString()+'곳';
       var n=0;a.forEach(function(o){n+=o.txs.length;});
