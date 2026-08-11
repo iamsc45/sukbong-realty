@@ -770,7 +770,7 @@ document.addEventListener('click',function(e){if(n.classList.contains('m-open')&
     {n:'실시간 인기',d:'거래 급증·가격 급등',i:'flame',c:'#D85A30',h:'hot.html'},
     {n:'경매·공매',d:'낙찰률·낙찰가율',i:'gavel',c:'#0F6E56',h:'auction.html'},
     {n:'청약',d:'분양 일정·경쟁률',i:'ticket',c:'#185FA5',h:'apply.html'},
-    {n:'시세·통계',d:'평당가·전세가율',i:'chart-histogram',c:'#0FA98A',h:'#dash'},
+    {n:'시세·통계',d:'평당가·전세가율',i:'chart-histogram',c:'#0FA98A',h:'#dash',dash:true},
     {n:'상가·빌딩',d:'상업용 실거래',i:'building-store',c:'#E8A13A',h:'map.html?t=comm'},
     {n:'리포트',d:'우리가 쓴 분석 글',i:'file-text',c:'#6E6E6A',h:'%EA%B8%80.html'},
     {n:'블로그',d:'네이버 블로그',i:'notebook',c:'#03C75A',h:'https://blog.naver.com/seokbongnews',blank:true},
@@ -788,6 +788,10 @@ document.addEventListener('click',function(e){if(n.classList.contains('m-open')&
       +(t.soon?'<span class="badge">'+(mob?'':'준비중')+'</span>':'');
     if(t.soon)return '<a class="'+cls+'" href="#" onclick="return false" title="준비 중입니다">'+inner+'</a>';
     var tgt=t.blank?' target="_blank" rel="noopener"':'';
+    /* 🔴'시세·통계'는 #dash로 보내는데 **모바일에서 .dash가 display:none**이라 눌러도
+       아무 일도 없었다(2026-08-11 석봉님 제보). 모바일에는 접이식 대시보드(#mdash)가
+       따로 있으므로 그쪽으로 보내고, 없으면 대시보드를 펼친 뒤 이동한다. */
+    if(t.dash)return '<a class="'+cls+'" href="#dash" data-dash="1">'+inner+'</a>';
     return '<a class="'+cls+'" href="'+t.h+'"'+tgt+'>'+inner+'</a>';
   }
   var hd=document.getElementById('hubDesk'); if(hd)hd.innerHTML=HUB.map(function(t,i){return tile(t,i,false);}).join('');
@@ -1114,6 +1118,23 @@ try{
       dhot.appendChild(a);
     });
   }
+  /* 시세·통계 타일: 모바일에서는 .dash가 숨겨져 있어 #dash로 보내면 아무 일도 없다.
+     모바일에는 접이식 대시보드(#mdash)가 따로 있으니 그쪽으로, 없으면 펼친 뒤 이동한다. */
+  document.addEventListener("click",function(e){
+    var a=e.target.closest?e.target.closest('a[data-dash]'):null;
+    if(!a)return;
+    e.preventDefault();
+    var md=document.getElementById("mdash");
+    if(md&&md.offsetParent){
+      md.scrollIntoView({behavior:"smooth",block:"start"});
+      var d1=md.querySelector("details"); if(d1&&!d1.open)d1.open=true;
+      return;
+    }
+    document.body.classList.add("showdash");
+    var ds=document.getElementById("dash");
+    if(ds)setTimeout(function(){ds.scrollIntoView({behavior:"smooth",block:"start"});},60);
+  });
+
   var df=document.getElementById("dSearch");
   if(df)df.addEventListener("submit",function(e){
     e.preventDefault();
@@ -1222,5 +1243,5 @@ else window.addEventListener("load",function(){setTimeout(build,400);});
 <!-- 헤더 로그인/내정보 버튼(2026-08-09 석봉님 지시: 모든 페이지 상시 노출).
      홈은 그동안 sb_auth를 안 실었는데, 로그인 버튼을 모든 페이지에 두기로 하면서 싣는다. -->
 <script src="assets/sb_auth.js?v=8"></script>
-<script src="assets/sb_tabbar.js?v=3"></script>
+<script src="assets/sb_tabbar.js?v=4"></script>
 </body></html>

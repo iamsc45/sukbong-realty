@@ -78,8 +78,13 @@
   /* ── 스타일 ───────────────────────────────────────────────── */
   var css=document.createElement('style');
   css.textContent=
+   /* 🔴카카오톡 같은 인앱 브라우저는 **눈에 보이는 화면이 레이아웃 화면보다 짧다**.
+      그래서 bottom:0에 붙이면 탭바가 보이는 영역보다 아래로 내려가 그 위에 회색 띠가 생긴다
+      (2026-08-11 석봉님 캡처, 홈 화면). 아래 --vvgap 이 그 차이를 담고, 그만큼 끌어올린다.
+      일반 브라우저에서는 --vvgap 이 0이라 아무 일도 일어나지 않는다. */
    '#sbtab{position:fixed;left:0;right:0;bottom:0;z-index:3000;display:flex;background:#fff;'
   +'border-top:1px solid #E9E6DE;padding-bottom:env(safe-area-inset-bottom,0px);'
+  +'transform:translateY(calc(-1 * var(--vvgap,0px)));'
   +'box-shadow:0 -2px 12px rgba(20,20,20,.06)}'
   +'#sbtab button{flex:1;border:0;background:none;padding:7px 0 6px;font:inherit;font-size:10.5px;'
   +'font-weight:600;color:#9A938A;cursor:pointer;letter-spacing:-.02em;line-height:1.35}'
@@ -124,7 +129,8 @@
   +'#sbsheet a.on{border-color:#12203A;background:#F5F7FB}'
   /* 청약·경매 미니 선택 */
   +'#sbpick{position:fixed;left:10px;right:10px;z-index:3050;display:none;'
-  +'bottom:calc(64px + env(safe-area-inset-bottom,0px));gap:8px}'
+  +'bottom:calc(64px + env(safe-area-inset-bottom,0px));gap:8px;'
+  +'transform:translateY(calc(-1 * var(--vvgap,0px)))}'
   +'#sbpick.open{display:flex}'
   +'#sbpick a{flex:1;background:#12203A;color:#fff;text-decoration:none;border-radius:12px;'
   +'padding:14px 10px;text-align:center;font-size:13.5px;font-weight:800;letter-spacing:-.02em}';
@@ -153,8 +159,18 @@
     var h=bar.offsetHeight||56;
     document.documentElement.style.setProperty('--sbtab-h',h+'px');
     /* 실제로 보이는 높이. visualViewport가 있으면 그게 가장 정확하다(툴바 접힘까지 반영). */
-    var vh=(window.visualViewport&&window.visualViewport.height)||window.innerHeight||0;
+    var vv=window.visualViewport;
+    var vh=(vv&&vv.height)||window.innerHeight||0;
     if(vh)document.documentElement.style.setProperty('--vh',Math.round(vh)+'px');
+    /* 레이아웃 화면과 보이는 화면의 아래쪽 차이. 인앱 브라우저에서만 0보다 커진다. */
+    var gap=0;
+    if(vv){
+      gap=Math.round((document.documentElement.clientHeight||0) - (vv.height + (vv.offsetTop||0)));
+      if(!(gap>0)||gap>240)gap=0;      /* 음수·비정상 값은 무시(키보드가 뜬 경우 등) */
+    }
+    document.documentElement.style.setProperty('--vvgap',gap+'px');
+    /* 스크롤 페이지는 탭바가 올라온 만큼 아래 여백도 더 준다 */
+    if(!isMap())document.body.style.paddingBottom=(h+gap)+'px';
     if(window.map&&window.map.invalidateSize)setTimeout(function(){try{window.map.invalidateSize({animate:false});}catch(e){}},80);
   }
   measure(); window.addEventListener('resize',measure);
