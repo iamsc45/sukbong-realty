@@ -1387,21 +1387,89 @@ function rcDetailSec(p){
   return '<div class="rc-sec"><div class="rc-lab">정비계획</div>'
     +'<div style="font-size:12.5px;color:#8a8071;line-height:1.5">정비계획 확정 전입니다. 용적률·세대수 등 세부 계획은 사업시행계획 확정·고시 시점에 채워집니다.</div></div>';
 }
-function rcNearTx(p){
-  var clat=p._lat||p.lat, clon=p._lon||p.lon;
-  if(!clat||!clon||!window._PTS||!window._PTS.length)return '';
-  var near=window._PTS.map(function(o){return {pt:o.pt,code:o.code,tx:o.txs[0],d:Math.round(_hav(clat,clon,o.pt.lat,o.pt.lng))};})
-    .filter(function(o){return o.d<=1200;}).sort(function(a,b){return a.d-b.d;}).slice(0,6);
-  if(!near.length)return '';
+/* 어떤 지점 주변의 최근 매매 실거래를 뽑는다.
+   🔴2026-08-11 개편 — 전에는 **지도에 그려진 가격 말풍선 목록(window._PTS)**을 긁어 만들었다.
+     그런데 재개발 화면은 말풍선을 안 띄우는 게 기본(redevShowTrade=false)이라 긁을 게 없어
+     이 목록이 통째로 사라졌다(석봉님 제보). 게다가 8/10 모바일 개편에서 '실거래 겹쳐보기'
+     버튼을 없애 켤 방법조차 없어졌다. 그래서 **화면에 뭐가 그려졌는지와 무관하게
+     데이터(SB.d)에서 직접 뽑는다.** 이러면 재개발만 켜 놓고 봐도 나온다.
+   opt.type   주면 그 상품만(단지 카드=같은 종류끼리 비교)
+   opt.mix    주면 상품 종류가 골고루 섞이게 종류당 2곳까지(구역 카드)
+   매매만 담는 이유: 평당가로 비교하는 것이 이 목록의 쓸모인데 전월세가 섞이면 비교가 안 된다. */
+function nearTxList(clat,clon,opt){
+  opt=opt||{};
+  if(!clat||!clon)return [];
+  var R=opt.radius||1200, D=(window.SB&&SB.d)||{}, out=[];
+  for(var code in D){
+    var arr=D[code]; if(!arr||!arr.length)continue;
+    for(var i=0;i<arr.length;i++){
+      var pt=arr[i];
+      if(opt.type&&pt.t!==opt.type)continue;
+      if(opt.exName&&pt.name===opt.exName&&(pt.dong||'')===(opt.exDong||''))continue;
+      var d=Math.round(_hav(clat,clon,pt.lat,pt.lng));
+      if(d>R)continue;
+      var list=pt.txs||[], mm=null;
+      for(var j=0;j<list.length;j++){
+        if(list[j].u!=='매매')continue;
+        if(!mm||(list[j].cd||'')>(mm.cd||''))mm=list[j];
+      }
+      if(!mm)continue;
+      out.push({pt:pt,code:code,tx:mm,d:d});
+    }
+  }
+  out.sort(function(a,b){return a.d-b.d;});
+  if(opt.mix){
+    var ORD={apt:0,offi:1,villa:2,house:3,comm:4,bldg:5,land:6}, seen={}, pick=[];
+    for(var k=0;k<out.length;k++){
+      var ty=out[k].pt.t;
+      if((seen[ty]||0)>=2)continue;
+      seen[ty]=(seen[ty]||0)+1; pick.push(out[k]);
+    }
+    pick.sort(function(a,b){return (ORD[a.pt.t]||9)-(ORD[b.pt.t]||9)||a.d-b.d;});
+    out=pick;
+  }
+  return out.slice(0,opt.n||6);
+}
+/* 위 목록을 카드 한 칸으로 그린다. chip=상품 딱지 표시 여부 */
+function nearTxRows(near,chip){
   var SN={apt:'아파트',offi:'오피스텔',villa:'연립',house:'단독',bldg:'빌딩',comm:'상가',land:'토지'};
-  var ORD={apt:0,offi:1,villa:2,house:3,comm:4,bldg:5,land:6};
-  near.sort(function(a,b){return (ORD[a.pt.t]||9)-(ORD[b.pt.t]||9)||a.d-b.d;});
-  var rows=near.map(function(o){var t=o.tx;var tp=TYPE[o.pt.t]||['기타','#8a8071'];
-    var py=(t.u==='매매'&&t.a)?(' <span style="color:#8a8071;font-weight:400">'+Math.round(t.p/t.a*3.305785).toLocaleString()+'만/평</span>'):'';
+  return near.map(function(o){
+    var t=o.tx, tp=TYPE[o.pt.t]||['기타','#8a8071'];
+    var py=t.a?(' <span style="color:#8a8071;font-weight:400">평당 '+Math.round(t.p/t.a*3.305785).toLocaleString()+'만</span>'):'';
     var href='단지상세.html?code='+(o.code||'')+'&nm='+encodeURIComponent(o.pt.name)+'&dong='+encodeURIComponent(o.pt.dong||'');
-    var chip='<span style="background:'+tp[1]+';color:#fff;font-size:9px;padding:1px 5px;border-radius:20px;font-weight:700;margin-right:5px">'+(SN[o.pt.t]||'기타')+'</span>';
-    return '<a class="rc-dl" style="text-decoration:none;color:inherit" href="'+href+'"><span style="color:#6b6355">'+chip+o.pt.name+' <span style="color:#8a8071">'+o.d+'m</span> <span class="arw" style="color:#b6ad9c">→</span></span><b>'+priceLabel(t)+py+'</b></a>';}).join('');
-  return '<div class="rc-sec"><div class="rc-lab">인근 실거래 · 상품별 · 누르면 상세</div>'+rows+'</div>';
+    var cp=chip?('<span style="background:'+tp[1]+';color:#fff;font-size:9px;padding:1px 5px;border-radius:20px;font-weight:700;margin-right:5px">'+(SN[o.pt.t]||'기타')+'</span>'):'';
+    return '<a class="rc-dl" style="text-decoration:none;color:inherit" href="'+href+'"><span style="color:#6b6355">'+cp+o.pt.name+' <span style="color:#8a8071">'+o.d+'m</span> <span class="arw" style="color:#b6ad9c">→</span></span><b>'+priceLabel(t)+py+'</b></a>';
+  }).join('');
+}
+var NEAR_NOTE='<div class="rc-note" style="padding:6px 0 0">반경 1.2km 최근 매매 · 평당가는 국토부 신고 면적 기준(주거는 전용면적, 토지는 거래면적)</div>';
+function rcNearTx(p){
+  var lat=p._lat||p.lat, lon=p._lon||p.lon;
+  var near=nearTxList(lat,lon,{radius:1200,n:6,mix:true});
+  if(near.length)
+    return '<div class="rc-sec"><div class="rc-lab">인근 실거래 · 상품별 · 누르면 상세</div>'+nearTxRows(near,true)+NEAR_NOTE+'</div>';
+  /* 재개발 화면은 가격 말풍선을 안 그리므로 그 지역 실거래 파일을 아예 안 받아 둔다.
+     이 목록 하나 때문에 화면 전체를 바꿀 필요는 없으니, 자리만 잡아 두고 파일을 조용히
+     받아 와서 채운다. 받아 봐도 주변에 거래가 없으면 자리를 지운다(빈 칸을 남기지 않는다). */
+  _fillNearLater(lat,lon);
+  return '<div class="rc-sec" id="rcNearSlot"><div class="rc-lab">인근 실거래 · 상품별</div>'
+    +'<div style="font-size:12.5px;color:#8a8071;padding:5px 2px">주변 실거래를 불러오는 중…</div></div>';
+}
+function _fillNearLater(lat,lon){
+  var slot=function(){return document.getElementById('rcNearSlot');};
+  function fill(){
+    var el=slot(); if(!el)return;
+    var n=nearTxList(lat,lon,{radius:1200,n:6,mix:true});
+    if(!n.length){el.parentNode&&el.parentNode.removeChild(el);return;}
+    el.innerHTML='<div class="rc-lab">인근 실거래 · 상품별 · 누르면 상세</div>'+nearTxRows(n,true)+NEAR_NOTE;
+  }
+  var need=[];
+  try{need=visibleRegions().map(function(r){return r.code;});}catch(e){}
+  var pend=need.filter(function(c){return !loaded[c];}).slice(0,3);
+  if(!pend.length){fill();return;}
+  var left=pend.length, fired=false;
+  var once=function(){if(fired)return;fired=true;fill();};
+  pend.forEach(function(c){loadDetail(c,function(){if(--left<=0)once();});});
+  setTimeout(once,7000);          /* 한 곳이라도 안 오면 있는 것만으로 채운다 */
 }
 function showRcard(p){
   var c=(RCOL[p.cat]||'#8a8071');
@@ -1628,6 +1696,13 @@ function showAptCard(pt, txs){
       if(!a.length)return '';var lo=a[0].toFixed(1),hi=a[a.length-1].toFixed(1);
       return '<span style="display:block;font-size:9.5px;color:#a39887;font-weight:600">'+(lo===hi?lo+'㎡·'+PY(a[0]):lo+'~'+hi+'㎡')+'</span>';}
     function rrow(l,rv,hv,ar){return '<div style="display:grid;grid-template-columns:52px 1fr 1fr;font-size:12.5px;padding:5px 0;border-bottom:1px dotted #e7e1d4"><b style="color:#6b6355;font-weight:700">'+l+(ar||'')+'</b><span style="text-align:right;font-weight:700">'+(rv||'·')+'</span><span style="text-align:right;font-weight:700;color:#c0562e">'+(hv||'·')+'</span></div>';}
+    /* 거래된 건들의 평당가 중위. 면적이 없는 신고분은 뺀다. */
+    function _pyLine(list){
+      var a=list.filter(function(t){return t.a&&t.p;}).map(function(t){return t.p/t.a*3.305785;});
+      if(!a.length)return '';
+      return '<em style="display:block;font-style:normal;font-weight:600;font-size:9.5px;color:#a39887;letter-spacing:0">평당 '
+        +Math.round(md(a)).toLocaleString()+'만(전용)</em>';
+    }
     /* 기준 날짜를 열 제목에 바로 붙인다(2026-08-10 석봉님 지시). 카드 맨 아래 각주로만
        두면 숫자를 볼 때 눈에 안 들어온다. 실거래와 호가는 시점이 다른 자료라 같이 봐야 한다. */
     var _md=function(s){s=String(s||'');var m=s.match(/(\d{4})-(\d{2})-(\d{2})/);
@@ -1644,11 +1719,16 @@ function showAptCard(pt, txs){
       +'<span style="text-align:right">호가'+_sub(_dHo?'수집 '+_dHo:(A?'':'미수집'))+'</span></div>'
       /* 호가에 건수 병기(2026-08-05). 매물 1건을 '중위'로 내보내던 문제 — 1건은 명시한다.
          월세 3,000만 초과는 파싱 오류 표본이라 숨김(단지상세와 동일 가드). */
-      +rrow('매매',eok2(md(mmT.map(function(t){return t.p;}))),(A&&A.mm)?(eok2(A.mm.med)+'<small style="font-weight:600;color:#a39887"> '+(A.mm.n===1?'매물1건':A.mm.n+'건')+'</small>'):'',arng2(mmT))
+      /* 매매에 평당가를 같이 적는다(2026-08-11 석봉님 지시). 아래 '인근 실거래'가 평당으로
+         나오는데 정작 이 단지는 총액만 있어 비교할 기준이 없었다. 총액은 평형에 따라
+         달라지지만 평당가는 단지끼리 바로 견줄 수 있다. */
+      +rrow('매매',eok2(md(mmT.map(function(t){return t.p;})))+_pyLine(mmT),(A&&A.mm)?(eok2(A.mm.med)+'<small style="font-weight:600;color:#a39887"> '+(A.mm.n===1?'매물1건':A.mm.n+'건')+'</small>'):'',arng2(mmT))
       +rrow('전세',eok2(md(jeT.map(function(t){return t.p;}))),(A&&A.je)?(eok2(A.je.med)+'<small style="font-weight:600;color:#a39887"> '+(A.je.n===1?'매물1건':A.je.n+'건')+'</small>'):'',arng2(jeT))
       +rrow('월세',woT.length?(eok2(md(woT.map(function(t){return t.p;})))+'/'+md(woT.map(function(t){return t.r;}))+'만'):'',(A&&A.wo&&A.wo.wol<=3000)?(eok2(A.wo.bo)+'/'+A.wo.wol+'만<small style="font-weight:600;color:#a39887"> '+(A.wo.n===1?'매물1건':A.wo.n+'건')+'</small>'):'',arng2(woT))
       +'<div class="rc-note" style="padding:4px 0 0">거래된 <b>전 평형 중위</b>(특정 평형 아님, 좌측 면적범위 참고) · 호가=협상 전 매물가(주황). '+(A?'체결가와 다를 수 있음.':'이 단지 현재 호가 매물 없음.')+'</div></div>';
   }
+  /* 인근 같은 상품 실거래 — 이 단지 자신은 뺀다 */
+  var nearSame=nearTxRows(nearTxList(pt.lat,pt.lng,{radius:1200,n:6,type:pt.t,exName:pt.name,exDong:pt.dong||''}),false);
   var favId=code+'|'+pt.name;
   var isFav=(window.SBAuth&&SBAuth.isIn())?SBAuth.favHas(favId):false;
   var html='<button id="rcClose" style="position:absolute;top:8px;right:10px;border:0;background:rgba(255,255,255,.28);color:#fff;font-size:18px;width:28px;height:28px;border-radius:50%;cursor:pointer;z-index:2">×</button>'
@@ -1658,6 +1738,11 @@ function showAptCard(pt, txs){
     +(isFav?'★ 등록됨 · 목록 보기':'☆ 관심단지 등록')+'</button></div>'
     +hoSec
     +'<div class="rc-sec" id="rcTx"></div>'
+    /* 인근 같은 상품 실거래(2026-08-11 석봉님 확정) — "이 단지 말고 옆 단지는 얼마인가"를
+       카드에서 바로 본다. 같은 종류만 가까운 순으로 뽑는다(아파트 카드면 주변 아파트만).
+       종류가 섞이면 평당가 비교가 성립하지 않는다. */
+    +(nearSame?'<div class="rc-sec"><div class="rc-lab">인근 '+ti[0]+' 실거래 · 가까운 순 · 누르면 상세</div>'+nearSame
+       +'<div class="rc-note" style="padding:6px 0 0">반경 1.2km 최근 매매 · 평당가는 전용면적 기준</div></div>':'')
     +(near?'<div class="rc-sec"><div class="rc-lab">인근 정비구역 (누르면 이동)</div>'+near+'</div>':'')
     +'<a class="rc-cta" href="단지상세.html?code='+code+'&nm='+encodeURIComponent(pt.name)+'&dong='+encodeURIComponent(pt.dong||'')+'" style="background:#12203a">이 단지 실거래·평형별 상세 →</a>'
     /* 대출 문의(2026-08-02 석봉님 지시) — 지금은 준비 중 안내 페이지. 목적지 교체는 대출문의.html 한 파일만 */
@@ -1723,7 +1808,7 @@ if(_BACKVIEW){try{
 
 render();
 </script>
-<script src="assets/map_v2.js?v=10"></script>
+<script src="assets/map_v2.js?v=12"></script>
 <script src="assets/map_v2_poi.js?v=2"></script>
 <script src="assets/map_v2_dong.js?v=2"></script>
 <script src="assets/map_old.js?v=2"></script>
