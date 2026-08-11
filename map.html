@@ -1696,12 +1696,16 @@ function showAptCard(pt, txs){
       if(!a.length)return '';var lo=a[0].toFixed(1),hi=a[a.length-1].toFixed(1);
       return '<span style="display:block;font-size:9.5px;color:#a39887;font-weight:600">'+(lo===hi?lo+'㎡·'+PY(a[0]):lo+'~'+hi+'㎡')+'</span>';}
     function rrow(l,rv,hv,ar){return '<div style="display:grid;grid-template-columns:52px 1fr 1fr;font-size:12.5px;padding:5px 0;border-bottom:1px dotted #e7e1d4"><b style="color:#6b6355;font-weight:700">'+l+(ar||'')+'</b><span style="text-align:right;font-weight:700">'+(rv||'·')+'</span><span style="text-align:right;font-weight:700;color:#c0562e">'+(hv||'·')+'</span></div>';}
+    /* 평당가 한 줄. 실거래·호가 양쪽에 같은 모양으로 붙인다. */
+    function _pyEm(v,col){
+      if(!v)return '';
+      return '<em style="display:block;font-style:normal;font-weight:600;font-size:9.5px;color:'
+        +(col||'#a39887')+';letter-spacing:0">평당 '+Math.round(v).toLocaleString()+'만(전용)</em>';
+    }
     /* 거래된 건들의 평당가 중위. 면적이 없는 신고분은 뺀다. */
     function _pyLine(list){
       var a=list.filter(function(t){return t.a&&t.p;}).map(function(t){return t.p/t.a*3.305785;});
-      if(!a.length)return '';
-      return '<em style="display:block;font-style:normal;font-weight:600;font-size:9.5px;color:#a39887;letter-spacing:0">평당 '
-        +Math.round(md(a)).toLocaleString()+'만(전용)</em>';
+      return a.length?_pyEm(md(a)):'';
     }
     /* 기준 날짜를 열 제목에 바로 붙인다(2026-08-10 석봉님 지시). 카드 맨 아래 각주로만
        두면 숫자를 볼 때 눈에 안 들어온다. 실거래와 호가는 시점이 다른 자료라 같이 봐야 한다. */
@@ -1722,7 +1726,14 @@ function showAptCard(pt, txs){
       /* 매매에 평당가를 같이 적는다(2026-08-11 석봉님 지시). 아래 '인근 실거래'가 평당으로
          나오는데 정작 이 단지는 총액만 있어 비교할 기준이 없었다. 총액은 평형에 따라
          달라지지만 평당가는 단지끼리 바로 견줄 수 있다. */
-      +rrow('매매',eok2(md(mmT.map(function(t){return t.p;})))+_pyLine(mmT),(A&&A.mm)?(eok2(A.mm.med)+'<small style="font-weight:600;color:#a39887"> '+(A.mm.n===1?'매물1건':A.mm.n+'건')+'</small>'):'',arng2(mmT))
+      /* 🔴호가에도 평당가를 붙인다(2026-08-11 석봉님 지시). 호가 중위는 총액 중위라
+         평수가 실거래 쪽과 다를 수 있는데, 총액만 나란히 두면 읽는 사람이 같은 평형끼리
+         비교한 것으로 오해한다(정보 비대칭). 평당가는 그 오해를 없앤다.
+         값은 이미 수집 단계에서 매물별 (호가÷전용㎡×3.305785)의 중위로 계산돼 있고,
+         단지상세는 이미 그걸 쓰고 있었다 — 카드만 빠져 있었다. */
+      +rrow('매매',eok2(md(mmT.map(function(t){return t.p;})))+_pyLine(mmT),
+            (A&&A.mm)?(eok2(A.mm.med)+'<small style="font-weight:600;color:#a39887"> '+(A.mm.n===1?'매물1건':A.mm.n+'건')+'</small>'+_pyEm(A.mm.py,'#c99a86')):'',
+            arng2(mmT))
       +rrow('전세',eok2(md(jeT.map(function(t){return t.p;}))),(A&&A.je)?(eok2(A.je.med)+'<small style="font-weight:600;color:#a39887"> '+(A.je.n===1?'매물1건':A.je.n+'건')+'</small>'):'',arng2(jeT))
       +rrow('월세',woT.length?(eok2(md(woT.map(function(t){return t.p;})))+'/'+md(woT.map(function(t){return t.r;}))+'만'):'',(A&&A.wo&&A.wo.wol<=3000)?(eok2(A.wo.bo)+'/'+A.wo.wol+'만<small style="font-weight:600;color:#a39887"> '+(A.wo.n===1?'매물1건':A.wo.n+'건')+'</small>'):'',arng2(woT))
       +'<div class="rc-note" style="padding:4px 0 0">거래된 <b>전 평형 중위</b>(특정 평형 아님, 좌측 면적범위 참고) · 호가=협상 전 매물가(주황). '+(A?'체결가와 다를 수 있음.':'이 단지 현재 호가 매물 없음.')+'</div></div>';
@@ -1808,7 +1819,7 @@ if(_BACKVIEW){try{
 
 render();
 </script>
-<script src="assets/map_v2.js?v=12"></script>
+<script src="assets/map_v2.js?v=13"></script>
 <script src="assets/map_v2_poi.js?v=2"></script>
 <script src="assets/map_v2_dong.js?v=2"></script>
 <script src="assets/map_old.js?v=2"></script>
