@@ -633,6 +633,7 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
     document.querySelectorAll('#mcats button').forEach(function(b){
       var v=b.querySelector('b');b.classList.toggle('set',!!(v&&v.textContent!=='전체'));});
   }
+  window._labels=labels;   /* 코드로 필터를 바꿀 때 버튼 글자도 같이 맞춘다(2026-08-11) */
   function isOn(cat,k){if(cat==='type')return k==='all'?!curTset:!!(curTset&&curTset[k]);if(cat==='u')return curU===k;return curD===k;}
   function close(){sheet.classList.remove('open');}
   function openSheet(cat){
@@ -900,20 +901,113 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
     try{map.setView([lat,lng],z||17);}catch(e){}
     setTimeout(function(){try{window._addrMk.openPopup();}catch(e){}},300);
     var st=document.getElementById('stat');if(st)st.textContent='주소: '+label;
-    /* 다른 지역 주소로 건너뛴 경우 앞 검색 필터 때문에 0건이 되는 것을 푼다(2026-08-08) */
+    /* 다른 지역 주소로 건너뛴 경우 앞 검색 필터 때문에 0건이 되는 것을 푼다(2026-08-08).
+       ⚠️순서가 중요하다(2026-08-11). ①필터 해제 ②그래도 비면 **범위를 넓힌다** ③그래도 비면 상품 해제.
+       전에는 ②가 없어서, 주변에 거래가 아예 없는 신축 분양지에서는 상품을 다 풀어도 빈 화면이었다. */
     setTimeout(function(){try{
       if(window._unfilterIfEmpty)window._unfilterIfEmpty();
+      /* 넓히기가 성공하면 뒷정리(안내·상품 해제 판단)까지 그쪽에서 맡는다 */
+      if(window._widenIfEmpty&&window._widenIfEmpty(label))return;
       if(window._relaxTypeIfEmpty)window._relaxTypeIfEmpty(label);
     }catch(e){}},700);
   }
+  /* 화면에 실제로 찍힌 것이 있나 — 단지 말풍선과 동·시군구 묶음 표시를 모두 센다.
+     window._PTS 는 줌 13 미만에서 갱신되지 않아(그 구간은 묶음만 그리고 일찍 끝난다)
+     "비었는지" 판정에 쓰면 틀린다. */
+  function _hasMarkers(){return document.querySelectorAll('#map .pricetag,#map .clus').length>0;}
+  window._hasMarkers=_hasMarkers;
+  /* 🔴신축 분양지 주변에는 기존 실거래가 아예 없을 수 있다(2026-08-11 석봉님 제보).
+     청약의 '주변 실거래지도'는 주소로 줌 17까지 바로 들어가는데 줌 17은 화면 폭이 500m 남짓이다.
+     실측: 한강 푸르지오 리버프론트(김포 고촌읍 향산리 588-45)는 반경 1km 안 실거래 0건,
+     가장 가까운 아파트가 1,277m(사우동 풍년마을)라 들어가자마자 빈 화면이 됐다.
+     그동안 있던 안전장치는 '상품 필터 해제' 하나뿐이었는데, 1km 안에 아무 상품도 없으니
+     소용이 없었다. 풀어야 했던 건 상품이 아니라 **보는 범위**다.
+     거래가 잡힐 때까지 한 단계씩 넓히고, 넓혔다는 사실을 밝힌다(모르면 시세를 오해한다). */
+  window._widenIfEmpty=function(label){
+    if(window._WIDENED||_hasMarkers())return false;
+    window._WIDENED=1; window._WIDENING=1;
+    /* 14보다 더 넓히지 않는다. 그 아래는 화면이 시·군 단위가 되어 '주변 시세'라고 하기 어렵다. */
+    var MIN=14, tries=0, z0=map.getZoom();
+    function notice(){
+      if(map.getZoom()>=z0)return;
+      /* 상태줄은 render가 '동 N곳 · N건'으로 계속 덮어쓴다. 몇 초에 걸쳐 다시 적고,
+         그와 별개로 토스트로도 알린다(상태줄을 놓쳐도 넓혔다는 사실은 전달돼야 한다). */
+      var msg=(label?'주소: '+label+' · ':'')+'바로 옆에는 최근 실거래가 없어 범위를 넓혀 보여드립니다';
+      var put=function(){var st=document.getElementById('stat');if(st)st.textContent=msg;};
+      [0,500,1200,2200,3500].forEach(function(ms){setTimeout(put,ms);});
+      try{if(window._toast)window._toast('이 위치 가까이엔 최근 실거래가 없어 범위를 넓혔습니다',6000);}catch(e){}
+    }
+    function finish(){
+      window._WIDENING=0;
+      /* 넓혀도 비어 있으면 **거래유형 → 상품** 순으로 푼다.
+         🔴순서가 중요하다(2026-08-11 실측). 향산리 주변 아파트에는 최근 **매매가 하나도 없고
+         전세·월세만** 있었다. 청약 링크가 `u=매매`를 강제하니 아무리 넓혀도 0이었다.
+         청약에서 넘어온 사람이 보고 싶은 것은 '주변 아파트 시세'이므로,
+         상가·토지를 끌어오기 전에 같은 아파트의 전세·월세를 먼저 보여주는 편이 맞다. */
+      if(_hasMarkers()){notice();return;}
+      /* 아직 지역 파일을 받는 중일 수 있다. 한 번 더 기다렸다 판단한다.
+         ⚠️여기서 성급하면, 곧 뜰 아파트를 못 보고 상품 필터를 풀어 버린다
+         (2026-08-11 첫 수정에서 실제로 그랬다 — 줌 14에서 13곳이 뜨는데 '전체 상품'으로 바뀌었다). */
+      var g=0;
+      (function grace(){
+        if(_hasMarkers()){notice();return;}
+        if(g++<8){setTimeout(grace,400);return;}      /* 최대 3.2초까지 더 본다(그리는 중일 수 있다) */
+        if(window._relaxUIfEmpty&&window._relaxUIfEmpty(label)){
+          setTimeout(function(){
+            if(_hasMarkers())return;                  /* 거래유형만 풀어서 해결됨 */
+            if(window._relaxTypeIfEmpty)window._relaxTypeIfEmpty(label);
+          },1100);
+          return;
+        }
+        if(window._relaxTypeIfEmpty)window._relaxTypeIfEmpty(label);
+      })();
+    }
+    /* 🔴받는 중인 지역 파일이 있으면 넓히지 않고 기다린다.
+       이걸 안 봤더니 "아직 안 온 것"과 "원래 없는 것"을 구별하지 못해 필요 이상으로 넓어졌다.
+       실측(향산리): 줌 16에 이미 아파트 2곳·줌 15에 13곳이 있는데도 파일이 도착하기 전에
+       판단해 줌 13까지 내려갔고, 끝에는 상품 필터까지 풀려 '아파트 주변 시세'가 아니게 됐다. */
+    function busy(){try{for(var k in loading){if(loading[k])return true;}}catch(e){}return false;}
+    var waits=0;
+    (function step(){
+      if(_hasMarkers()){finish();return;}
+      if(busy()&&waits<14){waits++;setTimeout(step,400);return;}
+      if(map.getZoom()<=MIN||tries>=4){finish();return;}
+      tries++; waits=0;
+      try{map.setZoom(map.getZoom()-1,{animate:false});}catch(e){}
+      setTimeout(step,550);
+    })();
+    return true;
+  };
   /* 경매·공매에서 넘어온 상품 필터(?t=)로 주변에 그 상품 거래가 하나도 없으면 빈 화면이 된다
      (시흥 장곡동 근생 낙찰 사례 — 주변에 상가 실거래 0, 아파트만 14곳). 필터를 자동으로 풀고
      그 사실을 알려 준다. 사용자가 직접 켠 필터는 건드리지 않는다(URL로 들어온 첫 화면 한정). */
+  /* 거래유형(매매/전세/월세) 완화 — 상품을 풀기 전에 먼저 시도한다.
+     실측(2026-08-11): 김포 고촌읍 향산리 주변 아파트(김포고촌우방아이유쉘·아라베스트빌 등)는
+     최근 거래가 전세·월세뿐이라 `u=매매`로는 넓혀도 계속 0이었다. */
+  window._relaxUIfEmpty=function(label){
+    if(window._URELAXED||window._WIDENING)return false;
+    if(curU==='all')return false;
+    if(_hasMarkers())return false;
+    window._URELAXED=1;
+    var was=curU;
+    curU='all';
+    try{if(window._syncUUI)window._syncUUI();}catch(e){}
+    try{if(window._labels)window._labels();}catch(e){}
+    render();
+    var msg=(label?'주소: '+label+' · ':'')+'주변에 최근 '+was+' 거래가 없어 전세·월세까지 함께 표시합니다';
+    var put=function(){var st=document.getElementById('stat');if(st)st.textContent=msg;};
+    [0,500,1200,2200].forEach(function(ms){setTimeout(put,ms);});
+    try{if(window._toast)window._toast('주변에 최근 '+was+' 거래가 없어 전세·월세까지 보여드립니다',6000);}catch(e){}
+    return true;
+  };
   window._relaxTypeIfEmpty=function(label){
     /* 기본값(아파트)로 들어온 경우도 대상 — 상가·토지 딥링크가 빈 화면이 되면 안 된다(2026-08-09) */
     if((!window._TPARAM&&!window._TDEFAULT)||window._TRELAXED)return false;
     if(!curTset)return false;
-    if(window._PTS&&window._PTS.length)return false;
+    if(window._WIDENING)return false;      /* 범위를 넓히는 중이면 판단을 미룬다 */
+    /* 화면에 뭐라도 찍혔으면 손대지 않는다. _PTS 는 줌 13 미만에서 갱신되지 않아
+       그것만 보면 "비었다"고 잘못 판단한다(2026-08-11). */
+    if(window._hasMarkers?window._hasMarkers():(window._PTS&&window._PTS.length))return false;
     var _tk=window._TPARAM||Object.keys(curTset)[0];
     var kept=TYPE[_tk]?TYPE[_tk][0]:'해당 상품';
     curTset=null;window._TRELAXED=1;
