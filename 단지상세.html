@@ -1,5 +1,15 @@
 <!doctype html><html lang="ko"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<!-- 홈 화면 앱(PWA) — 데이터관리/스크립트/앱메타_주입.py 가 넣습니다 -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#F2F2EF">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="석봉부동산">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="icon" href="/icons/favicon-32.png" sizes="32x32">
+<script>if('serviceWorker' in navigator){addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}</script>
 <title>단지 상세 · 석봉 부동산 정보방</title>
 <meta name="description" content="단지별 실거래·평형별 시세·연도별 시세추이·관리비·대출 한도를 한 화면에서 봅니다. 국토교통부 실거래가 기준.">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -716,5 +726,5 @@ function nearZones(la,ln){
     return '<a class="deal" style="text-decoration:none;color:inherit" href="구역상세.html?nm='+encodeURIComponent(z.key)+'"><div><b>'+esc(z.nm)+'</b><span class="meta">'+z.d+'m</span></div><div class="pr"><span style="background:'+col+';color:#fff;font-size:11px;padding:1px 8px;border-radius:20px;font-weight:700">'+esc(z.stage)+'</span></div></a>';}).join('');
 }
 boot();
-</script><script src="assets/sb_tabbar.js?v=6"></script>
+</script><script src="assets/sb_tabbar.js?v=7"></script>
 </body></html>

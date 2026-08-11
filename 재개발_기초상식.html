@@ -1,5 +1,15 @@
 <!doctype html><html lang="ko"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<!-- 홈 화면 앱(PWA) — 데이터관리/스크립트/앱메타_주입.py 가 넣습니다 -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#F2F2EF">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="석봉부동산">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="icon" href="/icons/favicon-32.png" sizes="32x32">
+<script>if('serviceWorker' in navigator){addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}</script>
 <title>재개발·재건축 기초상식 · 석봉 부동산 정보방</title>
 <meta name="description" content="재개발·재건축 추진 단계와 용어를 처음 보는 사람 기준으로 정리했습니다. 조합설립부터 관리처분, 이주·착공까지.">
 <style>
@@ -228,5 +238,5 @@ function openHash(){var h=location.hash;if(!h)return;var el;try{el=document.quer
 window.addEventListener('load',openHash);window.addEventListener('hashchange',openHash);
 </script>  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/sb_auth.js?v=8"></script>
-<script src="assets/sb_tabbar.js?v=6"></script>
+<script src="assets/sb_tabbar.js?v=7"></script>
 </body></html>

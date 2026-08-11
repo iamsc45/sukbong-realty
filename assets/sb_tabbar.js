@@ -26,6 +26,7 @@
   /* ── 메뉴 정의(사이트 전체의 단일 출처) ──────────────────── */
   var G='%EA%B8%80.html', JIPYO='%EC%A7%80%ED%91%9C.html', LH='lh_%EC%A7%84%EB%8B%A8.html',
       USE='%EC%9D%B4%EC%9A%A9%EC%95%88%EB%82%B4.html', LOAN='%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html',
+      APP='%EC%95%B1%EC%84%A4%EC%B9%98.html',
       BLOG='https://blog.naver.com/seokbongnews';
   var MENU=[
     {g:'지도·데이터',items:[
@@ -45,6 +46,7 @@
       {n:'내 정보',i:'user',h:'%EB%82%B4%EC%A0%95%EB%B3%B4.html'}]},
     {g:'안내',items:[
       {n:'홈',i:'home',h:'index.html'},
+      {n:'홈 화면에 추가',i:'device-mobile-down',h:APP},
       {n:'이용안내',i:'help-circle',h:USE},
       {n:'대출 문의',i:'building-bank',h:LOAN}]}
   ];

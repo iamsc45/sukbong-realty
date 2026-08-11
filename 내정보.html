@@ -3,6 +3,16 @@
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y7P41Z09PV"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-Y7P41Z09PV');</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1">
+<!-- 홈 화면 앱(PWA) — 데이터관리/스크립트/앱메타_주입.py 가 넣습니다 -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#F2F2EF">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="석봉부동산">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="icon" href="/icons/favicon-32.png" sizes="32x32">
+<script>if('serviceWorker' in navigator){addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}</script>
 <title>내정보 · 석봉 부동산 정보방</title>
 <meta name="description" content="관심단지, 저장한 LH 사업지, 지역 시장조사 보고서 신청 이력을 한 화면에서 확인합니다.">
 <meta name="robots" content="noindex,follow">
@@ -159,6 +169,6 @@ h1.pg{font-size:clamp(30px,5vw,48px);letter-spacing:-0.04em;font-weight:800;marg
   else app.innerHTML='<div class="empty">로그인 모듈을 불러오지 못했습니다. 새로고침해 주세요.</div>';
 })();
 </script>
-<script src="assets/sb_tabbar.js?v=6"></script>
+<script src="assets/sb_tabbar.js?v=7"></script>
 </body>
 </html>

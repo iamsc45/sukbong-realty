@@ -3,6 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- 홈 화면 앱(PWA) — 데이터관리/스크립트/앱메타_주입.py 가 넣습니다 -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#F2F2EF">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="석봉부동산">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="icon" href="/icons/favicon-32.png" sizes="32x32">
+<script>if('serviceWorker' in navigator){addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}</script>
 <title>정비구역 상세 · 석봉 부동산 정보방</title>
 <meta name="description" content="재개발·재건축 구역의 추진 단계, 정비계획(용적률·건폐율·세대수), 법정동 시세추이와 인근 실거래를 정리했습니다.">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y7P41Z09PV"></script>
@@ -316,6 +326,6 @@ render();
 </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/sb_auth.js?v=8"></script>
-<script src="assets/sb_tabbar.js?v=6"></script>
+<script src="assets/sb_tabbar.js?v=7"></script>
 </body>
 </html>

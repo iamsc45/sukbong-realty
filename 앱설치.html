@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Y7P41Z09PV"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-Y7P41Z09PV');</script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- 홈 화면 앱(PWA) — 데이터관리/스크립트/앱메타_주입.py 가 넣습니다 -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#F2F2EF">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="석봉부동산">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="icon" href="/icons/favicon-32.png" sizes="32x32">
+<script>if('serviceWorker' in navigator){addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}</script>
+<title>홈 화면에 추가 · 석봉 부동산 정보방</title>
+<meta name="description" content="석봉 부동산 정보방을 휴대폰 홈 화면에 아이콘으로 두고 앱처럼 씁니다. 주소창 없이 전체화면으로 열립니다.">
+<link rel="canonical" href="https://xn--2q1br1nnrasc92a76myvau64b.com/%EC%95%B1%EC%84%A4%EC%B9%98.html">
+<meta property="og:title" content="홈 화면에 추가 · 석봉 부동산 정보방">
+<meta property="og:description" content="아이콘 하나로 바로 여세요. 주소창 없이 전체화면으로 열립니다.">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+.wrap{max-width:740px;margin:0 auto;padding:0 22px 80px}
+h1.pg{font-size:clamp(27px,5vw,42px);letter-spacing:-0.04em;font-weight:800;margin:44px 0 10px}
+.pgsub{color:var(--muted);font-size:14.5px;line-height:1.8;margin:0 0 26px;word-break:keep-all}
+.hero{display:flex;align-items:center;gap:16px;background:var(--soft);border:1px solid var(--hair);
+  border-radius:16px;padding:18px 20px;margin:0 0 30px}
+.hero img{width:64px;height:64px;border-radius:15px;flex:0 0 auto;box-shadow:0 3px 10px rgba(20,20,20,.14)}
+.hero .t{font-size:16px;font-weight:800;letter-spacing:-0.02em}
+.hero .d{font-size:12.5px;color:var(--muted);line-height:1.65;margin-top:3px;word-break:keep-all}
+#doit{display:none;margin:0 0 30px}
+#doit button{width:100%;border:0;background:var(--text);color:#fff;font:inherit;font-size:15.5px;
+  font-weight:800;letter-spacing:-0.02em;border-radius:14px;padding:16px 20px;cursor:pointer}
+#doit .n{font-size:12px;color:var(--muted);text-align:center;margin-top:9px;line-height:1.6}
+.st{margin:0 0 34px;padding-bottom:30px;border-bottom:1px solid var(--hair)}
+.st:last-of-type{border-bottom:0}
+.st h2{font-size:19px;font-weight:800;letter-spacing:-0.03em;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+.st h2 .tag{font-size:10.5px;font-weight:800;letter-spacing:.06em;background:var(--text);color:#fff;
+  border-radius:100px;padding:4px 10px}
+.st .d{font-size:13.5px;color:var(--muted);line-height:1.75;margin:0 0 14px;word-break:keep-all}
+ol.step{list-style:none;counter-reset:s;padding:0;margin:0}
+ol.step li{counter-increment:s;position:relative;padding:10px 0 10px 34px;font-size:14px;
+  color:var(--text2);line-height:1.7;border-bottom:1px dotted var(--hair);word-break:keep-all}
+ol.step li:last-child{border-bottom:0}
+ol.step li:before{content:counter(s);position:absolute;left:0;top:11px;width:22px;height:22px;
+  border-radius:50%;background:var(--text);color:#fff;font-size:11.5px;font-weight:800;
+  display:flex;align-items:center;justify-content:center}
+ol.step li b{color:var(--text)}
+.warn{background:#FDF6E7;border:1px solid #EBDCB6;border-radius:12px;padding:14px 17px;margin:0 0 18px;
+  font-size:13px;color:#5C4A21;line-height:1.75;word-break:keep-all}
+.warn b{color:#3E3013}
+.tip{background:var(--soft);border:1px solid var(--hair);border-radius:12px;padding:13px 16px;
+  font-size:12.5px;color:var(--text2);line-height:1.7;word-break:keep-all;margin:16px 0 0}
+.copy{display:flex;gap:8px;margin:14px 0 0}
+.copy input{flex:1;min-width:0;border:1px solid var(--hair);border-radius:10px;background:#fff;
+  font:inherit;font-size:13px;padding:11px 13px;color:var(--text2)}
+.copy button{border:1px solid var(--text);background:#fff;color:var(--text);font:inherit;font-size:13px;
+  font-weight:700;border-radius:10px;padding:0 16px;cursor:pointer;white-space:nowrap}
+.done{background:#EAF3EC;border:1px solid #BFD9C6;border-radius:12px;padding:14px 17px;
+  font-size:13.5px;color:#1E5B34;line-height:1.7;display:none}
+@media(max-width:560px){.hero{padding:15px 16px}.hero img{width:56px;height:56px}}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html">석봉 부동산 정보방</a>
+  <nav>
+    <a href="index.html">홈</a>
+    <a href="map.html">실거래지도</a>
+    <a href="apply.html">청약</a>
+    <a href="auction.html">경매·공매</a><a href="%EC%A7%80%ED%91%9C.html">금리·지표</a><a href="lh_%EC%A7%84%EB%8B%A8.html">LH매입</a>
+    <a href="%EA%B8%80.html">리포트</a>
+    <a href="favorites.html">★ 관심단지</a>
+    <a href="channels.html">채널</a>
+    <a href="%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html">대출 문의</a>
+    <span id="sbAuthBtn"></span>
+  </nav>
+</header>
+
+<div class="wrap">
+  <h1 class="pg">홈 화면에 추가</h1>
+  <p class="pgsub">매번 주소를 치거나 블로그를 거쳐 들어오지 않아도 됩니다. 한 번 추가해 두면 다른 앱처럼 아이콘으로 바로 열리고, 주소창과 도구 막대가 사라져 지도 화면이 그만큼 넓어집니다.</p>
+
+  <div class="hero">
+    <img src="icons/icon-192.png" alt="석봉 부동산 정보방 아이콘">
+    <div>
+      <div class="t">석봉부동산</div>
+      <div class="d">설치 파일을 받지 않습니다. 지금 보고 계신 사이트가 그대로 아이콘이 됩니다. 지우고 싶으면 아이콘을 길게 눌러 삭제하면 끝입니다.</div>
+    </div>
+  </div>
+
+  <div id="doit">
+    <button type="button" id="btnInstall">홈 화면에 추가하기</button>
+    <div class="n">누르면 확인 창이 한 번 뜹니다</div>
+  </div>
+  <div class="done" id="okBox">추가됐습니다. 홈 화면에서 <b>석봉부동산</b> 아이콘을 찾아 눌러 보세요.</div>
+
+  <div class="st" id="sKakao" style="display:none">
+    <h2><span class="tag">먼저 할 일</span> 카카오톡 안에서는 추가되지 않습니다</h2>
+    <p class="d">지금 카카오톡 안에 있는 브라우저로 보고 계십니다. 이 화면에서는 홈 화면 추가 기능이 없습니다. 크롬이나 사파리로 옮겨서 하시면 됩니다.</p>
+    <ol class="step">
+      <li>오른쪽 아래 <b>점 세 개(⋮)</b> 또는 <b>공유</b> 아이콘을 누릅니다</li>
+      <li><b>다른 브라우저로 열기</b>를 고릅니다 (안드로이드는 크롬, 아이폰은 사파리)</li>
+      <li>열린 화면에서 아래 안내대로 홈 화면에 추가합니다</li>
+    </ol>
+    <div class="copy">
+      <input id="urlBox" readonly value="https://석봉부동산정보방.com/앱설치.html">
+      <button type="button" id="btnCopy">주소 복사</button>
+    </div>
+    <div class="tip">주소를 복사해 크롬 주소창에 붙여넣어도 됩니다.</div>
+  </div>
+
+  <div class="st" id="sAndroid">
+    <h2><span class="tag">안드로이드</span> 크롬</h2>
+    <p class="d">위에 <b>홈 화면에 추가하기</b> 버튼이 보이면 그걸 누르는 게 가장 빠릅니다. 안 보이면 아래대로 하세요.</p>
+    <ol class="step">
+      <li>주소창 오른쪽 <b>점 세 개(⋮)</b>를 누릅니다</li>
+      <li><b>홈 화면에 추가</b> 또는 <b>앱 설치</b>를 고릅니다</li>
+      <li><b>설치</b>를 누르면 홈 화면에 아이콘이 생깁니다</li>
+    </ol>
+    <div class="tip">아이콘을 길게 누르면 <b>실거래지도 · 재개발 · 청약 · 관심단지</b>로 바로 가는 메뉴가 나옵니다.</div>
+  </div>
+
+  <div class="st" id="sIos">
+    <h2><span class="tag">아이폰</span> 사파리</h2>
+    <p class="d">아이폰은 사파리에서만 됩니다. 크롬으로 보고 계시면 사파리로 옮겨 주세요.</p>
+    <ol class="step">
+      <li>화면 아래 가운데 <b>공유 아이콘</b>(네모에서 화살표가 위로 나온 모양)을 누릅니다</li>
+      <li>목록을 내려 <b>홈 화면에 추가</b>를 고릅니다</li>
+      <li>오른쪽 위 <b>추가</b>를 누릅니다</li>
+    </ol>
+  </div>
+
+  <div class="st" id="sPc">
+    <h2><span class="tag">컴퓨터</span> 크롬 · 엣지</h2>
+    <ol class="step">
+      <li>주소창 오른쪽 끝의 <b>설치 아이콘</b>(모니터에 화살표가 들어가는 모양)을 누릅니다</li>
+      <li>안 보이면 <b>점 세 개(⋮) → 저장 및 공유 → 바로가기 만들기</b> 또는 <b>캐스트·저장·공유 → 페이지를 앱으로 설치</b></li>
+      <li>바탕화면과 시작 메뉴에 아이콘이 생깁니다</li>
+    </ol>
+    <div class="tip">설치가 번거로우면 즐겨찾기에 넣고 <b>Ctrl+D</b>로 저장해 두어도 됩니다.</div>
+  </div>
+
+  <div class="st">
+    <h2>자주 묻는 것</h2>
+    <ol class="step">
+      <li><b>용량을 차지하나요</b> 거의 없습니다. 아이콘과 화면 뼈대만 저장합니다.</li>
+      <li><b>자료는 최신인가요</b> 네. 실거래 자료는 저장하지 않고 열 때마다 새로 받습니다. 어제 시세가 그대로 뜨는 일은 없습니다.</li>
+      <li><b>로그인은 유지되나요</b> 유지됩니다. 카카오 로그인은 그대로 쓰시면 됩니다.</li>
+      <li><b>지우려면</b> 홈 화면 아이콘을 길게 눌러 삭제하면 됩니다. 사이트는 그대로 남습니다.</li>
+    </ol>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <span>📈 <a href="https://telegram.me/seokbongnews">텔레그램 채널</a></span> ·
+  <span>💬 <a href="https://open.kakao.com/o/gt8CTUCi">카카오 오픈채팅</a> · <a href="https://blog.naver.com/seokbongnews">네이버 블로그</a></span>
+  <div class="fine">편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 방문 통계 수집을 위해 Google Analytics(쿠키)를 사용합니다</div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/sb_auth.js?v=8"></script>
+<script src="assets/sb_tabbar.js?v=7"></script>
+<script>
+(function(){
+  var ua=navigator.userAgent||'';
+  var isIOS=/iP(hone|ad|od)/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  var isAndroid=/Android/i.test(ua);
+  /* 카카오·네이버·페이스북 인앱 브라우저는 홈 화면 추가 기능 자체가 없다.
+     여기서 아무 안내 없이 두면 "버튼이 안 보인다"는 말만 나온다. */
+  var inApp=/KAKAOTALK|NAVER\(inapp|FB_IAB|FBAN|FBAV|Instagram|Line\//i.test(ua);
+  var standalone=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+
+  function show(id,on){var e=document.getElementById(id);if(e)e.style.display=on?'':'none';}
+
+  if(standalone){
+    document.getElementById('okBox').style.display='block';
+    document.getElementById('okBox').innerHTML='이미 앱으로 열고 계십니다. 추가로 하실 일이 없습니다.';
+  }
+  if(inApp)show('sKakao',true);
+  /* 해당 없는 안내는 접어 둔다. 세 개를 다 펼쳐 놓으면 어느 것이 내 경우인지 헷갈린다. */
+  if(isIOS){show('sAndroid',false);show('sPc',false);}
+  else if(isAndroid){show('sIos',false);show('sPc',false);}
+  else{show('sIos',false);show('sAndroid',false);}
+
+  /* 안드로이드 크롬은 설치 가능해지면 이 신호를 준다. 그때만 버튼을 띄운다
+     (신호 없이 버튼만 두면 눌러도 아무 일이 없어 더 답답하다). */
+  var deferred=null;
+  window.addEventListener('beforeinstallprompt',function(e){
+    e.preventDefault(); deferred=e; show('doit',true);
+  });
+  var btn=document.getElementById('btnInstall');
+  if(btn)btn.onclick=function(){
+    if(!deferred)return;
+    deferred.prompt();
+    deferred.userChoice.then(function(r){
+      deferred=null; show('doit',false);
+      if(r&&r.outcome==='accepted')document.getElementById('okBox').style.display='block';
+    });
+  };
+  window.addEventListener('appinstalled',function(){
+    show('doit',false); document.getElementById('okBox').style.display='block';
+  });
+
+  var cp=document.getElementById('btnCopy');
+  if(cp)cp.onclick=function(){
+    var v=document.getElementById('urlBox').value;
+    var ok=function(){cp.textContent='복사됨';setTimeout(function(){cp.textContent='주소 복사';},1600);};
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(v).then(ok,function(){});
+    else{var i=document.getElementById('urlBox');i.select();try{document.execCommand('copy');ok();}catch(e){}}
+  };
+})();
+</script>
+</body></html>
