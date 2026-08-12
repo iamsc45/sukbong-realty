@@ -1,1 +1,1 @@
-window.SB=window.SB||{};SB.chips={"updated":"2026-08-12","win":"2026-07-30~2026-08-12","items":[{"t":"석남","n":4,"src":"log"},{"t":"송도동","n":4,"src":"log"},{"t":"석남동","n":2,"src":"log"},{"t":"노원구","n":279,"src":"trade"},{"t":"강서구","n":174,"src":"trade"}],"note":"REST 집계 뷰"};
+window.SB=window.SB||{};SB.chips={"updated":"2026-08-13","win":"2026-07-31~2026-08-13","items":[{"t":"석남","n":4,"src":"log"},{"t":"송도동","n":4,"src":"log"},{"t":"석남동","n":2,"src":"log"},{"t":"노원구","n":291,"src":"trade"},{"t":"강서구","n":180,"src":"trade"}],"note":"REST 집계 뷰"};
