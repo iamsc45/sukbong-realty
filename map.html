@@ -883,7 +883,32 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
       var qn=pq.replace(/\s+/g,'');
       var sidoInQ=null;
       sidos.forEach(function(x){if(!sidoInQ&&pq.indexOf(x)>=0)sidoInQ=x;});
-      if(qn.length>=2){
+      /* 🔴 2026-08-12: 2026년 행정구역 개편으로 없어진 구 이름으로 들어오는 검색.
+         인천 서구·동구·중구는 제물포·영종·서해·검단구로 재편됐다. 옛 이름 링크가 아직
+         돌아다니므로, 후보 구를 찾아 그 범위로 보여 주고 무슨 일이 있었는지 알려 준다.
+         ⚠️짐작으로 코드를 바꾸지 않는다 — sgg 이름으로 찾고, 없으면 아무 일도 하지 않는다
+         (CLAUDE.md 2026-08-09 '코드 치환은 추론하지 말 것'과 같은 취지). */
+      var OLDGU={'인천':{'서구':['서해구','검단구'],'동구':['제물포구'],'중구':['영종구','제물포구'],'남구':['미추홀구']}};
+      if(sidoInQ&&OLDGU[sidoInQ]){
+        var oldName=Object.keys(OLDGU[sidoInQ]).find(function(g){
+          return pq.indexOf(g)>=0&&!SB.summary.regions.some(function(x){return x.sido===sidoInQ&&x.sgg===g;});});
+        if(oldName){
+          var news=OLDGU[sidoInQ][oldName].map(function(nm){
+            return SB.summary.regions.find(function(x){return x.sido===sidoInQ&&x.sgg===nm&&x.lat;});}).filter(Boolean);
+          if(news.length){
+            curSido=sidoInQ;curSgg=news.length===1?news[0].code:'all';
+            s1.value=sidoInQ;fill();if(news.length===1)s2.value=news[0].code;
+            handled=true;
+            var note=sidoInQ+' '+oldName+'는 '+OLDGU[sidoInQ][oldName].join('·')+'로 바뀌었습니다';
+            setTimeout(function(){try{map.invalidateSize();
+              if(news.length===1)map.setView([news[0].lat,news[0].lng],Z_DETAIL+1,{animate:false});
+              else map.fitBounds(news.map(function(r){return [r.lat,r.lng];}),{padding:[40,40],maxZoom:12});
+              var st=document.getElementById('stat');if(st)st.textContent=note;
+              setFcount(note);}catch(e){}},150);
+          }
+        }
+      }
+      if(qn.length>=2&&!handled){
         tgt=SB.summary.regions.find(function(x){
           if(!x.lat)return false;
           if(sidoInQ&&x.sido!==sidoInQ)return false;
