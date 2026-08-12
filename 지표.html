@@ -110,6 +110,12 @@ details.grp:not([open]) summary{border-bottom:none}
 .ctas a b{display:block;font-size:14px;color:var(--text)}
 .ctas a span{display:block;font-size:12px;color:var(--muted);margin-top:3px}
 .ctas a:hover{border-color:var(--text)}
+.guide{display:block;border:1px solid var(--hair);border-left:3px solid #a8792c;border-radius:12px;
+  background:var(--soft);padding:13px 16px;margin:14px 0 6px;text-decoration:none}
+.guide b{display:block;font-size:14.5px;color:var(--text)}
+.guide b::after{content:" →";color:#a8792c}
+.guide span{display:block;font-size:12.5px;color:var(--muted);margin-top:3px;word-break:keep-all}
+.guide:hover{border-color:var(--text);border-left-color:#a8792c}
 .note{font-size:12px;color:var(--muted);line-height:1.75;margin:26px 0 0;word-break:keep-all}
 /* ── 모바일: 표 → 리스트 행 (토스식 한 줄 패턴) ──────────────────
    2026-08-11 재작성. 전에는 값 열이 auto 라 행마다 폭이 달라 우측 정렬이
@@ -171,6 +177,9 @@ details.grp:not([open]) summary{border-bottom:none}
   <p class="pgsub">부동산을 볼 때 같이 봐야 하는 지표를 한 화면에 모았습니다. 아파트 가격은 주간, 금리와 공급은 월간,
     상업용 공실률은 분기, 주택보급률은 연간으로 나옵니다. 그래서 값마다 기준시점이 다릅니다.
     그룹마다 집계 주기와 다음 갱신일을 적어 두었습니다.</p>
+  <a class="guide" href="%EA%B8%88%EB%A6%AC%EC%A7%80%ED%91%9C_%EC%9D%BD%EB%8A%94%EB%B2%95.html">
+    <b>이 숫자들, 어떻게 읽나요?</b>
+    <span>국고채와 COFIX가 내 대출 이자로 오기까지. 처음 보는 분을 위한 안내와 이자 계산기</span></a>
   <div class="asof" id="asof">불러오는 중…</div>
 
   <div class="brief" id="brief" hidden></div>

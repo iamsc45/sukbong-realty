@@ -1,1 +1,1 @@
-window.APTASK=window.APTASK||{};APTASK["48720"]={"혜성미(주상복합)|의령읍":{"mm":{"med":27000,"py":1063,"n":3}},"삼영타운|의령읍":{"mm":{"med":7500,"py":420,"n":1}}};window.APTASKDAY="2026-08-10";
+window.APTASK=window.APTASK||{};APTASK["48720"]={"혜성미(주상복합)|의령읍":{"mm":{"med":27000,"py":1063,"n":3}},"삼영타운|의령읍":{"mm":{"med":7500,"py":420,"n":1}},"석봉리치타워|누리솔동":{"mm":{"med":137500,"py":4182,"n":3}}};window.APTASKDAY="2026-08-10";
