@@ -1,3 +1,28 @@
 User-agent: *
 Allow: /
 Sitemap: https://xn--2q1br1nnrasc92a76myvau64b.com/sitemap.xml
+
+# AI 학습용 수집봇 — 유입을 만들지 않으면서 데이터만 가져가므로 차단
+User-agent: GPTBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: Applebot-Extended
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: meta-externalagent
+Disallow: /
+
+User-agent: PerplexityBot
+Disallow: /
