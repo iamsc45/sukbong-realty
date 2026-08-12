@@ -142,7 +142,7 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
 </header>
 <main class="wrap" style="margin:0 auto;padding:0 22px">
   <h1 class="pg">매입약정 적합성 셀프진단</h1>
-  <p class="pgsub">사업지 주소를 <b>지번까지</b> 넣으면 LH 매입약정 심사에서 걸리는 항목을 우리 데이터로 먼저 확인해 드립니다. 판정이 그 지점 반경 1.2km 기준이라 동 이름만으로는 답이 어긋납니다.<br>결과는 참고용이며, 실제 심의 통과 여부와 감정평가액을 보장하지 않습니다.</p>
+  <p class="pgsub">사업지 주소를 <b>지번까지</b> 넣으면 LH 매입약정 심사에서 걸리는 항목을 우리 데이터로 먼저 확인해 드립니다. 가격·임대수요 판정이 그 지점 반경 1.2km(우리 기준) 안의 실거래라 동 이름만으로는 답이 어긋납니다. 생활편의성·교육여건은 공고문에 적힌 거리(1.5~3km)를 씁니다.<br>결과는 참고용이며, 실제 심의 통과 여부와 감정평가액을 보장하지 않습니다.</p>
 
   <div class="form">
     <div class="frow">
@@ -557,7 +557,8 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
     ['제외 지구 여부','재개발·재건축 구역과 겹치는지 (구역 경계로 판정)'],
     ['가격 적정성 기준선','반경 1.2km 실거래로 뽑은 평당 기준선'],
     ['임대수요','반경 안 전월세 거래량과 회전'],
-    ['생활편의성','가장 가까운 단지의 교통·학교'],
+    ['생활편의성','공고문 기준 대중교통 1.5km·주거여건 3km (단지 정보로 갈음)'],
+    ['교육여건','공고문 기준 3km 안 초·중·고 존재와 개수'],
     ['최소 매입 호수','지역본부가 공고에 적은 최소 호수'],
     ['비선호 입지','공장 밀집·위락시설 인근 등 감점 요인'],
     ['재무영향도','정부지원단가 대비 탁상감정가 비율']
@@ -590,12 +591,16 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
         return;
       }
       out.innerHTML='<div class="msg">'+esc(p.text)+'<br>인근 실거래를 불러오는 중…</div>';
-      var need=3, code=cd.code;
+      var need=4, code=cd.code, sd2=String(code).slice(0,2);
       function ready(){ if(--need>0)return; judge(p,sido,cd); }
       function load(src){var s=document.createElement('script');s.src=src;s.onload=s.onerror=ready;document.body.appendChild(s);}
       if(window.SB&&SB.d&&SB.d[code])ready(); else load('data/detail_'+code+'.js');
       if(window.APTINFO&&window.APTINFO[code])ready(); else load('data/apt_info_'+code+'.js');
       if(window.APTALIAS&&window.APTALIAS[code])ready(); else load('data/alias_'+code+'.js');
+      /* 학교 POI(2026-08-13 추가). 공고문 '교육여건'은 초·중·고가 3km 안에 있는지·몇 곳인지를
+         본다. 우리는 그 자료를 진작 모아 두고도(poi_school_<시도2자리>.js) 어느 화면에서도
+         쓰지 않고 있었다. 없는 시도는 onerror로 그냥 넘어가 판정만 생략된다. */
+      if(window.POISCH&&POISCH[sd2])ready(); else load('data/poi_school_'+sd2+'.js');
     },function(){
       /* 좌표를 못 잡아도 관할은 알려준다. 대상 지역이 아니라는 답이 제일 급하다 */
       var box=hqBox(addr);
@@ -606,6 +611,35 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
         +'좌표가 없으면 인근 실거래와 정비구역은 확인하지 못합니다.</div>'
         +(box?'<div class="items" style="margin-top:12px">'+box+'</div>':'');
     });
+  }
+  /* 🔴 공고문에 적힌 판정 거리 (2026-08-13, 2026년 공고문 117건에서 추출한 표 기준)
+     그 전까지 이 화면은 모든 항목을 우리가 정한 반경 1.2km로 보고 있었다. 공고문은
+     항목마다 거리가 다르다. 기준이 어긋난 채 "양호"라고 답하면 틀린 답을 자신 있게 주는 셈이다.
+     ⚠️대중교통·상업·의료·공공시설은 우리에게 좌표 자료가 없어 아직 판정하지 않는다.
+       기준만 밝히고, 자료가 생기면 여기에 항목을 붙인다. 없는 것을 있는 척하지 않는다. */
+  var LH_CRIT={
+    transit:{km:1.5, what:'지하철역·철도역·운행주기 15분 이내 버스정류장·환승시설·터미널'},
+    living:{km:3, what:'상업시설(대형마트·백화점·재래시장)·의료시설(종합병원)·공원·문화시설·공공시설'},
+    school:{km:3, what:'초·중·고등학교 존재 유무 및 개수'},
+    univ:{km:2.5, what:'대학교 존재 유무(청년형)'},
+    src:'2026년 민간신축 매입약정 공고문 「서류심사 평가항목(생활편의성)」 표'
+  };
+  /* 3km 안 초·중·고 개수. poi_school_<시도>.js = [[lat,lng,이름,종류],…] 종류 0=초 1=중 2=고 3=기타 */
+  function schoolsNear(lat,lng,sd2){
+    var a=(window.POISCH||{})[sd2];
+    if(!a||!a.length)return null;
+    var R=LH_CRIT.school.km*1000, out={el:0,mid:0,high:0,near:[]};
+    for(var i=0;i<a.length;i++){
+      var t=a[i][3];
+      if(t!==0&&t!==1&&t!==2)continue;              /* 학원·특수학교 등 기타는 세지 않는다 */
+      var d=dist(lat,lng,a[i][0],a[i][1]);
+      if(d>R)continue;
+      if(t===0)out.el++; else if(t===1)out.mid++; else out.high++;
+      out.near.push({nm:a[i][2],d:Math.round(d),t:t});
+    }
+    out.near.sort(function(x,y){return x.d-y.d;});
+    out.total=out.el+out.mid+out.high;
+    return out;
   }
   function judge(p,sido,cd){
     var hasMkt=!!cd;                       /* 실거래 데이터를 붙일 수 있는가 */
@@ -760,14 +794,29 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
       H.push(item('생활편의성',has>=2?'양호':'보통',has>=2?'p':'w',
         (sub?'지하철 <b>'+esc(String(sub))+'</b>. ':'')+(edu?'학교 '+esc(String(edu))+'. ':'')+(conv?'생활편의 '+esc(String(conv))+'.':'')
         ||'인근 단지 정보에 교통·학교 항목이 비어 있습니다.',
-        '기준 단지: <b>'+esc(am.nm)+'</b> ('+n(am.d)+'m). 단지 정보를 사업지 인근 지표로 대신 씁니다.'));
+        '기준 단지: <b>'+esc(am.nm)+'</b> ('+n(am.d)+'m). 단지 정보를 사업지 인근 지표로 대신 씁니다. '
+        +'공고문 기준은 대중교통 <b>'+LH_CRIT.transit.km+'km</b>·주거여건 <b>'+LH_CRIT.living.km+'km</b> 이내이며, '
+        +'그 시설 좌표 자료가 없어 단지 정보로 갈음합니다.'));
     }else{
       warn++;
       H.push(item('생활편의성','확인 불가','n',
-        '인근에 공동주택 단지 정보가 없어 교통·학교를 자동으로 확인하지 못했습니다.',
-        am?('가장 가까운 단지 '+esc(am.nm)+' '+n(am.d)+'m'):''));
+        '인근에 공동주택 단지 정보가 없어 교통·생활시설을 자동으로 확인하지 못했습니다.',
+        '공고문 기준: 대중교통 '+LH_CRIT.transit.km+'km 이내('+LH_CRIT.transit.what+') · 주거여건 '+LH_CRIT.living.km+'km 이내('+LH_CRIT.living.what+')'));
     }
 
+    }
+    /* 4-2. 교육여건 — 공고문 기준 그대로 3km 안 초·중·고 (2026-08-13 신설) */
+    var sch=hasMkt?schoolsNear(lat,lng,String(code).slice(0,2)):null;
+    if(sch){
+      total++;
+      var kinds=(sch.el?1:0)+(sch.mid?1:0)+(sch.high?1:0);
+      if(kinds>=2)pass++; else warn++;
+      H.push(item('교육여건',kinds>=2?'양호':(sch.total?'보통':'없음'),kinds>=2?'p':'w',
+        '반경 <b>'+LH_CRIT.school.km+'km</b> 안에 초등 <b>'+sch.el+'</b>곳 · 중학 <b>'+sch.mid+'</b>곳 · 고등 <b>'+sch.high+'</b>곳'
+        +(sch.total?'입니다.':'이 확인되지 않습니다.')
+        +(kinds>=2?'':' 학교급이 한 종류뿐이면 가족 단위 임차 수요에서 약점이 됩니다.'),
+        '가까운 순: '+(sch.near.slice(0,4).map(function(x){return esc(x.nm)+' '+n(x.d)+'m';}).join(' · ')||'없음')
+        +' · 근거: '+LH_CRIT.src+'('+LH_CRIT.school.what+')'));
     }
     /* 5. 최소 호수
        ⚠️ 2026-08-04 수정: 예전에는 서울 19 / 인천 20 / 경기 50 / 그 외 30으로 박아 뒀는데
@@ -1040,7 +1089,7 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
   document.getElementById('note').innerHTML=
     '관할과 면적 요건은 13개 지역본부의 최신 공고 원문 기준입니다(기준일 '
     +((window.LHDIAG&&window.LHDIAG.ver)||'-')+'). '
-    +'가격과 임대수요는 사업지 반경 1.2km의 국토교통부 실거래를 집계했고, 단가는 전용면적 평당입니다. '
+    +'가격과 임대수요는 사업지 반경 1.2km(공고문에 실거래 반경 규정이 없어 우리가 정한 기준)의 국토교통부 실거래를 집계했고, 단가는 전용면적 평당입니다. 교육여건은 공고문 기준인 3km 안 초·중·고 개수로 판정합니다. '
     +'비선호 입지와 재무영향도는 자료 확보 후 붙습니다.<br>'
     +'<b>참고용이며 심의 결과나 감정평가액을 보장하지 않습니다. 계약 판단은 공고문 원문과 담당 지역본부 문의처를 확인하고 하십시오.</b>';
 })();
