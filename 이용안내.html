@@ -14,7 +14,7 @@
 <link rel="icon" href="/icons/favicon-32.png" sizes="32x32">
 <script>if('serviceWorker' in navigator){addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}</script>
 <title>이용 안내 · 석봉 부동산 정보방</title>
-<meta name="description" content="실거래지도·청약·경매공매·LH매입약정·리포트·관심단지, 각 메뉴에서 무엇을 확인할 수 있는지 실제 화면과 함께 안내합니다.">
+<meta name="description" content="실거래지도·청약·경매공매·LH매입약정·땅값 조회·금리지표·리포트·관심단지, 각 메뉴에서 무엇을 확인할 수 있는지 실제 화면과 함께 안내합니다.">
 <link rel="canonical" href="https://xn--2q1br1nnrasc92a76myvau64b.com/%EC%9D%B4%EC%9A%A9%EC%95%88%EB%82%B4.html">
 <meta property="og:title" content="이용 안내 · 석봉 부동산 정보방">
 <meta property="og:description" content="각 메뉴에서 무엇을 확인할 수 있는지 실제 화면과 함께 안내합니다.">
@@ -53,6 +53,15 @@ ul.pt li b{color:var(--text)}
 .tip{background:var(--soft);border:1px solid var(--hair);border-radius:12px;padding:14px 17px;margin:0 0 16px;
   font-size:13px;color:var(--text2);line-height:1.75;word-break:keep-all}
 .tip b{color:var(--text)}
+.only{border:1px solid var(--hair);border-left:3px solid var(--brass,#a8792c);border-radius:12px;
+  background:#fff;padding:18px 20px;margin:0 0 34px}
+.only .oh{font-size:12px;font-weight:800;letter-spacing:.12em;color:var(--brass,#a8792c);margin:0 0 10px}
+.only .og{display:grid;grid-template-columns:1fr 1fr;gap:0 22px}
+.only a.oi{display:block;text-decoration:none;padding:10px 0;border-bottom:1px dotted var(--hair)}
+.only a.oi b{display:block;font-size:14px;color:var(--text);letter-spacing:-0.01em}
+.only a.oi span{display:block;font-size:12.5px;color:var(--muted);line-height:1.6;margin-top:2px;word-break:keep-all}
+.only a.oi:hover b{text-decoration:underline}
+@media(max-width:560px){.only .og{grid-template-columns:1fr}}
 .end{border-top:1px solid var(--hair);padding-top:26px;margin-top:10px}
 .end h3{font-size:17px;font-weight:800;margin:0 0 8px}
 .end p{font-size:13.5px;color:var(--muted);line-height:1.8;margin:0 0 16px;word-break:keep-all}
@@ -90,9 +99,24 @@ ul.pt li b{color:var(--text)}
     국토교통부 실거래 신고 자료를 매일 받아 지도와 표로 바꿔 놓은 사이트입니다.</p>
   <div class="free">전부 무료 · 회원가입 없이도 대부분 이용 가능</div>
 
+  <div class="only">
+    <div class="oh">이 사이트에서만 되는 것</div>
+    <div class="og">
+      <a class="oi" href="%ED%86%A0%EC%A7%80%EA%B2%80%EC%83%89.html"><b>내 땅 담보가치 조회</b>
+        <span>지번 하나로 공시지가·주택가격·행위제한·건축물대장·참고 시세 구간까지 한 화면에</span></a>
+      <a class="oi" href="lh_%EC%A7%84%EB%8B%A8.html"><b>LH 매입약정 셀프진단</b>
+        <span>사업지 주소를 넣으면 심사에서 걸리는 항목을 계약 전에 미리 짚어 줍니다</span></a>
+      <a class="oi" href="map.html"><b>실거래와 호가를 나란히</b>
+        <span>신고된 계약값과 지금 나온 매물값을 한 카드에서 비교합니다. 재개발 구역·추진 단계도 같은 지도에</span></a>
+      <a class="oi" href="%EC%A7%80%ED%91%9C.html"><b>금리·지표 한 화면</b>
+        <span>기준금리부터 2금융 담보금리, 아파트 주간 가격, 미분양·공급까지 기준시점을 붙여 모았습니다</span></a>
+    </div>
+  </div>
+
   <div class="toc">
     <a href="#map">실거래지도</a><a href="#danji">단지 상세</a><a href="#redev">재개발·재건축</a>
     <a href="#apply">청약</a><a href="#auction">경매·공매</a><a href="#lh">LH매입</a>
+    <a href="#land">땅값</a><a href="#rates">금리·지표</a>
     <a href="#report">리포트</a><a href="#fav">관심단지</a>
   </div>
 
@@ -229,8 +253,49 @@ ul.pt li b{color:var(--text)}
     <div class="tip">판정은 참고용입니다. <b>실제 심의 결과나 감정평가액을 보장하지 않습니다.</b> 계약 판단은 공고문 원문과 지역본부 문의처를 확인하고 하십시오.</div>
   </section>
 
-  <section class="st" id="report">
+  <section class="st" id="land">
     <div class="n">07</div>
+    <h2>땅값 (내 땅 담보가치 조회)</h2>
+    <p class="d">토지를 가지고 계시거나 사려는 분을 위한 화면입니다. 지번 주소 하나만 넣으면
+      그 필지의 담보 판단에 필요한 공공자료를 한 번에 모아 보여드립니다.</p>
+    <div class="shot">
+      <img src="이용안내/12_land.webp" alt="땅값 조회 결과 화면. 개별공시지가, 토지특성, 개별주택가격, 참고 시세 구간이 차례로 정리된 모습" loading="lazy">
+      <div class="cap">지번 하나로 공시지가부터 참고 시세 구간까지. 은행 가기 전에 내 땅의 값어치를 가늠해 봅니다.</div>
+    </div>
+    <ul class="pt">
+      <li><b>개별공시지가</b>를 ㎡당·평당·필지 총액으로 바로 환산해 줍니다</li>
+      <li>단독·다가구 필지는 <b>개별주택가격</b>(토지+건물 일체의 국가 공시가격)이 함께 나옵니다</li>
+      <li><b>행위제한</b> 목록에서 개발제한·군사보호처럼 값을 깎는 규제를 미리 확인합니다</li>
+      <li><b>건축물대장</b>은 건폐율·용적률·층별 구성·주차까지 붙습니다. 건물이 옆 필지에 걸쳐 있으면 그것도 알려 드립니다</li>
+      <li><b>참고 시세 구간</b>은 같은 지역·지목·용도지역의 실거래가 공시지가의 몇 배에 거래됐는지로 계산한 통계 구간입니다</li>
+      <li>카카오 로그인 후 <b>하루 20회</b>까지 조회할 수 있습니다 (무료)</li>
+    </ul>
+    <div class="tip"><b>조회 결과는 참고용입니다.</b> 감정평가가 아니며 대출 심사·계약의 근거 자료가 될 수 없습니다.
+      실제 담보 가치는 금융기관의 감정평가로 정해집니다.</div>
+    <a class="go" href="%ED%86%A0%EC%A7%80%EA%B2%80%EC%83%89.html">내 땅 조회하기</a>
+  </section>
+
+  <section class="st" id="rates">
+    <div class="n">08</div>
+    <h2>금리·지표</h2>
+    <p class="d">부동산을 볼 때 같이 봐야 하는 숫자들을 한 화면에 모았습니다. 뉴스에 흩어진 지표를 찾아다니지 않아도 됩니다.</p>
+    <div class="shot">
+      <img src="이용안내/13_rates.webp" alt="금리·지표 화면. 아파트 주간 가격 변동률과 추세선, 기준시점이 표로 정리된 모습" loading="lazy">
+      <div class="cap">값마다 기준시점과 최근 추세선이 붙습니다. 그룹마다 다음 갱신일도 적어 두었습니다.</div>
+    </div>
+    <ul class="pt">
+      <li><b>아파트 주간 가격</b>부터 <b>기준금리·국고채·환율</b>은 매일 새로 받습니다</li>
+      <li>1금융·2금융 <b>담보대출 금리</b>를 나란히 봅니다. 격차가 곧 조달 비용 차이입니다</li>
+      <li><b>인허가·착공·준공과 미분양</b>을 같은 그룹에 두어 공급의 원인과 결과를 함께 봅니다</li>
+      <li>오피스·상가 <b>공실률과 임대료</b>도 분기마다 갱신됩니다</li>
+    </ul>
+    <div class="tip">지표마다 <b>나라가 발표하는 주기가 다릅니다.</b> 실거래는 당일, 미분양은 두 달쯤 늦게 나옵니다.
+      그래서 모든 값 옆에 기준시점을 붙였고, 화면 아래에 왜 그런지 설명해 두었습니다.</div>
+    <a class="go" href="%EC%A7%80%ED%91%9C.html">금리·지표 열기</a>
+  </section>
+
+  <section class="st" id="report">
+    <div class="n">09</div>
     <h2>리포트</h2>
     <p class="d">그날그날의 실거래를 읽고 쓴 글을 모아 둡니다.</p>
     <div class="shot">
@@ -248,7 +313,7 @@ ul.pt li b{color:var(--text)}
   </section>
 
   <section class="st" id="fav">
-    <div class="n">08</div>
+    <div class="n">10</div>
     <h2>관심단지</h2>
     <p class="d">눈여겨보는 단지를 모아 두는 곳입니다. 여기만 카카오 로그인이 필요합니다.</p>
     <div class="shot">
