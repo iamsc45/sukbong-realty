@@ -1198,8 +1198,33 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
       if(onNo)onNo();
     });
   }
+  /* 🔴 질의가 '행정구역 이름 그 자체'인가 (2026-08-14 신설)
+     왜: `?q=강서구`가 단지 **'강서구청 파크뷰 에버'**에 걸려 줌17로 엉뚱하게 확대됐다.
+         routeQ 가 단지 → 주소 → 지역 순이라 구·동 이름이 단지명에 부분 일치하면
+         단지가 먼저 이긴다. 2026-08-11 에도 `?q=부전동`이 '부전동보성오페라'로 걸려
+         원고 세션이 링크를 바꿔 피했다(같은 문제의 재발).
+     ⚠️ **정확히 같을 때만** 참이다. 부분 일치로 하면 '화곡동푸르지오' 같은
+        진짜 단지 검색이 죽는다.
+     ⚠️ `dong` 파라미터가 있으면 단지를 노린 딥링크이므로 이 판정을 쓰지 않는다. */
+  function _isRegionName(v){
+    var q=(v||'').trim();
+    if(!q)return false;
+    try{
+      if(SB.dongs&&Object.prototype.hasOwnProperty.call(SB.dongs,q))return true;
+      return SB.summary.regions.some(function(x){
+        if(x.sgg===q)return true;
+        var p=x.sgg.split(/[\s_]+/);
+        return p[p.length-1]===q;      /* '수원_장안구' → '장안구' */
+      });
+    }catch(e){return false;}
+  }
+
   function routeQ(v,dong){
     function afterIdx(){
+      /* 지역 이름으로 들어온 딥링크는 단지 단계를 건너뛴다(위 주석 참조) */
+      if(!dong&&_isRegionName(v)){
+        if(findAndGo(v))return;
+      }
       if(window._trySelectApt&&window._trySelectApt(v,dong))return;
       tryAddress(v,function(){
         /* 🔴 순서 뒤집음(2026-08-10). 전에는 지역보다 재개발 구역을 먼저 맞춰 봤는데,
