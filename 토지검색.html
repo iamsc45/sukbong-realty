@@ -192,7 +192,8 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
       h.push('<div class="row"><div class="k">㎡당</div><div class="v">'+comma(unit)+'원</div></div>');
       h.push('<div class="row"><div class="k">평당</div><div class="v big">'+wonPy(unit)+'</div></div>');
       if(ch&&ch.lndpclAr){
-        h.push('<div class="row"><div class="k">필지 총액</div><div class="v">약 '+wonPy(unit*+ch.lndpclAr/PYUNG*PYUNG)+' <span class="tag">'+m2py(ch.lndpclAr)+'</span></div></div>');
+        /* 총액 = ㎡당 공시지가 × 필지면적(㎡). wonPy는 평당 환산용이라 여기 쓰면 3.3배 부풀려진다(2026-08-12 수정) */
+        h.push('<div class="row"><div class="k">필지 총액</div><div class="v">약 '+wonAbs(unit*+ch.lndpclAr)+' <span class="tag">'+m2py(ch.lndpclAr)+'</span></div></div>');
       }
       h.push('</div>');
     }
@@ -219,7 +220,8 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
       h.push('<h2>참고 시세 구간</h2><div class="card">');
       h.push('<div class="row"><div class="k">평당</div><div class="v big">'+wonPy(e.unit_lo)+' ~ '+wonPy(e.unit_hi)+'</div></div>');
       if(ch&&ch.lndpclAr){
-        h.push('<div class="row"><div class="k">필지 기준</div><div class="v">약 '+wonPy(e.unit_lo*+ch.lndpclAr/PYUNG*PYUNG)+' ~ '+wonPy(e.unit_hi*+ch.lndpclAr/PYUNG*PYUNG)+'</div></div>');
+        /* 총액 = ㎡당 구간값 × 필지면적(㎡). 위와 같은 이유로 wonAbs (2026-08-12 수정) */
+        h.push('<div class="row"><div class="k">필지 기준</div><div class="v">약 '+wonAbs(e.unit_lo*+ch.lndpclAr)+' ~ '+wonAbs(e.unit_hi*+ch.lndpclAr)+'</div></div>');
       }
       h.push('<div class="row"><div class="k">근거</div><div class="v">'+esc(e.scope)+' 실거래 '+comma(e.n)+'건 · 공시지가의 '+e.lo+'~'+e.hi+'배 <span class="tag">신뢰도 '+esc(e.grade)+'</span></div></div>');
       h.push('<div class="note">2021~2026년 국토교통부 실거래 신고를 모은 통계 구간입니다. 이 필지의 값이 아니라 같은 지역·지목·용도지역 거래의 분포입니다.</div>');
@@ -308,6 +310,12 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
       if(atch.length){
         var aj=atch.map(function(a){var b=+a.atchBun||0,j=+a.atchJi||0;return b+(j?'-'+j:'');}).filter(Boolean);
         if(aj.length)h.push(brow('부속지번','<span class="warn">'+esc(aj.join(', '))+'</span> <span class="tag">건물이 이 필지들에 걸쳐 있음 · 담보 설정 시 함께 확인</span>'));
+      }
+      /* 토지 면적과 대장상 대지면적이 다르면 그 사실을 알려준다(둘 다 공부상 실제 값) */
+      var landAr=ch?+ch.lndpclAr||0:0;
+      var bldPlat=recap.length?+recap[0].platArea||0:(title.length?+title[0].platArea||0:0);
+      if(landAr&&bldPlat&&Math.abs(landAr-bldPlat)/landAr>0.03){
+        h.push('<div class="note">위 토지특성의 필지 면적('+m2py(landAr)+')과 건축물대장의 대지면적('+m2py(bldPlat)+')이 다릅니다. 대장은 건축 당시 기재라 이후 합필·분필이 있었거나 일부만 대지로 산입됐을 수 있습니다. 정확한 면적은 토지대장·등기부로 확인하세요.</div>');
       }
       h.push('</div>');
     }else{
