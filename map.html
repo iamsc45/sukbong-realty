@@ -355,7 +355,11 @@ var _MAPVIEW_KEY='sb_mapview', _BACKVIEW=null;
          종전엔 30분 내 재방문이기만 하면 복원이 이겨서, 블로그 단지 링크를 하나 눌러본 뒤
          30분 안에 다른 단지 링크를 누르면 딥링크가 통째로 무시되고 이전 화면만 떴다
          (지도 이동·단지 카드 모두 안 됨). 진짜 뒤로가기(back_forward)일 때만 복원을 유지한다. */
-      var hasDeep=/[?&](q|r|s)=/.test(location.search);
+      /* ⚠️ 딥링크 파라미터를 새로 만들면 **이 목록에 반드시 추가**한다(2026-08-15).
+         `at`(좌표 딥링크)을 빠뜨렸더니, 30분 안에 지도를 본 적 있는 사람에게는
+         좌표 링크가 통째로 무시되고 '보던 화면'이 떴다. 새 창에서는 되고 쓰던
+         브라우저에서는 안 되니 원인을 찾기도 어렵다(라이브에서만 재현됐다). */
+      var hasDeep=/[?&](q|r|s|at)=/.test(location.search);
       if(hasDeep&&!isBack)v=null;
       if(v&&((((isBack||fromDetail)&&age<6*3600*1000)||age<30*60*1000)))_BACKVIEW=v;
     }
