@@ -1116,6 +1116,31 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
       if(onerr)onerr();
     },onerr);
   }
+  /* 🔴 2026-08-15: 아래 tryAddress 의 '시군구 힌트 검증'이 경매 인기물건 16건 중 7건을
+     튕겨냈다(석봉님 제보 "표시가 되는 지역도 있고 안 되는 지역도 있다"). 원인 셋 —
+       ①접미사 목록에 '도'가 없어 '경기도'가 그대로 남았다(우리 데이터는 '경기')
+       ②'전주시'·'덕진구'처럼 시/군/구가 붙은 토큰을 그대로 비교했다(데이터는 '전주 덕진구')
+       ③'경상북도'는 접미사만 떼면 '경상북'인데 데이터는 '경북'이라 축약 매핑이 필요하다.
+     튕기면 그 자리에서 지오코딩 핀으로 떨어져 단지 카드가 안 열린다.
+     ⚠️느슨하게 풀면 동명이동으로 새므로 '접두 일치'까지만 인정한다. */
+  var _SIDOA={'강원특별자치도':'강원','전북특별자치도':'전북','제주특별자치도':'제주',
+              '경상북도':'경북','경상남도':'경남','전라북도':'전북','전라남도':'전남',
+              '충청북도':'충북','충청남도':'충남'};
+  function _rgnKey(s){
+    s=String(s||'').trim();
+    if(_SIDOA[s])return _SIDOA[s];
+    return s.replace(/(특별자치시|특별자치도|특별시|광역시)$/,'').replace(/(시|군|구|도)$/,'');
+  }
+  function _rgnHintOK(hint,sggNm){
+    if(!sggNm)return true;
+    var parts=sggNm.split(/[\s_]+/).map(_rgnKey).filter(Boolean);
+    if(!parts.length)return true;
+    return String(hint||'').split(/\s+/).every(function(h){
+      var k=_rgnKey(h);
+      if(!k)return true;
+      return parts.some(function(p){return p===k||p.indexOf(k)===0;});
+    });
+  }
   function tryAddress(v,onNo){
     /* 청약 공고 주소는 "...번지 일원"·"...번지 일대"·"프로젝트명 (실제 지번주소)" 형태가 많아
        끝이 숫자로 안 끝나면 지번 매칭이 통째로 안 됐다(2026-08-02 발견 — 주변 실거래지도가
@@ -1157,8 +1182,7 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
       var hint=toks.slice(0,toks.length-(two===dk?2:1)).join(' ');
       var reg=(SB.summary&&SB.summary.regions||[]).find(function(r){return r.code===code;});
       var sggNm=reg?(reg.sido+' '+reg.sgg.replace(/_/g,' ')):'';
-      var ok=hint.split(/\s+/).every(function(h){return sggNm.indexOf(h.replace(/(특별시|광역시|특별자치시|특별자치도)$/,''))>=0;});
-      if(!ok){vw();return;}
+      if(!_rgnHintOK(hint,sggNm)){vw();return;}
     }
     function openPt(){
       var d=SB.d[code]||[], pt=null;
@@ -1341,14 +1365,52 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
       _w+=100;setTimeout(waitMod,100);
     })();
   }
-  /* 딥링크: ?r=시군구코드 | ?q=주소·지역명 | ?s=시도명 */
+  /* 🔴 좌표 딥링크 `?at=위도,경도&code=시군구코드` (2026-08-15 신설)
+     왜 만드나 — 지금까지 상세 페이지에서 지도로 오는 길이 `?q=이름` 하나였는데,
+     단지 인덱스에 **아파트만** 있어(64,888개 전부 apt) 연립·단독·상가·토지는 이름으로
+     못 찾았다. 부산 수영구만 봐도 738건 중 아파트는 151건뿐이고 나머지 587건이
+     그대로 안 잡혔다. 게다가 토지는 이름이 지목 한 글자('대')라 검색 자체가 성립하지
+     않는다(석봉님 제보: `nm=대`가 도곡동으로 튐 — 2글자 미만이면 단지검색을 건너뛰고
+     자유검색이 엉뚱한 곳을 집었다).
+     좌표는 종류·이름과 무관하게 그 지점을 가리키므로 이 문제가 한 번에 사라지고,
+     동명이단지 오이동도 원천 차단된다. `?q=` 는 그대로 둔다(블로그 딥링크가 쓴다). */
+  function _goAt(at,code){
+    var mm=String(at||'').split(',');
+    var la=+mm[0],ln=+mm[1];
+    if(!isFinite(la)||!isFinite(ln))return false;
+    function pick(){
+      var d=(code&&SB.d[code])||[],best=null,bd=1e9;
+      for(var i=0;i<d.length;i++){
+        var dd=Math.abs(d[i].lat-la)+Math.abs(d[i].lng-ln);
+        if(dd<bd){bd=dd;best=d[i];}
+      }
+      /* 약 30m 안쪽이면 같은 지점으로 본다(좌표는 지번 기준 개략이라 소수점이 조금 다르다) */
+      if(best&&bd<0.0004){go(best.lat,best.lng,17);
+        setTimeout(function(){showAptCard(best,(best.txs||[]).slice());},400);
+        var st=document.getElementById('stat');
+        if(st)st.textContent=best.dong+' '+(best.jibun||'')+' · '+best.name;
+      }else{
+        /* 카드로 열 자료가 없으면 위치만이라도 정확히 보여 준다 — 종전엔 이 경우
+           엉뚱한 지역으로 튀어 "어딘지 확인이 안 된다"는 말을 들었다. */
+        go(la,ln,17);
+        try{_addrMark(la,ln,'');}catch(e){}
+      }
+    }
+    if(code&&!loaded[code]){loadDetail(code,pick);setTimeout(function(){if(!loaded[code])go(la,ln,17);},2500);}
+    else pick();
+    return true;
+  }
+  /* 딥링크: ?r=시군구코드 | ?q=주소·지역명 | ?s=시도명 | ?at=위도,경도 */
   try{
     var P=new URLSearchParams(location.search);
     var pr=P.get('r'),pq=P.get('q'),psp=P.get('s'),pdong=P.get('dong');
+    var pat=P.get('at'),pcode=P.get('code');
     if(_BACKVIEW){                    /* 뒤로가기로 돌아온 경우: 딥링크보다 '보던 화면'이 우선 */
-      pr=pq=psp=pdong=null;
+      pr=pq=psp=pdong=pat=null;
     }
-    if(pr){
+    if(pat&&_goAt(pat,pcode)){
+      /* 좌표가 가장 정확하므로 다른 딥링크보다 먼저 처리하고 끝낸다 */
+    }else if(pr){
       var t0=SB.summary.regions.find(function(x){return x.code===pr;});
       if(t0){
         curSido=t0.sido;curSgg=t0.code;s1.value=t0.sido;fill();s2.value=t0.code;

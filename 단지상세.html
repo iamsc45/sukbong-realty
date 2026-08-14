@@ -202,6 +202,17 @@ function go(code,nm,dong){
   for(var i=0;i<arr.length;i++){if(arr[i].name===nm&&(!dong||arr[i].dong===dong)){pt=arr[i];break;}}
   if(!pt){for(i=0;i<arr.length;i++){if(arr[i].name===nm){pt=arr[i];break;}}}
   if(!pt){fail();return;}
+  /* 🔴 '지도에서 이 단지 보기'는 이름이 아니라 **좌표**로 보낸다(2026-08-15).
+     이름으로 보내던 종전 방식은 아파트에서만 통했다 — 단지 인덱스에 아파트만 있어서
+     연립·단독·상가·토지는 지도가 못 찾았고(수영구는 738건 중 587건이 그랬다),
+     토지는 이름이 지목 한 글자라 `?q=대`가 도곡동으로 튀었다(석봉님 제보).
+     좌표는 종류·이름과 무관하고 동명이단지로 샐 일도 없다.
+     ⚠️좌표가 없는 옛 자료를 대비해 이름 링크를 폴백으로 남긴다(boot 에서 설정한 것). */
+  try{
+    var _gm=document.getElementById('goMap');
+    if(_gm&&pt.lat&&pt.lng)
+      _gm.href='map.html?at='+pt.lat+','+pt.lng+'&code='+encodeURIComponent(code);
+  }catch(e){}
   canon(pt,code);
   render(pt,code);
 }
