@@ -27,7 +27,14 @@ body.v2.tone-plain .leaflet-tile{filter:none}
 body.v2.tone-vivid .leaflet-tile{filter:saturate(1.35) contrast(1.06)}
 
 /* ── 1. 상단 컨트롤: 지도 위에 떠 있는 캡슐 ────────────────── */
-body.v2 #bar{position:absolute;top:calc(var(--v2-top,52px) + 12px);left:12px;z-index:900;
+/* 🔴 z-index 를 950 으로 올렸다(2026-08-15 모바일 제보).
+   종전 900 은 지도 위 레이어 버튼(#mlayers)과 **똑같은 값**이라, 검색 드롭다운(#sac)이
+   열려도 나중에 그려지는 #mlayers 가 위로 올라와 안내 글씨를 가렸다
+   (실측: 표본 63개 중 8개가 버튼에 덮임). #bar 는 `absolute` + z-index 가 있어
+   **쌓임 맥락을 만들므로**, 그 안의 #sac 이 1600 이어도 바깥과는 900 대 900 으로 겨룬다.
+   → 검색바 캡슐 자체를 레이어 버튼보다 한 칸 위로 올린다. 상단 컨트롤이 지도 버튼보다
+     위에 있는 것이 자연스럽고, 모달(#msheet 2000)보다는 여전히 아래다. */
+body.v2 #bar{position:absolute;top:calc(var(--v2-top,52px) + 12px);left:12px;z-index:950;
   background:rgba(255,255,255,.97);backdrop-filter:blur(10px);
   border:0;border-radius:16px;padding:9px 12px;
   box-shadow:0 6px 24px rgba(20,20,20,.13),0 1px 3px rgba(20,20,20,.08);

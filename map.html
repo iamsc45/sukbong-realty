@@ -84,7 +84,11 @@
     border-radius:16px;background:#fff;outline:none;color:var(--text2)}
   #sq::placeholder{color:var(--muted2)}
   #sq:focus{box-shadow:0 0 0 2px rgba(20,20,20,.12)}
-  #sform{position:relative}
+  /* 🔴 드롭다운(#sac)의 기준은 #bar 가 아니라 **여기(#sform)** 다(2026-08-15 실측).
+     z-index 가 없어 같은 줄의 형제 버튼들(재개발 필터 `.rfc`, 레이어 버튼)이 위로 올라와
+     안내 글씨를 가렸다 — 모바일 그리드에서 특히 심했다(측정: 63개 표본 중 8개 가림).
+     검색폼을 형제들보다 위로 올린다. #bar 안이라 헤더 밖으로는 안 튄다. */
+  #sform{position:relative;z-index:20}
   #sac{display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:1600;width:290px;max-height:340px;
     overflow-y:auto;overflow-x:hidden;background:#fff;border:1px solid var(--hair-soft);border-radius:12px;box-shadow:0 12px 28px rgba(20,20,20,.18)}
   #sac.open{display:block}
@@ -105,7 +109,13 @@
   #sac .sgo b{display:block;font-size:12.5px;font-weight:700;color:var(--text2)}
   #sac .sgo i{display:block;margin-top:2px;font-size:10.5px;font-style:normal;
     color:var(--muted);white-space:normal;word-break:keep-all}
-  #bar{position:relative}
+  /* 🔴 검색 드롭다운(#sac)이 지도 위 버튼들에 가려지던 것(2026-08-15 모바일 제보).
+     #sac 자신은 z-index:1600 인데, 부모 #bar 가 `position:relative` 에 z-index 가
+     없어 **쌓임 맥락을 만들지 않아** 지도 컨트롤과 같은 층에서 순서로 밀렸다.
+     #bar 에 z-index 를 주어 헤더 전체를 지도 위로 올린다.
+     ⚠️ 모달(#msheet 2000)보다는 아래여야 한다 — 바텀시트가 열렸을 때 헤더가 그 위로
+        튀어나오면 안 된다. */
+  #bar{position:relative;z-index:1500}
   #fpanel{display:none;position:fixed;left:8px;z-index:1400;background:#fff;
     border:1px solid var(--hair-soft);border-radius:12px;box-shadow:0 10px 26px rgba(20,20,20,.14);
     padding:3px 13px 7px;max-width:660px;font-size:12.5px}
@@ -135,6 +145,9 @@
   @media (max-width:720px){
     /* 컴팩트 정렬 그리드(2026-07-27): 줄마다 좌우 꽉 차게, 높이·라운드 통일 · 지도 가림 최소화(높이 다이어트) */
     #bar{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;padding:6px 10px}
+    /* 검색 드롭다운을 검색폼 폭에 맞춘다(2026-08-15). 데스크톱 기준 290px 고정이라
+       모바일 그리드에서 넘치거나 어색하게 잘린다. */
+    #sac{width:auto;left:0;right:0;max-height:52vh}
     .bargrp{display:none}
     .lbl{display:none}
     #stat{display:none}
