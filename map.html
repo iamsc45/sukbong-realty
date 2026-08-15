@@ -1283,8 +1283,56 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
             setFcount('"'+v+'" 비슷한 단지 '+cand.length+'곳');
             return;
           }
-          if(st)st.textContent='"'+v+'" 검색 결과를 찾지 못했습니다';
-          setFcount('"'+v+'" 검색 결과 없음 · 지도는 보던 자리 그대로입니다');
+          /* 🔑 완전 0건이면 **빈손으로 돌려보내지 않는다**(2026-08-15 신설).
+             네이버 유입 검색어를 재 보니 상위의 상당수가 **아직 실거래가 없는 분양 단지**였다
+             (미미샹 10.17%·어반브레·중흥s클래스·퍼스트빌리지…). 우리는 실거래 지도라
+             그 단지가 없는 게 맞다. 문제는 **왜 없는지 말해 주지 않는 것**이다.
+             그래서 ①이유를 한 줄로 밝히고 ②질의에 지역이 들어 있으면 그 지역 실거래로,
+             ③분양이면 청약 페이지로 보낸다. 데이터를 늘리지 않고 되는 유일한 개선이다. */
+          var sac2=document.getElementById('sac');
+          if(sac2){
+            /* ⚠️ 이 블록은 `esc()`·`norm()`·`findAndGo()` 와 **다른 IIFE** 안이다
+               (2026-08-15 확인). 그대로 부르면 ReferenceError 로 검색이 통째로 죽는다.
+               그래서 필요한 것만 안에서 직접 만든다. */
+            var _E=function(s){return String(s||'').replace(/[&<>"]/g,function(c){
+              return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
+            var _N=function(s){return String(s||'').toLowerCase().replace(/[\s·().,\-]/g,'');};
+            /* 질의에서 지역명을 뽑는다 — '봉담 퍼스트빌리지' → 봉담읍 … */
+            var _rg='';
+            try{
+              if(window.SB&&SB.aptIdx){
+                var _nv=_N(v), _seen={};
+                for(var _k=0;_k<SB.aptIdx.length&&!_rg;_k++){
+                  var _full=SB.aptIdx[_k][4]||''; if(!_full||_seen[_full])continue; _seen[_full]=1;
+                  var _stem=_N(_full).replace(/[동리읍면]$/,'');
+                  if(_stem.length>=2&&_nv.indexOf(_stem)===0)_rg=_full;
+                }
+              }
+            }catch(e){}
+            var _h='<div class="sach">"'+_E(v)+'" 는 실거래 신고 기록이 없습니다</div>'
+              +'<div class="sitem" style="cursor:default"><span style="line-height:1.5">'
+              +'이 지도는 <b>국토부에 신고된 실거래</b>만 보여 줍니다. '
+              +'분양 예정이거나 아직 거래가 없는 단지는 나오지 않습니다.</span></div>';
+            if(_rg){
+              _h+='<div class="sitem" data-go="rg"><b>'+_E(_rg)+' 실거래 보기</b>'
+                 +'<span>그 지역에서 실제로 거래된 단지</span></div>';
+            }
+            _h+='<div class="sitem" data-go="apply"><b>청약에서 찾기</b>'
+               +'<span>분양·모집공고 일정과 경쟁률</span></div>';
+            sac2.innerHTML=_h; sac2.classList.add('open');
+            Array.prototype.forEach.call(sac2.querySelectorAll('[data-go]'),function(el){
+              el.addEventListener('click',function(){
+                if(el.getAttribute('data-go')==='apply'){location.href='apply.html';return;}
+                /* 지역 이동도 같은 이유로 함수를 못 부른다 → 검색창에 넣어 정상 경로를 태운다 */
+                var _sq=document.getElementById('sq');
+                if(window.closeSac)window.closeSac();
+                if(_sq){_sq.value=_rg;_sq.dispatchEvent(new Event('input',{bubbles:true}));
+                        _sq.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}));}
+              });
+            });
+          }
+          if(st)st.textContent='"'+v+'" 는 실거래 신고 기록이 없습니다';
+          setFcount('"'+v+'" 실거래 없음 · 지도는 보던 자리 그대로입니다');
         }
         function goRegion(onNo){
           if(!findAndGo(v)){onNo();return;}
