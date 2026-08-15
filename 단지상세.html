@@ -208,10 +208,25 @@ function go(code,nm,dong){
      토지는 이름이 지목 한 글자라 `?q=대`가 도곡동으로 튀었다(석봉님 제보).
      좌표는 종류·이름과 무관하고 동명이단지로 샐 일도 없다.
      ⚠️좌표가 없는 옛 자료를 대비해 이름 링크를 폴백으로 남긴다(boot 에서 설정한 것). */
+  /* 🔴 상품 종류(t)와 거래유형(u)도 함께 넘긴다(2026-08-15 석봉님 재지적).
+     좌표만 넘겼더니 지도는 그 자리로 갔는데 **화면에 아무 표시도 없었다** —
+     지도 첫 화면의 상품 필터가 '아파트·매매' 고정이라(2026-08-09 지시),
+     토지·연립·상가 지점으로 가도 그 종류 마커는 한 개도 안 그려진다.
+     석봉님이 "상품을 토지로 바꾸니 그제야 보인다"고 하신 것이 이 뜻이다.
+     그 지점의 종류와 거래유형을 같이 넘겨야 눈에 보인다. */
   try{
     var _gm=document.getElementById('goMap');
-    if(_gm&&pt.lat&&pt.lng)
-      _gm.href='map.html?at='+pt.lat+','+pt.lng+'&code='+encodeURIComponent(code);
+    if(_gm&&pt.lat&&pt.lng){
+      var _q='map.html?at='+pt.lat+','+pt.lng+'&code='+encodeURIComponent(code);
+      if(pt.t)_q+='&t='+encodeURIComponent(pt.t);
+      /* 거래유형은 그 지점에 실제로 있는 것 중 가장 많은 것으로. 매매가 없는 지점
+         (전월세만 있는 빌라 등)에 '매매' 기본값으로 가면 역시 아무것도 안 보인다. */
+      var _c={},_best='',_n=0;
+      (pt.txs||[]).forEach(function(x){var u=x.u||'';if(!u)return;_c[u]=(_c[u]||0)+1;
+        if(_c[u]>_n){_n=_c[u];_best=u;}});
+      if(_best&&_best!=='매매')_q+='&u='+encodeURIComponent(_best);
+      _gm.href=_q;
+    }
   }catch(e){}
   canon(pt,code);
   render(pt,code);
