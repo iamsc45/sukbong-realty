@@ -86,7 +86,7 @@
   #sq:focus{box-shadow:0 0 0 2px rgba(20,20,20,.12)}
   #sform{position:relative}
   #sac{display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:1600;width:290px;max-height:340px;
-    overflow-y:auto;background:#fff;border:1px solid var(--hair-soft);border-radius:12px;box-shadow:0 12px 28px rgba(20,20,20,.18)}
+    overflow-y:auto;overflow-x:hidden;background:#fff;border:1px solid var(--hair-soft);border-radius:12px;box-shadow:0 12px 28px rgba(20,20,20,.18)}
   #sac.open{display:block}
   #sac .sach{padding:6px 12px;font-size:10.5px;color:var(--muted);border-bottom:1px solid var(--hair);position:sticky;top:0;background:#fff}
   #sac .sitem{display:flex;justify-content:space-between;gap:8px;align-items:baseline;padding:7px 12px;cursor:pointer;border-bottom:1px solid var(--hair)}
@@ -94,6 +94,17 @@
   #sac .sitem:hover{background:#f3eee1}
   #sac .sitem b{font-size:12.5px;font-weight:700;color:var(--text2)}
   #sac .sitem span{font-size:11px;color:var(--muted);white-space:nowrap}
+  /* 0건 안내용 — 문장이 길어 줄바꿈이 필요하다(2026-08-15).
+     `.sitem span` 의 nowrap 은 '월계동' 같은 짧은 라벨용이라 그대로 두고,
+     안내에는 이 클래스를 따로 쓴다. 안 그러면 가로 스크롤바가 생긴다(석봉님 제보). */
+  #sac .sinfo{display:block;padding:8px 12px;font-size:11px;line-height:1.55;
+    color:var(--muted);border-bottom:1px solid var(--hair);white-space:normal;word-break:keep-all}
+  #sac .sgo{display:block;padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--hair)}
+  #sac .sgo:last-child{border-bottom:0}
+  #sac .sgo:hover{background:#f3eee1}
+  #sac .sgo b{display:block;font-size:12.5px;font-weight:700;color:var(--text2)}
+  #sac .sgo i{display:block;margin-top:2px;font-size:10.5px;font-style:normal;
+    color:var(--muted);white-space:normal;word-break:keep-all}
   #bar{position:relative}
   #fpanel{display:none;position:fixed;left:8px;z-index:1400;background:#fff;
     border:1px solid var(--hair-soft);border-radius:12px;box-shadow:0 10px 26px rgba(20,20,20,.14);
@@ -1310,15 +1321,14 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
               }
             }catch(e){}
             var _h='<div class="sach">"'+_E(v)+'" 는 실거래 신고 기록이 없습니다</div>'
-              +'<div class="sitem" style="cursor:default"><span style="line-height:1.5">'
-              +'이 지도는 <b>국토부에 신고된 실거래</b>만 보여 줍니다. '
-              +'분양 예정이거나 아직 거래가 없는 단지는 나오지 않습니다.</span></div>';
+              +'<div class="sinfo">이 지도는 <b>국토부에 신고된 실거래</b>만 보여 줍니다. '
+              +'분양 예정이거나 아직 거래가 없는 단지는 나오지 않습니다.</div>';
             if(_rg){
-              _h+='<div class="sitem" data-go="rg"><b>'+_E(_rg)+' 실거래 보기</b>'
-                 +'<span>그 지역에서 실제로 거래된 단지</span></div>';
+              _h+='<div class="sgo" data-go="rg"><b>'+_E(_rg)+' 실거래 보기</b>'
+                 +'<i>그 지역에서 실제로 거래된 단지</i></div>';
             }
-            _h+='<div class="sitem" data-go="apply"><b>청약에서 찾기</b>'
-               +'<span>분양·모집공고 일정과 경쟁률</span></div>';
+            _h+='<div class="sgo" data-go="apply"><b>청약에서 찾기</b>'
+               +'<i>분양·모집공고 일정과 경쟁률</i></div>';
             sac2.innerHTML=_h; sac2.classList.add('open');
             Array.prototype.forEach.call(sac2.querySelectorAll('[data-go]'),function(el){
               el.addEventListener('click',function(){
