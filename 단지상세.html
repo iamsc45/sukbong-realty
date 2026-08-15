@@ -562,7 +562,17 @@ function render(pt,code){
         return ok?comma(a)+'㎡('+PY(a)+')':'';
       })(info.area,info.se))
       +frow(IC.heat,'난방',info.heat)
-      +frow(IC.park,'지하주차',info.park?comma(info.park)+'대':'')
+      /* 🔴2026-08-13 수정: 예전엔 K-apt의 kaptdPcnt(=지상)를 '지하주차'라고 적고 있었다.
+         한남더힐처럼 주차가 전부 지하인 단지가 '지하주차 0대'로 나갔다(실제 지하 1,717대).
+         이제 지상(parkU 아님)과 지하를 나눠 싣고, 아직 보강 안 된 단지는 아예 표시하지 않는다. */
+      +frow(IC.park,'주차',(function(){
+        var u=info.parkU,g=info.parkG,p=[];
+        if(u===undefined&&g===undefined)return '';
+        if(u)p.push('지하 '+comma(u)+'대');
+        if(g)p.push('지상 '+comma(g)+'대');
+        if(!p.length)return '';
+        return p.join(' · ');
+      })())
       +frow(IC.cctv,'CCTV',info.cctv?comma(info.cctv)+'대':'')
       +'</div></div>';
     /* 건축물대장은 단지 개요 바로 뒤에 붙인다(2026-08-11 석봉님: 내용이 겹치고 순서가 뒤죽박죽).
@@ -702,9 +712,22 @@ function _brDaejang(code,pt){
       +frow(IC.build,'주용도',d.pu)
       +frow(IC.build,'구조',d.st)
       +frow(IC.home,'대지면적',d.ar?d.ar.toFixed(1)+'㎡('+PY(d.ar)+')':'')
-      +frow(IC.home,'연면적 · 모든 층 바닥 합계',d.tot?comma(Math.round(d.tot))+'㎡('+PY(d.tot)+')':'')
+      +frow(IC.home,'연면적 · 모든 층 바닥 합계',
+            d.stot?comma(Math.round(d.stot))+'㎡('+PY(d.stot)+')<span class="tag">단지 전체</span>'
+                  :(d.tot?comma(Math.round(d.tot))+'㎡('+PY(d.tot)+')':''))
       +frow(IC.build,'건폐율 · 용적률',(d.bc?d.bc+'%':'')+(d.vl?' · '+d.vl+'%':''))
-      +frow(IC.build,'층수',(d.gf?'지상 '+d.gf+'층':'')+(d.uf?' · 지하 '+d.uf+'층':''))
+      /* 🔴2026-08-13 수정: 대표 동을 연면적으로만 고르다 보니 **지하주차장 동**이 뽑혀
+         '지상 0층 · 지하 2층'이 나갔다(한남더힐, 실제 최고 12층). 이제 수집기가 부속을 뺀
+         단지 요약(sgf/suf)을 함께 싣는다. 없으면 K-apt 단지 기준(topF/baseF), 그래도 없으면 동 값. */
+      +frow(IC.build,'층수',(function(){
+        var ki=findInfo(code,pt.nm||'')||{};       /* K-apt 단지 기준(전국) */
+        /* ⚠️원본이 틀린 값을 준다. 이상치 점검에서 최고층 140·150·200층, 지하 21층이 나왔다.
+           말이 안 되는 값은 숨긴다(2026-08-13. '공공 원본의 단위·값은 믿지 않는다' 규칙). */
+        function okg(v){return v>0&&v<=100?v:0;}
+        function oku(v){return v>0&&v<=10?v:0;}
+        var gf=okg(d.sgf||ki.topF||d.gf), uf=oku(d.suf||ki.baseF||d.uf);
+        return (gf?'지상 '+gf+'층':'')+(uf?(gf?' · ':'')+'지하 '+uf+'층':'');
+      })())
       +frow(IC.cal,'사용승인',d.ap&&d.ap.length===8?(d.ap.slice(0,4)+'.'+d.ap.slice(4,6)+'.'+d.ap.slice(6,8)):'')
       +frow(IC.home,'세대 · 호',(d.hh?comma(d.hh)+'세대':'')+(d.ho?(d.hh?' · ':'')+comma(d.ho)+'호':''))
       +frow(IC.build,'승강기 · 주차',(d.el?d.el+'대':'')+(d.pk?(d.el?' · ':'')+'주차 '+comma(d.pk)+'대':''));
