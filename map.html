@@ -1474,7 +1474,15 @@ map.on('moveend zoomend',function(){if(popLock)return;render();if(curMode==='red
     if(idxLoading){setTimeout(function(){loadIdx(cb);},180);return;}
     idxLoading=true;
     var s=document.createElement('script');s.src='data/apt_index.js';
-    s.onload=function(){idxReady=true;idxLoading=false;cb&&cb();};
+    s.onload=function(){
+      idxReady=true;idxLoading=false;
+      /* 검색 전용 별칭표(2026-08-15). 로직으로는 못 잡는 지역 통칭을 담는다
+         — 예: '미미삼'(미륭+미성+삼호3차, 유입 2위 10.17%인데 검색 0건이었다).
+         ⚠️ 없거나 실패해도 검색은 그대로 동작해야 하므로 콜백을 막지 않는다. */
+      var a=document.createElement('script');a.src='data/search_alias.js';
+      document.body.appendChild(a);
+      cb&&cb();
+    };
     s.onerror=function(){idxLoading=false;};
     document.body.appendChild(s);
   }
@@ -1489,6 +1497,26 @@ map.on('moveend zoomend',function(){if(popLock)return;render();if(curMode==='red
   }
   function matches(q,limit){
     var n=norm(q); if(n.length<2||!window.SB||!SB.aptIdx)return [];
+    /* 🔑 검색 전용 별칭표를 **가장 먼저** 본다(2026-08-15 신설).
+       지역 통칭은 글자가 겹치지 않아 어떤 로직으로도 못 잡는다 —
+       '미미삼'은 미륭·미성·삼호3차의 앞글자라 단지명과 한 글자도 안 겹친다. */
+    var _SA=(window.SB&&SB.searchAlias)||null;
+    if(_SA){
+      for(var _i=0;_i<_SA.length;_i++){
+        var _e=_SA[_i];
+        if(!(_e.q||[]).some(function(x){return norm(x)===n;}))continue;
+        var _out=[];
+        (_e.to||[]).forEach(function(t){
+          var p=t.split('|'), tn=norm(p[0]), td=norm(p[1]||'');
+          for(var k=0;k<SB.aptIdx.length;k++){
+            var r=SB.aptIdx[k];
+            if(norm(r[0])===tn&&(!td||norm(r[4]||'')===td)){_out.push(r);break;}
+          }
+        });
+        if(_out.length)return _out.slice(0,limit);
+        break;   /* 별칭에 걸렸는데 대상 단지를 못 찾으면 표가 낡은 것 — 기존 로직으로 */
+      }
+    }
     /* 사람들은 '압구정현대아파트'라고 치는데 실거래 표기에는 '아파트'가 없다.
        뒤에 붙은 총칭을 떼고 한 번 더 본다(떼도 2자 이상 남을 때만). */
     var _t=n.replace(/(아파트|아파트단지|단지)$/,'');
