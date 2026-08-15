@@ -721,8 +721,9 @@ function _brDaejang(code,pt){
          단지 요약(sgf/suf)을 함께 싣는다. 없으면 K-apt 단지 기준(topF/baseF), 그래도 없으면 동 값. */
       +frow(IC.build,'층수',(function(){
         var ki=findInfo(code,pt.name||'')||{};     /* K-apt 단지 기준(전국). 이름 필드는 name 이다 */
-        /* ⚠️원본이 틀린 값을 준다. 이상치 점검에서 최고층 140·150·200층, 지하 21층이 나왔다.
-           말이 안 되는 값은 숨긴다(2026-08-13. '공공 원본의 단위·값은 믿지 않는다' 규칙). */
+        /* ⚠️원본이 틀린 값을 준다(최고층 140·150·200층, 지하 21층 등). 그런 단지는
+           건축물대장에서 실제 층수를 찾아 채웠고(단지층수_보정.py, 세대수 일치분만),
+           끝내 확인하지 못한 곳은 빈칸으로 둔다. 빌더가 이미 걸러 보내므로 여기선 방어만. */
         function okg(v){return v>0&&v<=100?v:0;}
         function oku(v){return v>0&&v<=10?v:0;}
         var gf=okg(d.sgf||ki.topF||d.gf), uf=oku(d.suf||ki.baseF||d.uf);
