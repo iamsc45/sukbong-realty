@@ -1231,8 +1231,49 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
       var DD=window.REDEVDETAIL||{},dk=null;
       for(var k in DD){if(_zmatch(k,qz)){dk=k;break;}}
       if(dk){
-        var pref=(v.match(/[가-힣]+/)||[''])[0], dloc=null, dnm='';
-        if(pref&&window.SB&&SB.dongs){var ks=Object.keys(SB.dongs);for(var j=0;j<ks.length;j++){if(ks[j].indexOf(pref)===0){dloc=SB.dongs[ks[j]];dnm=ks[j];break;}}}
+        /* 🔴 구역명에서 법정동을 뽑는 방식을 고쳤다(2026-08-16 석봉님 제보).
+           종전 `(v.match(/[가-힣]+/)||[''])[0]` 는 **첫 한글 덩어리 통째**를 썼다.
+           '대치우성1차아파트 재건축정비사업조합' → pref='대치우성' 인데 그런 동이 없어
+           매칭에 실패하고, 아래 onNo() 로 흘러 **단지 검색이 '우성1차'를 잡아
+           동작구 신대방동으로 갔다.** 지도에 없는 구역이 1,132개 중 **449개(39.7%)** 라
+           같은 사고가 널려 있었다(개포주공 2·3·4·5단지도 전부 여기 해당).
+           → 구역명 **안에 들어 있는 동 이름**을 찾는다('대치우성…' 안의 '대치' → 대치동).
+             긴 이름부터 봐서 '개포동'과 '개포1동' 같은 경우도 정확히 집는다. */
+        /* 🔴 **자치구 안에서만** 동을 찾는다(2026-08-16 표본 검증으로 발견).
+           전국 3,398개 동에서 이름만 보고 고르면 엉뚱한 데로 샌다 — 실측:
+           관악구 '(가칭)청림동지역주택조합' → **경북 포항 청림동**,
+           동대문구 '435대명연립…' → **대구 대명동**,
+           성동구 '금호제13구역…' → **광주 금호동**.
+           상세 데이터에 `gu`(자치구)가 있으니 그 구의 동만 후보로 둔다. */
+        var dloc=null, dnm='', gu=(DD[dk]||{}).gu||'', guCode='';
+        try{
+          var rs=(window.SB&&SB.summary&&SB.summary.regions)||[];
+          for(var g1=0;g1<rs.length;g1++){
+            var sname=String(rs[g1].sgg||'').replace(/_/g,' ');
+            if(gu&&(sname===gu||sname.split(' ').pop()===gu)){guCode=rs[g1].code;break;}
+          }
+        }catch(e){}
+        if(window.SB&&SB.dongs){
+          var vz=_normz(v), ks=Object.keys(SB.dongs).sort(function(a,b){return b.length-a.length;});
+          for(var j=0;j<ks.length;j++){
+            var e1=SB.dongs[ks[j]];
+            if(guCode&&e1&&e1[0]!==guCode)continue;      /* 그 자치구 밖은 보지 않는다 */
+            /* 동 이름 그대로('길동')와 '동'을 뗀 줄기('대치') 둘 다 본다.
+               줄기만 보면 **'길동' → '길'(1자)** 이 되어 조건에서 빠진다. */
+            var stem=ks[j].replace(/[동가]$/,'');
+            if(vz.indexOf(_normz(ks[j]))>=0||(stem.length>=2&&vz.indexOf(_normz(stem))>=0)){
+              dloc=e1;dnm=ks[j];break;
+            }
+          }
+          /* 이름으로 못 찾으면 **그 자치구의 아무 동**이라도 쓴다(구 중심 대용).
+             엉뚱한 시·도로 보내는 것보다 "강남구 일대"가 낫다. */
+          if(!dloc&&guCode){
+            for(var j3=0;j3<ks.length;j3++){
+              var e3=SB.dongs[ks[j3]];
+              if(e3&&e3[0]===guCode){dloc=e3;dnm=gu+' 일대';break;}
+            }
+          }
+        }
         if(dloc){
           if(curMode!=='redev')setMode('redev');
           try{map.setView([dloc[1],dloc[2]],15);}catch(e){}
@@ -1246,6 +1287,14 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
             lat:dloc[1],lon:dloc[2],_lat:dloc[1],_lon:dloc[2],_approx:dnm});}catch(e){}},420);
           return;
         }
+        /* 🔴 상세에는 있는데 위치를 끝내 못 구한 구역 — **단지 검색으로 흘리지 않는다**.
+           그 폴백이 '대치우성1차…' 를 '우성1차'(동작구 신대방동)로 보냈다.
+           엉뚱한 곳을 여는 것보다 **못 찾았다고 말하는 편이 낫다**(2026-08-16). */
+        if(curMode!=='redev')setMode('redev');
+        var st2=document.getElementById('stat');
+        if(st2)st2.textContent=dk.replace(/\s.*/,'')+' · 이 구역은 지도 위치 정보가 아직 없습니다';
+        try{ if(window._toast)window._toast('이 구역은 지도 위치가 아직 없어 표시하지 못했습니다'); }catch(e){}
+        return;
       }
       if(onNo)onNo();
     });
@@ -1277,7 +1326,15 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
       if(!dong&&_isRegionName(v)){
         if(findAndGo(v))return;
       }
-      if(window._trySelectApt&&window._trySelectApt(v,dong))return;
+      /* 🔴 재개발 모드로 들어온 딥링크(`?mode=redev&q=구역명`)는 **단지 검색을 건너뛴다**
+         (2026-08-16 석봉님 제보). 종전에는 여기서 `_trySelectApt` 가 먼저 돌아
+         '대치우성1차아파트 재건축정비사업조합' 안의 **'우성1차'** 를 집어
+         **동작구 신대방동**으로 갔다(부분매칭 폴백 `n.indexOf(m)>=0 && m.length>=4`).
+         구역을 보러 온 사람에게 엉뚱한 단지를 열어 주는 것이라 순서를 막는다.
+         ⚠️ 아래 tryRedevZone 이 못 찾으면 그때 안내한다(단지로 흘리지 않는다). */
+      var _isRedev=(function(){try{return curMode==='redev'||
+        /[?&]mode=redev/.test(location.search);}catch(e){return false;}})();
+      if(!_isRedev&&window._trySelectApt&&window._trySelectApt(v,dong))return;
       tryAddress(v,function(){
         /* 🔴 순서 뒤집음(2026-08-10). 전에는 지역보다 재개발 구역을 먼저 맞춰 봤는데,
            '아현동'·'대치동'처럼 구역명에 동 이름이 들어가는 곳에서 실거래로 들어온
