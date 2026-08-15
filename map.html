@@ -1751,7 +1751,27 @@ map.on('moveend zoomend',function(){if(popLock)return;render();if(curMode==='red
   sq.addEventListener('focus',function(){loadIdx(function(){var v=sq.value.trim();if(v)render(v);});});
   sq.addEventListener('input',function(){var v=sq.value.trim();if(!v){window.closeSac();return;}if(!idxReady){loadIdx(function(){render(v);});return;}render(v);});
   sq.addEventListener('keydown',function(e){if(e.key==='Escape')window.closeSac();});
-  document.addEventListener('click',function(e){if(!sac.contains(e.target)&&e.target!==sq)window.closeSac();});
+  /* 🔴 바깥을 누르면 닫는다 — 종전에는 `click` 만 들어서 **모바일에서 잘 안 닫혔다**
+     (석봉님 제보: "뒤로 가거나 지도 위 다른 걸 눌러야 없어진다").
+     원인 둘: ①모바일에서 지도를 터치하면 Leaflet 이 이벤트를 가로채 document 까지
+     `click` 이 안 올라오는 경우가 있다 ②지도를 끌거나 확대할 때는 애초에 click 이 없다.
+     → `pointerdown`(터치·마우스 공통, click 보다 먼저 뜬다)을 캡처 단계에서 듣고,
+       Leaflet 지도의 이동·확대 시작에도 붙인다. */
+  function outsideClose(e){
+    var t=e.target;
+    if(sac.contains(t)||t===sq)return;      // 목록·검색창 자신은 예외
+    if(t.closest&&t.closest('#sform'))return;  // 검색 버튼도 예외(검색이 먼저 돌아야 한다)
+    window.closeSac();
+  }
+  document.addEventListener('pointerdown',outsideClose,true);
+  document.addEventListener('click',outsideClose,true);
+  /* 지도 조작(드래그·확대·클릭)에도 닫는다. map 이 아직 없을 수 있어 잠깐 기다렸다 건다. */
+  (function bindMap(n){
+    if(!window.map||!window.map.on){ if(n<40)setTimeout(function(){bindMap(n+1);},250); return; }
+    ['movestart','zoomstart','click','dragstart'].forEach(function(ev){
+      try{ window.map.on(ev,function(){ window.closeSac(); }); }catch(e){}
+    });
+  })(0);
 })();
 /* ===== 재개발·재건축 모드 (스테이징, 2026-07-24) ===== */
 var redevLayer=L.layerGroup();
