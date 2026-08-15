@@ -1650,6 +1650,29 @@ map.on('moveend zoomend',function(){if(popLock)return;render();if(curMode==='red
         if(hit){jumpApt(hit);return true;}
       }
     }
+    /* 🔴🔴 딥링크(`?q=`)는 검색창과 **다른 함수**를 탄다 — 2026-08-15 원고 세션 제보로 발견.
+       검색창은 matches() 를 쓰는데 여기는 자체 match() 를 써서, matches() 에 넣은
+       개선(별칭표·문자/숫자 토큰 분리·'N차' 정규화)이 **딥링크에는 하나도 안 먹었다.**
+       게다가 아래 match() 의 부분매칭 폴백은 `n.indexOf(m)>=0 && m.length>=4` 라
+       **'잠실주공5단지' 안에 '주공5단지'(충북 증평)가 들어 있다**는 이유로 지방 단지를
+       집었다. 원고에 나가는 링크가 엉뚱한 곳을 여는 것이라 그냥 둘 수 없다.
+       → **검색창과 같은 matches() 를 먼저 태운다.** 결과가 하나면 그것이 답이고,
+         여럿이면 종전 로직에 넘긴다(별칭이 3개 단지를 가리키는 미미삼 같은 경우).
+       ⚠️ 두 경로가 갈리면 또 이런 일이 난다. 검색을 고칠 때는 **양쪽 다** 확인할 것
+         (`검색_시뮬레이션.js` 가 이제 딥링크 경로도 함께 검사한다). */
+    try{
+      var _m=matches(v,8);
+      if(_m&&_m.length){
+        /* 여럿이면 **첫 번째**를 쓴다. matches() 는 동 추출·별칭·서울우선 정렬을 이미
+           거쳤으므로, 아래 부분매칭 폴백보다 어떤 경우에도 낫다.
+           ⚠️ 종전에 '유일할 때만' 쓰게 했더니 후보가 여럿인 질의가 폴백으로 흘러가
+           **'올림픽선수빌리지' → 길동 '수빌리지'**, **'올림픽선수촌' → 강원 대관령
+           '동계올림픽선수촌아파트'** 로 갔다(2026-08-15 시뮬레이션에서 적발). */
+        var _p=_m;
+        if(dn){var _f=_m.filter(function(x){return norm(x[4]||'')===dn;}); if(_f.length)_p=_f;}
+        jumpApt(_p[0]);return true;
+      }
+    }catch(e){}
     var hit2=match(IDX);
     if(hit2){jumpApt(hit2);return true;}
     return false;
