@@ -1763,15 +1763,30 @@ map.on('moveend zoomend',function(){if(popLock)return;render();if(curMode==='red
     if(t.closest&&t.closest('#sform'))return;  // 검색 버튼도 예외(검색이 먼저 돌아야 한다)
     window.closeSac();
   }
-  document.addEventListener('pointerdown',outsideClose,true);
-  document.addEventListener('click',outsideClose,true);
+  /* ⚠️ 이벤트를 **여러 갈래로** 건다. 기기·브라우저마다 뜨는 것이 달라서, 하나만 믿으면
+     "내 폰에서는 안 닫힌다"가 된다(2026-08-15 석봉님 모바일에서 실제로 그랬다).
+     같은 동작에 여러 번 닫혀도 해가 없다(closeSac 은 여러 번 불러도 안전). */
+  ['pointerdown','touchstart','mousedown','click'].forEach(function(ev){
+    document.addEventListener(ev,outsideClose,true);
+  });
   /* 지도 조작(드래그·확대·클릭)에도 닫는다. map 이 아직 없을 수 있어 잠깐 기다렸다 건다. */
   (function bindMap(n){
     if(!window.map||!window.map.on){ if(n<40)setTimeout(function(){bindMap(n+1);},250); return; }
-    ['movestart','zoomstart','click','dragstart'].forEach(function(ev){
+    ['movestart','zoomstart','click','dragstart','mousedown'].forEach(function(ev){
       try{ window.map.on(ev,function(){ window.closeSac(); }); }catch(e){}
     });
+    /* 🔑 Leaflet 컨테이너에 **직접** 건다 — 지도가 터치를 자체 처리하느라 document 까지
+       이벤트가 안 올라오는 기기가 있다. 여기서 잡으면 그런 경우에도 닫힌다. */
+    try{
+      var mc=window.map.getContainer();
+      ['touchstart','pointerdown','mousedown'].forEach(function(ev){
+        mc.addEventListener(ev,function(){ window.closeSac(); },{passive:true,capture:true});
+      });
+    }catch(e){}
   })(0);
+  /* 스크롤로 화면을 움직였을 때도 닫는다(목록만 남아 떠 있는 것을 막는다) */
+  window.addEventListener('scroll',function(){ if(sac.classList.contains('open'))window.closeSac(); },
+                          {passive:true});
 })();
 /* ===== 재개발·재건축 모드 (스테이징, 2026-07-24) ===== */
 var redevLayer=L.layerGroup();
