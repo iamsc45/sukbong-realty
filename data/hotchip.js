@@ -1,1 +1,1 @@
-window.SB=window.SB||{};SB.chips={"updated":"2026-08-16","win":"2026-08-03~2026-08-16","items":[{"t":"짬실아파트","n":9,"src":"log"},{"t":"석남","n":4,"src":"log"},{"t":"송도동","n":4,"src":"log"},{"t":"노원구","n":274,"src":"trade"},{"t":"강서구","n":179,"src":"trade"}],"note":"REST 집계 뷰"};
+window.SB=window.SB||{};SB.chips={"updated":"2026-08-17","win":"2026-08-04~2026-08-17","items":[{"t":"짬실아파트","n":9,"src":"log"},{"t":"석남","n":4,"src":"log"},{"t":"송도동","n":4,"src":"log"},{"t":"노원구","n":262,"src":"trade"},{"t":"강서구","n":168,"src":"trade"}],"note":"REST 집계 뷰"};
