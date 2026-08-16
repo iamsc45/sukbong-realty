@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<meta name="robots" content="noindex,nofollow">
+<title>필지 지도 (스테이징) · 석봉부동산정보방</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+:root{
+  --ink:#16150f; --ink2:#4a483d; --ink3:#84806f;
+  --paper:#fbfaf7; --line:#e2ded2; --brass:#8a6a2f;
+  --c-house:#2f6b6b; --c-comm:#8a6a2f; --c-fact:#5a5f6b;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;
+  font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  color:var(--ink);background:var(--paper);-webkit-text-size-adjust:100%}
+#map{position:absolute;inset:0}
+.leaflet-tile{filter:saturate(.62) grayscale(.28) brightness(1.05)}
+.leaflet-control-attribution{font-size:9px;opacity:.55}
+
+/* 상단 바 */
+#bar{position:absolute;top:0;left:0;right:0;z-index:950;
+  background:rgba(251,250,247,.96);border-bottom:1px solid var(--line);
+  padding:9px 12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+#bar b{font-size:14px;letter-spacing:-.02em}
+#bar .tag{font-size:10px;color:#fff;background:var(--brass);
+  padding:2px 6px;border-radius:3px;letter-spacing:.04em}
+#q{flex:1;min-width:130px;max-width:280px;padding:7px 10px;font-size:13px;
+  border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);outline:none}
+#q:focus{border-color:var(--brass)}
+#stat{font-size:11px;color:var(--ink3);margin-left:auto;white-space:nowrap}
+
+/* 범례 */
+#leg{position:absolute;left:12px;bottom:14px;z-index:900;
+  background:rgba(251,250,247,.95);border:1px solid var(--line);border-radius:5px;
+  padding:8px 10px;font-size:11px;line-height:1.8;box-shadow:0 1px 6px rgba(0,0,0,.07)}
+#leg i{display:inline-block;width:11px;height:11px;border-radius:2px;
+  margin-right:6px;vertical-align:-1px;opacity:.75}
+#leg .note{color:var(--ink3);font-size:10px;margin-top:5px;
+  border-top:1px solid var(--line);padding-top:5px;line-height:1.55}
+
+/* 안내 토스트 */
+#hint{position:absolute;left:50%;transform:translateX(-50%);top:64px;z-index:940;
+  background:var(--ink);color:#fff;font-size:12px;padding:7px 14px;border-radius:16px;
+  opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap}
+#hint.on{opacity:.93}
+
+/* 팝업 */
+.leaflet-popup-content-wrapper{border-radius:5px;box-shadow:0 3px 14px rgba(0,0,0,.16)}
+.leaflet-popup-content{margin:11px 13px;font-size:12.5px;line-height:1.6;min-width:230px}
+.pc-a{font-weight:700;font-size:13.5px;letter-spacing:-.01em;margin-bottom:2px}
+.pc-m{color:var(--ink3);font-size:11px;margin-bottom:8px}
+.pc-r{display:flex;justify-content:space-between;gap:12px;padding:2px 0}
+.pc-r span:first-child{color:var(--ink3)}
+.pc-r span:last-child{font-variant-numeric:tabular-nums;text-align:right}
+.pc-h{margin:8px 0 4px;padding-top:7px;border-top:1px solid var(--line);
+  font-size:10.5px;color:var(--ink3);letter-spacing:.05em}
+.pc-t{padding:5px 0;border-bottom:1px dotted var(--line)}
+.pc-t:last-child{border-bottom:0}
+.pc-t .p{font-weight:700;font-size:14px;font-variant-numeric:tabular-nums}
+.pc-t .k{display:inline-block;font-size:10px;padding:1px 5px;border-radius:2px;
+  background:#efece3;color:var(--ink2);margin-left:5px;vertical-align:1px}
+.pc-t .d{color:var(--ink3);font-size:10.5px;margin-top:1px}
+
+/* 시군구 배지 */
+.sgg-b{background:var(--brass);color:#fff;border-radius:11px;
+  font-size:11px;font-weight:700;padding:2px 8px;white-space:nowrap;
+  box-shadow:0 1px 4px rgba(0,0,0,.24);border:1px solid rgba(255,255,255,.55)}
+.sgg-b small{font-weight:400;opacity:.85;margin-left:3px}
+
+@media(max-width:560px){
+  #bar{padding:7px 9px;gap:7px}
+  #bar b{font-size:13px}
+  #stat{width:100%;margin-left:0;order:9}
+  #leg{left:8px;bottom:8px;font-size:10px;padding:6px 8px}
+  .leaflet-popup-content{min-width:196px;font-size:12px}
+}
+</style>
+</head>
+<body>
+
+<div id="bar">
+  <b>필지 지도</b><span class="tag">STAGING</span>
+  <input id="q" placeholder="시군구 검색 (예: 종로구, 고양)" autocomplete="off">
+  <span id="stat">불러오는 중…</span>
+</div>
+
+<div id="map"></div>
+
+<div id="leg">
+  <div><i style="background:var(--c-house)"></i>단독·다가구</div>
+  <div><i style="background:var(--c-comm)"></i>상업·업무용</div>
+  <div><i style="background:var(--c-fact)"></i>공장·창고 등</div>
+  <div class="note">실거래가 있는 필지만 표시합니다.<br>확대하면 필지 경계가 나타납니다.</div>
+</div>
+
+<div id="hint"></div>
+
+<script src="data/parcel/index.js"></script>
+<script>
+(function(){
+'use strict';
+
+var PY = 3.305785;
+function pyRaw(m){ return m / PY; }          // 계산용 (반올림하지 않는다)
+function py(m){                               // 표기용 (100㎡ 미만 소수1자리, 이상 정수)
+  var v = m / PY;
+  return v < 100 ? v.toFixed(1) : String(Math.round(v));
+}
+function nf(n){ return (n||0).toLocaleString('ko-KR'); }
+function won(man){ // 만원 → 억/만원 표기
+  if(man >= 10000){
+    var eok = man/10000;
+    return (eok >= 100 ? Math.round(eok) : Math.round(eok*10)/10) + '억원';
+  }
+  return nf(man) + '만원';
+}
+var COLOR = {'단독다가구':'#2f6b6b','상업업무용':'#8a6a2f','공장창고등':'#5a5f6b'};
+var LABEL = {'단독다가구':'단독·다가구','상업업무용':'상업·업무용','공장창고등':'공장·창고'};
+
+var IDX = window.PARCELIDX || {};
+// preferCanvas 를 쓰지 않는다: SVG 로 그려야 폴리곤이 DOM 에 남아
+// 점검기가 "실제로 보이는지"를 독립적으로 셀 수 있다(CLAUDE.md 작업원칙 7).
+var map = L.map('map',{zoomControl:true,minZoom:6,maxZoom:19})
+           .setView([36.5,127.8], 7);
+window.__map = map;   // 점검 스크립트용
+L.control.scale({imperial:false}).addTo(map);
+
+// 배경지도: VWorld 우선, 실패하면 CARTO
+var base = L.tileLayer(
+  'https://api.vworld.kr/req/wmts/1.0.0/EBC23601-6E41-3269-9ECB-821DEECCF3F0/Base/{z}/{y}/{x}.png',
+  {attribution:'&copy; VWorld(국토교통부)', maxZoom:19, maxNativeZoom:18, minZoom:6}
+).addTo(map);
+var fellback = false;
+base.on('tileerror', function(){
+  if(fellback) return;
+  fellback = true;
+  map.removeLayer(base);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    {attribution:'&copy; OpenStreetMap &copy; CARTO', maxZoom:19}).addTo(map);
+});
+
+var sggLayer  = L.layerGroup().addTo(map);   // 시군구 배지 (넓게 볼 때)
+var polyLayer = L.layerGroup().addTo(map);   // 필지 폴리곤 (확대했을 때)
+var loaded = {}, loading = {}, drawn = {};
+var ZOOM_POLY = 13;   // 이 줌부터 폴리곤을 그린다
+var totalN = 0;
+for(var c in IDX){ totalN += IDX[c].n; }
+
+var hintEl = document.getElementById('hint'), hintT = null;
+function hint(msg){
+  hintEl.textContent = msg;
+  hintEl.classList.add('on');
+  clearTimeout(hintT);
+  hintT = setTimeout(function(){ hintEl.classList.remove('on'); }, 2600);
+}
+function stat(msg){ document.getElementById('stat').textContent = msg; }
+
+/* ---------- 시군구 배지 ---------- */
+function drawSgg(){
+  sggLayer.clearLayers();
+  if(map.getZoom() >= ZOOM_POLY) return;
+  var b = map.getBounds(), z = map.getZoom(), shown = 0;
+  for(var code in IDX){
+    var s = IDX[code];
+    if(!b.contains([s.c[1], s.c[0]])) continue;
+    // 넓게 볼 때는 작은 시군구를 접는다
+    if(z < 9 && s.n < 12) continue;
+    if(z < 8 && s.n < 30) continue;
+    shown++;
+    var nm = (s.a[1] || s.a[0] || code);
+    L.marker([s.c[1], s.c[0]], {
+      icon: L.divIcon({className:'', html:'<div class="sgg-b">'+nm+'<small>'+s.n+'</small></div>',
+                       iconSize:null, iconAnchor:[0,0]})
+    }).on('click', function(cd){ return function(){
+        var t = IDX[cd];
+        map.fitBounds([[t.b[1],t.b[0]],[t.b[3],t.b[2]]], {padding:[50,50], maxZoom:16});
+      };}(code)).addTo(sggLayer);
+  }
+  stat(shown ? ('시군구 '+shown+'곳 · 전국 필지 '+nf(totalN)+'개') :
+               ('전국 필지 '+nf(totalN)+'개 · 확대해 주세요'));
+}
+
+/* ---------- 필지 폴리곤 ---------- */
+function load(code, cb){
+  if(loaded[code]) { cb && cb(); return; }
+  if(loading[code]) return;
+  loading[code] = 1;
+  var sc = document.createElement('script');
+  sc.src = 'data/parcel/pc_' + code + '.js';
+  sc.onload = function(){ loaded[code] = 1; delete loading[code]; cb && cb(); };
+  sc.onerror = function(){ delete loading[code]; loaded[code] = 1; }; // 없으면 조용히 넘어간다
+  document.head.appendChild(sc);
+}
+
+function toLatLng(g, isPoly){
+  // GeoJSON은 [경도,위도], Leaflet은 [위도,경도]
+  function conv(a){
+    if(typeof a[0] === 'number') return [a[1], a[0]];
+    return a.map(conv);
+  }
+  return isPoly ? conv(g) : conv(g);
+}
+
+function popup(pnu, v){
+  var h = '<div class="pc-a">' + (v.a || pnu) + '</div>';
+  h += '<div class="pc-m">PNU ' + pnu + '</div>';
+  if(v.j){
+    h += '<div class="pc-r"><span>개별공시지가</span><span>' + nf(v.j) + '원/㎡<br>'
+      +  '평당 ' + nf(Math.round(v.j * PY)) + '원'
+      +  (v.jy ? ' <em style="font-style:normal;color:#84806f">(' + v.jy + '년 고시)</em>' : '')
+      +  '</span></div>';
+  }
+  if(v.t && v.t.length){
+    h += '<div class="pc-h">실거래 ' + v.t.length + '건</div>';
+    v.t.forEach(function(t){
+      var lot = parseFloat(t.l) || 0, flr = parseFloat(t.a) || 0;
+      h += '<div class="pc-t">';
+      h += '<span class="p">' + won(t.p) + '</span>'
+        +  '<span class="k">' + (LABEL[t.k] || t.k) + '</span>';
+      h += '<div class="d">' + t.d + ' 계약';
+      if(lot) h += ' · 대지 ' + lot + '㎡(' + py(lot) + '평)';
+      if(flr) h += ' · 연면적 ' + flr + '㎡(' + py(flr) + '평)';
+      if(t.y) h += ' · ' + t.y + '년 준공';
+      h += '</div>';
+      // 평당가는 반올림 전 평수로 나눈다 (표기용 py() 를 쓰면 이중 반올림이 된다)
+      if(lot) h += '<div class="d">대지 평당 ' + nf(Math.round(t.p / pyRaw(lot))) + '만원</div>';
+      h += '</div>';
+    });
+  }
+  return h;
+}
+
+function drawPoly(){
+  var z = map.getZoom();
+  if(z < ZOOM_POLY){
+    if(polyLayer.getLayers().length){ polyLayer.clearLayers(); drawn = {}; }
+    return;
+  }
+  var b = map.getBounds(), n = 0, pending = 0;
+
+  for(var code in IDX){
+    var s = IDX[code];
+    if(!b.intersects([[s.b[1], s.b[0]], [s.b[3], s.b[2]]])) continue;
+    if(!loaded[code]){ pending++; load(code, drawPoly); continue; }
+
+    var pack = (window.PARCEL || {})[code];
+    if(!pack) continue;
+    for(var pnu in pack){
+      if(drawn[pnu]) { n++; continue; }
+      var v = pack[pnu];
+      if(!b.contains([v.c[1], v.c[0]])) continue;
+      var kind = (v.t && v.t[0]) ? v.t[0].k : '상업업무용';
+      var col  = COLOR[kind] || '#8a6a2f';
+      var ll   = toLatLng(v.g, v.y === 'P');
+      var lyr  = L.polygon(ll, {
+        color: col, weight: 1.4, opacity: .95,
+        fillColor: col, fillOpacity: .26
+      });
+      lyr.bindPopup(popup(pnu, v), {maxWidth:300, autoPanPadding:[16,70]});
+      lyr.on('mouseover', function(){ this.setStyle({fillOpacity:.5, weight:2.2}); });
+      lyr.on('mouseout',  function(){ this.setStyle({fillOpacity:.26, weight:1.4}); });
+      lyr.addTo(polyLayer);
+      drawn[pnu] = 1;
+      n++;
+    }
+  }
+  stat(pending ? ('필지 ' + nf(n) + '개 · 불러오는 중…')
+               : ('화면 안 필지 ' + nf(n) + '개'));
+}
+
+function refresh(){ drawSgg(); drawPoly(); }
+map.on('moveend zoomend', refresh);
+
+/* ---------- 검색 ---------- */
+var qEl = document.getElementById('q');
+function go(term){
+  term = (term || '').trim();
+  if(!term) return;
+  var hits = [];
+  for(var code in IDX){
+    var nm = (IDX[code].a || []).join(' ');
+    if(nm.indexOf(term) >= 0) hits.push(code);
+  }
+  if(!hits.length){ hint('"' + term + '" 은 실거래 필지가 없습니다'); return; }
+  hits.sort(function(a, b){ return IDX[b].n - IDX[a].n; });
+  var s = IDX[hits[0]];
+  map.fitBounds([[s.b[1], s.b[0]], [s.b[3], s.b[2]]], {padding:[50,50], maxZoom:16});
+  hint(s.a.join(' ') + ' · 필지 ' + s.n + '개'
+       + (hits.length > 1 ? ' (외 ' + (hits.length-1) + '곳)' : ''));
+}
+qEl.addEventListener('keydown', function(e){ if(e.key === 'Enter') go(qEl.value); });
+
+/* ---------- 시작 ---------- */
+var p = new URLSearchParams(location.search);
+if(p.get('sgg') && IDX[p.get('sgg')]){
+  var s0 = IDX[p.get('sgg')];
+  map.fitBounds([[s0.b[1], s0.b[0]], [s0.b[3], s0.b[2]]], {padding:[50,50], maxZoom:16});
+} else if(p.get('q')){
+  qEl.value = p.get('q'); go(p.get('q'));
+}
+refresh();
+window.__PARCEL_READY = true;   // 점검 스크립트용
+})();
+</script>
+</body>
+</html>
