@@ -160,7 +160,11 @@ home:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="curren
 cal:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>',
 build:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 22V4a1 1 0 011-1h6a1 1 0 011 1v18M14 9h4a1 1 0 011 1v12M9 7h2M9 11h2M9 15h2"/></svg>',
 heat:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2s5 4 5 9a5 5 0 01-10 0c0-2 1-3 1-3s2 2 4 1c1-2 0-4 0-7z"/></svg>'};
+/* ⚠️ frow 는 값을 esc() 한다. 값에 <span class="tag"> 같은 꼬리표를 붙이려면
+   frow 가 아니라 frowH 를 쓸 것(2026-08-16 사고: 연면적 칸에 태그가 글자로 나갔다).
+   frowH 는 라벨과 아이콘은 그대로 두고 값만 HTML 로 받는다. */
 function frow(ic,l,v){return v?'<div class="f"><span class="ic">'+ic+'</span><span class="fl">'+l+'</span><span class="fv">'+esc(String(v))+'</span></div>':'';}
+function frowH(ic,l,vHtml){return vHtml?'<div class="f"><span class="ic">'+ic+'</span><span class="fl">'+l+'</span><span class="fv">'+vHtml+'</span></div>':'';}
 function lrow(ic,l,v,wide){return v?'<div class="lr'+(wide?' wide':'')+'"><span class="ic">'+ic+'</span><div><b>'+l+'</b> '+v+'</div></div>':'';}
 
 function boot(){
@@ -712,9 +716,12 @@ function _brDaejang(code,pt){
       +frow(IC.build,'주용도',d.pu)
       +frow(IC.build,'구조',d.st)
       +frow(IC.home,'대지면적',d.ar?d.ar.toFixed(1)+'㎡('+PY(d.ar)+')':'')
-      +frow(IC.home,'연면적 · 모든 층 바닥 합계',
-            d.stot?comma(Math.round(d.stot))+'㎡('+PY(d.stot)+')<span class="tag">단지 전체</span>'
-                  :(d.tot?comma(Math.round(d.tot))+'㎡('+PY(d.tot)+')':''))
+      +(d.stot
+        ? frowH(IC.home,'연면적 · 모든 층 바닥 합계',
+                esc(comma(Math.round(d.stot))+'㎡('+PY(d.stot)+')')
+                +'<span class="tag">단지 전체</span>')
+        : frow(IC.home,'연면적 · 모든 층 바닥 합계',
+               d.tot?comma(Math.round(d.tot))+'㎡('+PY(d.tot)+')':''))
       +frow(IC.build,'건폐율 · 용적률',(d.bc?d.bc+'%':'')+(d.vl?' · '+d.vl+'%':''))
       /* 🔴2026-08-13 수정: 대표 동을 연면적으로만 고르다 보니 **지하주차장 동**이 뽑혀
          '지상 0층 · 지하 2층'이 나갔다(한남더힐, 실제 최고 12층). 이제 수집기가 부속을 뺀

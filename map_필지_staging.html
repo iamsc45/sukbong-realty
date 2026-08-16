@@ -48,22 +48,38 @@ html,body{margin:0;height:100%;overflow:hidden;
   opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap}
 #hint.on{opacity:.93}
 
-/* 팝업 */
-.leaflet-popup-content-wrapper{border-radius:5px;box-shadow:0 3px 14px rgba(0,0,0,.16)}
-.leaflet-popup-content{margin:11px 13px;font-size:12.5px;line-height:1.6;min-width:230px}
-.pc-a{font-weight:700;font-size:13.5px;letter-spacing:-.01em;margin-bottom:2px}
-.pc-m{color:var(--ink3);font-size:11px;margin-bottom:8px}
-.pc-r{display:flex;justify-content:space-between;gap:12px;padding:2px 0}
-.pc-r span:first-child{color:var(--ink3)}
-.pc-r span:last-child{font-variant-numeric:tabular-nums;text-align:right}
-.pc-h{margin:8px 0 4px;padding-top:7px;border-top:1px solid var(--line);
-  font-size:10.5px;color:var(--ink3);letter-spacing:.05em}
-.pc-t{padding:5px 0;border-bottom:1px dotted var(--line)}
+/* 필지 카드 (바텀시트) — 아파트 단지 카드와 같은 결로 맞춘다 */
+#sheet{position:absolute;z-index:960;background:var(--paper);
+  border:1px solid var(--line);border-radius:8px;box-shadow:0 6px 28px rgba(0,0,0,.18);
+  right:14px;top:64px;width:346px;max-height:calc(100% - 86px);
+  display:none;flex-direction:column;overflow:hidden}
+#sheet.on{display:flex}
+#shead{padding:12px 14px 10px;border-bottom:1px solid var(--line);flex:none;position:relative}
+#shead .a{font-weight:700;font-size:15px;letter-spacing:-.02em;padding-right:26px;line-height:1.35}
+#shead .m{color:var(--ink3);font-size:11px;margin-top:3px}
+#sx{position:absolute;right:9px;top:9px;width:24px;height:24px;border:0;background:none;
+  font-size:19px;line-height:1;color:var(--ink3);cursor:pointer;border-radius:4px}
+#sx:hover{background:#efece3;color:var(--ink)}
+#sbody{overflow-y:auto;padding:0 14px 14px;-webkit-overflow-scrolling:touch}
+.pc-h{margin:13px 0 5px;padding-top:10px;border-top:1px solid var(--line);
+  font-size:10.5px;color:var(--ink3);letter-spacing:.06em;font-weight:600}
+.pc-h:first-child{border-top:0;padding-top:12px;margin-top:0}
+.pc-r{display:flex;justify-content:space-between;gap:12px;padding:3px 0;font-size:12.5px}
+.pc-r>span:first-child{color:var(--ink3);flex:none}
+.pc-r>span:last-child{font-variant-numeric:tabular-nums;text-align:right}
+.pc-t{padding:6px 0;border-bottom:1px dotted var(--line)}
 .pc-t:last-child{border-bottom:0}
-.pc-t .p{font-weight:700;font-size:14px;font-variant-numeric:tabular-nums}
+.pc-t .p{font-weight:700;font-size:14.5px;font-variant-numeric:tabular-nums}
 .pc-t .k{display:inline-block;font-size:10px;padding:1px 5px;border-radius:2px;
-  background:#efece3;color:var(--ink2);margin-left:5px;vertical-align:1px}
-.pc-t .d{color:var(--ink3);font-size:10.5px;margin-top:1px}
+  background:#efece3;color:var(--ink2);margin-left:5px;vertical-align:1.5px}
+.pc-t .k.au{background:#f3e6e0;color:#8a4a2f}
+.pc-t .d{color:var(--ink3);font-size:10.5px;margin-top:2px;line-height:1.5}
+.pc-none{color:var(--ink3);font-size:11.5px;padding:3px 0}
+.pc-src{margin-top:12px;padding-top:9px;border-top:1px solid var(--line);
+  color:var(--ink3);font-size:10px;line-height:1.65}
+.nbrow{display:flex;justify-content:space-between;gap:10px;padding:3px 0;font-size:12px}
+.nbrow .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nbrow .vv{font-variant-numeric:tabular-nums;flex:none;color:var(--ink2)}
 
 /* 시군구 배지 */
 .sgg-b{background:var(--brass);color:#fff;border-radius:11px;
@@ -76,7 +92,10 @@ html,body{margin:0;height:100%;overflow:hidden;
   #bar b{font-size:13px}
   #stat{width:100%;margin-left:0;order:9}
   #leg{left:8px;bottom:8px;font-size:10px;padding:6px 8px}
-  .leaflet-popup-content{min-width:196px;font-size:12px}
+  /* 좁은 화면에서는 아래에서 올라오는 시트로 (아파트 카드와 같은 방식) */
+  #sheet{right:0;left:0;top:auto;bottom:0;width:auto;
+    border-radius:12px 12px 0 0;max-height:74%}
+  #leg{display:none}
 }
 </style>
 </head>
@@ -98,6 +117,15 @@ html,body{margin:0;height:100%;overflow:hidden;
 </div>
 
 <div id="hint"></div>
+
+<div id="sheet">
+  <div id="shead">
+    <div class="a" id="sa">—</div>
+    <div class="m" id="sm"></div>
+    <button id="sx" aria-label="닫기">&times;</button>
+  </div>
+  <div id="sbody"></div>
+</div>
 
 <script src="data/parcel/index.js"></script>
 <script>
@@ -205,33 +233,138 @@ function toLatLng(g, isPoly){
   return isPoly ? conv(g) : conv(g);
 }
 
-function popup(pnu, v){
-  var h = '<div class="pc-a">' + (v.a || pnu) + '</div>';
-  h += '<div class="pc-m">PNU ' + pnu + '</div>';
+/* ── 인접 필지 시세 ─────────────────────────────────
+   같은 시군구 번들 안에서 반경 안에 드는 필지의 실거래를 모은다.
+   위경도 → 미터는 우리 위도대(33~38°) 근사로 충분하다. */
+function nearby(code, pnu, self, radius){
+  var pack = (window.PARCEL || {})[code] || {}, out = [];
+  var cx = self.c[0], cy = self.c[1];
+  for(var k in pack){
+    if(k === pnu) continue;
+    var v = pack[k];
+    if(!v.t || !v.t.length) continue;
+    var dx = (v.c[0] - cx) * 88000, dy = (v.c[1] - cy) * 111000;
+    var d = Math.sqrt(dx*dx + dy*dy);
+    if(d > radius) continue;
+    var t = v.t[0], lot = parseFloat(t.l) || 0;
+    out.push({d: Math.round(d), a: v.a, p: t.p, k: t.k, dt: t.d,
+              q: lot ? Math.round(t.p / pyRaw(lot)) : 0});
+  }
+  out.sort(function(a, b){ return a.d - b.d; });
+  return out;
+}
+
+function median(arr){
+  if(!arr.length) return 0;
+  var s = arr.slice().sort(function(a, b){ return a - b; }), m = s.length >> 1;
+  return s.length % 2 ? s[m] : Math.round((s[m-1] + s[m]) / 2);
+}
+
+var sheet = document.getElementById('sheet');
+document.getElementById('sx').onclick = function(){ sheet.classList.remove('on'); };
+
+function openCard(pnu, v, code){
+  document.getElementById('sa').textContent = v.a || pnu;
+  document.getElementById('sm').textContent = 'PNU ' + pnu;
+  var h = '';
+
+  /* 1) 토지 */
+  h += '<div class="pc-h">토지</div>';
   if(v.j){
-    h += '<div class="pc-r"><span>개별공시지가</span><span>' + nf(v.j) + '원/㎡<br>'
-      +  '평당 ' + nf(Math.round(v.j * PY)) + '원'
-      +  (v.jy ? ' <em style="font-style:normal;color:#84806f">(' + v.jy + '년 고시)</em>' : '')
-      +  '</span></div>';
+    h += '<div class="pc-r"><span>개별공시지가</span><span>' + nf(v.j) + '원/㎡</span></div>'
+      +  '<div class="pc-r"><span></span><span>평당 ' + nf(Math.round(v.j * PY)) + '원'
+      +  (v.jy ? ' (' + v.jy + '년 고시)' : '') + '</span></div>';
   }
-  if(v.t && v.t.length){
-    h += '<div class="pc-h">실거래 ' + v.t.length + '건</div>';
-    v.t.forEach(function(t){
-      var lot = parseFloat(t.l) || 0, flr = parseFloat(t.a) || 0;
-      h += '<div class="pc-t">';
-      h += '<span class="p">' + won(t.p) + '</span>'
-        +  '<span class="k">' + (LABEL[t.k] || t.k) + '</span>';
-      h += '<div class="d">' + t.d + ' 계약';
-      if(lot) h += ' · 대지 ' + lot + '㎡(' + py(lot) + '평)';
-      if(flr) h += ' · 연면적 ' + flr + '㎡(' + py(flr) + '평)';
-      if(t.y) h += ' · ' + t.y + '년 준공';
-      h += '</div>';
-      // 평당가는 반올림 전 평수로 나눈다 (표기용 py() 를 쓰면 이중 반올림이 된다)
-      if(lot) h += '<div class="d">대지 평당 ' + nf(Math.round(t.p / pyRaw(lot))) + '만원</div>';
-      h += '</div>';
+  if(v.b && v.b.ar)
+    h += '<div class="pc-r"><span>대지면적</span><span>' + v.b.ar + '㎡(' + py(v.b.ar) + '평)</span></div>';
+
+  /* 2) 건축물대장 */
+  var b = v.b || {};
+  h += '<div class="pc-h">건축물대장</div>';
+  if(b.pu || b.tot || b.gf || b.y){
+    if(b.pu)  h += '<div class="pc-r"><span>주용도</span><span>' + b.pu + '</span></div>';
+    /* ⚠️ 반올림하지 않는다. 아래 실거래 줄이 72.62㎡ 로 나오는데 여기만 73㎡ 이면
+       같은 값이 한 화면에서 갈린다(CLAUDE.md 작업원칙 8). */
+    if(b.tot) h += '<div class="pc-r"><span>연면적</span><span>' + nf(b.tot) + '㎡(' + py(b.tot) + '평)</span></div>';
+    if(b.gf || b.uf){
+      var fl = (b.gf ? '지상 ' + b.gf + '층' : '') + (b.uf ? (b.gf ? ' · ' : '') + '지하 ' + b.uf + '층' : '');
+      h += '<div class="pc-r"><span>층수</span><span>' + fl + '</span></div>';
+    } else {
+      h += '<div class="pc-r"><span>층수</span><span style="color:#84806f">대장에 기재 없음</span></div>';
+    }
+    if(b.y)   h += '<div class="pc-r"><span>사용승인</span><span>' + b.y + '년</span></div>';
+    if(b.ar && b.tot)
+      h += '<div class="pc-r"><span>용적률(참고)</span><span>'
+        +  (b.tot / b.ar * 100).toFixed(1) + '%</span></div>';
+  } else {
+    h += '<div class="pc-none">등재된 건축물이 없습니다(나대지일 수 있습니다).</div>';
+  }
+
+  /* 3) 실거래 */
+  h += '<div class="pc-h">실거래 ' + ((v.t && v.t.length) || 0) + '건</div>';
+  (v.t || []).forEach(function(t){
+    var lot = parseFloat(t.l) || 0, flr = parseFloat(t.a) || 0;
+    h += '<div class="pc-t"><span class="p">' + won(t.p) + '</span>'
+      +  '<span class="k">' + (LABEL[t.k] || t.k) + '</span>'
+      +  '<div class="d">' + t.d + ' 계약'
+      +  (lot ? ' · 대지 ' + lot + '㎡(' + py(lot) + '평)' : '')
+      +  (flr ? ' · 연면적 ' + flr + '㎡(' + py(flr) + '평)' : '')
+      +  (t.y ? ' · ' + t.y + '년 준공' : '') + '</div>'
+      /* 평당가는 반올림 전 평수로 나눈다(표기용 py() 를 쓰면 이중 반올림) */
+      +  (lot ? '<div class="d">대지 평당 ' + nf(Math.round(t.p / pyRaw(lot))) + '만원</div>' : '')
+      +  '</div>';
+  });
+
+  /* 4) 경매·공매 이력 — 같은 물건이 회차마다 오므로 날짜+감정가로 접는다 */
+  var xs = [], seen = {};
+  (v.x || []).forEach(function(x){
+    var k = x.s + '|' + x.d + '|' + x.ap;
+    if(seen[k]) return;
+    seen[k] = 1; xs.push(x);
+  });
+  h += '<div class="pc-h">경매 · 공매 이력</div>';
+  if(xs.length){
+    xs.slice(0, 6).forEach(function(x){
+      var won2 = function(m){ return m >= 10000 ? (Math.round(m/1000)/10) + '억' : nf(m) + '만'; };
+      h += '<div class="pc-t">'
+        +  '<span class="p">' + (x.wp ? won2(x.wp) : '유찰') + '</span>'
+        +  '<span class="k au">' + x.s + '</span>'
+        +  '<div class="d">' + (x.d || '') + (x.u ? ' · ' + x.u : '')
+        +  (x.ap ? ' · 감정 ' + won2(x.ap) : '')
+        +  (x.wp && x.ap ? ' · 낙찰가율 ' + Math.round(x.wp / x.ap * 100) + '%' : '')
+        +  '</div></div>';
     });
+    if(xs.length > 6) h += '<div class="pc-none">외 ' + (xs.length - 6) + '건</div>';
+  } else {
+    h += '<div class="pc-none">수집 범위(최근분)에 이력이 없습니다.</div>';
   }
-  return h;
+
+  /* 5) 인접 필지 시세 */
+  var nb = nearby(code, pnu, v, 400);
+  h += '<div class="pc-h">인접 필지 실거래 · 반경 400m</div>';
+  if(nb.length){
+    var qs = nb.filter(function(x){ return x.q; }).map(function(x){ return x.q; });
+    if(qs.length)
+      h += '<div class="pc-r"><span>대지 평당 중위</span><span>' + nf(median(qs))
+        +  '만원 · ' + qs.length + '건</span></div>';
+    nb.slice(0, 5).forEach(function(x){
+      h += '<div class="nbrow"><span class="nm">' + (x.a || '').split(' ').slice(-1)[0]
+        +  ' <em style="font-style:normal;color:#84806f">' + x.d + 'm</em></span>'
+        +  '<span class="vv">' + won(x.p) + (x.q ? ' · 평당 ' + nf(x.q) + '만' : '') + '</span></div>';
+    });
+    if(nb.length > 5) h += '<div class="pc-none">외 ' + (nb.length - 5) + '필지</div>';
+  } else {
+    h += '<div class="pc-none">반경 400m 안에 다른 실거래 필지가 없습니다.</div>';
+  }
+
+  h += '<div class="pc-src">필지 경계·공시지가는 국토교통부 연속지적도, 건물 정보는 건축물대장, '
+    +  '거래는 국토교통부 실거래 신고분입니다. 경매는 법원, 공매는 온비드 자료입니다. '
+    +  '용적률(참고)은 지하를 포함한 연면적으로 계산해 실제 값과 다를 수 있습니다. '
+    +  '투자 권유가 아닙니다.</div>';
+
+  document.getElementById('sbody').innerHTML = h;
+  document.getElementById('sbody').scrollTop = 0;
+  sheet.classList.add('on');
 }
 
 function drawPoly(){
@@ -260,7 +393,8 @@ function drawPoly(){
         color: col, weight: 1.4, opacity: .95,
         fillColor: col, fillOpacity: .26
       });
-      lyr.bindPopup(popup(pnu, v), {maxWidth:300, autoPanPadding:[16,70]});
+      lyr.on('click', (function(p, val, cd){ return function(){ openCard(p, val, cd); };
+             })(pnu, v, code));
       lyr.on('mouseover', function(){ this.setStyle({fillOpacity:.5, weight:2.2}); });
       lyr.on('mouseout',  function(){ this.setStyle({fillOpacity:.26, weight:1.4}); });
       lyr.addTo(polyLayer);
