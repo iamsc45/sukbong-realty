@@ -33,14 +33,22 @@ html,body{margin:0;height:100%;overflow:hidden;
 #q:focus{border-color:var(--brass)}
 #stat{font-size:11px;color:var(--ink3);margin-left:auto;white-space:nowrap}
 
-/* 범례 */
-#leg{position:absolute;left:12px;bottom:14px;z-index:900;
-  background:rgba(251,250,247,.95);border:1px solid var(--line);border-radius:5px;
-  padding:8px 10px;font-size:11px;line-height:1.8;box-shadow:0 1px 6px rgba(0,0,0,.07)}
-#leg i{display:inline-block;width:11px;height:11px;border-radius:2px;
-  margin-right:6px;vertical-align:-1px;opacity:.75}
-#leg .note{color:var(--ink3);font-size:10px;margin-top:5px;
-  border-top:1px solid var(--line);padding-top:5px;line-height:1.55}
+/* 상품 필터 (범례 겸용) — 바 바로 아래 가로 칩 */
+#filt{position:absolute;left:0;right:0;z-index:945;
+  background:rgba(251,250,247,.96);border-bottom:1px solid var(--line);
+  padding:6px 12px;display:flex;gap:6px;align-items:center;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+#filt::-webkit-scrollbar{display:none}
+.chip{flex:none;display:inline-flex;align-items:center;gap:5px;cursor:pointer;
+  border:1px solid var(--line);background:#fff;color:var(--ink3);
+  border-radius:14px;padding:4px 10px;font-size:12px;line-height:1.4;
+  white-space:nowrap;user-select:none;transition:background .12s,border-color .12s}
+.chip:hover{border-color:var(--ink3)}
+.chip i{width:9px;height:9px;border-radius:2px;flex:none;opacity:.4}
+.chip b{font-weight:600;font-variant-numeric:tabular-nums;font-size:11px;opacity:.75}
+.chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.chip.on i{opacity:1}
+.chip.all{font-weight:600}
 
 /* 안내 토스트 */
 #hint{position:absolute;left:50%;transform:translateX(-50%);top:64px;z-index:940;
@@ -91,11 +99,11 @@ html,body{margin:0;height:100%;overflow:hidden;
   #bar{padding:7px 9px;gap:7px}
   #bar b{font-size:13px}
   #stat{width:100%;margin-left:0;order:9}
-  #leg{left:8px;bottom:8px;font-size:10px;padding:6px 8px}
+  #filt{padding:5px 9px;gap:5px}
+  .chip{padding:4px 9px;font-size:11.5px}
   /* 좁은 화면에서는 아래에서 올라오는 시트로 (아파트 카드와 같은 방식) */
   #sheet{right:0;left:0;top:auto;bottom:0;width:auto;
     border-radius:12px 12px 0 0;max-height:74%}
-  #leg{display:none}
 }
 </style>
 </head>
@@ -109,12 +117,7 @@ html,body{margin:0;height:100%;overflow:hidden;
 
 <div id="map"></div>
 
-<div id="leg">
-  <div><i style="background:var(--c-house)"></i>단독·다가구</div>
-  <div><i style="background:var(--c-comm)"></i>상업·업무용</div>
-  <div><i style="background:var(--c-fact)"></i>공장·창고 등</div>
-  <div class="note">실거래가 있는 필지만 표시합니다.<br>확대하면 필지 경계가 나타납니다.</div>
-</div>
+<div id="filt"></div>
 
 <div id="hint"></div>
 
@@ -150,6 +153,58 @@ var COLOR = {'단독다가구':'#2f6b6b','상업업무용':'#8a6a2f','공장창�
 var LABEL = {'단독다가구':'단독·다가구','상업업무용':'상업·업무용','공장창고등':'공장·창고'};
 
 var IDX = window.PARCELIDX || {};
+var KINDS = ['단독다가구', '상업업무용', '공장창고등'];
+
+/* ── 상품 필터 ─────────────────────────────────────
+   전국 건수는 index.js 에 담아 둔 종류별 집계를 쓴다.
+   화면에서 세면 아직 안 불러온 시군구가 빠져 숫자가 흔들린다. */
+var KTOT = {}, KALL = 0;
+KINDS.forEach(function(k){ KTOT[k] = 0; });
+for(var _c in IDX){
+  var kk = IDX[_c].k || {};
+  for(var _k in kk){ KTOT[_k] = (KTOT[_k] || 0) + kk[_k]; KALL += kk[_k]; }
+}
+var sel = {};                       // 비어 있으면 '전체'
+function selOn(k){ return !selCount() || sel[k]; }
+function selCount(){ var n = 0; for(var k in sel){ if(sel[k]) n++; } return n; }
+
+function buildChips(){
+  var el = document.getElementById('filt'), h = '';
+  h += '<span class="chip all' + (selCount() ? '' : ' on') + '" data-k="">전체'
+    +  '<b>' + nf(KALL) + '</b></span>';
+  KINDS.forEach(function(k){
+    if(!KTOT[k]) return;
+    h += '<span class="chip' + (sel[k] ? ' on' : '') + '" data-k="' + k + '">'
+      +  '<i style="background:' + COLOR[k] + '"></i>' + LABEL[k]
+      +  '<b>' + nf(KTOT[k]) + '</b></span>';
+  });
+  el.innerHTML = h;
+  [].forEach.call(el.querySelectorAll('.chip'), function(c){
+    c.onclick = function(){
+      var k = c.getAttribute('data-k');
+      if(!k) sel = {};                       // '전체'
+      else sel[k] = !sel[k];
+      buildChips();
+      drawn = {}; polyLayer.clearLayers();   // 필터가 바뀌면 다시 그린다
+      refresh();
+    };
+  });
+}
+
+/* 상단 바 높이가 화면 폭에 따라 달라지므로 위치를 재어 맞춘다 */
+function layout(){
+  var bh = document.getElementById('bar').offsetHeight;
+  var fh = document.getElementById('filt').offsetHeight;
+  document.getElementById('filt').style.top = bh + 'px';
+  document.getElementById('hint').style.top = (bh + fh + 8) + 'px';
+  var sh = document.getElementById('sheet');
+  if(window.innerWidth > 560){
+    sh.style.top = (bh + fh + 10) + 'px';
+    sh.style.maxHeight = 'calc(100% - ' + (bh + fh + 30) + 'px)';
+  } else {
+    sh.style.top = ''; sh.style.maxHeight = '';
+  }
+}
 // preferCanvas 를 쓰지 않는다: SVG 로 그려야 폴리곤이 DOM 에 남아
 // 점검기가 "실제로 보이는지"를 독립적으로 셀 수 있다(CLAUDE.md 작업원칙 7).
 var map = L.map('map',{zoomControl:true,minZoom:6,maxZoom:19})
@@ -188,28 +243,44 @@ function hint(msg){
 function stat(msg){ document.getElementById('stat').textContent = msg; }
 
 /* ---------- 시군구 배지 ---------- */
+function sggCount(s){
+  if(!selCount()) return s.n;
+  var n = 0, kk = s.k || {};
+  for(var k in kk){ if(sel[k]) n += kk[k]; }
+  return n;
+}
+function filteredTotal(){
+  if(!selCount()) return KALL;
+  var n = 0;
+  for(var k in sel){ if(sel[k]) n += (KTOT[k] || 0); }
+  return n;
+}
+
 function drawSgg(){
   sggLayer.clearLayers();
   if(map.getZoom() >= ZOOM_POLY) return;
-  var b = map.getBounds(), z = map.getZoom(), shown = 0;
+  var b = map.getBounds(), z = map.getZoom(), shown = 0, sum = 0;
   for(var code in IDX){
     var s = IDX[code];
     if(!b.contains([s.c[1], s.c[0]])) continue;
+    var cnt = sggCount(s);                 // 필터를 반영한 건수
+    if(!cnt) continue;
     // 넓게 볼 때는 작은 시군구를 접는다
-    if(z < 9 && s.n < 12) continue;
-    if(z < 8 && s.n < 30) continue;
-    shown++;
+    if(z < 9 && cnt < 12) continue;
+    if(z < 8 && cnt < 30) continue;
+    shown++; sum += cnt;
     var nm = (s.a[1] || s.a[0] || code);
     L.marker([s.c[1], s.c[0]], {
-      icon: L.divIcon({className:'', html:'<div class="sgg-b">'+nm+'<small>'+s.n+'</small></div>',
+      icon: L.divIcon({className:'', html:'<div class="sgg-b">'+nm+'<small>'+cnt+'</small></div>',
                        iconSize:null, iconAnchor:[0,0]})
     }).on('click', function(cd){ return function(){
         var t = IDX[cd];
         map.fitBounds([[t.b[1],t.b[0]],[t.b[3],t.b[2]]], {padding:[50,50], maxZoom:16});
       };}(code)).addTo(sggLayer);
   }
-  stat(shown ? ('시군구 '+shown+'곳 · 전국 필지 '+nf(totalN)+'개') :
-               ('전국 필지 '+nf(totalN)+'개 · 확대해 주세요'));
+  var tot = filteredTotal();
+  stat(shown ? ('시군구 '+shown+'곳 · 필지 '+nf(tot)+'개') :
+               ('필지 '+nf(tot)+'개 · 확대해 주세요'));
 }
 
 /* ---------- 필지 폴리곤 ---------- */
@@ -387,6 +458,7 @@ function drawPoly(){
       var v = pack[pnu];
       if(!b.contains([v.c[1], v.c[0]])) continue;
       var kind = (v.t && v.t[0]) ? v.t[0].k : '상업업무용';
+      if(!selOn(kind)) continue;                    // 상품 필터
       var col  = COLOR[kind] || '#8a6a2f';
       var ll   = toLatLng(v.g, v.y === 'P');
       var lyr  = L.polygon(ll, {
@@ -430,6 +502,14 @@ qEl.addEventListener('keydown', function(e){ if(e.key === 'Enter') go(qEl.value)
 
 /* ---------- 시작 ---------- */
 var p = new URLSearchParams(location.search);
+/* ?k=단독다가구,상업업무용 로 상품을 지정해 열 수 있다(원고 딥링크용) */
+(p.get('k') || '').split(',').forEach(function(k){
+  k = k.trim();
+  if(KINDS.indexOf(k) >= 0) sel[k] = true;
+});
+buildChips();
+layout();
+window.addEventListener('resize', layout);
 if(p.get('sgg') && IDX[p.get('sgg')]){
   var s0 = IDX[p.get('sgg')];
   map.fitBounds([[s0.b[1], s0.b[0]], [s0.b[3], s0.b[2]]], {padding:[50,50], maxZoom:16});
