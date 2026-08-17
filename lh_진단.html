@@ -934,7 +934,7 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
   }
 
   /* ── 그 지역 공고 붙이기 (2026-08-18) ──────────────────────────
-     data/lh_notice.js = LH청약플러스 주택매입공고 전량(1,132건). 필드는
+     data/lh_notice.js = LH청약플러스 주택매입공고 전량. 건수는 LHNOTICE_META.n. 필드는
      h=지역본부, y=약정 관련, s=상태, p=공고일, c=마감일, u=LH 원문, f=[첨부].
      ⚠️본사 공고(h가 빈 값)는 전국 공통이라 지역본부와 함께 보여준다. 지역본부 공고만
        걸러 두면 '전국·본사' 사전공고를 놓친다. */
@@ -974,7 +974,7 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
       return d ? d>=today : true;               // 마감일을 못 읽으면 상태값을 따른다
     };
     var stateOf=function(x){                    // 화면에 쓸 상태 문구
-      if((x.s==='접수중'||x.s==='정정공고중') && !live(x)) return '접수 마감';
+      if((x.s==='접수중'||x.s==='정정공고중') && !live(x)) return '접수마감';
       return x.s||'';
     };
     var mineAll=[], hqAll=[];
@@ -1018,7 +1018,10 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
       for(var b=0;b<natShow.length;b++) h+=row(natShow[b]);
     }
     h+='<div class="notift">공고문 원문과 첨부는 LH청약플러스로 연결됩니다. '
-      +'지난 공고까지 전부 보려면 <a href="'+encodeURI('lh_공고.html')+'">주택매입공고 아카이브</a>(2018년부터 1,132건)를 보십시오. '
+      /* ⚠️건수를 손으로 적지 말 것. 공고는 매주 늘어나 손으로 적은 숫자는 반드시 어긋난다
+           (2026-08-18에 1,132로 박혀 있던 것이 실제 1,143이 됐다). 데이터에서 읽는다. */
+      +'지난 공고까지 전부 보려면 <a href="'+encodeURI('lh_공고.html')+'">주택매입공고 아카이브</a>(2018년부터 '
+      +A.length.toLocaleString()+'건)를 보십시오. '
       +'위 관할·면적 판정은 이 공고문에서 뽑은 값을 씁니다.</div></div>';
     return h;
   }

@@ -4,7 +4,7 @@
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-Y7P41Z09PV');</script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>LH 주택매입공고 아카이브 · 석봉 부동산 정보방</title>
-<meta name="description" content="LH 주택매입공고 1,132건을 연도·유형·지역본부별로 모아 놓았습니다. 매입약정 공고는 LH 게시판 태그로 42건이지만 공고명 기준으로는 527건입니다.">
+<meta name="description" content="LH 주택매입공고를 2018년부터 전량 모아 연도·유형·지역본부별로 볼 수 있습니다. LH 게시판 태그로는 매입약정 공고를 찾기 어렵지만, 공고명을 다시 분류해 약정 공고만 따로 걸러냈습니다.">
 <meta name="robots" content="noindex">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
 <link rel="stylesheet" href="assets/site.css">
@@ -67,7 +67,7 @@ table.tb{width:100%;border-collapse:collapse;font-size:13.5px}
 }
 </style>
 <meta property="og:title" content="LH 주택매입공고 아카이브 · 석봉 부동산 정보방">
-<meta property="og:description" content="LH 주택매입공고 1,132건을 연도·유형·지역본부별로 한 화면에서.">
+<meta property="og:description" content="LH 주택매입공고를 2018년부터 전량, 연도·유형·지역본부별로 한 화면에서.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://xn--2q1br1nnrasc92a76myvau64b.com/lh_%EA%B3%B5%EA%B3%A0.html">
 <meta property="og:site_name" content="석봉 부동산 정보방">
@@ -94,8 +94,8 @@ table.tb{width:100%;border-collapse:collapse;font-size:13.5px}
   <div class="edge">
     LH 게시판은 기본 화면에 진행 중인 공고만 보여줍니다. 지난 공고를 찾기가 어렵습니다.
     여기에는 <b>2018년 첫 공고부터 전부</b> 모아 두었습니다.<br>
-    또 하나. LH가 붙인 유형 태그로 매입약정 공고를 세면 <b>42건</b>인데, 공고명을 실제로 읽고 다시 분류하면 <b>527건</b>입니다.
-    민간 신축 매입약정만 <b>430건</b>입니다. 이 화면의 유형은 공고명 기준으로 다시 분류한 것입니다.
+    또 하나. LH가 붙인 유형 태그로 매입약정 공고를 세면 <b id="e1">·</b>인데, 공고명을 실제로 읽고 다시 분류하면 <b id="e2">·</b>입니다.
+    민간 신축 매입약정만 <b id="e3">·</b>입니다. 이 화면의 유형은 공고명 기준으로 다시 분류한 것입니다.
   </div>
 
   <div class="kpis">
@@ -153,16 +153,32 @@ table.tb{width:100%;border-collapse:collapse;font-size:13.5px}
   }
   fill('ft',A.map(tyOf));
   fill('fh',A.map(hqOf));
-  fill('fs',A.map(function(x){return x.s;}));
+  fill('fs',A.map(stateOf));
   var ys=[];A.forEach(function(x){var y=yrOf(x);if(y&&ys.indexOf(y)<0)ys.push(y);});
   ys.sort(function(a,b){return b-a;});
   var fyEl=document.getElementById('fy');
   ys.forEach(function(y){var c=A.filter(function(x){return yrOf(x)===y;}).length;
     var o=document.createElement('option');o.value=y;o.textContent=y+'년 ('+n(c)+')';fyEl.appendChild(o);});
 
+  /* 머리글 문장의 건수는 데이터에서 읽는다(HTML에 손으로 적으면 공고가 늘 때마다 어긋난다).
+     LH 원본 태그는 목록 데이터에 없어 수집기가 LHNOTICE_META로 내려준다. */
+  var M=window.LHNOTICE_META||{};
+  var sinchuk=A.filter(function(x){return x.t==='민간신축 매입약정';}).length;
+  var yakN=A.filter(function(x){return x.y===1;}).length;
+  if(document.getElementById('e1')) document.getElementById('e1').textContent=n(M.tagYak||0)+'건';
+  if(document.getElementById('e2')) document.getElementById('e2').textContent=n(M.yak||yakN)+'건';
+  if(document.getElementById('e3')) document.getElementById('e3').textContent=n(M.sinchuk||sinchuk)+'건';
+
   document.getElementById('k1').textContent=n(A.length);
-  document.getElementById('k2').textContent=n(A.filter(function(x){return x.s==='접수중';}).length);
-  document.getElementById('k3').textContent=n(A.filter(function(x){return x.s==='정정공고중';}).length);
+  /* ⚠️LH가 붙인 상태값은 마감이 지나도 '접수중'으로 남는다(2026-08-18 확인: 13건).
+     마감일과 오늘을 비교해 다시 판정한다. 진단기 buildNotices와 같은 규칙. */
+  var _t0=new Date(); _t0.setHours(0,0,0,0);
+  function _due(v){var m=String(v||'').match(/(\d{4})[.\-](\d{1,2})[.\-](\d{1,2})/);
+    return m?new Date(+m[1],+m[2]-1,+m[3]):null;}
+  function _live(x){ if(x.s!=='접수중'&&x.s!=='정정공고중') return false;
+    var d=_due(x.c); return d? d>=_t0 : true; }
+  document.getElementById('k2').textContent=n(A.filter(_live).length);
+  document.getElementById('k3').textContent=n(A.filter(function(x){return stateOf(x)==='정정공고중';}).length);
   document.getElementById('k4').textContent=n(A.filter(function(x){return x.y===1;}).length);
   var last=A.reduce(function(a,x){return (x.p>a)?x.p:a;},'');
   document.getElementById('basis').textContent='LH청약플러스 주택매입공고 전량 · 최신 공고 '+last+' 기준';
@@ -175,14 +191,23 @@ table.tb{width:100%;border-collapse:collapse;font-size:13.5px}
     v=document.getElementById('fy').value; if(v && yrOf(x)!==v) return false;
     v=document.getElementById('ft').value; if(v && tyOf(x)!==v) return false;
     v=document.getElementById('fh').value; if(v && hqOf(x)!==v) return false;
-    v=document.getElementById('fs').value; if(v && x.s!==v) return false;
+    v=document.getElementById('fs').value; if(v && stateOf(x)!==v) return false;
     if(document.getElementById('fa').checked && x.y!==1) return false;
-    if(document.getElementById('fo').checked && x.s==='접수마감') return false;
+    /* '지금 넣을 수 있는' 판정도 상태값이 아니라 마감일로 한다. 상태값만 믿으면
+       마감이 지난 공고가 이 필터에 남아 사용자가 헛걸음한다. */
+    if(document.getElementById('fo').checked && !_live(x)) return false;
     return true;
   }
+  /* 화면에 보이는 상태도 다시 판정한다. LH가 '접수중'으로 남겨 둔 마감 건을
+     초록 배지로 보여주면 그게 곧 오답이 된다. */
+  function stateOf(x){
+    if((x.s==='접수중'||x.s==='정정공고중') && !_live(x)) return '접수마감';  /* LH 원본 표기와 같은 문자열을 쓴다. '접수 마감'으로 띄우면 필터 옵션이 둘로 갈린다 */
+    return x.s||'';
+  }
   function row(x){
-    var cls=x.s==='접수마감'?'done':(x.s==='접수중'?'open':'');
-    var sb=x.s==='접수중'?'s1':(x.s==='정정공고중'?'s2':'s3');
+    var st=stateOf(x);
+    var cls=_live(x)?'open':'done';
+    var sb=st==='접수중'?'s1':(st==='정정공고중'?'s2':'s3');
     var fa=(x.f||[]).length;
     var att=fa?('<a class="fl" href="'+esc(x.f[0].u)+'" target="_blank" rel="noopener">첨부 '+fa+'개 받기</a>'):'<span style="color:var(--muted2)">첨부 없음</span>';
     var ty=tyOf(x);
@@ -193,7 +218,7 @@ table.tb{width:100%;border-collapse:collapse;font-size:13.5px}
         +(x.a?'<div style="font-size:11.5px;color:var(--muted);margin-top:3px">'+esc(x.a)+'</div>':'')+'</td>'
       +'<td class="hqc"><span class="hq">'+esc(hqOf(x))+'</span></td>'
       +'<td class="dt dl">'+esc(x.c||'·')+'</td>'
-      +'<td class="st"><span class="bg '+sb+'">'+esc(x.s)+'</span></td>'
+      +'<td class="st"><span class="bg '+sb+'">'+esc(st)+'</span></td>'
       +'<td class="att">'+att+'</td></tr>';
   }
   function draw(){
