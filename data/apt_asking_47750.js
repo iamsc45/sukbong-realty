@@ -1,1 +1,1 @@
-window.APTASK=window.APTASK||{};APTASK["47750"]={"진보무지개|진보면":{"mm":{"med":4500,"py":270,"n":1}},"석봉리치타워|누리솔동":{"mm":{"med":137500,"py":4182,"n":3}}};window.APTASKDAY="2026-08-10";
+window.APTASK=window.APTASK||{};APTASK["47750"]={"진보무지개|진보면":{"mm":{"med":4500,"py":270,"n":1}},"석봉리치타워|누리솔동":{"mm":{"med":137500,"py":4182,"n":3}}};window.APTASKDAY="2026-08-18";

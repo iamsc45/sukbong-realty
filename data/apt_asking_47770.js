@@ -1,1 +1,1 @@
-window.APTASK=window.APTASK||{};APTASK["47770"]={"영덕우진센트럴하임|영덕읍":{"mm":{"med":40000,"py":1257,"n":2}},"석봉리치타워|누리솔동":{"mm":{"med":137500,"py":4182,"n":3}}};window.APTASKDAY="2026-08-10";
+window.APTASK=window.APTASK||{};APTASK["47770"]={"영덕우진센트럴하임|영덕읍":{"mm":{"med":40000,"py":1257,"n":2}},"석봉리치타워|누리솔동":{"mm":{"med":137500,"py":4182,"n":3}}};window.APTASKDAY="2026-08-18";
