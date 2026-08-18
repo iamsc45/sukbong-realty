@@ -57,6 +57,15 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
 .cta a{display:inline-block;padding:13px 24px;border-radius:100px;text-decoration:none;font-size:14px;font-weight:700}
 .cta a.p{background:var(--text);color:#fff}
 .cta a.l{border:1px solid var(--hair);color:var(--text);background:var(--soft)}
+/* 부분 잠금(2026-08-18) — 리포트와 같은 방식. 앞부분은 누구나, 상세는 회원 */
+.lockbox{border:1px solid var(--hair);border-radius:16px;background:var(--soft);
+  padding:26px 22px;text-align:center;margin:22px 0 0}
+.lockbox .lt{font-size:18px;font-weight:800;letter-spacing:-.02em;color:var(--text)}
+.lockbox .ld{font-size:13.5px;color:var(--muted);line-height:1.75;margin:8px 0 0}
+.lockbox .ld b{color:var(--text)}
+.lockbox .lbtn{margin-top:16px;border:0;border-radius:12px;background:#FEE500;color:#191919;
+  font:inherit;font-size:15px;font-weight:800;padding:13px 30px;cursor:pointer}
+.lockbox .ls{font-size:11px;color:var(--muted2);margin-top:9px}
 </style>
 </head><body>
 <header class="site-header">
@@ -123,10 +132,18 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
   var PYUNG=3.305785;
 
   /* ---------- 로그인 게이트 ---------- */
+  /* 🔴2026-08-18 석봉님 지시 — 검색은 누구나, 결과는 회원.
+     전에는 로그인 전에 **검색창 자체를 감췄다.** 무엇을 해 주는 화면인지 못 본 채
+     로그인부터 요구하니 이탈이 컸다. 이제 리포트와 같은 방식으로 바꾼다.
+       비로그인 : 주소 → 필지 확인까지 보여주고(그 동네 요약 포함) 상세는 가린다
+       로그인   : 전부 보여준다
+     ⚠️정부 API 를 부르는 Edge Function 은 익명 호출을 401 로 막는다(하루 20회 상한이
+       회원 단위라 익명을 열면 상한을 걸 수 없다). 그래서 미리보기는 **이미 공개된
+       정적 자료(data/land_dong/*.json)만** 쓴다. 서버를 새로 열지 않는다. */
   function setUI(user){
-    $('gate').style.display = user?'none':'';
-    $('sbox').style.display = user?'flex':'none';
-    $('shint').style.display = user?'':'none';
+    $('gate').style.display = 'none';          /* 검색창은 늘 보인다 */
+    $('sbox').style.display = 'flex';
+    $('shint').style.display = '';
     if(user) $('addr').focus();
   }
   /* sb_auth.js 공개 API는 whenReady/onChange/login. 토큰은 같은 URL·KEY로 만든
@@ -380,6 +397,54 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
   function ymLabel(ym){ return ym&&ym.length===4 ? '20'+ym.slice(0,2)+'.'+ym.slice(2) : ''; }
   function box(title,inner){ return '<h2>'+title+'</h2><div class="card">'+inner+'</div>'; }
   function soon(msg){ return '<div class="note">'+msg+'</div>'; }
+
+  /* ── 비로그인 미리보기 (2026-08-18 신설) ─────────────────────────────
+     리포트의 부분 잠금과 같은 원리다. 앞부분을 보여주고 그 뒤를 가린다.
+     보여주는 것 : 찾은 필지(주소·PNU 확인) + 그 법정동의 지목별 평당가 요약
+                  → 이미 공개된 data/land_dong/*.json 만 쓴다
+     가리는 것   : 그 필지의 공시지가·토지특성·행위제한·건축물대장·참고 시세 구간
+                  → 정부 API 실시간 조회분(회원 하루 20회) */
+  async function preview(p){
+    $('state').textContent=p.label;
+    var code=p.pnu.slice(0,10), s=null;
+    try{
+      var r=await fetch('data/land_dong/'+code+'.json');   /* force-cache 금지(위 사고 참조) */
+      if(r.ok){ var j=await r.json(); s=j&&j.s; }
+    }catch(e){ /* 미리보기는 없어도 그만 */ }
+
+    var h='<h2>찾은 필지</h2><div class="card">'
+      + brow('주소', esc(p.label))
+      + brow('법정동', esc(p.sido+' '+p.gu+' '+(p.eup?p.eup+' ':'')+p.dong))
+      + '<div class="note">주소를 필지 번호(PNU)로 정확히 찾았습니다. 이 필지의 공시지가와 건축물대장을 이어서 보여드립니다.</div></div>';
+
+    if(s&&Object.keys(s).length){
+      var rows='';
+      Object.keys(s).slice(0,4).forEach(function(jm){
+        var v=s[jm]||[];
+        if(!v[0]) return;
+        rows+=brow(esc(jm), '실거래 평당 '+comma(v[0])+'만원 <span class="tag">'+comma(v[1]||0)+'건</span>');
+      });
+      if(rows) h+='<h2>이 동네 땅값 (지목별)</h2><div class="card">'+rows
+        +'<div class="note">같은 법정동에서 최근 6개월 실제로 신고된 거래의 평당 중위값입니다. 면적·단가는 전용 기준입니다.</div></div>';
+    }
+
+    h+='<div class="lockbox">'
+      +'<div class="lt">이 필지의 상세는 회원에게 보여드립니다</div>'
+      +'<div class="ld">개별공시지가 · 토지특성(지목·용도지역·도로접면) · 행위제한 · 건축물대장 ·'
+      +' 실거래 기준 참고 시세 구간까지 한 화면에서 확인하실 수 있습니다.<br>'
+      +'<b>카카오 로그인 3초, 무료입니다.</b></div>'
+      +'<button class="lbtn" id="lockGo">카카오로 시작하기</button>'
+      +'<div class="ls">회원은 하루 20회까지 조회할 수 있습니다</div></div>';
+    $('out').innerHTML=h;
+    var b=document.getElementById('lockGo');
+    if(b) b.onclick=function(){
+      if(window.SBAuth&&SBAuth.isIn()){ lookup(); return; }
+      if(window.SBAuth) SBAuth.gate(null, function(){ lookup(); }, {
+        title:'회원에게 필지 상세를 보여드립니다',
+        desc:'카카오 로그인 3초, 무료입니다.<br>공시지가·행위제한·건축물대장과 <b>참고 시세 구간</b>을 바로 확인하실 수 있습니다.',
+        agree:'(필수) 개인정보 수집·이용 동의 · 카카오 계정 식별자·닉네임을 회원 식별과 필지 조회 서비스 제공 목적으로 수집·이용합니다.'});
+    };
+  }
 
   async function fillDong(info, ch){
     var el=document.getElementById('dongBox'); if(!el) return;
@@ -688,7 +753,10 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
     try{
       var sess=await myClient.auth.getSession();
       var token=sess.data&&sess.data.session?sess.data.session.access_token:null;
-      if(!token){$('state').className='err';$('state').textContent='로그인이 풀렸습니다. 다시 로그인해 주세요.';setUI(null);return;}
+      /* 비로그인 — 여기서 끝내지 않고 **찾은 필지와 그 동네 요약까지** 보여준 뒤 잠근다.
+         정부 API 는 회원만 부를 수 있으므로(하루 20회 상한이 회원 단위) 미리보기는
+         이미 공개된 정적 자료로만 만든다. */
+      if(!token){ await preview(p); return; }
       var res=await fetch(FN,{method:'POST',
         headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
         body:JSON.stringify({pnu:p.pnu,gu:p.gu})});
