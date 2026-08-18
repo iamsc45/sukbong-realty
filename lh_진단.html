@@ -73,8 +73,23 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
 .locmap .lc{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;
   padding:11px 16px;border-top:1px solid var(--hair);font-size:12.5px;color:var(--text2)}
 .locmap .lc b{font-size:13.5px;color:var(--text)}
-.locmap .lc a{margin-left:auto;color:var(--acc-blue);text-decoration:none;font-weight:700;white-space:nowrap}
-@media(max-width:520px){.locmap .lm{height:170px}.locmap .lc a{margin-left:0}}
+/* 지도 링크는 글자가 아니라 버튼이다(2026-08-18 석봉님 지시 — 너무 작아 안 보였다).
+   주소 줄에 끼워 두면 오른쪽 끝에 묻히므로 아래 한 줄을 통째로 차지하게 한다. */
+.locmap .lgo{display:block;padding:0 16px 14px}
+.locmap .lgo a{display:flex;align-items:center;justify-content:center;gap:7px;
+  width:100%;box-sizing:border-box;padding:13px 16px;border-radius:11px;
+  background:var(--acc-blue);color:#fff;text-decoration:none;
+  font-size:15px;font-weight:800;letter-spacing:-.01em;
+  box-shadow:0 2px 8px rgba(27,90,214,.22);transition:filter .15s,transform .05s}
+.locmap .lgo a:hover{filter:brightness(1.07)}
+.locmap .lgo a:active{transform:translateY(1px)}
+.locmap .lgo svg{width:18px;height:18px;flex:none}
+.locmap .lgo em{font-style:normal;font-weight:600;opacity:.85;font-size:13px}
+@media(max-width:520px){
+  .locmap .lm{height:170px}
+  .locmap .lgo a{font-size:14.5px;padding:12px 14px}
+  .locmap .lgo em{display:none}
+}
 /* 회원 블록 (2026-08-04). 결과를 다 보여준 뒤에 놓는다 */
 .mem{border:1px solid var(--hair);border-radius:14px;background:#fff;padding:17px 20px;margin:0 0 12px}
 .mem .mtitle{font-size:15px;font-weight:800;letter-spacing:-0.02em}
@@ -916,8 +931,15 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
     var loc='<div class="locmap"><div class="lm" id="locmap"></div>'
       +'<div class="lc"><b>'+esc(p.text)+'</b>'
       +'<span>이 지점 기준으로 판정했습니다. 다르면 주소를 고쳐 다시 눌러 주세요.</span>'
-      +'<a href="map.html?q='+encodeURIComponent(p.text)+'" target="_blank" rel="noopener">실거래지도에서 열기</a>'
-      +'</div></div>';
+      +'</div>'
+      +'<div class="lgo"><a href="map.html?q='+encodeURIComponent(p.text)+'"'
+      +' target="_blank" rel="noopener">'
+      +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"'
+      +' stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+      +'<path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z"/>'
+      +'<circle cx="12" cy="10" r="2.6"/></svg>'
+      +'이 자리 실거래가 보기<em>· 주변 시세까지</em></a></div>'
+      +'</div>';
 
     /* 그 지역 공고 (2026-08-18 신설, 석봉님 지시)
        진단만 해 주고 끝내면 사업자는 결국 LH 게시판을 다시 뒤져야 한다. LH 기본 화면은
