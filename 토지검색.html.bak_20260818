@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>내 땅 담보가치 조회 — 지번으로 바로 확인 · 석봉 부동산 정보방</title>
+<meta name="description" content="지번 주소를 넣으면 그 필지의 공시지가·용도지역·행위제한·건축물대장과 실거래 기준 참고 시세를 한 화면에 보여드립니다.">
+<link rel="canonical" href="https://xn--2q1br1nnrasc92a76myvau64b.com/%ED%86%A0%EC%A7%80%EA%B2%80%EC%83%89.html">
+<meta property="og:title" content="내 땅 담보가치 조회 · 석봉 부동산 정보방">
+<meta property="og:description" content="지번 주소 하나로 공시지가·행위제한·건축물대장·참고 시세까지.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="석봉 부동산 정보방">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Y7P41Z09PV"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-Y7P41Z09PV');</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+.wrap{max-width:860px;margin:0 auto;padding:26px 20px 70px}
+h1{font-size:26px;letter-spacing:-.02em;margin:0 0 4px}
+.loc{color:var(--muted);font-size:13.5px;margin:0 0 18px}
+.search{display:flex;gap:8px;flex-wrap:wrap}
+.search input{flex:1 1 340px;min-width:240px;padding:14px 16px;font:inherit;border:1px solid var(--hair);border-radius:4px;background:#fff}
+.search input:focus{outline:none;border-color:var(--text)}
+.search button{padding:14px 28px;font:inherit;font-weight:700;cursor:pointer;background:var(--text);color:#fff;border:0;border-radius:4px}
+.search button:disabled{opacity:.5;cursor:default}
+.hint{color:var(--muted);font-size:12.5px;margin:8px 0 0;line-height:1.6}
+.gate{background:var(--soft);border:1px solid var(--hair);border-radius:6px;padding:34px 24px;text-align:center;margin:22px 0}
+.gate b{display:block;font-size:16px;margin-bottom:6px}
+.gate p{color:var(--muted);font-size:13.5px;margin:0 0 16px;line-height:1.7}
+.gate button{padding:13px 26px;border-radius:100px;border:0;background:#FEE500;color:#191919;font:inherit;font-weight:700;cursor:pointer}
+#state{margin:18px 0 0;color:var(--muted);font-size:14px}
+#state.err{color:#C24B37;white-space:pre-wrap}
+h2{font-size:16px;margin:26px 0 8px;padding-bottom:6px;border-bottom:1.5px solid var(--text)}
+table.t2{width:100%;border-collapse:collapse;font-size:14px}
+.t2 th{font-size:11.5px;color:var(--muted);text-align:left;padding:7px 8px;border-bottom:1.5px solid var(--text)}
+.t2 td{padding:8px;border-bottom:1px solid var(--hair);font-variant-numeric:tabular-nums}
+.row{display:flex;gap:14px;padding:4px 0;font-size:14.5px}
+.row .k{flex:0 0 96px;color:var(--muted);font-size:13px}
+.row .v{flex:1;font-variant-numeric:tabular-nums}
+.big{font-size:18px;font-weight:800}
+.tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:100px;border:1px solid var(--hair);color:var(--muted);margin-left:6px}
+.warn{color:#C24B37}
+.card{background:var(--soft);border:1px solid var(--hair);border-radius:6px;padding:16px 18px;margin:14px 0}
+.note{color:var(--muted);font-size:12.5px;line-height:1.65;margin:10px 0 0}
+.disc{border:1px solid var(--hair);border-left:3px solid #C24B37;border-radius:0;background:#fff;
+  padding:12px 16px;margin:20px 0 0;font-size:12.5px;color:var(--muted);line-height:1.7}
+.cta{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 0}
+.cta a{display:inline-block;padding:13px 24px;border-radius:100px;text-decoration:none;font-size:14px;font-weight:700}
+.cta a.p{background:var(--text);color:#fff}
+.cta a.l{border:1px solid var(--hair);color:var(--text);background:var(--soft)}
+</style>
+</head><body>
+<header class="site-header">
+  <a class="brand" href="index.html">석봉 부동산 정보방</a>
+  <nav>
+    <a href="index.html">홈</a>
+    <a href="map.html">실거래지도</a>
+    <a href="apply.html">청약</a>
+    <a href="auction.html">경매·공매</a><a href="%EC%A7%80%ED%91%9C.html">금리·지표</a><a href="lh_%EC%A7%84%EB%8B%A8.html">LH매입</a><a href="lh_%EA%B3%B5%EA%B3%A0.html">공고</a><a href="%ED%86%A0%EC%A7%80%EA%B2%80%EC%83%89.html">땅값</a><a href="%EC%9D%B4%EC%9A%A9%EC%95%88%EB%82%B4.html">이용안내</a>
+    <a href="%EA%B8%80.html">리포트</a>
+    <a href="favorites.html">★ 관심단지</a>
+    <a href="https://blog.naver.com/seokbongnews" target="_blank" rel="noopener">블로그</a>
+    <a href="channels.html">채널</a>
+    <a href="%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html">대출 문의</a>
+  <span id="sbAuthBtn"></span></nav>
+</header>
+<main class="wrap">
+<h1>내 땅 담보가치 조회</h1>
+<div class="loc">지번 주소 하나로 공시지가 · 용도지역 · 행위제한 · 건축물대장 · 참고 시세까지</div>
+
+<div class="search" id="sbox" style="display:none">
+  <input id="addr" placeholder="예) 서울특별시 강남구 역삼동 737" autocomplete="off">
+  <button id="go">조회</button>
+</div>
+<div class="hint" id="shint" style="display:none">
+  시도는 생략해도 됩니다(<b>강남구 역삼동 737</b>). 임야는 <b>산 12-3</b>, 부번은 <b>737-1</b>처럼 넣으세요.
+  하루 20회까지 조회할 수 있습니다.
+</div>
+
+<div class="gate" id="gate">
+  <b>카카오 로그인 후 이용할 수 있습니다</b>
+  <p>필지 정보는 정부 API를 실시간으로 조회해 오기 때문에<br>회원에 한해 하루 20회까지 제공해 드립니다. 가입은 10초면 됩니다.</p>
+  <button id="loginBtn">카카오로 시작하기</button>
+</div>
+
+<div id="state"></div>
+<div id="out"></div>
+
+<div class="disc"><b>이 조회 결과는 참고용입니다.</b>
+공시지가·실거래 신고 등 공공자료를 모아 보여드리는 것으로, <b>감정평가가 아니며
+대출 심사·계약 등 어떤 의사결정의 근거 자료가 될 수 없습니다.</b>
+실제 담보 가치는 금융기관의 감정평가로 정해지며, 필지의 도로 접면·형상·이용 상황 등
+개별 요인에 따라 크게 달라집니다. 정확한 상담이 필요하시면 아래 문의를 이용해 주세요.</div>
+
+<div class="cta">
+  <a class="p" href="%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html">담보 대출 상담 문의</a>
+  <a class="l" href="map.html" id="mapLink">실거래지도 보기</a>
+</div>
+</main>
+<footer class="site-footer">
+  <span>📈 <a href="https://telegram.me/seokbongnews">텔레그램 채널</a></span> ·
+  <span>💬 <a href="https://blog.naver.com/seokbongnews">네이버 블로그</a></span>
+  <div class="fine">편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 방문 통계 수집을 위해 Google Analytics(쿠키)를 사용합니다</div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/sb_auth.js?v=8"></script>
+<script defer src="assets/sb_tabbar.js?v=7"></script>
+<script src="data/land_bjd.js"></script>
+<script>
+(function(){
+  var FN='https://bwgoufxonqamglbqsife.supabase.co/functions/v1/land-lookup';
+  var $=function(id){return document.getElementById(id);};
+  var PYUNG=3.305785;
+
+  /* ---------- 로그인 게이트 ---------- */
+  function setUI(user){
+    $('gate').style.display = user?'none':'';
+    $('sbox').style.display = user?'flex':'none';
+    $('shint').style.display = user?'':'none';
+    if(user) $('addr').focus();
+  }
+  /* sb_auth.js 공개 API는 whenReady/onChange/login. 토큰은 같은 URL·KEY로 만든
+     보조 클라이언트에서 꺼낸다(localStorage 세션을 공유하므로 로그인 상태가 같다). */
+  var SB_URL='https://bwgoufxonqamglbqsife.supabase.co';
+  var SB_KEY='sb_publishable_kYd1gCyqCR2Qy8Ix6KE6og_FfJUImfR';
+  var myClient=window.supabase?window.supabase.createClient(SB_URL,SB_KEY):null;
+  SBAuth.whenReady(function(u){setUI(u);});
+  SBAuth.onChange(function(u){setUI(u);});
+  $('loginBtn').addEventListener('click',function(){SBAuth.login();});
+
+  /* ---------- 주소 → PNU (토지조회.py to_pnu 이식) ---------- */
+  function toPnu(addr){
+    var a=addr.trim();
+    var san=/\s산\s*\d/.test(a)?'2':'1';
+    a=a.replace(/\s산\s*/,' ');
+    var m=a.match(/(\d+)(?:\s*-\s*(\d+))?\s*(?:번지)?\s*$/);
+    if(!m) return {err:'지번(번지)을 찾지 못했습니다. 예) 강남구 역삼동 737'};
+    var bun=+m[1], bu=+(m[2]||0);
+    var toks=a.slice(0,m.index).trim().split(/\s+/);
+    if(!toks.length||!toks[0]) return {err:'동 이름을 찾지 못했습니다'};
+    var dong=toks[toks.length-1];
+    var cands=LANDBJD.filter(function(b){return b[3]===dong;});
+    if(!cands.length) cands=LANDBJD.filter(function(b){return b[3].indexOf(dong)===0;});
+    if(!cands.length) return {err:'법정동 "'+dong+'"을 찾지 못했습니다'};
+    if(cands.length>1&&toks.length>=2){
+      var gu=toks[toks.length-2];
+      var n1=cands.filter(function(b){return b[2].indexOf(gu)>=0||b[1].indexOf(gu)>=0;});
+      if(n1.length)cands=n1;
+    }
+    if(cands.length>1&&toks.length>=3){
+      var sd=toks[0].slice(0,2);
+      var n2=cands.filter(function(b){return b[1].indexOf(sd)===0;});
+      if(n2.length)cands=n2;
+    }
+    if(cands.length>1){
+      var names=cands.slice(0,6).map(function(b){return b[1]+' '+b[2]+' '+b[3];}).join(', ');
+      return {err:'같은 이름의 동이 여럿입니다. 시군구를 붙여 주세요.\n→ '+names};
+    }
+    var b=cands[0];
+    var pad=function(n,w){n=String(n);while(n.length<w)n='0'+n;return n;};
+    return {pnu:b[0]+san+pad(bun,4)+pad(bu,4), sido:b[1], gu:b[2], dong:b[3],
+            label:b[1]+' '+b[2]+' '+b[3]+' '+(san==='2'?'산 ':'')+bun+(bu?'-'+bu:'')};
+  }
+
+  /* ---------- 표시 유틸 ---------- */
+  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function comma(n){return Number(n).toLocaleString('ko-KR');}
+  function wonPy(perM2){ /* 원/㎡ → 평당, 1억 넘으면 억 단위 */
+    var man=Math.round(perM2*PYUNG/10000);
+    if(man>=10000){var e=Math.floor(man/10000),r=man%10000;
+      return r? comma(e)+'억 '+comma(r)+'만원' : comma(e)+'억원';}
+    return comma(man)+'만원';
+  }
+  function m2py(v){var f=+v;if(!f)return '-';
+    return comma(f.toFixed(1))+'㎡ ('+comma((f/PYUNG).toFixed(1))+'평)';}
+  function wonAbs(w){ /* 원 → 만원/억 표기 */
+    var man=Math.round(w/10000);
+    if(man>=10000){var e=Math.floor(man/10000),r=man%10000;
+      return r? comma(e)+'억 '+comma(r)+'만원' : comma(e)+'억원';}
+    return comma(man)+'만원';
+  }
+  function brow(k,v){return '<div class="row"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>';}
+  function ymd(s){s=String(s||'');return s.length===8?s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6,8):'';}
+
+  /* ---------- 결과 렌더 ---------- */
+  function render(d,info){
+    var h=[];
+    var latest=(d.price||[]).slice().sort(function(a,b){return String(b.stdrYear).localeCompare(String(a.stdrYear));})[0];
+    var ch=(d.characteristics||[]).slice().sort(function(a,b){return String(b.stdrYear).localeCompare(String(a.stdrYear));})[0];
+
+    if(latest){
+      var unit=+latest.pblntfPclnd;
+      h.push('<h2>개별공시지가</h2><div class="card">');
+      h.push('<div class="row"><div class="k">기준</div><div class="v">'+esc(latest.stdrYear)+'년 공시</div></div>');
+      h.push('<div class="row"><div class="k">㎡당</div><div class="v">'+comma(unit)+'원</div></div>');
+      h.push('<div class="row"><div class="k">평당</div><div class="v big">'+wonPy(unit)+'</div></div>');
+      if(ch&&ch.lndpclAr){
+        /* 총액 = ㎡당 공시지가 × 필지면적(㎡). wonPy는 평당 환산용이라 여기 쓰면 3.3배 부풀려진다(2026-08-12 수정) */
+        h.push('<div class="row"><div class="k">필지 총액</div><div class="v">약 '+wonAbs(unit*+ch.lndpclAr)+' <span class="tag">'+m2py(ch.lndpclAr)+'</span></div></div>');
+      }
+      h.push('</div>');
+    }
+    if(ch){
+      h.push('<h2>토지특성</h2><div class="card">');
+      [['지목',ch.lndcgrCodeNm],['면적',m2py(ch.lndpclAr)],['용도지역',ch.prposArea1Nm],
+       ['이용상황',ch.ladUseSittnNm],['도로접면',ch.roadSideCodeNm],['지형',ch.tpgrphHgCodeNm]]
+      .forEach(function(kv){if(kv[1]&&kv[1]!=='-')h.push('<div class="row"><div class="k">'+kv[0]+'</div><div class="v">'+esc(kv[1])+'</div></div>');});
+      h.push('</div>');
+    }
+    /* 개별주택가격 — 단독·다가구 필지만 값이 있다 (토지+건물 일체의 국가 공시가격) */
+    var hps=(d.houseprice||[]).slice().sort(function(a,b){return String(b.stdrYear||'').localeCompare(String(a.stdrYear||''));});
+    var hp=hps[0];
+    if(hp&&+hp.housePc){
+      h.push('<h2>개별주택가격</h2><div class="card">');
+      h.push(brow('기준',esc(hp.stdrYear)+'년 공시'));
+      h.push('<div class="row"><div class="k">주택가격</div><div class="v big">'+wonAbs(+hp.housePc)+'</div></div>');
+      if(+hp.ladRegstrAr)h.push(brow('대지면적',m2py(hp.ladRegstrAr)));
+      if(+hp.buldAllTotAr)h.push(brow('연면적',m2py(hp.buldAllTotAr)));
+      h.push('<div class="note">단독·다가구 주택의 국가 공시가격(토지+건물 일체)입니다. 실거래가보다 낮게 공시되는 것이 일반적입니다.</div></div>');
+    }
+    if(d.estimate){
+      var e=d.estimate;
+      h.push('<h2>참고 시세 구간</h2><div class="card">');
+      h.push('<div class="row"><div class="k">평당</div><div class="v big">'+wonPy(e.unit_lo)+' ~ '+wonPy(e.unit_hi)+'</div></div>');
+      if(ch&&ch.lndpclAr){
+        /* 총액 = ㎡당 구간값 × 필지면적(㎡). 위와 같은 이유로 wonAbs (2026-08-12 수정) */
+        h.push('<div class="row"><div class="k">필지 기준</div><div class="v">약 '+wonAbs(e.unit_lo*+ch.lndpclAr)+' ~ '+wonAbs(e.unit_hi*+ch.lndpclAr)+'</div></div>');
+      }
+      h.push('<div class="row"><div class="k">근거</div><div class="v">'+esc(e.scope)+' 실거래 '+comma(e.n)+'건 · 공시지가의 '+e.lo+'~'+e.hi+'배 <span class="tag">신뢰도 '+esc(e.grade)+'</span></div></div>');
+      h.push('<div class="note">2021~2026년 국토교통부 실거래 신고를 모은 통계 구간입니다. 이 필지의 값이 아니라 같은 지역·지목·용도지역 거래의 분포입니다.</div>');
+      h.push('</div>');
+    }else{
+      h.push('<h2>참고 시세 구간</h2><div class="card"><div class="note">이 지역·지목은 거래 표본이 적거나 편차가 커서 시세 구간을 제시하지 않습니다. 정확한 판단이 필요하시면 아래 상담 문의를 이용해 주세요.</div></div>');
+    }
+    var uses=(d.landuse||[]);
+    if(uses.length){
+      h.push('<h2>토지이용계획 (행위제한)</h2><div class="card">');
+      var seen={};
+      uses.forEach(function(u){
+        var nm=u.prposAreaDstrcCodeNm||'-',cf=(u.cnflcAtNm||u.cnflcAt||'').trim();
+        var key=nm+'|'+cf; if(seen[key])return; seen[key]=1;
+        var hit=cf==='포함';
+        h.push('<div class="row"><div class="k'+(hit?' warn':'')+'">'+(hit?'저촉':'참고')+'</div><div class="v">'+esc(nm)+' ['+esc(cf||'-')+']</div></div>');
+      });
+      h.push('<div class="note">\'포함\'은 그 구역 규제에 걸린다는 뜻입니다. 개발제한·군사보호 등은 처분이 어려워 담보 가치를 깎는 요인입니다.</div></div>');
+    }
+    var recap=(d.building&&d.building.recap)||[], title=(d.building&&d.building.title)||[];
+    var flr=(d.building&&d.building.flr)||[], atch=(d.building&&d.building.atch)||[];
+    if(recap.length||title.length){
+      h.push('<h2>건축물대장</h2><div class="card">');
+      if(recap.length){
+        var r=recap[0];
+        h.push('<div class="row"><div class="k">단지 전체</div><div class="v"><b>'+esc((r.bldNm||'').trim()||'-')+'</b> · '+esc(r.mainPurpsCdNm||'-')+'</div></div>');
+        if((r.newPlatPlc||'').trim())h.push(brow('도로명',esc(r.newPlatPlc)));
+        if(+r.platArea)h.push(brow('대지면적',m2py(r.platArea)));
+        if(+r.totArea)h.push(brow('연면적',m2py(r.totArea)));
+        if(+r.bcRat||+r.vlRat)h.push(brow('건폐율/용적률',(+r.bcRat?(+r.bcRat).toFixed(1)+'%':'-')+' / '+(+r.vlRat?(+r.vlRat).toFixed(1)+'%':'-')));
+        if(+r.hhldCnt)h.push(brow('동/세대',esc(r.mainBldCnt||'-')+'동 · '+comma(r.hhldCnt)+'세대'));
+        var rpk=(+r.indrAutoUtcnt||0)+(+r.oudrAutoUtcnt||0)+(+r.indrMechUtcnt||0)+(+r.oudrMechUtcnt||0);
+        if(rpk)h.push(brow('주차',comma(rpk)+'대'));
+      }
+      if(title.length<=3){
+        title.forEach(function(t){
+          var purps=esc(t.mainPurpsCdNm||'-');
+          if((t.etcPurps||'').trim()&&t.etcPurps.trim()!==(t.mainPurpsCdNm||'').trim())purps+=' <span class="tag">'+esc(t.etcPurps)+'</span>';
+          h.push('<div class="row"><div class="k">건물</div><div class="v"><b>'+esc((t.bldNm||'').trim()||'(이름 없음)')+'</b> · '+purps+'</div></div>');
+          if(!recap.length&&(t.newPlatPlc||'').trim())h.push(brow('도로명',esc(t.newPlatPlc)));
+          var st=(t.etcStrct||'').trim()||t.strctCdNm||'', rf=(t.etcRoof||'').trim()||t.roofCdNm||'';
+          if(st)h.push(brow('구조',esc(st)+(rf?' · '+esc(rf):'')));
+          if(+t.grndFlrCnt||+t.ugrndFlrCnt){
+            var sc=(+t.ugrndFlrCnt?'지하 '+t.ugrndFlrCnt+'층 / ':'')+'지상 '+(+t.grndFlrCnt||'-')+'층';
+            if(+t.heit)sc+=' · 높이 '+comma((+t.heit).toFixed(1))+'m';
+            h.push(brow('규모',sc));
+          }
+          if(!recap.length&&+t.platArea)h.push(brow('대지면적',m2py(t.platArea)));
+          if(+t.archArea)h.push(brow('건축면적',m2py(t.archArea)));
+          if(+t.totArea)h.push(brow('연면적',m2py(t.totArea)));
+          if(!recap.length&&(+t.bcRat||+t.vlRat))h.push(brow('건폐율/용적률',(+t.bcRat?(+t.bcRat).toFixed(1)+'%':'-')+' / '+(+t.vlRat?(+t.vlRat).toFixed(1)+'%':'-')));
+          var pk=(+t.indrAutoUtcnt||0)+(+t.oudrAutoUtcnt||0)+(+t.indrMechUtcnt||0)+(+t.oudrMechUtcnt||0);
+          if(pk)h.push(brow('주차',comma(pk)+'대'));
+          if(+t.rideUseElvtCnt)h.push(brow('승강기','승용 '+t.rideUseElvtCnt+'대'+(+t.emgenUseElvtCnt?' · 비상 '+t.emgenUseElvtCnt+'대':'')));
+          if(+t.hhldCnt||+t.hoCnt)h.push(brow('세대/호',(+t.hhldCnt?comma(t.hhldCnt)+'세대':'')+(+t.hhldCnt&&+t.hoCnt?' · ':'')+(+t.hoCnt?comma(t.hoCnt)+'호':'')));
+          var ap=String(t.useAprDay||'');
+          if(ap.length===8){
+            var age=new Date().getFullYear()-+ap.slice(0,4);
+            h.push('<div class="row"><div class="k">사용승인</div><div class="v">'+ymd(ap)+(age>=30?' <span class="tag warn">준공 '+age+'년차</span>':' <span class="tag">준공 '+age+'년차</span>')+'</div></div>');
+          }
+          if(ymd(t.pmsDay))h.push(brow('허가일',ymd(t.pmsDay)));
+          if((t.rserthqkDsgnApplyYn||'').trim()==='1'||(t.rserthqkAblty||'').trim())h.push(brow('내진','내진설계 적용'+((t.rserthqkAblty||'').trim()?' · '+esc(t.rserthqkAblty):'')));
+          if((t.engrGrade||'').trim())h.push(brow('에너지등급',esc(t.engrGrade)));
+        });
+      }else{
+        h.push(brow('동별',title.length+'개 동 등재'));
+      }
+      /* 층별 구성 — 적으면 층별로, 많으면 용도별 면적 합으로 요약 */
+      if(flr.length){
+        h.push('<div class="row"><div class="k">층별 구성</div><div class="v"></div></div>');
+        function fkey(f){return (f.flrGbCdNm==='지하'?-1:1)*(+f.flrNo||0);}
+        if(flr.length<=12){
+          flr.slice().sort(function(a,b){return fkey(a)-fkey(b);}).forEach(function(f){
+            var nm=(f.etcPurps||'').trim()||f.mainPurpsCdNm||'-';
+            h.push(brow((f.flrGbCdNm==='지하'?'지하 ':'')+(+f.flrNo||'-')+'층',esc(nm)+(+f.area?' · '+m2py(f.area):'')));
+          });
+        }else{
+          var agg={};
+          flr.forEach(function(f){var nm=f.mainPurpsCdNm||'기타';agg[nm]=(agg[nm]||0)+(+f.area||0);});
+          Object.keys(agg).sort(function(a,b){return agg[b]-agg[a];}).slice(0,6).forEach(function(nm){
+            h.push(brow(esc(nm),m2py(agg[nm])));
+          });
+          h.push('<div class="note">총 '+flr.length+'개 층 기재 · 용도별 면적 합계 상위만 표시</div>');
+        }
+      }
+      if(atch.length){
+        var aj=atch.map(function(a){var b=+a.atchBun||0,j=+a.atchJi||0;return b+(j?'-'+j:'');}).filter(Boolean);
+        if(aj.length)h.push(brow('부속지번','<span class="warn">'+esc(aj.join(', '))+'</span> <span class="tag">건물이 이 필지들에 걸쳐 있음 · 담보 설정 시 함께 확인</span>'));
+      }
+      /* 토지 면적과 대장상 대지면적이 다르면 그 사실을 알려준다(둘 다 공부상 실제 값) */
+      var landAr=ch?+ch.lndpclAr||0:0;
+      var bldPlat=recap.length?+recap[0].platArea||0:(title.length?+title[0].platArea||0:0);
+      if(landAr&&bldPlat&&Math.abs(landAr-bldPlat)/landAr>0.03){
+        h.push('<div class="note">위 토지특성의 필지 면적('+m2py(landAr)+')과 건축물대장의 대지면적('+m2py(bldPlat)+')이 다릅니다. 대장은 건축 당시 기재라 이후 합필·분필이 있었거나 일부만 대지로 산입됐을 수 있습니다. 정확한 면적은 토지대장·등기부로 확인하세요.</div>');
+      }
+      h.push('</div>');
+    }else{
+      h.push('<h2>건축물대장</h2><div class="card"><div class="note">등재된 건물이 없습니다 (나대지이거나 미등재).</div></div>');
+    }
+    $('out').innerHTML=h.join('');
+  }
+
+  /* ---------- 조회 ---------- */
+  async function lookup(){
+    var v=$('addr').value.trim();
+    if(!v){$('addr').focus();return;}
+    var p=toPnu(v);
+    if(p.err){$('state').className='err';$('state').textContent=p.err;$('out').innerHTML='';return;}
+    $('go').disabled=true;
+    $('state').className='';$('state').textContent=p.label+' 조회 중…';
+    $('out').innerHTML='';
+    try{
+      var sess=await myClient.auth.getSession();
+      var token=sess.data&&sess.data.session?sess.data.session.access_token:null;
+      if(!token){$('state').className='err';$('state').textContent='로그인이 풀렸습니다. 다시 로그인해 주세요.';setUI(null);return;}
+      var res=await fetch(FN,{method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+        body:JSON.stringify({pnu:p.pnu,gu:p.gu})});
+      var d=await res.json();
+      if(!d.ok){$('state').className='err';$('state').textContent=d.error||'조회하지 못했습니다.';return;}
+      $('state').textContent=p.label;
+      /* 지도 링크를 조회한 동네로 연결 — 동명만 넘기면 동명이동(신사동 등)으로 샐 수 있어
+         시도 약칭+시군구를 반드시 붙인다(dongs.js가 동명 하나에 한 곳만 담는 한계). */
+      var SIDO_SHORT={'서울특별시':'서울','부산광역시':'부산','대구광역시':'대구','인천광역시':'인천',
+        '광주광역시':'광주','대전광역시':'대전','울산광역시':'울산','세종특별자치시':'세종','경기도':'경기',
+        '강원특별자치도':'강원','충청북도':'충북','충청남도':'충남','전북특별자치도':'전북','전라남도':'전남',
+        '전남광주통합특별시':'전남','경상북도':'경북','경상남도':'경남','제주특별자치도':'제주'};
+      var ss=SIDO_SHORT[p.sido]||p.sido.slice(0,2);
+      $('mapLink').href='map.html?q='+encodeURIComponent(ss+' '+p.gu+' '+p.dong);
+      $('mapLink').textContent=p.dong+' 실거래지도 보기';
+      try{if(typeof gtag==='function')gtag('event','land_lookup',{search_term:p.label});}catch(_e){}
+      render(d,p);
+    }catch(e){
+      $('state').className='err';$('state').textContent='서버와 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요.';
+    }finally{$('go').disabled=false;}
+  }
+  $('go').addEventListener('click',lookup);
+  $('addr').addEventListener('keydown',function(e){if(e.key==='Enter')lookup();});
+})();
+</script>
+</body></html>
