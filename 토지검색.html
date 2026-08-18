@@ -386,7 +386,14 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
     var code=info.pnu.slice(0,10), me=jibunOf(info.pnu);
     var data=null;
     try{
-      var r=await fetch('data/land_dong/'+code+'.json',{cache:'force-cache'});
+      /* 🔴🔴 2026-08-18 사고 — 여기 `{cache:'force-cache'}` 가 있었다.
+         배포 전에 이 페이지를 연 브라우저는 이 주소로 **404를 캐시에 담아 뒀고**,
+         force-cache 는 신선도를 무시하고 그 404를 계속 쓴다. 그래서 자료를 올린
+         뒤에도 화면이 「자료가 아직 없습니다」로 나왔다(실측: 같은 파일이
+         no-store 로는 200·매물 27건, force-cache 로는 404).
+         ⚠️ 네 섹션이 **한꺼번에** 비면 자료 부재가 아니라 이 fetch 실패를 의심하라.
+         기본 캐시로 둔다 — GitHub Pages 가 ETag 를 주므로 재요청 비용은 거의 없다. */
+      var r=await fetch('data/land_dong/'+code+'.json');
       if(r.ok) data=await r.json();
     }catch(_e){}
     var deals=(data&&data.d)||[], lists=(data&&data.l)||[];
@@ -611,7 +618,7 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
 
     /* ⑤ 주변 정비구역 */
     if(REDEV===null){
-      try{ var rr=await fetch('data/land_redev.json',{cache:'force-cache'}); REDEV=rr.ok?await rr.json():{}; }
+      try{ var rr=await fetch('data/land_redev.json'); REDEV=rr.ok?await rr.json():{}; }   /* force-cache 금지 — 위 참조 */
       catch(_e){ REDEV={}; }
     }
     var key=info.gu+' '+info.dong, rd=REDEV[key]||[];
