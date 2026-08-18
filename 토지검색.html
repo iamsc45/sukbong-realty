@@ -42,6 +42,17 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
 .note{color:var(--muted);font-size:12.5px;line-height:1.65;margin:10px 0 0}
 .disc{border:1px solid var(--hair);border-left:3px solid #C24B37;border-radius:0;background:#fff;
   padding:12px 16px;margin:20px 0 0;font-size:12.5px;color:var(--muted);line-height:1.7}
+/* 결과 안 바로가기 — 조회하면 섹션이 열 개 넘게 나와 아래쪽 내용이 안 보인다.
+   헤더가 sticky(높이가 화면폭마다 달라진다)라 top 값은 JS 로 재서 넣는다. */
+.jump{display:none;gap:6px;flex-wrap:wrap;margin:16px 0 0;padding:10px 0 9px;
+  position:-webkit-sticky;position:sticky;background:var(--canvas);z-index:900;
+  border-bottom:1px solid var(--hair)}
+.jump button{padding:7px 12px;border:1px solid var(--hair);background:var(--soft);
+  color:var(--text);border-radius:100px;font:inherit;font-size:13px;cursor:pointer;
+  white-space:nowrap;transition:background 120ms ease,color 120ms ease}
+.jump button:hover,.jump button.on{background:var(--text);color:#fff;border-color:var(--text)}
+@media(max-width:620px){.jump{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .jump::-webkit-scrollbar{display:none}}
 .cta{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 0}
 .cta a{display:inline-block;padding:13px 24px;border-radius:100px;text-decoration:none;font-size:14px;font-weight:700}
 .cta a.p{background:var(--text);color:#fff}
@@ -71,8 +82,8 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
   <button id="go">조회</button>
 </div>
 <div class="hint" id="shint" style="display:none">
-  시도는 생략해도 됩니다(<b>강남구 역삼동 737</b>). 임야는 <b>산 12-3</b>, 부번은 <b>737-1</b>처럼 넣으세요.
-  하루 20회까지 조회할 수 있습니다.
+  시도는 생략해도 됩니다(<b>강남구 역삼동 737</b>). 읍·면 지역은 <b>리</b>까지 넣으세요(<b>김포시 통진읍 옹정리 281-1</b>).
+  임야는 <b>산 12-3</b>, 부번은 <b>737-1</b>처럼 넣으세요. 하루 20회까지 조회할 수 있습니다.
 </div>
 
 <div class="gate" id="gate">
@@ -82,6 +93,7 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
 </div>
 
 <div id="state"></div>
+<div class="jump" id="jump"></div>
 <div id="out"></div>
 
 <div class="disc"><b>이 조회 결과는 참고용입니다.</b>
@@ -103,7 +115,7 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/sb_auth.js?v=8"></script>
 <script defer src="assets/sb_tabbar.js?v=7"></script>
-<script src="data/land_bjd.js"></script>
+<script src="data/land_bjd.js?v=2"></script>
 <script>
 (function(){
   var FN='https://bwgoufxonqamglbqsife.supabase.co/functions/v1/land-lookup';
@@ -140,10 +152,20 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
     var cands=LANDBJD.filter(function(b){return b[3]===dong;});
     if(!cands.length) cands=LANDBJD.filter(function(b){return b[3].indexOf(dong)===0;});
     if(!cands.length) return {err:'법정동 "'+dong+'"을 찾지 못했습니다'};
+    /* 🔴 2026-08-18 — 리(里)를 목록에 넣으면서 앞 토큰이 읍·면일 수 있게 됐다.
+       (예 「김포시 통진읍 옹정리 281-1」의 앞 토큰은 시군구가 아니라 '통진읍')
+       b[4] 에 읍·면 이름이 들어 있으니 시군구와 함께 본다. 안 그러면 같은 이름의
+       리가 여럿일 때(답곡리 5곳) 좁혀지지 않는다. */
     if(cands.length>1&&toks.length>=2){
       var gu=toks[toks.length-2];
-      var n1=cands.filter(function(b){return b[2].indexOf(gu)>=0||b[1].indexOf(gu)>=0;});
+      var n1=cands.filter(function(b){
+        return b[2].indexOf(gu)>=0||b[1].indexOf(gu)>=0||(b[4]&&b[4]===gu);});
       if(n1.length)cands=n1;
+    }
+    if(cands.length>1&&toks.length>=3){
+      var gu2=toks[toks.length-3];
+      var n1b=cands.filter(function(b){return b[2].indexOf(gu2)>=0;});
+      if(n1b.length)cands=n1b;
     }
     if(cands.length>1&&toks.length>=3){
       var sd=toks[0].slice(0,2);
@@ -151,13 +173,14 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
       if(n2.length)cands=n2;
     }
     if(cands.length>1){
-      var names=cands.slice(0,6).map(function(b){return b[1]+' '+b[2]+' '+b[3];}).join(', ');
-      return {err:'같은 이름의 동이 여럿입니다. 시군구를 붙여 주세요.\n→ '+names};
+      var names=cands.slice(0,6).map(function(b){
+        return b[1]+' '+b[2]+' '+(b[4]?b[4]+' ':'')+b[3];}).join(', ');
+      return {err:'같은 이름의 동·리가 여럿입니다. 시군구나 읍·면을 붙여 주세요.\n→ '+names};
     }
     var b=cands[0];
     var pad=function(n,w){n=String(n);while(n.length<w)n='0'+n;return n;};
-    return {pnu:b[0]+san+pad(bun,4)+pad(bu,4), sido:b[1], gu:b[2], dong:b[3],
-            label:b[1]+' '+b[2]+' '+b[3]+' '+(san==='2'?'산 ':'')+bun+(bu?'-'+bu:'')};
+    return {pnu:b[0]+san+pad(bun,4)+pad(bu,4), sido:b[1], gu:b[2], dong:b[3], eup:b[4]||'',
+            label:b[1]+' '+b[2]+' '+(b[4]?b[4]+' ':'')+b[3]+' '+(san==='2'?'산 ':'')+bun+(bu?'-'+bu:'')};
   }
 
   /* ---------- 표시 유틸 ---------- */
@@ -328,7 +351,9 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
       h.push('<h2>건축물대장</h2><div class="card"><div class="note">등재된 건물이 없습니다 (나대지이거나 미등재).</div></div>');
     }
     $('out').innerHTML=h.join('');
-    try{ fillDong(info, ch); }catch(_e){}
+    /* fillDong 은 async 라 try/catch 로는 안 잡힌다. 실패해도 바로가기는 세운다. */
+    try{ fillDong(info, ch).catch(function(){ buildJump(); }); }
+    catch(_e){ buildJump(); }
   }
 
   /* ---------- 조회 ---------- */
@@ -371,6 +396,77 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
     var nearL=lists.filter(function(x){return x[0]!==me;}).slice(0,6);
     var h=[];
 
+    /* 🔴 2026-08-18 신설 — 호가와 실거래를 **견주어** 보여준다.
+       따로 늘어놓기만 하면 독자가 직접 계산해야 하고, 무엇보다
+       「이미 팔렸는데 아직 안 내린 매물」을 지금 나와 있는 매물로 오해한다.
+       실제 사례: 김포 통진읍 281-1 은 21.18억·23.30억에 나와 있었는데
+       2026년 8월에 13.78억에 팔렸고, 그 뒤에도 매물이 그대로 남아 있었다.
+
+       ⚠️ 견주는 값은 총액이 아니라 **평당가**로 한다. 분필·합필로 매물 면적과
+          거래 면적이 다를 수 있어 총액끼리 견주면 엉뚱한 배율이 나온다.
+       ⚠️ 실거래는 계약 **월**까지만, 매물은 확인 **일**까지 안다. 달이 같으면
+          어느 쪽이 먼저인지 알 수 없으므로 아무 말도 하지 않는다(넘겨짚지 않는다). */
+    function pyOf(man,ar){ return ar? (+man)/((+ar)/3.305785) : 0; }
+    function ymOfDay(s){ s=String(s||''); return s.length===8 ? s.slice(2,6) : ''; }
+    var newest = mine.length ? mine[0] : null;          /* d 는 계약월 최신순 정렬 */
+    var dealPy = newest ? pyOf(newest[2],newest[3]) : 0;
+
+    /* 🔴 2026-08-18 석봉님 지적으로 갈래를 셋으로 나눴다.
+       처음에는 「거래보다 먼저 확인된 매물」만 보고 "팔렸는데 안 내렸다"고 적었는데,
+       **거래 뒤에 확인된 매물은 이야기가 정반대**다 — 산 사람이 더 비싸게 다시
+       내놓은 것일 수 있다(실제로 운중동 1036-8 은 6월에 24억에 팔리고 8월에 30억에
+       나와 있다). 같은 화면에 섞어 놓고 한 가지로 설명하면 거짓말이 된다.
+
+         before  확인일 < 계약월 → 팔리기 전부터 붙어 있던 호가.  낙폭 계산에 쓴다.
+         after   확인일 > 계약월 → 거래 뒤에 확인된 호가.  재매도일 수 있다.
+         (같은 달·확인일 없음) → 선후를 모른다. 아무 말도 하지 않는다.
+
+       ⚠️ after 를 「새 주인이 되판다」고 **단정하지 않는다.** 중개사가 안 팔린 매물의
+          확인일만 갱신했을 수도 있고, 우리는 매물의 등록일이 아니라 확인일만 안다. */
+    /* 🔴 2026-08-18 추가 — 「언제 나온 호가인가」의 근거를 둘 둔다.
+       ①우리가 그 매물을 **처음 본 날**(매일 수집하므로 실측이다. 수집 시작 전부터
+         있던 매물은 알 수 없어 자료에서 빈칸으로 온다)  ②네이버 **확인일**(중개사가
+         손대는 값). ①이 있으면 ①을, 없으면 ②를 쓴다.
+       ⚠️ 실측으로 확인한 것 — 매물번호와 확인일이 거의 함께 움직인다(번호 100만
+          구간마다 확인일 폭 5~6일, 오래된 번호에 최근 확인일이 붙은 건 없음).
+          재등록하면 번호가 새로 나오므로 **확인일이 사실상 등록일에 가깝다.**
+          그래도 ①이 쌓이면 그쪽이 더 정확하므로 우선한다. */
+    function evOf(L){
+      var fs=String(L[8]||'');
+      if(fs.length===8) return {ym:fs.slice(2,6), day:fs, obs:true};
+      var cf=String(L[6]||'');
+      if(cf.length===8) return {ym:cf.slice(2,6), day:cf, obs:false};
+      return null;
+    }
+    var before=[], after=[];
+    if(newest&&newest[1]){
+      myL.forEach(function(L){
+        var ev=evOf(L); if(!ev) return;
+        if(newest[1]>ev.ym) before.push(L);
+        else if(newest[1]<ev.ym) after.push(L);
+      });
+    }
+    /* 🔴 2026-08-18 — 네이버 '토지' 매물에는 **건물째 파는 물건이 섞여 있다.**
+       실측: A등급 매물 21,871건 중 2,204건(10.1%)이 건물 있는 필지다.
+       역삼동 826-7 은 대지 214㎡ 에 연면적 2,000㎡ 근린생활시설이 있고 호가가
+       650억이라, 땅값으로 읽으면 평당 10억이 된다.
+       ⚠️ 그렇다고 빼지 않는다 — 도심에서는 노후 건물을 철거 전제로 땅값만 받고
+          파는 매물이 흔하다. 지목별 중위값에 미치는 영향도 논현 +7%·대치 +8%·
+          역삼 -5% 로 방향조차 일정하지 않다. **사실만 보여 주고 판단은 맡긴다.** */
+    function bldTag(x){
+      var ar=+x[9]||0; if(!ar) return '';
+      var yr=String(x[10]||''), pu=String(x[11]||'');
+      var age=yr.length===4?(new Date().getFullYear()-+yr):0;
+      return ' <span class="tag warn">건물 있음 '+comma(ar)+'㎡'+
+             (pu?' · '+esc(pu):'')+(yr?' · '+esc(yr)+'년':'')+
+             (age>=30?' (노후)':'')+'</span>';
+    }
+    function gapTag(py){
+      if(!dealPy||!py) return '';
+      var g=Math.round((py/dealPy-1)*100);
+      return ' <span class="tag">실거래 대비 '+(g>=0?'+':'')+g+'%</span>';
+    }
+
     /* ① 이 필지의 실거래 */
     if(mine.length){
       var in1=mine.map(function(x){
@@ -381,6 +477,50 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
                (x[6]?' <span class="tag">'+esc(x[6])+'</span>':'')+
                (x[7]?' <span class="tag">'+esc(x[7])+'</span>':'')+'</div>';
       }).join('');
+      /* 거래 '전'에 붙어 있던 호가와만 견준다 — 거래 뒤 호가와 견주면 낙폭이 아니다 */
+      var cheapest=0;
+      before.forEach(function(L){ var p=pyOf(L[1],L[2]); if(p&&(!cheapest||p<cheapest))cheapest=p; });
+      if(cheapest&&dealPy){
+        var drop=Math.round((dealPy/cheapest-1)*100);
+        in1+='<div class="row"><div class="k">거래 전 호가 대비</div><div class="v big'+(drop<0?' warn':'')+'">'+
+             (drop>=0?'+':'')+drop+'%</div></div>'+
+             '<div class="note" style="margin:-6px 0 10px">거래 전에 이 필지에 붙어 있던 가장 싼 호가(평당 '+
+             comma(Math.round(cheapest))+'만원)와 견준 것입니다. 실거래는 평당 '+
+             comma(Math.round(dealPy))+'만원.</div>';
+        in1+='<div class="note"><b class="warn">그 매물 '+before.length+'건이 아직 내려가지 않았습니다.</b> '+
+             '확인일이 이 거래보다 앞서니 팔린 뒤 그대로 남아 있는 것일 수 있습니다. '+
+             '중개사에게 먼저 확인하십시오.</div>';
+      }
+      /* 거래 뒤에 확인된 호가 — 재매도일 수 있다. 단정하지 않는다.
+         ⚠️ 값이 거래가보다 **낮으면** 「되판다」는 설명이 어색하다(연천 답곡리는
+            거래 뒤 호가가 -47%였다). 방향에 따라 그럴듯한 쪽을 앞에 둔다. */
+      if(after.length){
+        var top1=null;
+        after.forEach(function(L){ if(!top1||pyOf(L[1],L[2])>pyOf(top1[1],top1[2])) top1=L; });
+        var hiPy=pyOf(top1[1],top1[2]);
+        var up=dealPy?Math.round((hiPy/dealPy-1)*100):0;
+        var ev1=evOf(top1)||{day:'',obs:false};
+        in1+='<div class="row"><div class="k">거래 뒤 호가</div><div class="v big">'+eokMan(top1[1])+
+             (dealPy?' <span class="tag">'+(up>=0?'+':'')+up+'%</span>':'')+'</div></div>'+
+             '<div class="note" style="margin:-6px 0 10px">평당 '+comma(Math.round(hiPy))+'만원 · '+
+             (ev1.obs?'우리 화면에 처음 보인 날 ':'중개사 확인 ')+esc(ymd(ev1.day))+
+             (after.length>1?' 외 '+(after.length-1)+'건':'')+'</div>';
+        var anyObs=after.some(function(L){var e=evOf(L);return e&&e.obs;});
+        in1+='<div class="note"><b>이 거래 뒤에 나온 매물이 '+after.length+'건 있습니다.</b> '+
+             (up>=0
+               ? '산 사람이 더 높은 값에 다시 내놓은 것일 수 있습니다.'
+               : '거래가보다 낮은 호가입니다. 조건이 다른 물건이거나 매물 정보가 갱신된 것일 수 있습니다.')+
+             (anyObs
+               ? ' 이 매물은 그 거래 뒤에 <b>우리 화면에 처음 나타났습니다</b>(매일 수집한 기록 기준).'
+               : ' 다만 근거가 중개사 <b>확인일</b>이라, 안 팔린 매물의 확인일만 갱신된 것일 가능성도 남습니다.')+
+             '</div>';
+      }
+      /* 선후를 못 가른 매물이 있으면 그 사실을 밝힌다 (조용히 빼면 왜 없는지 모른다) */
+      var unknown=myL.length-before.length-after.length;
+      if(myL.length&&unknown>0){
+        in1+='<div class="note">매물 '+unknown+'건은 나온 시점이 이 거래와 같은 달이라 '+
+             '<b>거래보다 앞인지 뒤인지 가리지 않았습니다.</b> 실거래는 계약 월까지만 공개됩니다.</div>';
+      }
       h.push(box('이 필지의 실거래', in1+
         '<div class="note">국토교통부 실거래 신고에서 <b>이 필지로 확정</b>한 건입니다. 지번 뒷자리가 가려져 오는 신고를 면적·지목·용도지역으로 대조해 찾은 것이며, 애매한 건은 넣지 않았습니다.</div>'));
     }else{
@@ -392,12 +532,30 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
     if(myL.length){
       var in2=myL.map(function(x){
         var py=x[2]?Math.round(x[1]/(x[2]/3.305785)):0;
-        return '<div class="row"><div class="k">호가</div><div class="v big">'+eokMan(x[1])+'</div></div>'+
+        var pre=before.indexOf(x)>=0, post=after.indexOf(x)>=0;
+        var ev=evOf(x), tail=ev?(ev.obs?' 등록':' 확인'):'';
+        /* ⚠️ gapTag 에는 **반올림 전** 평당가를 넘긴다. 반올림한 값(예 8만원)으로
+           비율을 내면 ①과 ②의 수치가 어긋난다(실측: -46% 대 +89%, 옳은 값은 -47%).
+           표기용 반올림은 표기할 때 한 번만 한다. */
+        return '<div class="row"><div class="k">'+(pre?'<span class="warn">호가</span>':'호가')+
+               '</div><div class="v big">'+eokMan(x[1])+gapTag(pyOf(x[1],x[2]))+'</div></div>'+
                '<div class="note" style="margin:-6px 0 10px">'+m2py(x[2])+(py?' · 평당 '+comma(py)+'만원':'')+
-               ' · 확인 '+esc(ymd(x[3])||x[3])+'</div>';
+               (x[6]?' · 확인 '+esc(ymd(x[6])):'')+
+               (x[8]?' · 첫 등록 '+esc(ymd(x[8])):'')+
+               (x[4]?' · '+esc(x[4]):'')+(x[5]?' · '+esc(x[5]):'')+
+               (x[7]?' · <a href="https://m.land.naver.com/article/info/'+encodeURIComponent(x[7])+
+                     '" target="_blank" rel="noopener nofollow">매물 원문</a>':'')+
+               (pre?' <span class="tag warn">거래 전'+tail+'</span>':'')+
+               (post?' <span class="tag">거래 뒤'+tail+'</span>':'')+
+               bldTag(x)+'</div>';
       }).join('');
       h.push(box('지금 나와 있는 매물', in2+
-        '<div class="note">협상 전 <b>호가</b>입니다. 실제 거래가와 다를 수 있습니다.</div>'));
+        '<div class="note">협상 전 <b>호가</b>입니다. 실제 거래가와 다를 수 있습니다. '+
+        '「확인」은 중개사가 마지막으로 확인한 날, 「첫 등록」은 그 매물이 <b>우리 화면에 처음 나타난 날</b>입니다'+
+        '(매일 수집한 기록이라 실측이며, 수집 시작 전부터 있던 매물은 알 수 없어 비어 있습니다). '+
+        '<b>거래 전</b>은 팔리기 전부터 붙어 있던 호가, <b>거래 뒤</b>는 그 거래 뒤에 나온 호가라는 뜻입니다. '+
+        '<b class="warn">건물 있음</b>이 붙은 매물은 그 필지에 건축물대장상 건물이 있다는 뜻입니다. 호가에 건물값이 들어 있으면 '+
+        '땅값으로 환산한 평당가가 실제보다 높게 보이니, 노후 건물을 헐고 쓰는 조건인지 중개사에게 확인하십시오.</div>'));
     }
 
     /* ③ 인근 실거래 */
@@ -419,13 +577,36 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
     if(nearL.length){
       var in4=nearL.map(function(x){
         var py=x[2]?Math.round(x[1]/(x[2]/3.305785)):0;
-        return '<div class="row"><div class="k">'+esc(x[0])+'</div><div class="v">'+eokMan(x[1])+'</div></div>'+
-               '<div class="note" style="margin:-6px 0 8px">'+m2py(x[2])+(py?' · 평당 '+comma(py)+'만원':'')+'</div>';
+        return '<div class="row"><div class="k">'+esc(x[0])+(x[4]?' <span class="tag">'+esc(x[4])+'</span>':'')+
+               '</div><div class="v">'+eokMan(x[1])+'</div></div>'+
+               '<div class="note" style="margin:-6px 0 8px">'+m2py(x[2])+(py?' · 평당 '+comma(py)+'만원':'')+
+               (x[5]?' · '+esc(x[5]):'')+
+               (x[7]?' · <a href="https://m.land.naver.com/article/info/'+encodeURIComponent(x[7])+
+                     '" target="_blank" rel="noopener nofollow">매물 원문</a>':'')+
+               bldTag(x)+'</div>';
       }).join('');
       h.push(box('인근 매물 ('+esc(info.dong)+')', in4+
         '<div class="note">이 법정동에서 지번이 확정된 매물 '+comma(lists.length)+'건 중 호가가 높은 순입니다. 수도권만 수집하고 있습니다.</div>'));
     }else{
       h.push(box('인근 매물', soon('이 법정동의 매물 자료가 아직 없습니다. 현재 <b>수도권</b>만 수집하고 있으며 그 외 지역은 <b>준비 중</b>입니다.')));
+    }
+
+
+    /* 🔴 2026-08-18 석봉님 지시 — "어떤 지목의 토지가 평당 얼마인지 알 수 있어야 한다".
+       지목이 다르면 평당가가 몇 배씩 벌어지므로, 지목을 나누지 않은 평당가는
+       오히려 오해를 부른다. 동 단위로 지목별 중위값을 나란히 보여준다. */
+    var sm=(data&&data.s)||{};
+    var keys=Object.keys(sm).sort(function(a,b){
+      return (sm[b][1]+sm[b][3])-(sm[a][1]+sm[a][3]); });
+    if(keys.length){
+      var rows=keys.slice(0,8).map(function(k){
+        var v=sm[k], L=[];
+        if(v[1]) L.push('실거래 '+comma(v[0])+'만 <span style="opacity:.6">('+v[1]+'건)</span>');
+        if(v[3]) L.push('호가 '+comma(v[2])+'만 <span style="opacity:.6">('+v[3]+'건)</span>');
+        return '<div class="row"><div class="k">'+esc(k)+'</div><div class="v">'+L.join(' · ')+'</div></div>';
+      }).join('');
+      h.push(box('지목별 평당가 ('+esc(info.dong)+')', rows+
+        '<div class="note">평당 <b>중위값</b>입니다(전용/공부 면적 기준). 표본이 적은 지목은 한두 건에 크게 흔들리니 건수를 함께 보십시오. 실거래는 최근 6개월 확정분, 호가는 지금 나와 있는 매물입니다.</div>'));
     }
 
     /* ⑤ 주변 정비구역 */
@@ -447,12 +628,52 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
     }
 
     el.innerHTML=h.join('');
+    buildJump();
   }
+
+  /* ────────────────────────────────────────────────────────────
+     2026-08-18 석봉님 지시 — 결과 안 바로가기.
+     조회하면 큰 제목이 열 개 넘게 나오는데, 정작 먼저 보고 싶은
+     「이 필지의 실거래」가 한참 아래에 있다. 제목을 버튼으로 뽑아
+     누르면 그 자리로 내려가게 한다.
+     ⚠️ 헤더가 sticky 이고 높이가 화면폭마다 달라지므로(nav 줄바꿈)
+        top 과 스크롤 보정값을 **잴 때마다 실제로 재서** 쓴다.
+     ──────────────────────────────────────────────────────────── */
+  function headTop(){
+    var hd=document.querySelector('.site-header');
+    return hd?hd.getBoundingClientRect().height:0;
+  }
+  function buildJump(){
+    var bar=$('jump'); if(!bar) return;
+    var hs=[].slice.call(document.querySelectorAll('#out h2'));
+    if(!hs.length){ bar.style.display='none'; bar.innerHTML=''; return; }
+    bar.style.top=headTop()+'px';
+    bar.innerHTML=hs.map(function(hh,i){
+      if(!hh.id) hh.id='ls'+i;
+      /* 「인근 실거래 (옹정리)」처럼 괄호가 붙은 제목은 버튼에서 괄호를 뗀다 */
+      var t=hh.textContent.replace(/\s*\([^)]*\)\s*$/,'');
+      return '<button type="button" data-t="'+hh.id+'">'+esc(t)+'</button>';
+    }).join('');
+    bar.style.display='flex';
+  }
+  $('jump').addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b) return;
+    var el=document.getElementById(b.dataset.t); if(!el) return;
+    var off=headTop()+$('jump').getBoundingClientRect().height+10;
+    window.scrollTo({top:el.getBoundingClientRect().top+window.pageYOffset-off,
+                     behavior:'smooth'});
+    [].forEach.call($('jump').children,function(c){c.classList.remove('on');});
+    b.classList.add('on');
+  });
+  window.addEventListener('resize',function(){
+    var bar=$('jump'); if(bar&&bar.style.display==='flex') bar.style.top=headTop()+'px';
+  });
 
   async function lookup(){
     var v=$('addr').value.trim();
     if(!v){$('addr').focus();return;}
     var p=toPnu(v);
+    $('jump').style.display='none';$('jump').innerHTML='';   /* 새 조회 — 옛 바로가기 치운다 */
     if(p.err){$('state').className='err';$('state').textContent=p.err;$('out').innerHTML='';return;}
     $('go').disabled=true;
     $('state').className='';$('state').textContent=p.label+' 조회 중…';
@@ -474,8 +695,10 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
         '강원특별자치도':'강원','충청북도':'충북','충청남도':'충남','전북특별자치도':'전북','전라남도':'전남',
         '전남광주통합특별시':'전남','경상북도':'경북','경상남도':'경남','제주특별자치도':'제주'};
       var ss=SIDO_SHORT[p.sido]||p.sido.slice(0,2);
-      $('mapLink').href='map.html?q='+encodeURIComponent(ss+' '+p.gu+' '+p.dong);
-      $('mapLink').textContent=p.dong+' 실거래지도 보기';
+      /* ⚠️ 지도는 리(里) 단위를 아직 못 찾는다(CLAUDE.md). 리면 상위 읍·면으로 보낸다. */
+      var mapDong=p.eup||p.dong;
+      $('mapLink').href='map.html?q='+encodeURIComponent(ss+' '+p.gu+' '+mapDong);
+      $('mapLink').textContent=mapDong+' 실거래지도 보기';
       try{if(typeof gtag==='function')gtag('event','land_lookup',{search_term:p.label});}catch(_e){}
       render(d,p);
     }catch(e){
