@@ -151,6 +151,23 @@ table.tb{width:100%;border-collapse:collapse;font-size:13.5px}
     Object.keys(m).sort(function(a,b){return m[b]-m[a];}).forEach(function(v){
       var o=document.createElement('option');o.value=v;o.textContent=v+' ('+n(m[v])+')';el.appendChild(o);});
   }
+  /* ⚠️LH가 붙인 상태값은 마감이 지나도 '접수중'으로 남는다(2026-08-18 확인: 13건).
+     마감일과 오늘을 비교해 다시 판정한다. 진단기 buildNotices와 같은 규칙. */
+  var _t0=new Date(); _t0.setHours(0,0,0,0);
+  function _due(v){var m=String(v||'').match(/(\d{4})[.\-](\d{1,2})[.\-](\d{1,2})/);
+    return m?new Date(+m[1],+m[2]-1,+m[3]):null;}
+  function _live(x){ if(x.s!=='접수중'&&x.s!=='정정공고중') return false;
+    var d=_due(x.c); return d? d>=_t0 : true; }
+  /* 화면에 보이는 상태도 다시 판정한다. LH가 '접수중'으로 남겨 둔 마감 건을
+     초록 배지로 보여주면 그게 곧 오답이 된다.
+     🔴이 블록은 fill('fs') 보다 반드시 위에 있어야 한다. function 선언은 호이스팅되지만
+       _t0 는 var 라 '값 할당'이 실행 순서를 탄다. 아래에 두었더니 stateOf 가 _t0=undefined
+       로 돌아 필터 옵션이 1,143건 전부 '접수마감' 하나로 뭉갰다(2026-08-18 라이브 회귀). */
+  function stateOf(x){
+    if((x.s==='접수중'||x.s==='정정공고중') && !_live(x)) return '접수마감';  /* LH 원본 표기와 같은 문자열을 쓴다. '접수 마감'으로 띄우면 필터 옵션이 둘로 갈린다 */
+    return x.s||'';
+  }
+
   fill('ft',A.map(tyOf));
   fill('fh',A.map(hqOf));
   fill('fs',A.map(stateOf));
@@ -170,13 +187,6 @@ table.tb{width:100%;border-collapse:collapse;font-size:13.5px}
   if(document.getElementById('e3')) document.getElementById('e3').textContent=n(M.sinchuk||sinchuk)+'건';
 
   document.getElementById('k1').textContent=n(A.length);
-  /* ⚠️LH가 붙인 상태값은 마감이 지나도 '접수중'으로 남는다(2026-08-18 확인: 13건).
-     마감일과 오늘을 비교해 다시 판정한다. 진단기 buildNotices와 같은 규칙. */
-  var _t0=new Date(); _t0.setHours(0,0,0,0);
-  function _due(v){var m=String(v||'').match(/(\d{4})[.\-](\d{1,2})[.\-](\d{1,2})/);
-    return m?new Date(+m[1],+m[2]-1,+m[3]):null;}
-  function _live(x){ if(x.s!=='접수중'&&x.s!=='정정공고중') return false;
-    var d=_due(x.c); return d? d>=_t0 : true; }
   document.getElementById('k2').textContent=n(A.filter(_live).length);
   document.getElementById('k3').textContent=n(A.filter(function(x){return stateOf(x)==='정정공고중';}).length);
   document.getElementById('k4').textContent=n(A.filter(function(x){return x.y===1;}).length);
@@ -197,12 +207,6 @@ table.tb{width:100%;border-collapse:collapse;font-size:13.5px}
        마감이 지난 공고가 이 필터에 남아 사용자가 헛걸음한다. */
     if(document.getElementById('fo').checked && !_live(x)) return false;
     return true;
-  }
-  /* 화면에 보이는 상태도 다시 판정한다. LH가 '접수중'으로 남겨 둔 마감 건을
-     초록 배지로 보여주면 그게 곧 오답이 된다. */
-  function stateOf(x){
-    if((x.s==='접수중'||x.s==='정정공고중') && !_live(x)) return '접수마감';  /* LH 원본 표기와 같은 문자열을 쓴다. '접수 마감'으로 띄우면 필터 옵션이 둘로 갈린다 */
-    return x.s||'';
   }
   function row(x){
     var st=stateOf(x);
