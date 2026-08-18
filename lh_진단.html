@@ -90,6 +90,31 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
   .locmap .lgo a{font-size:14.5px;padding:12px 14px}
   .locmap .lgo em{display:none}
 }
+/* 진단 전 안내 카드 (2026-08-18). 진단이 주인공이므로 담백하게 한 장만 둔다 */
+.intron{border:1px solid var(--hair);border-radius:14px;background:#fff;
+  padding:16px 18px 14px;margin:14px 0 0}
+.intron .ih{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin:0 0 10px}
+.intron .ih b{font-size:15px;color:var(--text);letter-spacing:-.01em}
+.intron .ih span{font-size:11.5px;color:var(--text2);margin-left:auto}
+.intron .il{list-style:none;margin:0;padding:0;border-top:1px solid var(--hair)}
+.intron .il li{padding:9px 0;border-bottom:1px solid var(--hair)}
+.intron .il li:last-child{border-bottom:0}
+.intron .il a{color:var(--text);text-decoration:none;font-size:13.5px;font-weight:600;
+  line-height:1.45;display:block}
+.intron .il a:hover{text-decoration:underline}
+.intron .il em{display:block;font-style:normal;font-size:11.5px;color:var(--text2);margin-top:3px}
+.intron .il em b{color:var(--acc-blue);font-weight:700}
+.intron .iz{margin:0 0 10px;font-size:12.5px;color:var(--text2);line-height:1.6}
+.intron .ib{display:flex;gap:8px;margin:12px 0 0;flex-wrap:wrap}
+.intron .ib a{flex:1 1 0;min-width:150px;box-sizing:border-box;text-align:center;
+  padding:11px 12px;border-radius:10px;border:1px solid var(--hair);
+  color:var(--text);text-decoration:none;font-size:13.5px;font-weight:700}
+.intron .ib a:hover{border-color:var(--acc-blue);color:var(--acc-blue)}
+.intron .ib a.p{background:var(--acc-blue);border-color:var(--acc-blue);color:#fff}
+.intron .ib a.p:hover{filter:brightness(1.07);color:#fff}
+.intron .ib em{display:block;font-style:normal;font-size:11px;font-weight:500;
+  opacity:.8;margin-top:2px}
+@media(max-width:520px){.intron .ib a{flex:1 1 100%}}
 /* 회원 블록 (2026-08-04). 결과를 다 보여준 뒤에 놓는다 */
 .mem{border:1px solid var(--hair);border-radius:14px;background:#fff;padding:17px 20px;margin:0 0 12px}
 .mem .mtitle{font-size:15px;font-weight:800;letter-spacing:-0.02em}
@@ -960,6 +985,39 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
      h=지역본부, y=약정 관련, s=상태, p=공고일, c=마감일, u=LH 원문, f=[첨부].
      ⚠️본사 공고(h가 빈 값)는 전국 공통이라 지역본부와 함께 보여준다. 지역본부 공고만
        걸러 두면 '전국·본사' 사전공고를 놓친다. */
+  /* 공고 판정 도구 — 진단 결과(buildNotices)와 진단 전 안내(buildIntroNotice)가
+     같은 규칙을 써야 한다. 안에 두면 두 벌이 되어 언젠가 어긋난다(2026-08-18). */
+  var NKEY=function(x){
+    return (x.n||'').replace(/^\s*\[[^\]]*정정[^\]]*\]\s*/,'')
+                    .replace(/^\s*\[정정공고\]\s*/,'').trim();
+  };
+  var NPICK=function(arr){                 // 같은 공고는 최신(정정본)만
+    var m={}, out=[];
+    arr.sort(function(a,b){return (b.p||'').localeCompare(a.p||'');});
+    for(var i=0;i<arr.length;i++){
+      var k=NKEY(arr[i]);
+      if(m[k]) continue;
+      m[k]=1; out.push(arr[i]);
+    }
+    return out;
+  };
+  var NDATE=function(v){                   // '2026.08.07' → Date
+    var m=String(v||'').match(/(\d{4})[.\-](\d{1,2})[.\-](\d{1,2})/);
+    return m? new Date(+m[1], +m[2]-1, +m[3]) : null;
+  };
+  /* ⚠️LH 상태값(s)을 그대로 믿으면 안 된다. 마감이 지나도 '접수중'으로 남아 있다. */
+  var NLIVE=function(x){
+    if(x.s!=='접수중' && x.s!=='정정공고중') return false;
+    var t=new Date(); t.setHours(0,0,0,0);
+    var d=NDATE(x.c);
+    return d ? d>=t : true;
+  };
+  var NDDAY=function(x){                   // 마감까지 남은 날
+    var d=NDATE(x.c); if(!d) return null;
+    var t=new Date(); t.setHours(0,0,0,0);
+    return Math.round((d-t)/86400000);
+  };
+
   function buildNotices(hq){
     var A=(window.LHNOTICE||[]);
     if(!A.length) return '';
@@ -968,33 +1026,11 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
          차지하고 정작 그 지역 공고가 1건만 남는다. 지역본부와 본사를 나눠서 보여준다.
        ②같은 공고의 원본과 정정본이 따로 들어 있다(비주택 용도변경이 접수중·정정공고중으로
          두 번). 제목에서 정정 접두어를 떼고 묶어 최신 하나만 남긴다. */
-    var key=function(x){
-      return (x.n||'').replace(/^\s*\[[^\]]*정정[^\]]*\]\s*/,'')
-                      .replace(/^\s*\[정정공고\]\s*/,'').trim();
-    };
-    var pick=function(arr){
-      var m={}, out=[];
-      arr.sort(function(a,b){return (b.p||'').localeCompare(a.p||'');});
-      for(var i=0;i<arr.length;i++){
-        var k=key(arr[i]);
-        if(m[k]) continue;                 // 같은 공고는 최신(정정본)만
-        m[k]=1; out.push(arr[i]);
-      }
-      return out;
-    };
+    var key=NKEY, pick=NPICK;              // 위쪽 공용 도구를 쓴다
     /* ⚠️LH가 붙인 상태값(s)을 그대로 믿으면 안 된다. 마감이 지나도 '접수중'으로 남아 있다
          (2026-08-18 확인: 서울 3차 공고 마감 2026.08.07인데 상태가 접수중).
          사업자에게 지난 공고를 접수중으로 보여주면 헛걸음을 시킨다. 마감일로 다시 판정한다. */
-    var today=new Date(); today.setHours(0,0,0,0);
-    var dnum=function(v){                       // '2026.08.07' → Date
-      var m=String(v||'').match(/(\d{4})[.\-](\d{1,2})[.\-](\d{1,2})/);
-      return m? new Date(+m[1], +m[2]-1, +m[3]) : null;
-    };
-    var live=function(x){
-      if(x.s!=='접수중' && x.s!=='정정공고중') return false;
-      var d=dnum(x.c);
-      return d ? d>=today : true;               // 마감일을 못 읽으면 상태값을 따른다
-    };
+    var live=NLIVE;                             // 위쪽 공용 도구
     var stateOf=function(x){                    // 화면에 쓸 상태 문구
       if((x.s==='접수중'||x.s==='정정공고중') && !live(x)) return '접수마감';
       return x.s||'';
@@ -1045,6 +1081,47 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
       +'지난 공고까지 전부 보려면 <a href="'+encodeURI('lh_공고.html')+'">주택매입공고 아카이브</a>(2018년부터 '
       +A.length.toLocaleString()+'건)를 보십시오. '
       +'위 관할·면적 판정은 이 공고문에서 뽑은 값을 씁니다.</div></div>';
+    return h;
+  }
+
+  /* ── 진단 전 안내 (2026-08-18 석봉님 지시) ──────────────────────
+     전에는 주소를 넣어 진단을 돌려야만 공고 아카이브 링크가 나왔다. 그런데 사람들은
+     대개 "공고가 나오나?"를 먼저 보고 "그럼 내 땅은 되나?"로 온다. 순서가 거꾸로였다.
+     게다가 아직 땅을 안 정한 사람은 지번을 못 넣어 아무것도 못 봤다.
+     ⚠️건수는 손으로 적지 말고 데이터에서 읽는다(공고는 매주 늘어난다). */
+  function buildIntroNotice(){
+    var A=(window.LHNOTICE||[]);
+    if(!A.length) return '';
+    var yak=NPICK(A.filter(function(x){return x.y;}));   // 약정 관련만, 정정본 하나로
+    var liveList=yak.filter(NLIVE);
+    liveList.sort(function(a,b){                          // 마감 임박순
+      var da=NDDAY(a), db=NDDAY(b);
+      if(da===null) return 1;
+      if(db===null) return -1;
+      return da-db;
+    });
+    var top=liveList.slice(0,3);
+    var h='<div class="intron">'
+      +'<div class="ih"><b>지금 접수 중인 매입약정 공고 '
+      +(liveList.length?liveList.length+'건':'없음')+'</b>'
+      +'<span>기준 '+esc((window.LHNOTICE_META||{}).built||'')+'</span></div>';
+    if(top.length){
+      h+='<ul class="il">';
+      for(var i=0;i<top.length;i++){
+        var x=top[i], d=NDDAY(x);
+        h+='<li><a href="'+esc(x.u||'#')+'" target="_blank" rel="noopener">'+esc(x.n||'')+'</a>'
+          +'<em>'+esc(x.h||'전국·본사')+' · 마감 '+esc(x.c||'-')
+          +(d!==null&&d>=0?' <b>D-'+d+'</b>':'')+'</em></li>';
+      }
+      h+='</ul>';
+    }else{
+      h+='<p class="iz">접수 중인 공고가 없습니다. 지난 공고로 요건과 매입 가격을 미리 보실 수 있습니다.</p>';
+    }
+    h+='<div class="ib">'
+      +'<a class="p" href="'+encodeURI('lh_공고.html')+'">공고 아카이브 보기'
+      +'<em>2018년부터 '+A.length.toLocaleString()+'건</em></a>'
+      +'<a href="'+encodeURI('lh_요건.html')+'">매입약정 요건 정리</a>'
+      +'</div></div>';
     return h;
   }
 
@@ -1223,6 +1300,12 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
   /* 각주는 짧게 (2026-08-05 석봉님 지시). 판정 방식을 문단마다 늘어놓을 필요가 없다.
      남기는 것은 세 가지뿐이다. ①무엇을 근거로 했는지와 기준일 ②아직 안 붙은 항목
      ③참고용이라는 것. 항목별 설명은 각 판정 카드가 이미 달고 있다. */
+  /* 진단 전 안내 카드를 채운다. 진단을 누르면 #out 이 결과로 덮이면서 함께 사라진다. */
+  try{
+    var _ie=document.getElementById('intron');
+    if(_ie) _ie.innerHTML=buildIntroNotice();
+  }catch(e){}
+
   document.getElementById('note').innerHTML=
     '관할과 면적 요건은 13개 지역본부의 최신 공고 원문 기준입니다(기준일 '
     +((window.LHDIAG&&window.LHDIAG.ver)||'-')+'). '

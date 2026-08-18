@@ -230,6 +230,11 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
     }else{
       h.push('<h2>참고 시세 구간</h2><div class="card"><div class="note">이 지역·지목은 거래 표본이 적거나 편차가 커서 시세 구간을 제시하지 않습니다. 정확한 판단이 필요하시면 아래 상담 문의를 이용해 주세요.</div></div>');
     }
+    /* 🔴 2026-08-18 신설 — 우리가 매칭으로 확보한 것들을 여기서 보여준다.
+       ①이 필지의 실거래 ②이 필지 매물 ③인근 실거래 ④인근 매물 ⑤주변 정비구역
+       추정 구간보다 실제 거래가 훨씬 강하다. 없으면 「준비 중」이라고 밝힌다. */
+    h.push('<div id="dongBox"></div>');
+
     var uses=(d.landuse||[]);
     if(uses.length){
       h.push('<h2>토지이용계획 (행위제한)</h2><div class="card">');
@@ -323,9 +328,127 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
       h.push('<h2>건축물대장</h2><div class="card"><div class="note">등재된 건물이 없습니다 (나대지이거나 미등재).</div></div>');
     }
     $('out').innerHTML=h.join('');
+    try{ fillDong(info, ch); }catch(_e){}
   }
 
   /* ---------- 조회 ---------- */
+
+  /* ────────────────────────────────────────────────────────────
+     2026-08-18 신설 — 우리 매칭 자산을 조회 결과에 붙인다.
+       ① 이 필지의 실거래   ② 이 필지에 나와 있는 매물
+       ③ 인근(같은 법정동) 실거래   ④ 인근 매물   ⑤ 주변 정비구역
+     자료 한 덩어리(법정동 단위 JSON)만 받아 다섯 가지를 다 채운다.
+     ⚠️ 범위를 숨기지 않는다 — 실거래 확정은 최근 6개월, 매물은 수도권,
+        정비구역은 서울만이다. 해당이 없으면 「준비 중」이라고 적는다.
+     ──────────────────────────────────────────────────────────── */
+  var REDEV=null;
+  function jibunOf(pnu){
+    var bun=parseInt(pnu.slice(11,15),10), bu=parseInt(pnu.slice(15,19),10);
+    return (pnu.charAt(10)==='2'?'산':'')+bun+(bu?'-'+bu:'');
+  }
+  function eokMan(man){            /* 만원 → '13억 7,800만' */
+    man=Math.round(+man||0);
+    if(man>=10000){var e=Math.floor(man/10000),r=man%10000;
+      return e+'억'+(r?' '+comma(r)+'만':'');}
+    return comma(man)+'만';
+  }
+  function ymLabel(ym){ return ym&&ym.length===4 ? '20'+ym.slice(0,2)+'.'+ym.slice(2) : ''; }
+  function box(title,inner){ return '<h2>'+title+'</h2><div class="card">'+inner+'</div>'; }
+  function soon(msg){ return '<div class="note">'+msg+'</div>'; }
+
+  async function fillDong(info, ch){
+    var el=document.getElementById('dongBox'); if(!el) return;
+    var code=info.pnu.slice(0,10), me=jibunOf(info.pnu);
+    var data=null;
+    try{
+      var r=await fetch('data/land_dong/'+code+'.json',{cache:'force-cache'});
+      if(r.ok) data=await r.json();
+    }catch(_e){}
+    var deals=(data&&data.d)||[], lists=(data&&data.l)||[];
+    var mine=deals.filter(function(x){return x[0]===me;});
+    var near=deals.filter(function(x){return x[0]!==me;}).slice(0,6);
+    var myL=lists.filter(function(x){return x[0]===me;});
+    var nearL=lists.filter(function(x){return x[0]!==me;}).slice(0,6);
+    var h=[];
+
+    /* ① 이 필지의 실거래 */
+    if(mine.length){
+      var in1=mine.map(function(x){
+        var py=x[3]?Math.round(x[2]/(x[3]/3.305785)):0;
+        return '<div class="row"><div class="k">'+ymLabel(x[1])+'</div><div class="v big">'+eokMan(x[2])+
+               '</div></div><div class="note" style="margin:-6px 0 10px">'+m2py(x[3])+
+               (py?' · 평당 '+comma(py)+'만원':'')+' · '+esc(x[4]||'')+
+               (x[6]?' <span class="tag">'+esc(x[6])+'</span>':'')+
+               (x[7]?' <span class="tag">'+esc(x[7])+'</span>':'')+'</div>';
+      }).join('');
+      h.push(box('이 필지의 실거래', in1+
+        '<div class="note">국토교통부 실거래 신고에서 <b>이 필지로 확정</b>한 건입니다. 지번 뒷자리가 가려져 오는 신고를 면적·지목·용도지역으로 대조해 찾은 것이며, 애매한 건은 넣지 않았습니다.</div>'));
+    }else{
+      h.push(box('이 필지의 실거래',
+        soon('최근 6개월 신고분에서 이 필지의 거래를 찾지 못했습니다. 과거 거래(2021년 이후)를 필지에 연결하는 작업은 <b>준비 중</b>입니다.')));
+    }
+
+    /* ② 이 필지에 나와 있는 매물 */
+    if(myL.length){
+      var in2=myL.map(function(x){
+        var py=x[2]?Math.round(x[1]/(x[2]/3.305785)):0;
+        return '<div class="row"><div class="k">호가</div><div class="v big">'+eokMan(x[1])+'</div></div>'+
+               '<div class="note" style="margin:-6px 0 10px">'+m2py(x[2])+(py?' · 평당 '+comma(py)+'만원':'')+
+               ' · 확인 '+esc(ymd(x[3])||x[3])+'</div>';
+      }).join('');
+      h.push(box('지금 나와 있는 매물', in2+
+        '<div class="note">협상 전 <b>호가</b>입니다. 실제 거래가와 다를 수 있습니다.</div>'));
+    }
+
+    /* ③ 인근 실거래 */
+    if(near.length){
+      var in3=near.map(function(x){
+        var py=x[3]?Math.round(x[2]/(x[3]/3.305785)):0;
+        return '<div class="row"><div class="k">'+esc(x[0])+'</div><div class="v">'+eokMan(x[2])+
+               ' <span class="tag">'+ymLabel(x[1])+'</span></div></div>'+
+               '<div class="note" style="margin:-6px 0 8px">'+m2py(x[3])+
+               (py?' · 평당 '+comma(py)+'만원':'')+' · '+esc(x[4]||'')+' · '+esc(x[5]||'')+'</div>';
+      }).join('');
+      h.push(box('인근 실거래 ('+esc(info.dong)+')', in3+
+        '<div class="note">같은 법정동에서 필지가 확정된 거래 '+comma(deals.length)+'건 중 최근 순입니다.</div>'));
+    }else{
+      h.push(box('인근 실거래', soon('이 법정동에서 필지가 확정된 최근 6개월 거래가 없습니다.')));
+    }
+
+    /* ④ 인근 매물 */
+    if(nearL.length){
+      var in4=nearL.map(function(x){
+        var py=x[2]?Math.round(x[1]/(x[2]/3.305785)):0;
+        return '<div class="row"><div class="k">'+esc(x[0])+'</div><div class="v">'+eokMan(x[1])+'</div></div>'+
+               '<div class="note" style="margin:-6px 0 8px">'+m2py(x[2])+(py?' · 평당 '+comma(py)+'만원':'')+'</div>';
+      }).join('');
+      h.push(box('인근 매물 ('+esc(info.dong)+')', in4+
+        '<div class="note">이 법정동에서 지번이 확정된 매물 '+comma(lists.length)+'건 중 호가가 높은 순입니다. 수도권만 수집하고 있습니다.</div>'));
+    }else{
+      h.push(box('인근 매물', soon('이 법정동의 매물 자료가 아직 없습니다. 현재 <b>수도권</b>만 수집하고 있으며 그 외 지역은 <b>준비 중</b>입니다.')));
+    }
+
+    /* ⑤ 주변 정비구역 */
+    if(REDEV===null){
+      try{ var rr=await fetch('data/land_redev.json',{cache:'force-cache'}); REDEV=rr.ok?await rr.json():{}; }
+      catch(_e){ REDEV={}; }
+    }
+    var key=info.gu+' '+info.dong, rd=REDEV[key]||[];
+    if(rd.length){
+      var in5=rd.map(function(x){
+        return '<div class="row"><div class="k">'+esc(x[2]||'정비')+'</div><div class="v">'+esc(x[0])+
+               ' <span class="tag">'+esc(x[1])+'</span></div></div>';
+      }).join('');
+      h.push(box('주변 정비구역', in5+
+        '<div class="note">같은 법정동에서 진행 중인 정비사업입니다. 위치가 이 필지와 가깝다는 뜻은 아닙니다.</div>'));
+    }else{
+      h.push(box('주변 정비구역',
+        soon('이 법정동에는 등록된 정비구역이 없거나, 아직 수집 범위 밖입니다. 정비구역 자료는 현재 <b>서울</b>만 확보돼 있고 그 외 지역은 <b>준비 중</b>입니다.')));
+    }
+
+    el.innerHTML=h.join('');
+  }
+
   async function lookup(){
     var v=$('addr').value.trim();
     if(!v){$('addr').focus();return;}
