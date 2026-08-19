@@ -1397,8 +1397,9 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
               _h+='<div class="sgo" data-go="rg"><b>'+_E(_rg)+' 실거래 보기</b>'
                  +'<i>그 지역에서 실제로 거래된 단지</i></div>';
             }
-            _h+='<div class="sgo" data-go="apply"><b>청약에서 찾기</b>'
-               +'<i>분양·모집공고 일정과 경쟁률</i></div>';
+            _h+='<div class="sgo" data-go="apply">'+_APBADGE
+               +'<b style="display:inline;font-size:13px;font-weight:800;color:#12264A">청약에서 찾기 ›</b>'
+               +'<i style="display:block;margin-top:4px">분양·모집공고 일정과 경쟁률</i></div>';
             sac2.innerHTML=_h; sac2.classList.add('open');
             /* 🔴 2026-08-19 신설 — 0건일 때 청약 공고를 실제로 찾아 보여준다.
                석봉님이 준 네이버 유입 검색어 57개를 실제 검색창에 넣어 재 보니 48개가 0건이었고,
@@ -1424,10 +1425,12 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
                 }
                 if(!hit.length)return;
                 var el=sac2.querySelector('[data-go="apply"]'); if(!el)return;
-                el.innerHTML='<b>청약 공고 '+hit.length+'건</b><i>'
+                el.innerHTML=_APBADGE+'<b style="display:inline;font-size:13px;font-weight:800;color:#12264A">공고 '
+                  +hit.length+'건<span style="font-weight:600;color:#5A6478"> · 자세히 보기 ›</span></b><i style="display:block;margin-top:4px">'
                   +hit.map(function(x){
                       var d=(x.s||'').slice(5).replace('-','.');
-                      return _E(String(x.nm).slice(0,30))+(d?' · 접수 '+d:'');
+                      return '<b style="display:inline;font-weight:800;color:#12264A">'
+                             +_E(String(x.nm).slice(0,30))+'</b>'+(d?' · 접수 '+d:'');
                     }).join('<br>')+'</i>';
               }
               if(window.SB&&SB.apply&&SB.apply.items){show();return;}
@@ -1452,6 +1455,13 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
           if(st)st.textContent='"'+v+'" 는 실거래 신고 기록이 없습니다';
           setFcount('"'+v+'" 실거래 없음 · 지도는 보던 자리 그대로입니다');
         }
+        /* 🔵 「청약」 배지 — 실거래 결과와 눈으로 구분되게(2026-08-19 석봉님 지시).
+           ⚠️ 두 곳(0건 안내·지역 이동 안내)이 같은 상수를 쓴다. 각자 적으면 반드시 갈린다.
+           ⚠️ CSS 파일이 아니라 인라인이다 — `assets/*.css` 를 고치면 `?v=` 를 올려야 하고
+              안 올리면 브라우저가 옛 파일을 쓴다(2026-08-15 사고). 한 줄짜리라 인라인이 안전. */
+        var _APBADGE='<span style="display:inline-block;padding:1px 6px;margin-right:6px;'
+          +'border-radius:3px;background:#12264A;color:#fff;font-size:10px;font-weight:800;'
+          +'letter-spacing:.6px;vertical-align:2px">청약</span>';
         /* hintLeftover 전용 헬퍼 — 0건 안내 블록의 _N·_E 는 그 안쪽 스코프라 여기서 못 쓴다 */
         function _AN(s){return String(s||'').toLowerCase().replace(/[\s\-_()·・.]/g,'');}
         function _AE(s){return String(s||'').replace(/[&<>"]/g,function(c){
@@ -1505,12 +1515,17 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
             if(sac3.classList.contains('open'))return;
             var h='<div class="sach">"'+_AE(key)+'" 는 이 지역 실거래 목록에 없습니다</div>';
             if(hit.length){
-              h+='<div class="sgo" data-go="apply2"><b>청약 공고 '+hit.length+'건</b><i>'
+              h+='<div class="sgo" data-go="apply2">'+_APBADGE
+                +'<b style="display:inline;font-size:13px;font-weight:800;color:#12264A">공고 '
+                +hit.length+'건<span style="font-weight:600;color:#5A6478"> · 자세히 보기 ›</span></b><i style="display:block;margin-top:4px">'
                 +hit.map(function(x){var d=(x.s||'').slice(5).replace('-','.');
-                    return _AE(String(x.nm).slice(0,30))+(d?' · 접수 '+d:'');}).join('<br>')+'</i></div>';
+                    return '<b style="display:inline;font-weight:800;color:#12264A">'
+                           +_AE(String(x.nm).slice(0,30))+'</b>'+(d?' · 접수 '+d:'');}).join('<br>')
+                +'</i></div>';
             }else{
-              h+='<div class="sgo" data-go="apply2"><b>청약에서 찾기</b>'
-                +'<i>분양 예정이거나 아직 거래가 없는 단지는 지도에 나오지 않습니다</i></div>';
+              h+='<div class="sgo" data-go="apply2">'+_APBADGE
+                +'<b style="display:inline;font-size:13px;font-weight:800;color:#12264A">청약에서 찾기 ›</b>'
+                +'<i style="display:block;margin-top:4px">분양 예정이거나 아직 거래가 없는 단지는 지도에 나오지 않습니다</i></div>';
             }
             sac3.innerHTML=h; sac3.classList.add('open');
             Array.prototype.forEach.call(sac3.querySelectorAll('[data-go="apply2"]'),function(el){
