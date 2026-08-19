@@ -593,6 +593,7 @@ function render(){
       var sqm=(t.u==='매매'&&t.a)?'<div style="font-weight:normal;font-size:10px;color:#888">'+Math.round(t.p/t.a*3.305785).toLocaleString()+'만/평</div>':'';
       return '<tr><td>'+t.cd.slice(5)+'</td><td>'+u+'</td><td>'+(t.a?t.a+'<span style="color:#9a938a;font-size:10px"> '+PY(t.a)+'</span>':'-')+'</td><td>'+t.f+'</td><td class="pr">'+priceLabel(t)+sqm+'</td></tr>';
     }).join('');
+    if(pt.t==='land'){ try{ landPrefetch(pt); }catch(e){} }
     var pop='<div class="pop"><h4>'+pt.name+'<span class="badge" style="background:'+col+'">'+ti[0]+'</span></h4>'
       +'<div class="meta">'+pt.dong+' '+(function(){var jb=(typeof landJibunCached==='function')?landJibunCached(pt,txs):'';
           return jb?('<b>'+jb+'</b> <span style="color:#8a8071">추정 지번</span>'):pt.jibun;})()
@@ -2336,6 +2337,46 @@ function _drawTx(){
    ③ **「확정이 아니라 추정」 안내를 반드시 함께 넣는다.**
    ⚠️ `d[7]`(적합성)이 빈칸인 건에 「거래가도 시세 범위」를 붙이면 틀린 말이 된다
       (과거 거래는 `--no-ratio` 로 돌려 배율을 안 썼다). `정상` 으로 시작할 때만 붙인다. */
+/* 마커를 그리기 전에 그 동의 매칭 자료를 미리 받는다 (2026-08-20 석봉님 지시
+   「눌렀을 때 바로 정보를 주는 게 중요하니 일단 바로 보여줄 수 있게」).
+   ⚠️ 처음엔 카드를 연 뒤에만 받도록 했다. 그러면 **첫 렌더의 팝업에는 지번이 안 나온다.**
+   자료가 작아서 미리 받아도 된다 — `land_dong/*.json` 서울 표본 중위 **0.8KB**,
+   90%가 4.1KB, 최대 16KB다(2026-08-20 실측). 화면에 보이는 동은 보통 한 자릿수라
+   다 받아도 수십 KB다.
+   ⚠️ 그래도 **화면에 토지 마커가 있을 때만** 받는다. 첫 화면 기본값은 아파트라
+   대부분의 방문에서는 한 바이트도 안 받는다.
+   📌 **지도가 느려지면 이 선로드를 끄고 카드 열람 시점으로 되돌리면 된다**(석봉님 판단).
+      되돌릴 자리는 이 함수 하나다. */
+function landPrefetch(pt){
+  try{
+    if(!pt || pt.t!=='land' || !window.SB || !SB.dongs) return;
+    var c5=SB.dongs[pt.dong]?SB.dongs[pt.dong][0]:''; if(!c5) return;
+    window._LANDD=window._LANDD||{}; landFill._code10=landFill._code10||{};
+    var again=function(){                       /* 새로 받은 것이 있을 때만 다시 그린다 */
+      clearTimeout(landPrefetch._t);
+      landPrefetch._t=setTimeout(function(){ try{ if(typeof render==='function') render(); }catch(e){} },260);
+    };
+    if(!window.LANDIDX || window.LANDIDX[c5]===undefined){
+      landPrefetch._i=landPrefetch._i||{}; if(landPrefetch._i[c5]) return;
+      landPrefetch._i[c5]=1;
+      var sc=document.createElement('script'); sc.src='data/land_dong/_idx_'+c5+'.js';
+      sc.onload=again;
+      sc.onerror=function(){ window.LANDIDX=window.LANDIDX||{}; window.LANDIDX[c5]={}; };
+      document.body.appendChild(sc); return;
+    }
+    var idx=window.LANDIDX[c5]||{}, c10=idx[pt.dong];
+    if(!c10){ for(var k in idx){ if(k.split(/\s+/).pop()===pt.dong){ c10=idx[k]; break; } } }
+    if(!c10) return;
+    landFill._code10[pt.dong]=c10;
+    if(window._LANDD[c10]!==undefined) return;
+    landPrefetch._j=landPrefetch._j||{}; if(landPrefetch._j[c10]) return;
+    landPrefetch._j[c10]=1;
+    fetch('data/land_dong/'+c10+'.json')
+      .then(function(r){ return r.ok?r.json():null; })
+      .then(function(j){ window._LANDD[c10]=j||null; if(j) again(); })
+      .catch(function(){ window._LANDD[c10]=null; });
+  }catch(e){}
+}
 /* 팝업용 — **이미 받아 둔 자료가 있을 때만** 지번을 돌려준다(없으면 빈 문자열).
    마커는 자료보다 먼저 그려지므로 첫 렌더에는 안 나온다. 카드를 한 번 열면
    그 법정동 자료가 캐시되고, 다음 렌더부터 팝업에도 나온다.
@@ -2354,7 +2395,9 @@ function landJibunCached(pt, txs){
       var y=ym(t.cd); if(!y) return;
       var h=LD.d.filter(function(r){return r[1]===y &&
         Math.abs((+r[2]||0)-(+t.p||0))<1 && Math.abs((+r[3]||0)-(+t.a||0))<0.06;});
-      if(h.length===1){ seen[h[0][0]]=1; matched++; }
+      var jb={}; h.forEach(function(r){ jb[r[0]]=1; });   /* 같은 지번 중복은 하나로 */
+      var uq=Object.keys(jb);
+      if(uq.length===1){ seen[uq[0]]=1; matched++; }
     });
     var ks=Object.keys(seen);
     return (ks.length===1 && sale && matched===sale) ? ks[0] : '';
@@ -2413,7 +2456,14 @@ function landFill(pt, txs){
       return r[1]===y && Math.abs((+r[2]||0)-(+t.p||0))<1 &&
              Math.abs((+r[3]||0)-(+t.a||0))<0.06;   /* 면적은 소수 1자리로 반올림돼 있다 */
     });
-    if(hit.length===1){ seen[hit[0][0]]=hit[0]; matched++; }
+    /* 🔴 같은 지번이 여러 번 걸리는 것은 「후보 여럿」이 아니다(2026-08-20 실측).
+       `land_dong.d` 에 같은 거래가 두 번 담긴 곳이 많다 — 216-121 이 2회, 231-170 이 2회.
+       그걸 후보 2개로 세어 버렸더니 **서울 매칭률이 26% → 2.1% 로 떨어졌다**
+       (용산구 38건 중 20건이 이 이유로 버려졌다). **지번으로 접은 뒤에 센다.**
+       ⚠️ 149-3 과 35-7 처럼 **다른 지번**이 걸리는 것은 진짜 후보 여럿이라 그대로 버린다. */
+    var jb={}; hit.forEach(function(r){ jb[r[0]]=r; });
+    var uq=Object.keys(jb);
+    if(uq.length===1){ seen[uq[0]]=jb[uq[0]]; matched++; }
   });
   var ks=Object.keys(seen);
   /* 🔴 헤더에 쓰려면 **그 지점의 매매 거래가 전부 같은 한 필지로 맞아야** 한다.
