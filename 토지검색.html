@@ -223,6 +223,22 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
   /* ---------- 결과 렌더 ---------- */
   function render(d,info){
     var h=[];
+    /* 🔴🔴 2026-08-19 사고 — 정부 API 가 실패해도 화면은 「자료가 없습니다」로 말했다.
+       역삼동 828 에서 개별공시지가·토지특성·토지이용계획 섹션이 통째로 사라지고
+       건축물대장은 「등재된 건물이 없습니다」로 나왔는데, 같은 필지를 직접 부르면
+       공시지가 40건·토지특성 18건이 온다. 서버가 실패를 빈 배열로 삼켰기 때문이다.
+       이제 서버가 `_failed` 로 알려 준다. **「못 불러옴」과 「없음」을 갈라 말한다.**
+       담보 상담에서 이 둘은 완전히 다른 말이다. */
+    var KO={price:'개별공시지가',characteristics:'토지특성',landuse:'토지이용계획',
+            possession:'토지소유',houseprice:'개별주택가격'};
+    var fails=(d._failed||[]).map(function(k){
+      return k.indexOf('bldg.')===0 ? '건축물대장' : (KO[k]||k); });
+    fails=fails.filter(function(v,i,a){return a.indexOf(v)===i;});
+    if(fails.length){
+      h.push('<div class="disc" style="margin:0 0 8px"><b>일부 자료를 불러오지 못했습니다 — '+
+             esc(fails.join(' · '))+'</b><br>정부 시스템이 일시적으로 응답하지 않았습니다. '+
+             '<b>그 필지에 자료가 없다는 뜻이 아닙니다.</b> 잠시 뒤 다시 조회해 주세요.</div>');
+    }
     var latest=(d.price||[]).slice().sort(function(a,b){return String(b.stdrYear).localeCompare(String(a.stdrYear));})[0];
     var ch=(d.characteristics||[]).slice().sort(function(a,b){return String(b.stdrYear).localeCompare(String(a.stdrYear));})[0];
 
