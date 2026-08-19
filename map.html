@@ -594,7 +594,9 @@ function render(){
       return '<tr><td>'+t.cd.slice(5)+'</td><td>'+u+'</td><td>'+(t.a?t.a+'<span style="color:#9a938a;font-size:10px"> '+PY(t.a)+'</span>':'-')+'</td><td>'+t.f+'</td><td class="pr">'+priceLabel(t)+sqm+'</td></tr>';
     }).join('');
     var pop='<div class="pop"><h4>'+pt.name+'<span class="badge" style="background:'+col+'">'+ti[0]+'</span></h4>'
-      +'<div class="meta">'+pt.dong+' '+pt.jibun+(pt.extra?' · '+pt.extra:'')+' · '+txs.length+'건'+(pt.ax?' · <b style="color:#D4573F">지번 비공개 · 동 단위 개략 위치</b>':'')+'</div>'
+      +'<div class="meta">'+pt.dong+' '+(function(){var jb=(typeof landJibunCached==='function')?landJibunCached(pt,txs):'';
+          return jb?('<b>'+jb+'</b> <span style="color:#8a8071">추정 지번</span>'):pt.jibun;})()
+        +(pt.extra?' · '+pt.extra:'')+' · '+txs.length+'건'+(pt.ax?' · <b style="color:#D4573F">지번 비공개 · 동 단위 개략 위치</b>':'')+'</div>'
       +'<div class="tw"><table><thead><tr><th>계약</th><th>거래</th><th>면적㎡</th><th>층</th><th>가격</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
     /* 카드에는 필터를 걸지 않은 그 지점의 전 거래를 넘긴다(2026-08-09).
        기본 필터가 '아파트·매매'가 되면서, 마커를 누르면 카드에서도 전세·월세가 사라져
@@ -2322,6 +2324,145 @@ function _drawTx(){
   var mb=document.getElementById('rcMore');
   if(mb)mb.onclick=function(){C.shown+=10;_drawTx();};
 }
+/* ══ 토지 확정 지번 붙이기 (2026-08-20, 토지 담당 세션 인수인계) ══════════
+   지도는 국토부가 가린 지번을 그대로 보여 준다 — 「역삼동 6**」. 그런데 우리는
+   같은 거래가 812-1 인 것을 이미 알고 라이브에 자료를 갖고 있다(`data/land_dong/`).
+   땅값 페이지는 812-1 로 부르는데 지도만 6** 로 불러 **화면마다 말이 달랐다.**
+
+   🔴 지켜야 할 것 셋 (토지 담당 세션이 정한 규칙)
+   ① **「확실」이라는 말을 화면에 쓰지 않는다.** 그건 석봉님이 CSV 로 읽으시려고 붙인
+      내부 라벨이고, 매칭 정확도는 **아직 검증 전**이다(2026-08-16 등기부 3장 대조 전량 오답).
+   ② **후보가 여럿이면 아예 표시하지 않는다.** 틀린 지번을 보여주는 것이 가리는 것보다 나쁘다.
+   ③ **「확정이 아니라 추정」 안내를 반드시 함께 넣는다.**
+   ⚠️ `d[7]`(적합성)이 빈칸인 건에 「거래가도 시세 범위」를 붙이면 틀린 말이 된다
+      (과거 거래는 `--no-ratio` 로 돌려 배율을 안 썼다). `정상` 으로 시작할 때만 붙인다. */
+/* 팝업용 — **이미 받아 둔 자료가 있을 때만** 지번을 돌려준다(없으면 빈 문자열).
+   마커는 자료보다 먼저 그려지므로 첫 렌더에는 안 나온다. 카드를 한 번 열면
+   그 법정동 자료가 캐시되고, 다음 렌더부터 팝업에도 나온다.
+   ⚠️ 판정 규칙은 landFill() 과 같아야 한다 — 한쪽만 고치면 화면마다 말이 갈린다. */
+function landJibunCached(pt, txs){
+  try{
+    if(!pt || pt.t!=='land' || !window._LANDD) return '';
+    var c10=(landFill._code10||{})[pt.dong];
+    var LD=c10?window._LANDD[c10]:null;
+    if(!LD || !LD.d) return '';
+    var ym=function(cd){cd=String(cd||'');return cd.length>=7?cd.slice(2,4)+cd.slice(5,7):'';};
+    var seen={}, sale=0, matched=0;
+    (txs||[]).forEach(function(t){
+      if(t.u && t.u!=='매매') return;
+      sale++;
+      var y=ym(t.cd); if(!y) return;
+      var h=LD.d.filter(function(r){return r[1]===y &&
+        Math.abs((+r[2]||0)-(+t.p||0))<1 && Math.abs((+r[3]||0)-(+t.a||0))<0.06;});
+      if(h.length===1){ seen[h[0][0]]=1; matched++; }
+    });
+    var ks=Object.keys(seen);
+    return (ks.length===1 && sale && matched===sale) ? ks[0] : '';
+  }catch(e){ return ''; }
+}
+function landFill(pt, txs){
+  if(!pt || pt.t!=='land') return;
+  var code5=(window.SB&&SB.dongs&&SB.dongs[pt.dong])?SB.dongs[pt.dong][0]:'';
+  if(!code5) return;
+  /* 1단계 — 시군구 색인. 지도가 이미 쓰는 `apt_asking_<code>.js` 와 같은 지연 로드다
+     (250개·시군구당 2.5KB). 통짜 `land_bjd.js` 는 1.37MB라 지도에 물릴 수 없다. */
+  if(!window.LANDIDX || window.LANDIDX[code5]===undefined){
+    landFill._p=landFill._p||{};
+    if(landFill._p[code5]) return;
+    landFill._p[code5]=1;
+    var sc=document.createElement('script');
+    sc.src='data/land_dong/_idx_'+code5+'.js';
+    sc.onload=function(){ landFill(pt,txs); };
+    sc.onerror=function(){ window.LANDIDX=window.LANDIDX||{}; window.LANDIDX[code5]={}; };
+    document.body.appendChild(sc);
+    return;
+  }
+  var idx=window.LANDIDX[code5]||{};
+  /* 리(里)는 「통진읍 옹정리」처럼 상위 읍·면이 붙은 키로도 들어 있다 */
+  var code10=idx[pt.dong];
+  if(!code10){ for(var k in idx){ if(k.split(/\s+/).pop()===pt.dong){ code10=idx[k]; break; } } }
+  if(!code10) return;
+
+  /* 2단계 — 그 법정동의 매칭 결과 */
+  window._LANDD=window._LANDD||{};
+  if(window._LANDD[code10]===undefined){
+    landFill._q=landFill._q||{};
+    if(landFill._q[code10]) return;
+    landFill._q[code10]=1;
+    /* ⚠️ `cache:'force-cache'` 를 쓰지 말 것 — 배포 전에 받은 404 를 계속 물고 있어
+       자료를 올린 뒤에도 「자료 없음」이 나온다(2026-08-18 사고). 기본 캐시로 둔다. */
+    fetch('data/land_dong/'+code10+'.json')
+      .then(function(r){ return r.ok?r.json():null; })
+      .then(function(j){ window._LANDD[code10]=j||null; landFill(pt,txs); })
+      .catch(function(){ window._LANDD[code10]=null; });
+    return;
+  }
+  var LD=window._LANDD[code10];
+  if(!LD || !LD.d || !LD.d.length) return;
+  landFill._code10=landFill._code10||{}; landFill._code10[pt.dong]=code10;
+
+  /* 3단계 — 거래를 짝짓는다. 키는 계약연월 + 금액(만원) + 면적(㎡) 셋이다(실측 확인).
+     ⚠️ 셋이 다 맞는 항목이 **하나일 때만** 쓴다. 여럿이면 어느 필지인지 가릴 수 없다. */
+  function ym(cd){ cd=String(cd||''); return cd.length>=7?cd.slice(2,4)+cd.slice(5,7):''; }
+  var seen={}, sale=0, matched=0;
+  (txs||[]).forEach(function(t){
+    if(t.u && t.u!=='매매') return;
+    sale++;
+    var y=ym(t.cd); if(!y) return;
+    var hit=LD.d.filter(function(r){
+      return r[1]===y && Math.abs((+r[2]||0)-(+t.p||0))<1 &&
+             Math.abs((+r[3]||0)-(+t.a||0))<0.06;   /* 면적은 소수 1자리로 반올림돼 있다 */
+    });
+    if(hit.length===1){ seen[hit[0][0]]=hit[0]; matched++; }
+  });
+  var ks=Object.keys(seen);
+  /* 🔴 헤더에 쓰려면 **그 지점의 매매 거래가 전부 같은 한 필지로 맞아야** 한다.
+     일부만 맞았는데 헤더에 적으면 **안 맞은 거래까지 그 지번으로 읽힌다.**
+     실제로 원효로1가 지점은 1,731㎡와 286㎡ 두 거래인데 하나만 매칭됐다 —
+     서로 다른 필지일 텐데 헤더에 한 지번을 쓰면 둘 다 그 필지가 된다(2026-08-20 실측).
+     「후보가 여럿이면 표시하지 않는다」와 같은 정신이다. 부족하면 아무것도 안 쓴다. */
+  if(ks.length!==1 || !sale || matched!==sale) return;
+  var found=seen[ks[0]];
+
+  /* 4단계 — 화면에 반영. 등급 문구는 `토지상세.html` gradeTag() 와 같은 규칙이다. */
+  var desc=String(found[6]||''), fit=String(found[7]||'');
+  var strong=desc.indexOf('확실')===0, chain=desc.indexOf('연쇄')>=0;
+  var why = chain ? '이웃 거래로 이어서 좁힘'
+          : strong ? '면적·지목·용도지역이 모두 맞는 필지가 하나뿐'
+          : '면적·지목이 맞는 필지가 하나뿐';
+  if(!strong && !chain && fit.indexOf('정상')===0) why += ' · 거래가도 시세 범위';
+  var bldg = desc.indexOf('건물지')>=0;
+  var esc2=function(x){return String(x||'').replace(/[&<>"]/g,function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
+
+  var loc=document.querySelector('#rcard .loc');
+  if(loc){
+    loc.innerHTML=esc2(pt.dong)+' <b style="font-weight:800">'+esc2(found[0])+'</b>'
+      +'<span style="display:inline-block;margin-left:6px;padding:1px 6px;border-radius:3px;'
+      +'background:rgba(255,255,255,.22);font-size:10px;font-weight:800;letter-spacing:.4px">추정 지번</span>'
+      +(bldg?'<span style="display:inline-block;margin-left:4px;padding:1px 6px;border-radius:3px;'
+             +'background:#E8A13A;color:#3a2600;font-size:10px;font-weight:800">건물 있는 땅</span>':'')
+      +'<span style="display:block;margin-top:3px;font-size:10.5px;opacity:.85">'+esc2(why)+'</span>';
+  }
+  /* 상세 링크에 지번을 실어 준다 */
+  var cta=document.getElementById('rcCta');
+  if(cta) cta.href='토지상세.html?code='+encodeURIComponent(code10)+'&jb='+encodeURIComponent(found[0]);
+
+  /* 🔴 안내문 — 이 문구 없이 지번만 보여주면 확정으로 읽힌다 */
+  if(!document.getElementById('rcLandNote')){
+    var tx=document.getElementById('rcTx');
+    if(tx && tx.parentNode){
+      var d=document.createElement('div');
+      d.id='rcLandNote'; d.className='rc-note';
+      d.style.cssText='padding:8px 0 0;line-height:1.5';
+      d.innerHTML='이 지번은 <b>확정이 아니라 추정</b>입니다. 국토부 실거래는 토지 지번을 가려서 '
+        +'제공하며, 후보가 하나로 좁혀진 것만 싣지만 <b>다른 필지일 수 있습니다.</b> '
+        +'금액이 걸린 판단에는 등기부로 확인하세요.'
+        +(pt.ax?'<br>이 지점은 <b>좌표가 동 단위 개략 위치</b>입니다.':'');
+      tx.parentNode.insertBefore(d, tx.nextSibling);
+    }
+  }
+}
 function showAptCard(pt, txs){
   /* 🔴 카드로 연 지점은 지도에도 반드시 보여야 한다(2026-08-15 석봉님 재지적).
      첫 화면 상품 필터가 '아파트·매매' 고정이라, 토지·연립·상가 지점으로 딥링크가
@@ -2355,6 +2496,22 @@ function showAptCard(pt, txs){
   nz.sort(function(a,b){return a.d-b.d;}); nz=nz.slice(0,6); window._NZ=nz;
   var near=nz.map(function(z,i){var cc=(RCOL[z.cat]||'#8a8071');
     return '<div class="rc-row" onclick="focusZone(window._NZ['+i+'])"><span>'+z.nm+' <span style="color:#8a8071">'+z.d+'m</span><span class="arw">→</span></span><span class="rc-badge" style="background:'+cc+'">'+(z.stage||'확인중')+'</span></div>';}).join('');
+  /* 🔴 물건종류에 맞는 말을 쓴다(2026-08-19 석봉님 지시, CLAUDE.md 규칙).
+     땅에는 단지도 평형도 없는데 토지 카드에 「관심단지」·「이 단지」·「전 평형 중위」가
+     그대로 나왔다(2026-08-19 라이브 실측). 상세 화면도 물건종류로 가른다 —
+     토지는 `토지상세.html`, 아파트·오피스텔·연립은 `단지상세.html`.
+     ⚠️ 말을 여러 곳에 흩어 적으면 반드시 갈린다. 여기 한 곳에서만 정한다. */
+  var _isLand=(pt.t==='land');
+  var W={
+    unit : _isLand?'필지':'단지',                    /* 「이 ○○」 */
+    fav  : _isLand?'☆ 관심 필지 등록':'☆ 관심단지 등록',
+    favOn: _isLand?'★ 등록됨 · 목록 보기':'★ 등록됨 · 목록 보기',
+    mid  : _isLand?'거래된 <b>전체 면적 중위</b>(특정 면적대 아님, 좌측 면적범위 참고)'
+                  :'거래된 <b>전 평형 중위</b>(특정 평형 아님, 좌측 면적범위 참고)',
+    noAsk: _isLand?'이 필지 현재 호가 매물 없음.':'이 단지 현재 호가 매물 없음.',
+    cta  : _isLand?'이 필지 상세 →':'이 단지 실거래·평형별 상세 →',
+    loan : _isLand?'💬 이 필지 담보 대출 문의':'💬 이 단지 담보 대출 문의'
+  };
   var code=(window.SB&&SB.dongs&&SB.dongs[pt.dong])?SB.dongs[pt.dong][0]:'';
   if(code&&(!window.APTASK||window.APTASK[code]===undefined)){
     showAptCard._pend=showAptCard._pend||{};
@@ -2421,7 +2578,7 @@ function showAptCard(pt, txs){
             arng2(mmT))
       +rrow('전세',eok2(md(jeT.map(function(t){return t.p;}))),(A&&A.je)?(eok2(A.je.med)+'<small style="font-weight:600;color:#a39887"> '+(A.je.n===1?'매물1건':A.je.n+'건')+'</small>'):'',arng2(jeT))
       +rrow('월세',woT.length?(eok2(md(woT.map(function(t){return t.p;})))+'/'+md(woT.map(function(t){return t.r;}))+'만'):'',(A&&A.wo&&A.wo.wol<=3000)?(eok2(A.wo.bo)+'/'+A.wo.wol+'만<small style="font-weight:600;color:#a39887"> '+(A.wo.n===1?'매물1건':A.wo.n+'건')+'</small>'):'',arng2(woT))
-      +'<div class="rc-note" style="padding:4px 0 0">거래된 <b>전 평형 중위</b>(특정 평형 아님, 좌측 면적범위 참고) · 호가=협상 전 매물가(주황). '+(A?'체결가와 다를 수 있음.':'이 단지 현재 호가 매물 없음.')+'</div></div>';
+      +'<div class="rc-note" style="padding:4px 0 0">'+W.mid+' · 호가=협상 전 매물가(주황). '+(A?'체결가와 다를 수 있음.':W.noAsk)+'</div></div>';
   }
   /* 인근 같은 상품 실거래 — 이 단지 자신은 뺀다 */
   var nearSame=nearTxRows(nearTxList(pt.lat,pt.lng,{radius:1200,n:6,type:pt.t,exName:pt.name,exDong:pt.dong||''}),false);
@@ -2431,7 +2588,7 @@ function showAptCard(pt, txs){
     +'<div class="rc-h" style="background:'+col+'"><div class="k">'+ti[0]+' · 실거래</div><h2>'+pt.name+'</h2><div class="loc">'+pt.dong+' '+(pt.jibun||'')+'</div>'
     +'<button id="rcFav" style="margin-top:9px;border:0;border-radius:100px;padding:8px 16px;font:inherit;font-size:12.5px;font-weight:800;cursor:pointer;'
       +(isFav?'background:#ffd24d;color:#5c4300':'background:rgba(255,255,255,.92);color:#1a1a1a')+'">'
-    +(isFav?'★ 등록됨 · 목록 보기':'☆ 관심단지 등록')+'</button></div>'
+    +(isFav?W.favOn:W.fav)+'</button></div>'
     +hoSec
     +'<div class="rc-sec" id="rcTx"></div>'
     /* 인근 같은 상품 실거래(2026-08-11 석봉님 확정) — "이 단지 말고 옆 단지는 얼마인가"를
@@ -2440,18 +2597,26 @@ function showAptCard(pt, txs){
     +(nearSame?'<div class="rc-sec"><div class="rc-lab">인근 '+ti[0]+' 실거래 · 가까운 순 · 누르면 상세</div>'+nearSame
        +'<div class="rc-note" style="padding:6px 0 0">반경 1.2km 최근 매매 · 평당가는 전용면적 기준</div></div>':'')
     +(near?'<div class="rc-sec"><div class="rc-lab">인근 정비구역 (누르면 이동)</div>'+near+'</div>':'')
-    +'<a class="rc-cta" href="단지상세.html?code='+code+'&nm='+encodeURIComponent(pt.name)+'&dong='+encodeURIComponent(pt.dong||'')+'" style="background:#12203a">이 단지 실거래·평형별 상세 →</a>'
+    /* 🔴 토지는 `토지상세.html` 로 보낸다(2026-08-19 신설·배포).
+       지번을 아직 못 찾았으면 링크에 `jb` 를 빼고 보낸다 — 토지상세가 동 단위로 받는다.
+       지번을 찾으면 아래 landFill() 이 이 링크의 href 를 다시 쓴다. */
+    +'<a class="rc-cta" id="rcCta" href="'
+      +(_isLand
+        ? '토지상세.html?code='+encodeURIComponent(code)+'&dong='+encodeURIComponent(pt.dong||'')
+        : '단지상세.html?code='+code+'&nm='+encodeURIComponent(pt.name)+'&dong='+encodeURIComponent(pt.dong||''))
+      +'" style="background:#12203a">'+W.cta+'</a>'
     /* 대출 문의(2026-08-02 석봉님 지시) — 지금은 준비 중 안내 페이지. 목적지 교체는 대출문의.html 한 파일만 */
-    +'<div style="text-align:center;margin-top:7px"><a href="%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html?ctx='+encodeURIComponent(pt.name+' '+(pt.dong||''))+'" style="font-size:12px;color:#8a8071;text-decoration:underline" onclick="if(window.gtag)gtag(\'event\',\'loan_inquiry_click\',{from:\'map_card\'})">💬 이 단지 담보 대출 문의</a></div>'
+    +'<div style="text-align:center;margin-top:7px"><a href="%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html?ctx='+encodeURIComponent(pt.name+' '+(pt.dong||''))+'" style="font-size:12px;color:#8a8071;text-decoration:underline" onclick="if(window.gtag)gtag(\'event\',\'loan_inquiry_click\',{from:\'map_card\'})">'+W.loan+'</a></div>'
     +'<div class="rc-note">실거래 기준일 '+((window.SB&&SB.summary&&SB.summary.updated)||'-')+' · 호가 수집일 '+(window.APTASKDAY||(A?'-':'미수집 지역'))+'</div>';
   var rc=document.getElementById('rcard');rc.innerHTML=html;rc.classList.add('open');
   _drawTx();
+  try{ landFill(pt, txs); }catch(e){}      /* 토지면 확정 지번을 찾아 덧칠한다(비동기) */
   document.getElementById('rcClose').onclick=function(){rc.classList.remove('open');};
   var fb=document.getElementById('rcFav');
   if(fb)fb.onclick=function(){
     var item={id:favId,nm:pt.name,code:code,dong:pt.dong||'',lastN:(pt.txs||txs||[]).length};
     function paint(on){
-      fb.textContent=on?'★ 등록됨 · 목록 보기':'☆ 관심단지 등록';
+      fb.textContent=on?W.favOn:W.fav;
       fb.style.background=on?'#ffd24d':'rgba(255,255,255,.92)';fb.style.color=on?'#5c4300':'#1a1a1a';
     }
     if(!(window.SBAuth&&SBAuth.isIn())){
