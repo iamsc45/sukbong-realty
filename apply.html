@@ -233,6 +233,22 @@ render("all");
 var aq=document.getElementById("apQ"),af=document.getElementById("apSearch");
 if(aq){
   aq.addEventListener("input",function(){rawQ=aq.value.trim();curQ=norm(rawQ);render(curF);});
+  /* 🔴 2026-08-19 신설 — 지도에서 넘어오는 `?q=` 를 받는다.
+     유입 검색어 57개를 실제로 재 보니 48개가 지도에서 0건이었고, 그중 45.4%p 가
+     **청약 단지**였다(「한강 푸르지오 리버프론트」가 일별 유입 1위인데 0건).
+     자료가 없는 게 아니라 지도가 실거래 인덱스만 봐서다. 여기로 넘겨 받는다.
+     ⚠️ 전체 탭에서 찾아야 접수 끝난 공고도 보인다(기본 탭이 '접수 중'이면 놓친다). */
+  try{
+    var _q=new URLSearchParams(location.search).get("q");
+    if(_q){
+      aq.value=_q; rawQ=_q.trim(); curQ=norm(rawQ);
+      var _all=document.querySelector('#tabs .tab[data-f="all"]');
+      if(_all){document.querySelectorAll("#tabs .tab").forEach(function(x){x.classList.remove("on");});
+               _all.classList.add("on"); curF="all";}
+      render(curF);
+      try{if(typeof gtag==="function")gtag("event","region_search",{search_term:rawQ,source:"map_to_apply"});}catch(_e){}
+    }
+  }catch(_e){}
   af.addEventListener("submit",function(e){
     e.preventDefault();aq.blur();
     try{if(rawQ&&typeof gtag==="function")gtag("event","region_search",{search_term:rawQ,source:"apply"});}catch(_e){}

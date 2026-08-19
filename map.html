@@ -1400,9 +1400,47 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
             _h+='<div class="sgo" data-go="apply"><b>청약에서 찾기</b>'
                +'<i>분양·모집공고 일정과 경쟁률</i></div>';
             sac2.innerHTML=_h; sac2.classList.add('open');
+            /* 🔴 2026-08-19 신설 — 0건일 때 청약 공고를 실제로 찾아 보여준다.
+               석봉님이 준 네이버 유입 검색어 57개를 실제 검색창에 넣어 재 보니 48개가 0건이었고,
+               **그중 45.4%p 가 청약 단지**였다(「한강 푸르지오 리버프론트」가 일별 유입 1위 6.35%
+               인데 0건, 창릉 9개·당수 5개·리버프론트 5개 변형). 확인해 보니 자료가 없는 게 아니라
+               `data/apply.js` 에 **이미 다 있는데 지도가 실거래 인덱스만 봐서** 못 찾은 것이었다.
+               ⚠️ 그래서 여기서 안내만 하지 말고 **찾은 공고를 이름·일정과 함께 보여준다.**
+                  버튼만 있으면 사용자는 그게 자기 단지인지 모르고 안 누른다.
+               ⚠️ apply.js(58KB)는 **0건일 때만 지연 로드**한다. 늘 받으면 지도가 무거워진다. */
+            (function(){
+              function _tok(s){return String(s||'').toLowerCase().replace(/[\s\-_()·・.]/g,'');}
+              function show(){
+                var A=window.SB&&SB.apply&&SB.apply.items; if(!A||!A.length)return;
+                /* 토큰 AND — 「고양 창릉 청약」이 「고양창릉 S-4블록 …(본청약)」에 걸리게 */
+                var ts=String(v).split(/\s+/).map(_tok).filter(function(t){return t.length>=2;});
+                if(!ts.length)return;
+                var hit=[];
+                for(var i=0;i<A.length&&hit.length<4;i++){
+                  var hay=_tok(A[i].nm)+' '+_tok(A[i].ad);
+                  var all=true;
+                  for(var j=0;j<ts.length;j++){if(hay.indexOf(ts[j])<0){all=false;break;}}
+                  if(all)hit.push(A[i]);
+                }
+                if(!hit.length)return;
+                var el=sac2.querySelector('[data-go="apply"]'); if(!el)return;
+                el.innerHTML='<b>청약 공고 '+hit.length+'건</b><i>'
+                  +hit.map(function(x){
+                      var d=(x.s||'').slice(5).replace('-','.');
+                      return _E(String(x.nm).slice(0,30))+(d?' · 접수 '+d:'');
+                    }).join('<br>')+'</i>';
+              }
+              if(window.SB&&SB.apply&&SB.apply.items){show();return;}
+              if(window._applyLoading)return; window._applyLoading=1;
+              var sc=document.createElement('script');
+              sc.src='data/apply.js?v=1'; sc.onload=show; sc.onerror=function(){window._applyLoading=0;};
+              document.head.appendChild(sc);
+            })();
             Array.prototype.forEach.call(sac2.querySelectorAll('[data-go]'),function(el){
               el.addEventListener('click',function(){
-                if(el.getAttribute('data-go')==='apply'){location.href='apply.html';return;}
+                /* 검색어를 함께 넘긴다 — 안 넘기면 사용자가 청약 페이지에서 다시 쳐야 한다 */
+                if(el.getAttribute('data-go')==='apply'){
+                  location.href='apply.html?q='+encodeURIComponent(v);return;}
                 /* 지역 이동도 같은 이유로 함수를 못 부른다 → 검색창에 넣어 정상 경로를 태운다 */
                 var _sq=document.getElementById('sq');
                 if(window.closeSac)window.closeSac();
