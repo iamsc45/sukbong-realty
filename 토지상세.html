@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>토지 상세 · 석봉 부동산 정보방</title>
+<meta name="description" content="필지 하나의 실거래·현재 호가·이 동네 지목별 평당가를 한 화면에 봅니다.">
+<meta property="og:title" content="토지 상세 · 석봉 부동산 정보방">
+<meta property="og:description" content="필지 하나의 실거래와 지금 나와 있는 호가를 함께 봅니다.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="석봉 부동산 정보방">
+<meta name="robots" content="noindex">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Y7P41Z09PV"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-Y7P41Z09PV');</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+.wrap{max-width:860px;margin:0 auto;padding:26px 20px 70px}
+h1{font-size:26px;letter-spacing:-.02em;margin:0 0 4px}
+.loc{color:var(--muted);font-size:13.5px;margin:0 0 14px}
+h2{font-size:16px;margin:26px 0 8px;padding-bottom:6px;border-bottom:1.5px solid var(--text)}
+table.t2{width:100%;border-collapse:collapse;font-size:14px}
+table.t2 th,table.t2 td{padding:8px 10px;border-bottom:1px solid var(--hair);text-align:left;vertical-align:top}
+table.t2 th{width:34%;color:var(--muted);font-weight:500;white-space:nowrap}
+table.t2 td.n{text-align:right;white-space:nowrap}
+.disc{background:var(--soft);border:1px solid var(--hair);border-radius:6px;padding:12px 14px;font-size:12.8px;color:var(--muted);line-height:1.7;margin:14px 0}
+.disc b{color:var(--text)}
+.tag{display:inline-block;font-size:11.5px;padding:1px 7px;border-radius:100px;background:var(--soft);border:1px solid var(--hair);color:var(--muted);margin-left:4px;white-space:nowrap}
+.tag.warn{background:#FDF3EC;border-color:#E8C9AE;color:#8A4B1E}
+.tag.ok{background:#EEF3FB;border-color:#C6D3E6;color:#1B3F7A}
+.jump{position:sticky;z-index:5;background:var(--bg,#fff);padding:8px 0;border-bottom:1px solid var(--hair);display:flex;gap:6px;flex-wrap:wrap;margin:0 0 4px}
+.jump a{font-size:12.5px;padding:5px 11px;border:1px solid var(--hair);border-radius:100px;color:var(--muted);text-decoration:none;background:#fff}
+.jump a:hover{border-color:var(--text);color:var(--text)}
+.cta{display:flex;gap:10px;flex-wrap:wrap;margin:28px 0 0}
+.cta a{flex:1 1 200px;text-align:center;padding:14px 16px;border-radius:4px;text-decoration:none;font-weight:700;font-size:14px}
+.cta a.p{background:var(--text);color:#fff}
+.cta a.l{background:#fff;color:var(--text);border:1px solid var(--hair)}
+.empty{color:var(--muted);font-size:13.5px;padding:10px 0}
+#state{margin:18px 0 0;color:var(--muted);font-size:14px}
+#state.err{color:#C24B37;white-space:pre-wrap}
+</style>
+</head><body>
+<header class="site-header">
+  <a class="brand" href="index.html">석봉 부동산 정보방</a>
+  <nav>
+    <a href="index.html">홈</a>
+    <a href="map.html">실거래지도</a>
+    <a href="apply.html">청약</a>
+    <a href="auction.html">경매·공매</a><a href="%EC%A7%80%ED%91%9C.html">금리·지표</a><a href="lh_%EC%A7%84%EB%8B%A8.html">LH매입</a><a href="%ED%86%A0%EC%A7%80%EA%B2%80%EC%83%89.html">땅값</a><a href="%EC%9D%B4%EC%9A%A9%EC%95%88%EB%82%B4.html">이용안내</a>
+    <a href="%EA%B8%80.html">리포트</a>
+    <a href="favorites.html">★ 관심단지</a>
+    <a href="https://blog.naver.com/seokbongnews" target="_blank" rel="noopener">블로그</a>
+    <a href="channels.html">채널</a>
+    <a href="%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html">대출 문의</a>
+  <span id="sbAuthBtn"></span></nav>
+</header>
+<main class="wrap">
+<h1 id="ttl">토지 상세</h1>
+<div class="loc" id="loc"></div>
+<div id="state">불러오는 중…</div>
+<div id="out"></div>
+</main>
+<footer class="site-footer">
+  <span>📈 <a href="https://telegram.me/seokbongnews">텔레그램 채널</a></span> ·
+  <span>💬 <a href="https://blog.naver.com/seokbongnews">네이버 블로그</a></span>
+  <div class="fine">편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 방문 통계 수집을 위해 Google Analytics(쿠키)를 사용합니다</div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/sb_auth.js?v=8"></script>
+<script defer src="assets/sb_tabbar.js?v=7"></script>
+<script src="data/land_bjd.js?v=2"></script>
+<script>
+/* ─────────────────────────────────────────────────────────────
+   토지 상세 페이지 (2026-08-19 신설, 석봉님 지시)
+
+   왜 따로 만들었나
+     상세 화면이 `단지상세.html` 하나뿐이라 **토지를 눌러도 아파트 화면**으로 갔다.
+     그래서 땅에 「☆ 관심단지 등록」·「이 단지 현재 호가 매물 없음」·「전 평형 중위」가
+     그대로 나왔다(2026-08-19 라이브 실측). 땅에는 단지도 평형도 없다.
+     🔴 이 파일에서 「단지」·「평형」이라는 말을 쓰지 말 것.
+
+   땅값 조회(`토지검색.html`)와 무엇이 다른가 — 둘은 겹치는 게 아니라 역할이 다르다
+     · 땅값 조회 = 지번을 넣어 **정부 API를 실시간 호출**한다. 공시지가·행위제한·
+       건축물대장까지 나오지만 **회원 하루 20회** 제한이 있다.
+     · 이 화면  = **우리가 이미 만들어 둔 정적 자료(land_dong)만** 쓴다. 로그인이 필요 없고
+       빠르다. 지도에서 눌러 바로 들어오는 자리다. 더 깊은 것은 땅값 조회로 넘긴다.
+
+   ⚠️ `fetch` 에 `cache:'force-cache'` 를 쓰지 말 것 — 배포 전 404를 캐시에 물고
+      「자료 없음」으로 굳는다(2026-08-18 실제 사고). GitHub Pages 는 ETag 를 준다.
+   ───────────────────────────────────────────────────────────── */
+(function(){
+  var $=function(id){return document.getElementById(id);};
+  var PYUNG=3.305785;
+  var qs=new URLSearchParams(location.search);
+  var code=(qs.get('code')||'').replace(/[^0-9]/g,'');
+  var jb=(qs.get('jb')||'').trim();
+
+  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function comma(n){return Number(n||0).toLocaleString('ko-KR');}
+  /* 면적은 ㎡ 옆에 평을 병기한다(사이트 공통 규칙). 100㎡ 미만은 소수 1자리. */
+  function PY(m2){var m=+m2||0; if(!m) return ''; var p=m/PYUNG;
+    return comma(Math.round(m*10)/10)+'㎡ ('+(m<100?(Math.round(p*10)/10):Math.round(p))+'평)';}
+  /* 평당가는 전용(토지는 거래면적) 기준. 표기 반올림은 여기서 한 번만 한다. */
+  function pyOf(man,m2){var a=(+m2||0)/PYUNG; return a?(+man||0)/a:0;}
+  function eok(man){var v=+man||0;
+    if(v>=10000) return comma(Math.round(v/1000)/10)+'억';
+    return comma(v)+'만';}
+  function ymTxt(ym){ym=String(ym||''); return ym.length===4?('20'+ym.slice(0,2)+'년 '+(+ym.slice(2))+'월'):'';}
+  function dTxt(d){d=String(d||''); return d.length===8?(d.slice(0,4)+'년 '+(+d.slice(4,6))+'월 '+(+d.slice(6))+'일'):'';}
+
+  /* 법정동 이름 */
+  var B=null;
+  (window.LANDBJD||[]).some(function(x){ if(x[0]===code){B=x;return true;} return false;});
+
+  if(!code||!jb){
+    $('state').className='err';
+    $('state').textContent='주소가 올바르지 않습니다. 지도나 땅값 조회에서 다시 들어와 주세요.';
+    return;
+  }
+  $('ttl').textContent=(B?B[3]:'')+' '+jb;
+  $('loc').textContent=B?(B[1]+' '+B[2]+' '+B[3]):('법정동코드 '+code);
+  document.title=(B?B[3]+' ':'')+jb+' 토지 상세 · 석봉 부동산 정보방';
+
+  fetch('data/land_dong/'+code+'.json')
+    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .then(render)
+    .catch(function(e){
+      $('state').className='err';
+      $('state').textContent='자료를 불러오지 못했습니다 ('+e.message+').\n'+
+        '그 필지에 자료가 없다는 뜻이 아닙니다. 잠시 뒤 다시 열어 주세요.';
+    });
+
+  function render(D){
+    $('state').style.display='none';
+    var deals=(D.d||[]).filter(function(x){return x[0]===jb;});
+    var lots =(D.l||[]).filter(function(x){return x[0]===jb;});
+    var h=[];
+
+    /* ── 이 필지가 어떤 땅인가 (실거래·매물 어느 쪽에서든 지목·용도지역을 얻는다) */
+    var meta=deals[0]||lots[0]||null;
+    var jimok=meta?(meta[4]||''):'', useZ=meta?(meta[5]||''):'';
+    var area=meta?(meta[3]||meta[2]||0):0;
+
+    if(!deals.length&&!lots.length){
+      h.push('<div class="disc"><b>이 지번으로 확정된 거래나 매물이 아직 없습니다.</b><br>'+
+        '국토부 실거래는 토지 지번을 가려서 제공합니다. 우리는 공부 자료로 좁혀 되짚는데, '+
+        '아직 이 필지까지 닿지 않았습니다. 아래 이 동네 시세와 땅값 조회를 이용해 주세요.</div>');
+    }
+
+    /* ── 바로가기 */
+    h.push('<div class="jump" id="jump"></div>');
+
+    /* ── 기본 */
+    if(meta){
+      h.push('<h2 id="s1">이 필지</h2><table class="t2">');
+      h.push('<tr><th>지번</th><td>'+esc((B?B[3]+' ':'')+jb)+'</td></tr>');
+      if(jimok) h.push('<tr><th>지목</th><td>'+esc(jimok)+'</td></tr>');
+      if(useZ)  h.push('<tr><th>용도지역</th><td>'+esc(useZ)+'</td></tr>');
+      if(area)  h.push('<tr><th>면적</th><td>'+PY(area)+'</td></tr>');
+      h.push('</table>');
+    }
+
+    /* ── 실거래 */
+    h.push('<h2 id="s2">이 필지 실거래</h2>');
+    if(deals.length){
+      var ds=deals.slice().sort(function(a,b){return String(b[1]).localeCompare(String(a[1]));});
+      h.push('<table class="t2"><tr><th>계약</th><th class="n">거래금액</th><th class="n">면적 · 평당</th></tr>');
+      ds.forEach(function(x){
+        var py=pyOf(x[2],x[3]);
+        h.push('<tr><td>'+esc(ymTxt(x[1]))+(x[6]?'<span class="tag ok">'+esc(x[6])+'</span>':'')+'</td>'+
+               '<td class="n">'+eok(x[2])+'</td>'+
+               '<td class="n">'+PY(x[3])+'<br><span style="color:var(--muted)">평당 '+comma(Math.round(py))+'만</span></td></tr>');
+      });
+      h.push('</table>');
+      h.push('<div class="disc">🔴 <b>이 지번은 확정이 아니라 추정입니다.</b> 국토부 실거래는 토지 지번을 '+
+        '가려서 제공합니다(예: 8**). 우리는 그 거래의 면적·지목·용도지역이 맞는 필지를 공부 자료에서 '+
+        '찾아 되짚었고, 후보가 하나로 좁혀진 것만 싣습니다. <b>그래도 다른 필지일 수 있습니다.</b> '+
+        '금액이 걸린 판단에는 등기부로 확인하세요.<br>'+
+        '평당가는 국토부 신고 거래면적 기준입니다.</div>');
+    } else {
+      h.push('<div class="empty">이 지번으로 되짚은 거래가 없습니다. 확정 범위는 서울 2021년 이후와 전국 최근 6개월입니다.</div>');
+    }
+
+    /* ── 매물 */
+    h.push('<h2 id="s3">지금 나와 있는 매물</h2>');
+    if(lots.length){
+      h.push('<table class="t2"><tr><th>호가</th><th class="n">면적 · 평당</th><th class="n">확인</th></tr>');
+      lots.forEach(function(x){
+        var py=pyOf(x[1],x[2]);
+        var bld='';
+        if(+x[9]){
+          var yr=String(x[10]||''), age=yr.length===4?(new Date().getFullYear()-+yr):0;
+          bld='<span class="tag warn">건물 있음 '+comma(x[9])+'㎡'+(x[11]?' · '+esc(x[11]):'')+
+              (yr?' · '+esc(yr)+'년':'')+(age>=30?' (노후)':'')+'</span>';
+        }
+        h.push('<tr><td>'+eok(x[1])+bld+'</td>'+
+               '<td class="n">'+PY(x[2])+'<br><span style="color:var(--muted)">평당 '+comma(Math.round(py))+'만</span></td>'+
+               '<td class="n">'+esc(dTxt(x[6]||x[3]))+'</td></tr>');
+      });
+      h.push('</table>');
+      h.push('<div class="disc"><b>호가는 협상 전 가격입니다.</b> 실제 거래가는 대개 이보다 낮습니다. '+
+        '같은 땅을 여러 중개사가 각각 올리기도 해서 한 필지에 여러 건이 보일 수 있습니다.<br>'+
+        '수도권만 수집하고 있으며, 다른 지역은 순차로 넓히는 중입니다.</div>');
+    } else {
+      h.push('<div class="empty">이 필지로 확정된 매물이 지금은 없습니다.</div>');
+    }
+
+    /* ── 동네 시세 */
+    var S=D.s||{};
+    var keys=Object.keys(S);
+    h.push('<h2 id="s4">'+esc(B?B[3]:'이 동네')+' 지목별 평당가</h2>');
+    if(keys.length){
+      h.push('<table class="t2"><tr><th>지목</th><th class="n">실거래</th><th class="n">호가</th></tr>');
+      keys.forEach(function(k){
+        var v=S[k];
+        var mark=(k===jimok)?' <span class="tag ok">이 필지</span>':'';
+        h.push('<tr><td>'+esc(k)+mark+'</td>'+
+               '<td class="n">'+(v[1]?comma(v[0])+'만 <span style="color:var(--muted)">('+v[1]+'건)</span>':'·')+'</td>'+
+               '<td class="n">'+(v[3]?comma(v[2])+'만 <span style="color:var(--muted)">('+v[3]+'건)</span>':'·')+'</td></tr>');
+      });
+      h.push('</table>');
+      h.push('<div class="disc">평당 중위값입니다(거래면적 기준). 표본이 적은 지목은 한두 건에 크게 흔들립니다. '+
+        '지목이 같아도 도로 접면·모양·규제에 따라 값이 크게 갈리므로 <b>구간을 참고하는 데까지만</b> 쓰세요.</div>');
+    } else {
+      h.push('<div class="empty">이 동네 집계가 아직 없습니다.</div>');
+    }
+
+    /* ── 인근 실거래 */
+    var near=(D.d||[]).filter(function(x){return x[0]!==jb;})
+                      .sort(function(a,b){return String(b[1]).localeCompare(String(a[1]));}).slice(0,12);
+    h.push('<h2 id="s5">인근 실거래 ('+esc(B?B[3]:'같은 동')+')</h2>');
+    if(near.length){
+      h.push('<table class="t2"><tr><th>지번 · 계약</th><th class="n">거래금액</th><th class="n">면적 · 평당</th></tr>');
+      near.forEach(function(x){
+        var py=pyOf(x[2],x[3]);
+        h.push('<tr><td><a href="%ED%86%A0%EC%A7%80%EC%83%81%EC%84%B8.html?code='+code+'&jb='+encodeURIComponent(x[0])+'">'+esc(x[0])+'</a>'+
+               '<br><span style="color:var(--muted)">'+esc(ymTxt(x[1]))+' · '+esc(x[4]||'')+'</span></td>'+
+               '<td class="n">'+eok(x[2])+'</td>'+
+               '<td class="n">'+PY(x[3])+'<br><span style="color:var(--muted)">평당 '+comma(Math.round(py))+'만</span></td></tr>');
+      });
+      h.push('</table>');
+    } else {
+      h.push('<div class="empty">같은 동에서 되짚은 다른 거래가 없습니다.</div>');
+    }
+
+    /* ── 다음 걸음 */
+    var mapQ=(B?(B[1].slice(0,2)+' '+B[2]+' '+B[3]):'');
+    h.push('<div class="cta">'+
+      '<a class="p" href="%ED%86%A0%EC%A7%80%EA%B2%80%EC%83%89.html">공시지가·행위제한까지 보기</a>'+
+      '<a class="l" href="map.html?q='+encodeURIComponent(mapQ)+'">지도에서 주변 보기</a>'+
+      '<a class="l" href="%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html">담보 대출 상담</a>'+
+      '</div>');
+    h.push('<div class="disc">이 화면은 우리가 모아 둔 자료로 만든 참고 정보입니다. '+
+      '감정평가가 아니며 투자 권유도 아닙니다.</div>');
+
+    $('out').innerHTML=h.join('');
+    buildJump();
+  }
+
+  /* 큰 제목을 버튼으로 만들어 누르면 그 자리로 내려간다(땅값 조회와 같은 방식).
+     헤더 높이를 실측해 sticky 위치를 잡는다 — 값을 박아 두면 헤더가 바뀔 때 어긋난다. */
+  function buildJump(){
+    var bar=$('jump'); if(!bar) return;
+    var hd=document.querySelector('.site-header');
+    bar.style.top=((hd?hd.getBoundingClientRect().height:0))+'px';
+    var hs=[].slice.call($('out').querySelectorAll('h2'));
+    bar.innerHTML=hs.map(function(h){
+      return '<a href="#'+h.id+'">'+esc(h.textContent)+'</a>';}).join('');
+  }
+})();
+</script>
+</body></html>
