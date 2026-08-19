@@ -1452,6 +1452,10 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
           if(st)st.textContent='"'+v+'" 는 실거래 신고 기록이 없습니다';
           setFcount('"'+v+'" 실거래 없음 · 지도는 보던 자리 그대로입니다');
         }
+        /* hintLeftover 전용 헬퍼 — 0건 안내 블록의 _N·_E 는 그 안쪽 스코프라 여기서 못 쓴다 */
+        function _AN(s){return String(s||'').toLowerCase().replace(/[\s\-_()·・.]/g,'');}
+        function _AE(s){return String(s||'').replace(/[&<>"]/g,function(c){
+          return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
         function goRegion(onNo){
           if(!findAndGo(v)){onNo();return;}
           /* 지역 이동은 됐는데 앞 검색 필터(또는 경매에서 넘어온 상품 필터) 탓에 0건인 경우를 푼다(2026-08-08) */
@@ -1459,6 +1463,68 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
             if(window._unfilterIfEmpty)window._unfilterIfEmpty();
             if(window._relaxTypeIfEmpty)window._relaxTypeIfEmpty('');
           }catch(e){}},700);
+          /* 🔴 2026-08-19 신설 — 지역 이동이 성공해도 「남은 말」을 설명한다.
+             유입 실측에서 잡은 구멍이다. 「안양 에버포레」·「고양 창릉 청약」·「수원 당수지구 a5」는
+             여기서 **지역 이동에 성공해 버려서** `noHit()` 안내까지 오지 않았다.
+             그 결과 지도는 안양으로 가고 아파트 3곳이 뜨는데 **에버포레 이야기는 한 줄도 없다.**
+             사용자는 "왜 안 나오지" 하다 나간다 — **0건 안내보다 나쁘다**(뭔가 된 것처럼 보인다).
+             ⚠️ 지역 이동 자체는 맞으므로 **바꾸지 않고 안내만 얹는다**(검색 순서를 건드리면
+                「송파 아파트」 같은 말이 엉뚱한 데로 새는 위험이 있다. 2026-08-16에 3회 겪었다). */
+          setTimeout(function(){try{hintLeftover(v);}catch(e){}},1000);
+        }
+        /* 검색어에서 지역에 쓰인 말을 빼고 남은 것으로 청약 공고를 찾아 한 줄 안내한다. */
+        function hintLeftover(q){
+          var sac3=document.getElementById('sac'); if(!sac3)return;
+          if(sac3.classList.contains('open'))return;          /* 이미 다른 안내가 떠 있으면 두지 않는다 */
+          var ws=String(q).split(/\s+/).filter(Boolean);
+          if(ws.length<2)return;                              /* 한 낱말 검색은 기존 경로가 이미 처리 */
+          var rest=ws.filter(function(w){
+            var t=w.replace(/[,，·]+$/,'');
+            if(window.SB&&SB.dongs&&SB.dongs[t])return false;                 /* 법정동 */
+            if(/(특별시|광역시|자치시|자치도|[가-힣]+도)$/.test(t))return false;   /* 시도 */
+            try{                                                              /* 시군구 */
+              if(SB.summary&&SB.summary.regions&&SB.summary.regions.some(function(x){
+                   return (x.sgg||'').split(/[\s_]+/).some(function(p){
+                     return p===t||(p.length>2&&p.slice(0,-1)===t);});}))return false;
+            }catch(e){}
+            return true;
+          });
+          if(!rest.length)return;                             /* 순수 지역 검색 — 안내할 것이 없다 */
+          var key=rest.join(' ');
+          function draw(){
+            var A=window.SB&&SB.apply&&SB.apply.items;
+            var hit=[];
+            if(A&&A.length){
+              var ts=rest.map(function(t){return _AN(t);}).filter(function(t){return t.length>=2;});
+              if(ts.length)for(var i=0;i<A.length&&hit.length<3;i++){
+                var hay=_AN(A[i].nm)+' '+_AN(A[i].ad), all=true;
+                for(var j=0;j<ts.length;j++){if(hay.indexOf(ts[j])<0){all=false;break;}}
+                if(all)hit.push(A[i]);
+              }
+            }
+            if(sac3.classList.contains('open'))return;
+            var h='<div class="sach">"'+_AE(key)+'" 는 이 지역 실거래 목록에 없습니다</div>';
+            if(hit.length){
+              h+='<div class="sgo" data-go="apply2"><b>청약 공고 '+hit.length+'건</b><i>'
+                +hit.map(function(x){var d=(x.s||'').slice(5).replace('-','.');
+                    return _AE(String(x.nm).slice(0,30))+(d?' · 접수 '+d:'');}).join('<br>')+'</i></div>';
+            }else{
+              h+='<div class="sgo" data-go="apply2"><b>청약에서 찾기</b>'
+                +'<i>분양 예정이거나 아직 거래가 없는 단지는 지도에 나오지 않습니다</i></div>';
+            }
+            sac3.innerHTML=h; sac3.classList.add('open');
+            Array.prototype.forEach.call(sac3.querySelectorAll('[data-go="apply2"]'),function(el){
+              el.addEventListener('click',function(){
+                location.href='apply.html?q='+encodeURIComponent(key);});
+            });
+          }
+          if(window.SB&&SB.apply&&SB.apply.items){draw();return;}
+          if(window._applyLoading){setTimeout(draw,1200);return;}
+          window._applyLoading=1;
+          var sc=document.createElement('script');
+          sc.src='data/apply.js?v=1'; sc.onload=draw;
+          sc.onerror=function(){window._applyLoading=0;draw();};
+          document.head.appendChild(sc);
         }
         if(curMode==='redev')tryRedevZone(v,function(){goRegion(noHit);});
         else goRegion(function(){tryRedevZone(v,noHit);});
