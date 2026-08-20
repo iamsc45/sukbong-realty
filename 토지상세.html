@@ -275,10 +275,25 @@ table.t2 td.n{text-align:right;white-space:nowrap}
   function buildJump(){
     var bar=$('jump'); if(!bar) return;
     var hd=document.querySelector('.site-header');
-    bar.style.top=((hd?hd.getBoundingClientRect().height:0))+'px';
+    var hdH=hd?hd.getBoundingClientRect().height:0;
+    bar.style.top=hdH+'px';
     var hs=[].slice.call($('out').querySelectorAll('h2'));
     bar.innerHTML=hs.map(function(h){
       return '<a href="#'+h.id+'">'+esc(h.textContent)+'</a>';}).join('');
+    fixAnchorOffset(hs, hdH, bar);
+    /* 칩바는 flex-wrap 이라 화면 폭에 따라 줄 수가 바뀐다 → 여백도 다시 잰다 */
+    window.addEventListener('resize', function(){
+      fixAnchorOffset(hs, hd?hd.getBoundingClientRect().height:0, bar);
+    });
+  }
+
+  /* 🔴 2026-08-20 — 칩을 눌러 내려갔을 때 제목이 고정 요소에 가리던 것을 고친다.
+     헤더(sticky 51px)와 칩바(sticky 87px)가 겹쳐 **제목과 표 첫 행이 그 뒤로 숨었다**
+     (석봉님 지적. 나는 하단 탭바만 재고 상단을 안 봐서 「가리는 글 0건」으로 통과시켰다).
+     ⚠️ 높이를 숫자로 박지 말 것 — 헤더가 바뀌거나 칩이 두 줄이 되면 그대로 어긋난다. */
+  function fixAnchorOffset(hs, hdH, bar){
+    var off = Math.round(hdH + bar.getBoundingClientRect().height + 10);
+    hs.forEach(function(h){ h.style.scrollMarginTop = off + 'px'; });
   }
 })();
 </script>
