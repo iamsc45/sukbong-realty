@@ -106,26 +106,16 @@ table.t2 td.n{text-align:right;white-space:nowrap}
     return comma(v)+'만';}
   function ymTxt(ym){ym=String(ym||''); return ym.length===4?('20'+ym.slice(0,2)+'년 '+(+ym.slice(2))+'월'):'';}
 
-  /* 🔴 등급 라벨은 자료의 값을 그대로 쓰지 않는다.
-     `land_dong` 의 등급설명(「확실」·「배율로 확인」)은 **석봉님이 CSV로 직접 읽으시려고**
-     붙인 내부 라벨이다(2026-08-17 지시, `토지매칭_통합후처리.py` GRADE_KO).
-     그것을 화면에 그대로 내보내면 두 가지가 잘못된다.
-       ① 「확실」 ─ 우리 매칭 정확도는 아직 검증 전이다. 2026-08-16 에 서초동 표본으로
-          등기부 3장을 떼어 대조했는데 셋 다 틀렸다. 화면에 「확실」이라고 쓸 수 없다.
-       ② 「배율」 ─ 우리끼리 쓰는 말이라 읽는 사람은 뜻을 모른다.
-     그래서 **무엇을 보고 좁혔는지를 그대로 풀어 쓴다.**
-     ⚠️ 과거 거래(서울 2021년 이후)는 `--no-ratio` 로 돌려 배율을 안 썼고 적합성 칸이 비어 있다.
-        그 건에 「거래가도 시세 범위」라고 쓰면 틀린 말이 된다. 적합성이 있을 때만 붙인다. */
-  function gradeTag(desc, fit){
+  /* 🔴 자료의 등급값을 화면에 그대로 쓰지 않는다. 두 가지 이유다.
+       ① 그 값은 내부 라벨이라 읽는 사람이 뜻을 모른다.
+       ② 판정 근거를 문장으로 풀어 쓰면 우리가 무엇을 무엇과 맞추는지 알려 주는 셈이 된다.
+          이 파일은 공개 소스라 주석까지 보인다(2026-08-20 석봉님 지적).
+     그래서 화면에는 **확인 수준만** 남긴다. 근거와 대응표는 내부 문서에 둔다
+     (`_인수인계_땅값계산기_20260818.md`). */
+  function gradeTag(desc){
     desc=String(desc||'');
-    var strong=desc.indexOf('확실')===0;
-    var chain =desc.indexOf('연쇄')>=0;
-    var txt = chain ? '이웃 거래로 이어서 좁힘'
-            : strong ? '면적·지목·용도지역이 모두 맞는 필지가 하나뿐'
-            : '면적·지목이 맞는 필지가 하나뿐';
-    if(!strong && !chain && String(fit||'').indexOf('정상')===0) txt += ' · 거래가도 시세 범위';
-    var cls = strong||chain ? 'tag ok' : 'tag';
-    var out = '<span class="'+cls+'">'+esc(txt)+'</span>';
+    var hi = desc.indexOf('확실')===0 || desc.indexOf('연쇄')>=0;
+    var out = '<span class="tag'+(hi?' ok':'')+'">확인 수준 '+(hi?'높음':'보통')+'</span>';
     if(desc.indexOf('건물지')>=0) out += '<span class="tag warn">건물 있는 땅</span>';
     return out;
   }
@@ -190,15 +180,15 @@ table.t2 td.n{text-align:right;white-space:nowrap}
       h.push('<table class="t2"><tr><th>계약</th><th class="n">거래금액</th><th class="n">면적 · 평당</th></tr>');
       ds.forEach(function(x){
         var py=pyOf(x[2],x[3]);
-        h.push('<tr><td>'+esc(ymTxt(x[1]))+'<br>'+gradeTag(x[6],x[7])+'</td>'+
+        h.push('<tr><td>'+esc(ymTxt(x[1]))+'<br>'+gradeTag(x[6])+'</td>'+
                '<td class="n">'+eok(x[2])+'</td>'+
                '<td class="n">'+PY(x[3])+'<br><span style="color:var(--muted)">평당 '+comma(Math.round(py))+'만</span></td></tr>');
       });
       h.push('</table>');
-      h.push('<div class="disc">🔴 <b>이 지번은 확정이 아니라 추정입니다.</b> 국토부 실거래는 토지 지번을 '+
-        '가려서 제공합니다(예: 8**). 우리는 그 거래의 면적·지목·용도지역이 맞는 필지를 공부 자료에서 '+
-        '찾아 되짚었고, 후보가 하나로 좁혀진 것만 싣습니다. <b>그래도 다른 필지일 수 있습니다.</b> '+
-        '금액이 걸린 판단에는 등기부로 확인하세요.<br>'+
+      h.push('<div class="disc">🔴 <b>확정이 아니라 추정입니다.</b><br>'+
+        '정확한 소유·면적·권리관계는 <b>등기부등본</b>으로 확인하세요. '+
+        '<a href="https://www.iros.go.kr" target="_blank" rel="noopener" '+
+        'style="white-space:nowrap">인터넷등기소</a><br>'+
         '평당가는 국토부 신고 거래면적 기준입니다.</div>');
     } else {
       h.push('<div class="empty">이 지번으로 되짚은 거래가 없습니다. 확정 범위는 서울 2021년 이후와 전국 최근 6개월입니다.</div>');
