@@ -168,7 +168,7 @@ function frowH(ic,l,vHtml){return vHtml?'<div class="f"><span class="ic">'+ic+'<
 function lrow(ic,l,v,wide){return v?'<div class="lr'+(wide?' wide':'')+'"><span class="ic">'+ic+'</span><div><b>'+l+'</b> '+v+'</div></div>':'';}
 
 function boot(){
-  var code=qs('code'),nm=qs('nm'),dong=qs('dong');
+  var code=qs('code'),nm=qs('nm'),dong=qs('dong'),ptype=qs('t'),pjb=qs('jb');
   if(!code||!nm){fail();return;}
   /* '지도에서 이 단지 보기'를 이 단지로 보낸다(2026-08-04).
      dong 을 함께 넘겨야 동명이단지로 새지 않는다(파크뷰 전국 5곳, 아시아선수촌 2곳). */
@@ -189,7 +189,7 @@ function boot(){
             var tr=document.createElement('script');tr.src='data/apt_trend_'+code+'.js';
             tr.onload=tr.onerror=function(){
               var pg=document.createElement('script');pg.src='data/apt_pages.js';
-              pg.onload=pg.onerror=function(){go(code,nm,dong);};document.body.appendChild(pg);
+              pg.onload=pg.onerror=function(){go(code,nm,dong,ptype,pjb);};document.body.appendChild(pg);
             };document.body.appendChild(tr);
           };document.body.appendChild(fe);
         };document.body.appendChild(al);
@@ -200,11 +200,23 @@ function boot(){
   s.onerror=fail;document.body.appendChild(s);
 }
 function fail(){document.getElementById('nm').textContent='단지 정보를 찾지 못했습니다';document.getElementById('body').innerHTML='<p style="color:#8a8071">지도 카드에서 단지를 눌러 다시 열어주세요.</p>';}
-function go(code,nm,dong){
+/* 🔴 이름+법정동만으로는 물건이 안 갈린다 (2026-08-20 석봉님 제보, 서울 1,260곳)
+     ① 같은 동에 「단독·다가구」 지점이 셋인데(중화동 3**·1*·2**) **늘 첫 번째**가 열렸다.
+        어느 카드를 눌러도 같은 화면이라 「카드는 옛 거래, 상세는 최근 거래」로 보였다.
+     ② 주상복합은 한 건물의 아파트분·오피스텔분이 **두 지점**인데 링크에 상품이 없어
+        오피스텔 카드를 눌러도 아파트 쪽이 열렸다(도곡동 우성캐릭터199: 오피스텔 9건 대 아파트 2건).
+   그래서 상품(t)·지번(jb)까지 받아 좁힌다.
+   ⚠️ **단계적으로 좁힌다.** 옛 링크(북마크·외부 유입·이미 뿌린 정적페이지)에는 t·jb 가 없고,
+      자료가 갱신되면 지번이 바뀔 수도 있다. 좁혔는데 0건이면 **좁히기 전으로 되돌린다** —
+      그래야 「단지를 찾지 못했습니다」가 새로 생기지 않는다. */
+function go(code,nm,dong,t,jb){
   var arr=(window.SB&&SB.d&&SB.d[code])||[];
-  var pt=null;
-  for(var i=0;i<arr.length;i++){if(arr[i].name===nm&&(!dong||arr[i].dong===dong)){pt=arr[i];break;}}
-  if(!pt){for(i=0;i<arr.length;i++){if(arr[i].name===nm){pt=arr[i];break;}}}
+  var cand=arr.filter(function(p){return p.name===nm&&(!dong||p.dong===dong);});
+  if(!cand.length)cand=arr.filter(function(p){return p.name===nm;});
+  function narrow(list,fn){var r=list.filter(fn);return r.length?r:list;}
+  if(t)cand=narrow(cand,function(p){return p.t===t;});
+  if(jb)cand=narrow(cand,function(p){return String(p.jibun||'')===String(jb);});
+  var pt=cand[0]||null;
   if(!pt){fail();return;}
   /* 🔴 '지도에서 이 단지 보기'는 이름이 아니라 **좌표**로 보낸다(2026-08-15).
      이름으로 보내던 종전 방식은 아파트에서만 통했다 — 단지 인덱스에 아파트만 있어서

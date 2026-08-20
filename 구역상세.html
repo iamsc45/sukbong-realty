@@ -318,7 +318,9 @@ function fillNearTx(co,code){
     var py=(t.u==='매매'&&t.a)?(' <span style="color:#8a8071;font-weight:400">'+Number(Math.round(t.p/t.a*3.305785)).toLocaleString()+'만/평</span>'):'';
     var pr=t.u==='월세'?(eok(t.p)+' / '+t.r+'만'):eok(t.p);
     var chip='<span style="background:'+tp[1]+';color:#fff;font-size:9.5px;padding:1px 6px;border-radius:20px;font-weight:700;margin-right:6px">'+(SN[o.p.t]||'기타')+'</span>';
-    return '<a href="단지상세.html?code='+code+'&nm='+encodeURIComponent(o.p.name)+'&dong='+encodeURIComponent(o.p.dong||'')+'" style="display:flex;justify-content:space-between;align-items:center;text-decoration:none;color:inherit;padding:7px 2px;border-bottom:1px dotted #e7e1d4;font-size:13px"><span style="color:#6b6355">'+chip+esc(o.p.name)+' <span style="color:#8a8071">'+o.d+'m</span> <span style="color:#b6ad9c">→</span></span><b style="white-space:nowrap">'+pr+py+'</b></a>';}).join('');
+    /* 상세로 갈 때 상품·지번을 함께 보낸다 — 이름+동만으로는 물건이 안 갈린다(2026-08-20, map.html `_ptKey` 와 같은 규칙) */
+    return '<a href="단지상세.html?code='+code+'&nm='+encodeURIComponent(o.p.name)+'&dong='+encodeURIComponent(o.p.dong||'')
+      +(o.p.t?'&t='+encodeURIComponent(o.p.t):'')+(o.p.jibun?'&jb='+encodeURIComponent(o.p.jibun):'')+'" style="display:flex;justify-content:space-between;align-items:center;text-decoration:none;color:inherit;padding:7px 2px;border-bottom:1px dotted #e7e1d4;font-size:13px"><span style="color:#6b6355">'+chip+esc(o.p.name)+' <span style="color:#8a8071">'+o.d+'m</span> <span style="color:#b6ad9c">→</span></span><b style="white-space:nowrap">'+pr+py+'</b></a>';}).join('');
   document.getElementById('nearTxSec').innerHTML='<div class="lab">인근 실거래 · 상품별 · 누르면 단지 상세</div>'+rows;
 }
 function kv(k,v){return v?'<div class="kv"><span>'+k+'</span><span class="v">'+esc(String(v))+'</span></div>':'';}

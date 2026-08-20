@@ -357,6 +357,17 @@ window._toast=function(msg,ms){var t=document.getElementById('mtoast');if(!t||!m
 <script>
 var TYPE={apt:["아파트","#2554E0"],offi:["오피스텔","#7A5AF8"],villa:["연립·다세대","#0FA98A"],
   house:["단독·다가구","#6E6E6A"],bldg:["빌딩","#D4573F"],comm:["구분상가·오피스","#E8A13A"],land:["토지","#4C9A4C"]};
+/* 🔴 상세 페이지로 갈 때 **물건을 가리키는 값**을 함께 보낸다 (2026-08-20 석봉님 제보).
+   이름+법정동만으로는 안 갈린다 — 같은 동에 「단독·다가구」 지점이 셋이면 늘 첫 번째가 열렸고
+   (중화동 3**·1*·2**), 주상복합은 한 건물의 아파트분·오피스텔분이 두 지점인데 상품이 없어
+   오피스텔 카드를 눌러도 아파트 쪽이 열렸다. 서울에서만 1,260곳이 이랬다.
+   ⚠️ 링크를 만드는 자리가 여럿이라(카드 CTA·인근 실거래·구역상세·관심단지) **한 함수로 모은다.**
+      각자 붙이면 한 곳이 빠지고, 빠진 곳은 조용히 옛 동작으로 돌아간다. */
+function _ptKey(pt){
+  if(!pt)return '';
+  return (pt.t?'&t='+encodeURIComponent(pt.t):'')
+       + (pt.jibun?'&jb='+encodeURIComponent(pt.jibun):'');
+}
 var Z_DETAIL=13, Z_POINT=15, Z_NAME=16;
 var curU='all', curD='all', curSido='all', curSgg='all';
 var curTset=null;
@@ -2203,7 +2214,7 @@ function nearTxRows(near,chip){
   return near.map(function(o){
     var t=o.tx, tp=TYPE[o.pt.t]||['기타','#8a8071'];
     var py=t.a?(' <span style="color:#8a8071;font-weight:400">평당 '+Math.round(t.p/t.a*3.305785).toLocaleString()+'만</span>'):'';
-    var href='단지상세.html?code='+(o.code||'')+'&nm='+encodeURIComponent(o.pt.name)+'&dong='+encodeURIComponent(o.pt.dong||'');
+    var href='단지상세.html?code='+(o.code||'')+'&nm='+encodeURIComponent(o.pt.name)+'&dong='+encodeURIComponent(o.pt.dong||'')+_ptKey(o.pt);
     var cp=chip?('<span style="background:'+tp[1]+';color:#fff;font-size:9px;padding:1px 5px;border-radius:20px;font-weight:700;margin-right:5px">'+(SN[o.pt.t]||'기타')+'</span>'):'';
     return '<a class="rc-dl" style="text-decoration:none;color:inherit" href="'+href+'"><span style="color:#6b6355">'+cp+o.pt.name+' <span style="color:#8a8071">'+o.d+'m</span> <span class="arw" style="color:#b6ad9c">→</span></span><b>'+priceLabel(t)+py+'</b></a>';
   }).join('');
@@ -2772,7 +2783,7 @@ function showAptCard(pt, txs){
     +'<a class="rc-cta" id="rcCta" href="'
       +(_isLand
         ? '토지상세.html?code='+encodeURIComponent(code)+'&dong='+encodeURIComponent(pt.dong||'')
-        : '단지상세.html?code='+code+'&nm='+encodeURIComponent(pt.name)+'&dong='+encodeURIComponent(pt.dong||''))
+        : '단지상세.html?code='+code+'&nm='+encodeURIComponent(pt.name)+'&dong='+encodeURIComponent(pt.dong||'')+_ptKey(pt))
       +'" style="background:#12203a">'+W.cta+'</a>'
     /* 대출 문의(2026-08-02 석봉님 지시) — 지금은 준비 중 안내 페이지. 목적지 교체는 대출문의.html 한 파일만 */
     +'<div style="text-align:center;margin-top:7px"><a href="%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html?ctx='+encodeURIComponent(pt.name+' '+(pt.dong||''))+'" style="font-size:12px;color:#8a8071;text-decoration:underline" onclick="if(window.gtag)gtag(\'event\',\'loan_inquiry_click\',{from:\'map_card\'})">'+W.loan+'</a></div>'
