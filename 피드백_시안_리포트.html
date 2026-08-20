@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<!-- 🔴 피드백 시안 (2026-08-21) — 라이브가 아니다.
+     석봉님 확인 전용 사본이다. 원본(index.html·글.html)은 손대지 않았다.
+     확정되면 이 파일을 지우고 assets/sb_feedback.js 한 줄을 원본에 넣는다. -->
+<meta name="robots" content="noindex,nofollow">
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Y7P41Z09PV"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-Y7P41Z09PV');</script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>[피드백 시안] 리포트 · 석봉 부동산 정보방</title>
+<meta name="description" content="실거래·청약·경매 데이터를 직접 뜯어 정리한 리포트 모음입니다. 국토교통부 실거래가와 공공 데이터가 근거입니다.">
+<link rel="canonical" href="https://xn--2q1br1nnrasc92a76myvau64b.com/%EA%B8%80.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="리포트 · 석봉 부동산 정보방">
+<meta property="og:description" content="실거래·청약·경매 데이터를 직접 뜯어 정리한 리포트 모음입니다. 국토교통부 실거래가와 공공 데이터가 근거입니다.">
+<meta property="og:url" content="https://xn--2q1br1nnrasc92a76myvau64b.com/%EA%B8%80.html">
+<meta property="og:image" content="https://xn--2q1br1nnrasc92a76myvau64b.com/assets/og_default.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:site_name" content="석봉 부동산 정보방"><meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<link rel="stylesheet" href="assets/site.css">
+<!-- 모바일 하단 탭바. 리포트 목록·글에만 빠져 있어 휴대폰에서 들어오면 나갈 길이 없었다
+     (2026-08-11 확인). defer 를 붙여 본문이 다 그려진 뒤 붙게 한다. -->
+<script defer src="assets/sb_tabbar.js?v=8"></script>
+<!-- 홈 화면 앱(PWA). 앱메타_주입.py 의 BLOCK 과 같은 내용을 유지할 것 —
+     여기서 빠지면 새로 만든 글에만 앱 태그가 없어진다(절대경로라 하위 폴더도 그대로 쓴다). -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#F2F2EF">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="석봉부동산">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="icon" href="/icons/favicon-32.png" sizes="32x32">
+<script>if('serviceWorker' in navigator){addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}</script>
+<style>
+.wrap{max-width:960px}
+h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;margin:48px 0 6px}
+.pgsub{color:var(--muted);font-size:13.5px;margin:0 0 26px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 22px}
+.filters button{border:1px solid var(--text);border-radius:100px;padding:7px 16px;font-size:12.5px;
+  font-weight:700;cursor:pointer;background:transparent;color:var(--text);font-family:inherit}
+.filters button.on{background:var(--text);color:#fff}
+.plist{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:60px}
+.pcard{background:var(--soft);border:1px solid var(--hair);border-radius:14px;overflow:hidden;
+  text-decoration:none;display:flex;flex-direction:column;transition:border-color 140ms ease}
+.pcard:hover{border-color:var(--text)}
+.pcard .th{width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--gray);display:block}
+.pcard .bd{padding:14px 16px 16px;display:block}
+/* 카드 속 요소는 <a> 안이라 전부 span으로 짰다. block을 주지 않으면
+   분류 라벨이 제목에 들러붙는다('청약수원 당수지구…', 2026-08-02 첫 배포에서 확인) */
+.pcard .bd>span{display:block}
+.pcard .cat{font-size:11px;font-weight:800;letter-spacing:.06em;color:var(--muted)}
+.pcard .ti{font-size:15.5px;font-weight:800;line-height:1.4;letter-spacing:-0.02em;color:var(--text);margin:5px 0 6px}
+/* .bd>span 규칙보다 뒤에 오고 선택자도 같은 무게라 이쪽이 이긴다.
+   앞 규칙이 이기면 3줄 자르기가 풀려 카드 높이가 제각각이 된다(2026-08-02 확인) */
+.pcard .bd>span.ex{font-size:13px;color:var(--muted);line-height:1.6;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.pcard .dt{font-size:11.5px;color:var(--muted2);margin-top:9px}
+.empty{color:var(--muted);font-size:14px;padding:30px 0}
+/* ── 지역 시장조사 보고서 신청(2026-08-05 석봉님 확정: 회원 요청 → 이메일 발송) ── */
+.repbox{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+  border:1px solid var(--hair);border-left:3px solid var(--gold,#a8792c);border-radius:14px;
+  background:var(--soft);padding:16px 18px;margin:0 0 24px}
+/* word-break:keep-all 이 빠져 있어 '핵심만'이 '핵심 / 만'으로 쪼개졌다(2026-08-11 석봉님 지적).
+   한글은 기본값(normal)이면 단어 한가운데서도 줄이 넘어간다. 사이트 다른 화면은 다 넣어 뒀는데
+   이 박스만 누락됐다. 새로 만드는 문단에도 잊지 말 것. */
+.repbox .tx{font-size:14px;color:var(--text2);line-height:1.65;word-break:keep-all}
+.repbox .tx b{color:var(--text)}
+.repbox .tx small{display:block;font-size:12px;color:var(--muted);word-break:keep-all}
+.repbox button{border:0;border-radius:100px;background:var(--text);color:#fff;font:inherit;
+  font-size:13px;font-weight:800;padding:11px 22px;cursor:pointer;white-space:nowrap}
+.repform{border:1px solid var(--hair);border-radius:14px;background:#fff;padding:18px;margin:-12px 0 24px}
+.repform label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin:10px 0 4px}
+.repform input,.repform select{width:100%;box-sizing:border-box;border:1px solid var(--hair);border-radius:9px;
+  padding:10px 12px;font:inherit;font-size:14px;background:#fff}
+.repform .go{margin-top:14px;border:0;border-radius:10px;background:var(--text);color:#fff;
+  font:inherit;font-size:14px;font-weight:800;padding:12px 24px;cursor:pointer}
+.repform .fine{font-size:11.5px;color:var(--muted);margin-top:9px;line-height:1.6}
+.repform .repleft{margin-top:14px;font-size:12.5px;color:var(--muted);background:var(--soft);
+  border-radius:9px;padding:9px 12px}
+.repform .repleft b{color:var(--text)}
+.repdone{border:1px solid var(--hair);border-radius:14px;background:var(--soft);padding:20px;
+  margin:-12px 0 24px;font-size:14px;color:var(--text)}
+@media(max-width:640px){.plist{grid-template-columns:1fr}.repbox{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html">석봉 부동산 정보방</a>
+  <nav>
+    <a href="index.html">홈</a>
+    <a href="map.html">실거래지도</a>
+    <a href="apply.html">청약</a>
+    <a href="auction.html">경매·공매</a><a href="%EC%A7%80%ED%91%9C.html">금리·지표</a><a href="lh_%EC%A7%84%EB%8B%A8.html">LH매입</a><a href="%EC%9D%B4%EC%9A%A9%EC%95%88%EB%82%B4.html">이용안내</a>
+    <a href="%EA%B8%80.html" class="on">리포트</a>
+    <a href="favorites.html">★ 관심단지</a>
+    <a href="https://blog.naver.com/seokbongnews" target="_blank" rel="noopener">블로그</a>
+    <a href="channels.html">채널</a>
+    <a href="%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html">대출 문의</a>
+  <span id="sbAuthBtn"></span></nav>
+</header>
+<main class="wrap">
+  <h1 class="pg">리포트</h1>
+  <p class="pgsub">실거래·청약·경매 데이터를 직접 뜯어 정리한 글입니다</p>
+  <div class="repbox" id="repbox">
+    <div class="tx"><b>지역 시장조사 보고서</b>를 이메일로 보내드립니다
+      <small id="repSub">궁금한 동네와 상품을 골라 신청하세요 (아파트·빌라·상가·토지 등) · 핵심만 간추린 <b>약식 보고서</b>입니다
+        · 가입하시면 <b>2회 무료</b>(기간 제한 없음)</small></div>
+    <button id="repBtn" type="button">이메일로 신청하기</button>
+  </div>
+  <div class="repform" id="repform" hidden>
+    <label>어떤 상품이 궁금하세요?</label>
+    <select id="repProd">
+      <option value="">선택해 주세요</option>
+      <optgroup label="주거">
+        <option>아파트</option>
+        <option>오피스텔</option>
+        <option>빌라 (연립·다세대)</option>
+        <option>단독·다가구</option>
+      </optgroup>
+      <optgroup label="상업·업무">
+        <option>상가</option>
+        <option>빌딩·사옥</option>
+        <option>지식산업센터</option>
+        <option>공장·창고</option>
+      </optgroup>
+      <optgroup label="토지·개발">
+        <option>토지</option>
+        <option>재개발·재건축 구역</option>
+        <option>분양권·입주권</option>
+      </optgroup>
+    </select>
+    <label>받아보고 싶은 지역 (동 단위로 적어 주세요)</label>
+    <input id="repRegion" maxlength="60" placeholder="예: 마포구 상수동, 하남 감일지구">
+    <label>받으실 이메일</label>
+    <input id="repEmail" maxlength="100" placeholder="you@example.com">
+    <div class="repleft" id="repLeft" hidden></div>
+    <button class="go" id="repGo" type="button">신청하기</button>
+    <div class="fine">보내드리는 것은 시세·거래 흐름의 핵심만 간추린 <b>약식 보고서</b>입니다(정식 용역 보고서가 아닙니다).
+      가입하시면 <b>2회까지 무료</b>이며 기간 제한은 없습니다.
+      신청 내용은 보고서 발송 목적으로만 사용합니다. 카카오 계정 이메일은 수신이 안 되는 경우가 있어 실제 쓰시는 주소를 적어 주세요.</div>
+  </div>
+  <div class="filters"><button class="on" data-c="">전체</button><button data-c="기획">기획</button><button data-c="데일리">데일리</button><button data-c="LH">LH</button><button data-c="경매·공매">경매·공매</button><button data-c="주간결산">주간결산</button><button data-c="청약">청약</button><button data-c="재개발">재개발</button></div>
+  <div class="plist" id="plist"></div>
+</main>
+<footer class="site-footer">
+  <span>📈 <a href="https://telegram.me/seokbongnews">텔레그램 채널</a></span> ·
+  <span>💬 <a href="https://open.kakao.com/o/gt8CTUCi">카카오 오픈채팅</a> · <a href="https://blog.naver.com/seokbongnews">네이버 블로그</a></span>
+  <div class="fine">편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 무단 전재·재배포 금지 · 본 자료는 정보 제공 목적이며 투자 권유가 아닙니다 · 방문 통계 수집을 위해 Google Analytics(쿠키)를 사용합니다</div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets/sb_auth.js?v=8"></script>
+<script>
+/* 지역 시장조사 보고서 신청 — 대출 문의와 같은 inquiries 테이블(kind로 구분) + 텔레그램 알림 재사용.
+   가입 2회 무료(기간 제한 없음, 2026-08-05). 남은 횟수는 SBAuth가 본인 신청 이력을 세어 알려준다. */
+(function(){
+  var btn=document.getElementById('repBtn'),form=document.getElementById('repform');
+  var leftEl=document.getElementById('repLeft'),LEFT=null;
+  function showLeft(n){
+    LEFT=n;
+    if(n===null){leftEl.hidden=true;return;}
+    leftEl.hidden=false;
+    leftEl.innerHTML=n>0
+      ? '남은 무료 신청 <b>'+n+'회</b> (전체 '+((window.SBAuth&&SBAuth.REPORT_FREE)||2)+'회)'
+      : '무료 신청을 모두 사용하셨습니다. 추가 요청은 <a href="%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html">문의</a>로 남겨 주세요.';
+    document.getElementById('repGo').disabled=(n===0);
+  }
+  function openForm(){
+    form.hidden=false;btn.disabled=true;
+    if(window.SBAuth&&SBAuth.reportLeft)SBAuth.reportLeft().then(showLeft).catch(function(){});
+    if(window.SBAuth&&SBAuth.getNotifyEmail){
+      SBAuth.getNotifyEmail().then(function(e){
+        var em=document.getElementById('repEmail');
+        if(e&&!em.value)em.value=e;
+        else if(!em.value&&SBAuth.authEmail&&SBAuth.authEmail())em.value=SBAuth.authEmail();
+      }).catch(function(){});
+    }
+    form.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+  /* 로그인 상태면 목록 소개 문구에도 남은 횟수를 얹는다(누르기 전에 알 수 있게) */
+  if(window.SBAuth)SBAuth.whenReady(function(){
+    if(!SBAuth.isIn())return;
+    SBAuth.reportLeft().then(function(n){
+      if(n===null)return;
+      var sub=document.getElementById('repSub');
+      if(sub)sub.innerHTML+=' · <b>남은 무료 신청 '+n+'회</b>';
+    }).catch(function(){});
+  });
+  btn.onclick=function(){
+    if(window.SBAuth&&SBAuth.isIn()){openForm();return;}
+    if(window.SBAuth)SBAuth.gate(null,openForm,{
+      title:'지역 시장조사 보고서는 회원에게 보내드립니다',
+      desc:'카카오 로그인 3초, 무료입니다.<br>가입 후 바로 원하시는 지역을 신청하실 수 있습니다.',
+      agree:'(필수) 개인정보 수집·이용 동의 · 카카오 계정 식별자·닉네임과 입력하신 이메일을 회원 식별과 보고서 발송 목적으로 수집·이용합니다.'});
+  };
+  document.getElementById('repGo').onclick=function(){
+    var pd=document.getElementById('repProd').value;
+    var rg=document.getElementById('repRegion').value.trim();
+    var em=document.getElementById('repEmail').value.trim();
+    if(!pd){alert('궁금하신 상품을 골라 주세요.');return;}
+    if(!rg){alert('받아보고 싶은 지역을 적어 주세요.');return;}
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){alert('이메일 주소를 확인해 주세요.');return;}
+    if(LEFT===0){alert('무료 신청을 모두 사용하셨습니다.');return;}
+    var g=this;g.disabled=true;g.textContent='접수 중…';
+    SBAuth.reportSubmit(pd,rg,em).then(function(res){
+      if(!res.ok){
+        g.disabled=false;g.textContent='신청하기';
+        if(res.reason==='used'){showLeft(0);alert('무료 신청을 모두 사용하셨습니다.');}
+        else if(res.reason==='login')alert('로그인이 풀렸습니다. 다시 로그인해 주세요.');
+        else alert('접수에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+        return;
+      }
+      var rest=(res.left===null||res.left===undefined)?'':'<br><span style="font-size:12.5px;color:#8a8071">남은 무료 신청 '+res.left+'회</span>';
+      form.outerHTML='<div class="repdone">✓ 신청됐습니다. 정리되는 대로 <b>'+em.replace(/[<>&]/g,'')+'</b> 으로 보내드리겠습니다.'+rest+'</div>';
+      try{if(window.gtag)gtag('event','report_request',{region:rg.slice(0,40),prod:pd});}catch(e){}
+    }).catch(function(){g.disabled=false;g.textContent='신청하기';
+      alert('접수에 실패했습니다. 잠시 후 다시 시도해 주세요.');});
+  };
+})();
+</script>
+<script src="data/posts.js"></script>
+<script>
+(function(){
+  var P=(window.SB&&SB.posts&&SB.posts.items)||[],el=document.getElementById('plist'),cur='';
+  function esc(s){return (s||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function card(p){
+    var th=p.img?'<img class="th" src="'+encodeURI(p.img)+'" alt="" loading="lazy">':'';
+    return '<a class="pcard" href="'+encodeURI('글/'+p.f)+'">'+th
+      +'<span class="bd"><span class="cat">'+esc(p.c)+'</span>'
+      +'<span class="ti">'+esc(p.t)+'</span>'
+      +'<span class="ex">'+esc(p.e)+'</span>'
+      +'<span class="dt">'+esc(p.d)+'</span></span></a>';
+  }
+  function draw(){
+    var rows=cur?P.filter(function(p){return p.c===cur;}):P;
+    el.innerHTML=rows.length?rows.map(card).join(''):'<p class="empty">글이 없습니다.</p>';
+  }
+  document.querySelectorAll('.filters button').forEach(function(b){
+    b.addEventListener('click',function(){
+      document.querySelectorAll('.filters button').forEach(function(x){x.classList.remove('on');});
+      b.classList.add('on');cur=b.dataset.c;draw();
+    });
+  });
+  draw();
+})();
+</script>
+<script src="assets/sb_feedback.js?v=1"></script>
+</body></html>
