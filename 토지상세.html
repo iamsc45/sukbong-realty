@@ -65,7 +65,7 @@ table.t2 td.n{text-align:right;white-space:nowrap}
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/sb_auth.js?v=8"></script>
-<script defer src="assets/sb_tabbar.js?v=7"></script>
+<script defer src="assets/sb_tabbar.js?v=8"></script>
 <script src="data/land_bjd.js?v=2"></script>
 <script>
 /* ─────────────────────────────────────────────────────────────
@@ -147,14 +147,19 @@ table.t2 td.n{text-align:right;white-space:nowrap}
     $('state').style.display='none';
     var deals=(D.d||[]).filter(function(x){return x[0]===jb;});
     var lots =(D.l||[]).filter(function(x){return x[0]===jb;});
+    /* 건물이 딸린 땅의 거래(2026-08-20 신설). 위에서 함께 정의한다 —
+       「거래가 없습니다」 판정이 이것도 봐야 하기 때문이다. */
+    var blds=(D.b||[]).filter(function(x){return x[0]===jb;});
     var h=[];
 
-    /* ── 이 필지가 어떤 땅인가 (실거래·매물 어느 쪽에서든 지목·용도지역을 얻는다) */
+    /* ── 이 필지가 어떤 땅인가 (실거래·매물 어느 쪽에서든 지목·용도지역을 얻는다)
+       ⚠️ 건물 거래(`b`)에는 지목·용도지역이 없다 — 대지면적만 쓴다. */
     var meta=deals[0]||lots[0]||null;
     var jimok=meta?(meta[4]||''):'', useZ=meta?(meta[5]||''):'';
     var area=meta?(meta[3]||meta[2]||0):0;
+    if(!area && blds.length) area=blds[0][3]||0;
 
-    if(!deals.length&&!lots.length){
+    if(!deals.length&&!lots.length&&!blds.length){
       h.push('<div class="disc"><b>이 지번으로 확정된 거래나 매물이 아직 없습니다.</b><br>'+
         '국토부 실거래는 토지 지번을 가려서 제공합니다. 우리는 공부 자료로 좁혀 되짚는데, '+
         '아직 이 필지까지 닿지 않았습니다. 아래 이 동네 시세와 땅값 조회를 이용해 주세요.</div>');
@@ -164,7 +169,7 @@ table.t2 td.n{text-align:right;white-space:nowrap}
     h.push('<div class="jump" id="jump"></div>');
 
     /* ── 기본 */
-    if(meta){
+    if(meta||area){
       h.push('<h2 id="s1">이 필지</h2><table class="t2">');
       h.push('<tr><th>지번</th><td>'+esc((B?B[3]+' ':'')+jb)+'</td></tr>');
       if(jimok) h.push('<tr><th>지목</th><td>'+esc(jimok)+'</td></tr>');
@@ -192,6 +197,32 @@ table.t2 td.n{text-align:right;white-space:nowrap}
         '평당가는 국토부 신고 거래면적 기준입니다.</div>');
     } else {
       h.push('<div class="empty">이 지번으로 되짚은 거래가 없습니다. 확정 범위는 서울 2021년 이후와 전국 최근 6개월입니다.</div>');
+    }
+
+    /* ── 건물이 딸린 땅의 거래 (2026-08-20 신설)
+       석봉님 지적에서 나왔다 — 단독·다가구 카드가 마스킹 지번으로 **여러 집을 뭉쳐**
+       보여주고 있었는데, 매칭은 이미 끝나 있었고 화면이 안 쓰고 있었다.
+       ⚠️ 이 거래의 금액은 **땅값 + 건물값**이라 위의 토지 실거래와 성격이 다르다.
+          같은 표에 섞지 말 것(지목별 평당가에도 안 들어간다). */
+    if(blds.length){
+      var KIND={H:'단독·다가구', C:'상업·업무용', F:'공장·창고'};
+      h.push('<h2 id="s2b">이 필지 건물 거래</h2>');
+      h.push('<table class="t2"><tr><th>계약</th><th class="n">거래금액</th><th class="n">대지 · 연면적</th></tr>');
+      blds.forEach(function(x){
+        h.push('<tr><td>'+esc(ymTxt(x[1]))+'<br>'+
+               '<span class="tag">'+esc(KIND[x[7]]||'건물')+'</span>'+
+               (String(x[6]).charAt(0)==='S'?'<span class="tag ok">확인 수준 높음</span>'
+                                            :'<span class="tag">확인 수준 보통</span>')+'</td>'+
+               '<td class="n">'+eok(x[2])+'</td>'+
+               '<td class="n">'+PY(x[3])+'<br><span style="color:var(--muted)">건물 '+
+               PY(x[4])+(x[5]?' · '+esc(x[5])+'년':'')+'</span></td></tr>');
+      });
+      h.push('</table>');
+      h.push('<div class="disc">이 금액은 <b>땅값과 건물값을 합한 것</b>입니다. '+
+        '위의 토지 실거래(땅만 거래된 것)와 직접 비교하지 마세요.<br>'+
+        '🔴 <b>확정이 아니라 추정입니다.</b> 정확한 내용은 <b>등기부등본</b>으로 확인하세요. '+
+        '<a href="https://www.iros.go.kr" target="_blank" rel="noopener" '+
+        'style="white-space:nowrap">인터넷등기소</a></div>');
     }
 
     /* ── 매물 */
@@ -232,8 +263,12 @@ table.t2 td.n{text-align:right;white-space:nowrap}
                '<td class="n">'+(v[3]?comma(v[2])+'만 <span style="color:var(--muted)">('+v[3]+'건)</span>':'·')+'</td></tr>');
       });
       h.push('</table>');
+      /* ⚠️ 지분 거래 제외를 밝히는 이유 — 토지 매매의 30.7%가 지분이다(2026-08-20 실측).
+         1㎡ 짜리 거래가 그렇게 들어오는데, 필지 전체가 아니라 일부만 파는 것이라
+         면적으로 필지를 특정할 수 없어 집계에서 뺐다. 밝히지 않으면 「거래가 적다」로 읽힌다. */
       h.push('<div class="disc">평당 중위값입니다(거래면적 기준). 표본이 적은 지목은 한두 건에 크게 흔들립니다. '+
-        '지목이 같아도 도로 접면·모양·규제에 따라 값이 크게 갈리므로 <b>구간을 참고하는 데까지만</b> 쓰세요.</div>');
+        '지목이 같아도 도로 접면·모양·규제에 따라 값이 크게 갈리므로 <b>구간을 참고하는 데까지만</b> 쓰세요.<br>'+
+        '지분 거래(필지의 일부만 사고파는 것)는 집계에서 뺐습니다.</div>');
     } else {
       h.push('<div class="empty">이 동네 집계가 아직 없습니다.</div>');
     }
