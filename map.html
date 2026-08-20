@@ -593,11 +593,13 @@ function render(){
       var sqm=(t.u==='매매'&&t.a)?'<div style="font-weight:normal;font-size:10px;color:#888">'+Math.round(t.p/t.a*3.305785).toLocaleString()+'만/평</div>':'';
       return '<tr><td>'+t.cd.slice(5)+'</td><td>'+u+'</td><td>'+(t.a?t.a+'<span style="color:#9a938a;font-size:10px"> '+PY(t.a)+'</span>':'-')+'</td><td>'+t.f+'</td><td class="pr">'+priceLabel(t)+sqm+'</td></tr>';
     }).join('');
-    if(pt.t==='land'){ try{ landPrefetch(pt); }catch(e){} }
+    if(pt.t==='land'||pt.t==='house'||pt.t==='bldg'){ try{ landPrefetch(pt); }catch(e){} }
     var pop='<div class="pop"><h4>'+pt.name+'<span class="badge" style="background:'+col+'">'+ti[0]+'</span></h4>'
       +'<div class="meta">'+pt.dong+' '+(function(){var jb=(typeof landJibunCached==='function')?landJibunCached(pt,txs):'';
           return jb?('<b>'+jb+'</b> <span style="color:#8a8071">추정 지번</span>'):pt.jibun;})()
-        +(pt.extra?' · '+pt.extra:'')+' · '+txs.length+'건'+(pt.ax?' · <b style="color:#D4573F">지번 비공개 · 동 단위 개략 위치</b>':'')+'</div>'
+        /* 🔴 지번이 가려진 단독·다가구·빌딩에 거래가 여럿이면 서로 다른 건물이 섞여 있다.
+           그럴 때 준공년 하나를 지점 전체에 붙이면 틀린 말이 된다(2026-08-20 면목동 3**). */
+        +((pt.extra&&!(pt.ax&&(pt.t==='house'||pt.t==='bldg')&&txs.length>1))?' · '+pt.extra:'')+' · '+txs.length+'건'+(pt.ax?' · <b style="color:#D4573F">지번 비공개 · 동 단위 개략 위치</b>':'')+'</div>'
       +'<div class="tw"><table><thead><tr><th>계약</th><th>거래</th><th>면적㎡</th><th>층</th><th>가격</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
     /* 카드에는 필터를 걸지 않은 그 지점의 전 거래를 넘긴다(2026-08-09).
        기본 필터가 '아파트·매매'가 되면서, 마커를 누르면 카드에서도 전세·월세가 사라져
@@ -2253,6 +2255,7 @@ function _eok(m){if(!m)return '';var v=m/10000;
   /* 1억 미만은 '0억'으로 뭉개지 않고 만원으로 적는다(토지 소액 필지에서 실제로 그랬다, 2026-08-09) */
   if(v<1)return Math.round(m).toLocaleString()+'만';
   return (v>=100?Math.round(v):(''+v.toFixed(1)).replace(/\.0$/,''))+'억';}
+var _PT=null;   /* 지금 카드에 열려 있는 지점(2026-08-20) */
 function _drawTx(){
   var C=window._CARD; if(!C)return;
   var box=document.getElementById('rcTx'); if(!box)return;
@@ -2328,7 +2331,13 @@ function _drawTx(){
   if(!list.length){h+='<div style="color:#8a8071;font-size:13px">거래 없음</div>';box.innerHTML=h;return;}
   h+=list.slice(0,C.shown).map(function(t){
     var py=(t.u==='매매'&&t.a)?(' <span style="color:#8a8071;font-weight:400">'+Math.round(t.p/t.a*3.305785).toLocaleString()+'만/평</span>'):'';
-    return '<div class="rc-dl"><span style="color:#6b6355">'+t.cd.slice(2)+' · '+(t.a?t.a+'㎡('+PY(t.a)+')':'-')+' · '+t.f+'층</span><b>'+priceLabel(t)+py+'</b></div>';
+    /* 🔴 단독·다가구·빌딩은 지점이 곧 물건이 아니다 — 거래마다 지번·준공년을 갈라 붙인다
+       (2026-08-20 토지 세션 인수인계. 「면목동 3** · 1969년」에 1992년 건물이 붙어 있었다) */
+    var _bh=(typeof bldgHit==='function')?bldgHit(_PT,t):null;
+    var _jb=_bh?('<span style="color:#12264A;font-weight:800">'+_bh[0]+'</span>'
+                 +(_bh[5]?'<span style="color:#8a8071;font-weight:400"> · '+_bh[5]+'년</span>':'')
+                 +'<span style="color:#8a8071;font-weight:400"> · </span>'):'';
+    return '<div class="rc-dl"><span style="color:#6b6355">'+_jb+t.cd.slice(2)+' · '+(t.a?t.a+'㎡('+PY(t.a)+')':'-')+' · '+t.f+'층</span><b>'+priceLabel(t)+py+'</b></div>';
   }).join('');
   var left=list.length-C.shown;
   if(left>0)h+='<button id="rcMore" style="width:100%;margin-top:9px;border:1px solid #ddd6c8;background:#fff;color:#6b6355;font:inherit;font-size:12.5px;font-weight:700;border-radius:10px;padding:9px 0;cursor:pointer">더 보기 (남은 '+left+'건)</button>';
@@ -2341,6 +2350,28 @@ function _drawTx(){
     C.u=b.getAttribute('data-u');C.shown=8;_drawTx();});
   var mb=document.getElementById('rcMore');
   if(mb)mb.onclick=function(){C.shown+=10;_drawTx();};
+}
+/* ══ 건물 추정 지번 (2026-08-20, 토지 세션 인수인계) ═══════════════════
+   단독·다가구는 지번이 가려져 나온다 — 「면목동 3**」. 그래서 **서로 다른 집**이
+   한 지점에 묶이고, 카드가 첫 거래의 준공년을 지점 전체에 붙여 버렸다.
+   실제 사고: 「면목동 3** · 1969년 준공」에 **1992년 건물 거래**가 붙어 있었다.
+   🔴 화면 규칙은 토지와 같다 — 「추정」임을 밝히고, 판정 방법은 쓰지 않는다.
+   ⚠️ 여기서는 **거래마다** 갈라 붙인다. 지점이 곧 물건이 아니기 때문이다. */
+function bldgHit(pt, t){
+  try{
+    if(!pt || !t || (pt.t!=='house' && pt.t!=='bldg')) return null;
+    var c10=(landFill._code10||{})[pt.dong];
+    var LD=c10 && window._LANDD ? window._LANDD[c10] : null;
+    if(!LD || !LD.b || !LD.b.length) return null;
+    var cd=String(t.cd||''); if(cd.length<7) return null;
+    var y=cd.slice(2,4)+cd.slice(5,7), p=+t.p||0, a=+t.a||0;
+    var hit=LD.b.filter(function(r){
+      return r[1]===y && Math.abs((+r[2]||0)-p)<1 && Math.abs((+r[4]||0)-a)<0.6;
+    });
+    var jb={}; hit.forEach(function(r){ jb[r[0]]=r; });
+    var uq=Object.keys(jb);
+    return uq.length===1 ? jb[uq[0]] : null;   /* 하나로 좁혀질 때만 */
+  }catch(e){ return null; }
 }
 /* ══ 토지 추정 지번 표시 (2026-08-20) ══════════════════════════════════
    지도는 가려진 지번을 그대로 보여 준다 — 「역삼동 6**」. 땅값 페이지와 말이 달랐다.
@@ -2359,12 +2390,18 @@ function _drawTx(){
       되돌릴 자리는 이 함수 하나다. */
 function landPrefetch(pt){
   try{
-    if(!pt || pt.t!=='land' || !window.SB || !SB.dongs) return;
+    /* 토지뿐 아니라 단독·다가구·빌딩도 받는다(2026-08-20) — 같은 파일 안에 건물 매칭이 함께 있다 */
+    if(!pt || (pt.t!=='land' && pt.t!=='house' && pt.t!=='bldg') || !window.SB || !SB.dongs) return;
     var c5=SB.dongs[pt.dong]?SB.dongs[pt.dong][0]:''; if(!c5) return;
     window._LANDD=window._LANDD||{}; landFill._code10=landFill._code10||{};
     var again=function(){                       /* 새로 받은 것이 있을 때만 다시 그린다 */
       clearTimeout(landPrefetch._t);
-      landPrefetch._t=setTimeout(function(){ try{ if(typeof render==='function') render(); }catch(e){} },260);
+      landPrefetch._t=setTimeout(function(){
+        try{ if(typeof render==='function') render(); }catch(e){}
+        /* 카드가 열려 있으면 거래 줄도 다시 그린다 — 안 하면 자료가 늦게 온 첫 클릭에 지번이 안 붙는다 */
+        try{ var _rc=document.getElementById('rcard');
+             if(_rc && _rc.classList.contains('open') && typeof _drawTx==='function') _drawTx(); }catch(e){}
+      },260);
     };
     if(!window.LANDIDX || window.LANDIDX[c5]===undefined){
       landPrefetch._i=landPrefetch._i||{}; if(landPrefetch._i[c5]) return;
@@ -2663,8 +2700,10 @@ function showAptCard(pt, txs){
     +'<div style="text-align:center;margin-top:7px"><a href="%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html?ctx='+encodeURIComponent(pt.name+' '+(pt.dong||''))+'" style="font-size:12px;color:#8a8071;text-decoration:underline" onclick="if(window.gtag)gtag(\'event\',\'loan_inquiry_click\',{from:\'map_card\'})">'+W.loan+'</a></div>'
     +'<div class="rc-note">실거래 기준일 '+((window.SB&&SB.summary&&SB.summary.updated)||'-')+' · 호가 수집일 '+(window.APTASKDAY||(A?'-':'미수집 지역'))+'</div>';
   var rc=document.getElementById('rcard');rc.innerHTML=html;rc.classList.add('open');
+  _PT=pt;                                   /* 거래 줄에서 지점 정보를 쓰려고 담아 둔다 */
   _drawTx();
   try{ landFill(pt, txs); }catch(e){}      /* 토지면 확정 지번을 찾아 덧칠한다(비동기) */
+  try{ landPrefetch(pt); }catch(e){}       /* 단독·다가구·빌딩이면 거래별 지번 자료를 받는다(2026-08-20) */
   document.getElementById('rcClose').onclick=function(){rc.classList.remove('open');};
   var fb=document.getElementById('rcFav');
   if(fb)fb.onclick=function(){

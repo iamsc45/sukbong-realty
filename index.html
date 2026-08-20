@@ -414,6 +414,14 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
 .op-links .kk i{color:#FEE500}
 .op-links .bl i{color:#03C75A}
 @media(max-width:720px){.op-links{margin-left:0;width:100%}.op-links .oc{flex:1;justify-content:center;min-width:44%}}
+/* 모바일 홈 배너 (2026-08-20) — 땅값·LH 진단. m-home 안이라 데스크톱에는 안 보인다 */
+.m-promo{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:20px 0 0}
+.m-promo .mp{display:flex;flex-direction:column;gap:2px;padding:13px 12px 12px;
+  border:1.5px solid var(--blk);background:var(--wh);text-decoration:none;color:var(--blk)}
+.m-promo .mp i{font-size:20px;line-height:1;color:var(--blue);margin-bottom:4px}
+.m-promo .mp.lh i{color:#0F6E56}
+.m-promo .mp-t{font-size:13px;font-weight:800;letter-spacing:-0.02em}
+.m-promo .mp-d{font-size:10.5px;color:var(--g2);font-weight:600;line-height:1.35}
 /* 모바일 허브 (m-home 안) */
 .hubgrid-m{display:grid;grid-template-columns:repeat(4,1fr);margin:22px 0 0;
   border-top:2px solid var(--blk);border-left:1px solid var(--hair)}
@@ -733,6 +741,20 @@ document.addEventListener('click',function(e){if(n.classList.contains('m-open')&
     </form>
     <div class="m-hot" id="mHot"></div>
     <p class="m-tick" id="mTick"></p>
+  </div>
+  <!-- 모바일 홈 배너(2026-08-20 석봉님 지시) — 땅값·LH 매입약정 진단.
+       허브 타일은 4칸 격자라 글자가 10.5px 로 작다. 이 둘은 우리만 있는 화면이라 따로 띄운다. -->
+  <div class="m-promo">
+    <a class="mp" href="%ED%86%A0%EC%A7%80%EA%B2%80%EC%83%89.html">
+      <i class="ti ti-map-pin-dollar" aria-hidden="true"></i>
+      <span class="mp-t">땅값 조회</span>
+      <span class="mp-d">공시지가·토지 실거래로 보는 동네 땅값</span>
+    </a>
+    <a class="mp lh" href="lh_%EC%A7%84%EB%8B%A8.html">
+      <i class="ti ti-checklist" aria-hidden="true"></i>
+      <span class="mp-t">LH 매입약정 진단</span>
+      <span class="mp-d">8개 항목 참고용 셀프진단</span>
+    </a>
   </div>
   <div class="hubgrid-m" id="hubMob"></div>
   <a class="m-ad" href="#" id="adMob"><i class="ti ti-speakerphone" aria-hidden="true"></i>배너 광고 · 제휴 문의</a>
