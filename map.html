@@ -133,6 +133,10 @@
   #barHandle{display:none}
   #mcats button{border:1px solid var(--hair-soft);background:#fff;border-radius:100px;padding:6px 13px;font:inherit;font-size:12.5px;font-weight:600;color:var(--text2);white-space:nowrap;cursor:pointer}
   #mcats button b{color:var(--navy);font-weight:800;margin:0 3px}
+  /* 🔵 상품·거래를 그 자리에서 고르는 판 (2026-08-20 석봉님 지시)
+     전에는 화면을 덮는 바텀시트라 고르고 **닫아야** 결과가 보였다.
+     데스크톱에는 안 쓴다 — 여기서 display:none 으로 잠그고 모바일에서만 연다. */
+  #mcpop{display:none}
   #msheet{display:none;position:fixed;inset:0;z-index:2000;background:rgba(20,20,20,.42)}
   #msheet.open{display:block}
   #msheet .ms-in{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:18px 18px 0 0;max-height:74%;overflow:auto;padding:0 0 16px}
@@ -166,6 +170,24 @@
     #mcats{grid-column:3/7;display:flex;gap:5px}
     #mcats button{flex:1;min-width:0;height:30px;padding:0 2px;border-radius:9px;text-align:center;font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     #mcats button.set .pfx{display:none}
+    #mcats button.opened{border-color:var(--navy);box-shadow:0 0 0 1px var(--navy) inset}
+    /* 버튼 바로 아래에 뜬다. 지도를 덮지 않도록 낮게 유지하고, 넘치면 판 안에서 스크롤한다. */
+    #mcpop{position:absolute;left:10px;right:10px;top:100%;margin-top:5px;z-index:1600;
+      background:#fff;border:1px solid var(--hair-soft);border-radius:12px;
+      box-shadow:0 10px 26px rgba(20,20,20,.16);padding:9px 10px 10px;
+      max-height:44vh;overflow:auto}
+    #mcpop.open{display:block}
+    #mcpop .mp-h{display:flex;align-items:center;justify-content:space-between;gap:8px;
+      font-size:11px;font-weight:700;color:var(--muted);margin:0 2px 7px}
+    #mcpop .mp-h button{border:0;background:transparent;font-size:15px;line-height:1;
+      color:var(--muted2);cursor:pointer;padding:0 2px}
+    #mcpop .mp-g{display:flex;flex-wrap:wrap;gap:6px}
+    #mcpop .mp-c{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--hair-soft);
+      background:#fff;border-radius:100px;padding:7px 13px;font:inherit;font-size:12.5px;
+      font-weight:600;color:var(--text2);cursor:pointer;white-space:nowrap}
+    #mcpop .mp-c.on{background:var(--navy);border-color:var(--navy);color:#fff;font-weight:800}
+    #mcpop .mp-c .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+    #mcpop .mp-n{font-size:11px;color:var(--muted);margin:8px 2px 0}
     #rfbar{grid-column:1/7}
     /* 지도 조작 시 상단바 자동 접힘(2026-07-27): 첫 줄(모드+필터)만 남김 */
     #barHandle{display:none;grid-column:1/7;border:0;background:transparent;color:var(--navy);font-size:13px;font-weight:800;padding:2px 0 3px;height:auto;line-height:1.2;cursor:pointer}
@@ -283,6 +305,8 @@ body.redev #rfbar{display:flex}
     <button type="button" data-c="type"><span class="pfx">상품 </span><b id="mcType">전체</b>▾</button>
     <button type="button" data-c="u"><span class="pfx">거래 </span><b id="mcU">전체</b>▾</button>
   </div>
+  <!-- 상품·거래 고르는 판. 버튼 바로 아래에 열리고 지도는 그대로 보인다(2026-08-20) -->
+  <div id="mcpop"></div>
   <button id="barHandle" type="button">▾ 검색·지역·상품 펼치기</button>
   <span id="stat"></span>
   <div id="fpanel">
@@ -613,6 +637,17 @@ function render(){
   document.getElementById('stat').textContent='지점 '+nPt+' · '+nTx.toLocaleString()+'건'+(pending?' · 불러오는 중…':'');
   setFcount('화면 내 조건 일치 '+nTx.toLocaleString()+'건');
 }
+/* 🔴 아래 목록도 같이 다시 그린다(2026-08-20 석봉님 제보 「상품을 고르면 목록이 바로 안 바뀐다」).
+   목록은 원래 **지도 이동에만** 반응해서, 필터만 바꾸면 마커는 바뀌는데 목록은 옛 내용이었다.
+   ⚠️ render() 는 확대 단계마다 **중간에 return** 한다(시군구 덩어리 · 동 덩어리 · 지점 셋).
+      끝줄에만 넣으면 앞의 두 갈래에서 안 불린다 — 처음에 그렇게 넣었다가 실제로 안 먹었다.
+      그래서 감싸서 **어느 갈래로 끝나든** 부른다. */
+var _render0=render;
+render=function(){
+  var r=_render0.apply(this,arguments);
+  try{ if(window._v2repaint) window._v2repaint(); }catch(e){}
+  return r;
+};
 /* 칩 */
 function mkChips(elId,items,cur,setter){
   var el=document.getElementById(elId);
@@ -678,6 +713,7 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
     try{if(window._syncTypeUI)window._syncTypeUI();}catch(e){}
     try{if(window._syncUUI)window._syncUUI();}catch(e){}
     try{labels();}catch(e){}
+    try{popPaint();}catch(e){}   /* 고르는 판이 열려 있으면 그 표시도 함께 맞춘다 */
     if(why){
       try{if(window._toast)window._toast(why,5000);}catch(e){}
       var st=document.getElementById('stat');
@@ -687,6 +723,43 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
   };
   function isOn(cat,k){if(cat==='type')return k==='all'?!curTset:!!(curTset&&curTset[k]);if(cat==='u')return curU===k;return curD===k;}
   function close(){sheet.classList.remove('open');}
+  /* 🔵 2026-08-20 석봉님 지시 — 상품·거래는 **그 자리에서** 고른다.
+       "필터 누르고 상품 선택하면 바로 목록이 나오는 게 아니라 그 창을 닫아야 보여."
+     전에는 화면 74% 를 덮는 바텀시트라, 고르는 동안 지도가 안 보이고 닫아야 결과를 봤다.
+     이제 버튼 바로 아래에 낮은 판이 열리고, 누르는 즉시 뒤의 지도가 갱신된다.
+     ⚠️ 판을 닫는 길을 여럿 둔다 — ✕ · 같은 버튼 다시 누르기 · 지도 조작(상단바 접힘).
+        하나뿐이면 「닫는 법을 몰라 그대로 두는」 상태가 된다.
+     ⚠️ 거래 유형은 하나만 고르지만 **자동으로 닫지 않는다.** 판이 한 줄이라 지도를 거의
+        안 가리고, 고른 것이 칠해지는 것을 눈으로 확인하는 편이 낫다. */
+  var pop=document.getElementById('mcpop'), popCat=null;
+  function syncCats(){
+    document.querySelectorAll('#mcats button').forEach(function(b){
+      b.classList.toggle('opened', b.dataset.c===popCat);});
+  }
+  function popClose(){ if(pop)pop.classList.remove('open'); popCat=null; syncCats(); }
+  function popPaint(){
+    if(!pop||!popCat)return;
+    var items=popCat==='type'?TYPEITEMS:UITEMS;
+    pop.innerHTML='<div class="mp-h"><span>'
+      +(popCat==='type'?'상품 · 여러 개 고를 수 있습니다':'거래 유형')
+      +'</span><button type="button" data-x="1" aria-label="닫기">✕</button></div>'
+      +'<div class="mp-g">'+items.map(function(it){
+          var on=isOn(popCat,it[0]);
+          return '<button type="button" class="mp-c'+(on?' on':'')+'" data-k="'+it[0]+'">'
+            +(it[2]?'<span class="dot" style="background:'+it[2]+'"></span>':'')+it[1]+'</button>';
+        }).join('')+'</div>';
+  }
+  function popOpen(cat){
+    if(!pop)return;
+    if(popCat===cat){popClose();return;}       /* 같은 버튼을 다시 누르면 닫는다 */
+    popCat=cat; popPaint(); pop.classList.add('open'); syncCats();
+  }
+  window._mcpopClose=popClose;                 /* 지도를 만지면 닫는다(아래 fold) */
+  if(pop)pop.addEventListener('click',function(e){
+    if(e.target.closest('[data-x]')){popClose();return;}
+    var b=e.target.closest('.mp-c'); if(!b)return;
+    pick(popCat, b.getAttribute('data-k'));
+  });
   function openSheet(cat){
     var items=cat==='type'?TYPEITEMS:(cat==='u'?UITEMS:DITEMS), multi=cat==='type';
     title.textContent=(cat==='type'?'상품':cat==='u'?'거래 유형':'계약월')+(multi?' (여러 개 선택 가능)':'');
@@ -702,17 +775,22 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
     if(cat==='type'){
       if(k==='all')curTset=null;
       else{if(!curTset)curTset={};if(curTset[k])delete curTset[k];else curTset[k]=true;if(!Object.keys(curTset).length)curTset=null;}
-      render();labels();openSheet('type');
-    }else if(cat==='u'){curU=k;render();labels();close();}
+      render();labels();
+      if(popCat==='type')popPaint(); else openSheet('type');
+    }else if(cat==='u'){curU=k;render();labels();
+      if(popCat==='u')popPaint(); else close();}
     else{curD=k;render();labels();close();}
   }
   document.getElementById('msClose').addEventListener('click',close);
   sheet.addEventListener('click',function(e){if(e.target===sheet)close();});
-  document.querySelectorAll('#mcats button').forEach(function(b){b.addEventListener('click',function(){openSheet(b.dataset.c);});});
+  document.querySelectorAll('#mcats button').forEach(function(b){b.addEventListener('click',function(){popOpen(b.dataset.c);});});
   /* 지도 조작 시 상단바 자동 접힘 (모바일) */
   (function(){
     var mq=window.matchMedia('(max-width:720px)');
-    function fold(){if(mq.matches&&!document.body.classList.contains('barfold')){document.body.classList.add('barfold');setTimeout(function(){try{map.invalidateSize();}catch(e){}},60);}}
+    function fold(){
+      /* 지도를 만지면 고르는 판부터 닫는다 — 상단바가 접히면 판만 남아 떠 있게 된다 */
+      try{if(window._mcpopClose)window._mcpopClose();}catch(e){}
+      if(mq.matches&&!document.body.classList.contains('barfold')){document.body.classList.add('barfold');setTimeout(function(){try{map.invalidateSize();}catch(e){}},60);}}
     map.on('dragstart',fold);map.on('zoomstart',fold);
     var h=document.getElementById('barHandle');
     if(h)h.addEventListener('click',function(){document.body.classList.remove('barfold');setTimeout(function(){try{map.invalidateSize();}catch(e){}},60);});
@@ -2762,7 +2840,7 @@ if(_BACKVIEW){try{
 
 render();
 </script>
-<script src="assets/map_v2.js?v=14"></script>
+<script src="assets/map_v2.js?v=15"></script>
 <script src="assets/map_v2_poi.js?v=2"></script>
 <script src="assets/map_v2_dong.js?v=2"></script>
 <script src="assets/map_old.js?v=2"></script>

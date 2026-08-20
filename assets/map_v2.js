@@ -460,6 +460,12 @@
       document.body.classList.toggle('z16',z===16);
       document.body.classList.toggle('z17',z>=17);}
     window.map.on('moveend zoomend',function(){zc();kick();});
+    /* 🔴 2026-08-20 석봉님 제보 — 「상품을 고르면 목록이 바로 안 바뀐다」.
+       갱신 시점이 **지도 이동뿐**이라, 필터만 바꾸면 지도의 마커는 다시 그려지는데
+       이 목록은 옛 내용 그대로였다(지도를 한 번 끌어야 따라왔다).
+       원본 render() 가 끝날 때 이걸 부르게 해서, 필터를 어디서 바꾸든 목록이 함께 간다.
+       ⚠️ force 를 주지 않는다 — paintList 안의 key 대조가 바뀐 게 없으면 그냥 돌아간다. */
+    window._v2repaint=function(){ try{paintList();}catch(e){} };
     zc(); kick();
   }
 
