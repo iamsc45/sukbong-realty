@@ -189,7 +189,7 @@ function boot(){
             var tr=document.createElement('script');tr.src='data/apt_trend_'+code+'.js';
             tr.onload=tr.onerror=function(){
               var pg=document.createElement('script');pg.src='data/apt_pages.js';
-              pg.onload=pg.onerror=function(){go(code,nm,dong,ptype,pjb);};document.body.appendChild(pg);
+              pg.onload=pg.onerror=function(){_loadLand(code,dong,function(){go(code,nm,dong,ptype,pjb);});};document.body.appendChild(pg);
             };document.body.appendChild(tr);
           };document.body.appendChild(fe);
         };document.body.appendChild(al);
@@ -198,6 +198,61 @@ function boot(){
     document.body.appendChild(a);
   };
   s.onerror=fail;document.body.appendChild(s);
+}
+/* ══ 가려진 지번 되찾기 (2026-08-20) ═══════════════════════════════════
+   국토부는 단독·다가구·빌딩·토지의 지번을 가려서 준다(`3**`). 그래서 앞자리가 같은
+   **남남**이 한 지점으로 묶이고, 그 위에서 낸 중위·최고가는 어느 집의 값도 아니다.
+   지도 카드와 **같은 자료·같은 규칙**을 쓴다 — 화면마다 다르게 판단하면 말이 갈린다.
+   ⚠️ 자료를 못 받아도 막지 않는다. 없으면 없는 대로 그린다. */
+function _loadLand(code,dong,done){
+  if(!code||!dong){done();return;}
+  var s=document.createElement('script');
+  s.src='data/land_dong/_idx_'+code+'.js';
+  s.onerror=function(){done();};
+  s.onload=function(){
+    try{
+      var idx=(window.LANDIDX&&window.LANDIDX[code])||{}, c10=idx[dong];
+      /* 리(里)는 「통진읍 옹정리」처럼 상위 읍·면이 붙은 키로도 들어 있다 */
+      if(!c10)for(var k in idx){if(k.split(/\s+/).pop()===dong){c10=idx[k];break;}}
+      if(!c10){done();return;}
+      window._LD10=c10; window._LANDD=window._LANDD||{};
+      fetch('data/land_dong/'+c10+'.json').then(function(r){return r.ok?r.json():null;})
+        .then(function(j){window._LANDD[c10]=j||null;done();})
+        .catch(function(){done();});
+    }catch(e){done();}
+  };
+  document.body.appendChild(s);
+}
+/* 거래 하나가 어느 지번의 것인지. ⚠️건물은 연면적, 토지는 대지면적으로 맞춘다. */
+function _txHit(pt,t){
+  try{
+    var LD=(window._LD10&&window._LANDD)?window._LANDD[window._LD10]:null;
+    if(!LD||!pt||!t)return null;
+    var cd=String(t.cd||''); if(cd.length<7)return null;
+    var y=cd.slice(2,4)+cd.slice(5,7), p=+t.p||0, a=+t.a||0, g={}, yr={};
+    if(pt.t==='house'||pt.t==='bldg'){
+      if(!LD.b)return null;
+      LD.b.filter(function(r){return r[1]===y&&Math.abs((+r[2]||0)-p)<1&&Math.abs((+r[4]||0)-a)<0.6;})
+          .forEach(function(r){g[r[0]]=1;yr[r[0]]=r[5]||'';});
+    }else if(pt.t==='land'){
+      if(!LD.d||(t.u&&t.u!=='매매'))return null;
+      LD.d.filter(function(r){return r[1]===y&&Math.abs((+r[2]||0)-p)<1&&Math.abs((+r[3]||0)-a)<0.06;})
+          .forEach(function(r){g[r[0]]=1;});
+    }else return null;
+    var uq=Object.keys(g);
+    return uq.length===1?{jb:uq[0],yr:yr[uq[0]]||''}:null;
+  }catch(e){return null;}
+}
+/* 확인된 지번이 둘 이상일 때만 「섞였다」고 말한다. 못 가린 것을 섞였다고 하지 않는다. */
+function _mixInfo(pt,txs){
+  try{
+    if(!pt||!pt.ax||!txs||txs.length<2)return null;
+    if(pt.t!=='house'&&pt.t!=='bldg'&&pt.t!=='land')return null;
+    var g={},un=0;
+    txs.forEach(function(t){var h=_txHit(pt,t);if(h)g[h.jb]=1;else un++;});
+    var ks=Object.keys(g).sort();
+    return ks.length>1?{n:ks.length,un:un,list:ks}:null;
+  }catch(e){return null;}
 }
 function fail(){document.getElementById('nm').textContent='단지 정보를 찾지 못했습니다';document.getElementById('body').innerHTML='<p style="color:#8a8071">지도 카드에서 단지를 눌러 다시 열어주세요.</p>';}
 /* 🔴 이름+법정동만으로는 물건이 안 갈린다 (2026-08-20 석봉님 제보, 서울 1,260곳)
@@ -424,8 +479,21 @@ function render(pt,code){
   kp.push([mmTop?eok(mmTop):'·','최고 매매가'+(mmTopT&&mmTopT.a?' · 전용 '+mmTopT.a.toFixed(1)+'㎡':'')]);
   kp.push([wo.length?(eok(woB)+'<small style="font-size:11px">/'+comma(woW)+'만</small>'):'·','월세 중위(보증금/월세)']);
   kp.push([txs.length?comma(txs.length)+'<small style="font-size:11px">건</small>':'·','최근 6개월 거래'+(lastCd?' · 최근 '+lastCd.slice(2).replace(/-/g,'.'):'')]);
+  /* 🔴 여러 채가 섞인 지점에서는 **대표 시세를 내지 않는다**(2026-08-20 석봉님 지적).
+     지도 카드와 같은 판단이다 — 한쪽은 「대표값 없음」, 다른 쪽은 중위를 보여 주면 말이 갈린다. */
+  var _MIX=(typeof _mixInfo==='function')?_mixInfo(pt,txs):null;
+  var _UNIT=(pt.t==='land')?'필지':'건물';
+  if(_MIX){
+    kp=[[_MIX.n+'<small style="font-size:11px">채</small>','이 자리의 '+_UNIT+' 수'],
+        [txs.length?comma(txs.length)+'<small style="font-size:11px">건</small>':'·','최근 6개월 거래'],
+        [lastCd?lastCd.slice(2).replace(/-/g,'.'):'·','최근 계약']];
+  }
   var h='<div class="top"><div id="map"></div><div class="kpis">'
-    +kp.map(function(x){return '<div class="kpi"><div class="n">'+x[0]+'</div><div class="u">'+x[1]+'</div></div>';}).join('')+'</div></div>';
+    +kp.map(function(x){return '<div class="kpi"><div class="n">'+x[0]+'</div><div class="u">'+x[1]+'</div></div>';}).join('')+'</div></div>'
+    +(_MIX?('<div class="sec"><div class="lab">이 자리에 '+_UNIT+' '+_MIX.n+'채</div>'
+        +'<div class="note">국토교통부가 이 상품의 실거래를 공개할 때 <b>지번을 가려서</b> 제공합니다'
+        +'(예: '+esc(String(pt.jibun||''))+'). 그래서 서로 다른 '+_UNIT+'이 한 자리에 묶여 있습니다.'
+        +' <b>대표 시세를 내지 않고</b>, 아래 실거래 이력을 '+_UNIT+'별로 나눠 두었습니다.</div></div>'):'');
   var womed=med(wo.map(function(t){return t.p;})),womedw=med(wo.map(function(t){return t.r;}));
   var A=findAsk(code,pt.name);
   function arng(list){var a=list.filter(function(t){return t.a;}).map(function(t){return t.a;}).sort(function(x,y){return x-y;});
@@ -810,7 +878,30 @@ document.getElementById('body').innerHTML=h;
   function rMM(x){return '<div class="deal"><div><b>'+x.a+'㎡('+PY(x.a)+')</b><span class="meta">'+x.f+'층 · '+x.cd.slice(2).replace(/-/g,'.')+'</span></div><div class="pr">'+eok(x.p)+'<span class="s">'+(x.a?comma(Math.round(x.p/x.a*3.305785))+'만/평':'')+'</span></div></div>';}
   function rJE(x){return '<div class="deal"><div><b>'+x.a+'㎡('+PY(x.a)+')</b><span class="meta">'+x.f+'층 · '+x.cd.slice(2).replace(/-/g,'.')+'</span></div><div class="pr">'+eok(x.p)+'<span class="s">전세</span></div></div>';}
   function rWO(x){return '<div class="deal"><div><b>'+x.a+'㎡('+PY(x.a)+')</b><span class="meta">'+x.f+'층 · '+x.cd.slice(2).replace(/-/g,'.')+'</span></div><div class="pr">'+eok(x.p)+' / '+x.r+'만<span class="s">월세</span></div></div>';}
-  function rd(t){var a=t==='mm'?mm.map(rMM):t==='je'?je.map(rJE):wo.map(rWO);document.getElementById('dlist').innerHTML=a.length?a.join(''):'<div class="deal">해당 유형 최근 거래 없음</div>';}
+  function rd(t){
+    var src=t==='mm'?mm:(t==='je'?je:wo), fn=t==='mm'?rMM:(t==='je'?rJE:rWO);
+    var box=document.getElementById('dlist');
+    if(!src.length){box.innerHTML='<div class="deal">해당 유형 최근 거래 없음</div>';return;}
+    /* 🔴 섞인 자리에서는 건물별로 묶는다(2026-08-20). 한 줄로 늘어놓으면 서로 다른
+       건물의 값이 한 물건의 이력처럼 읽힌다. 지번을 못 찾은 거래는 맨 뒤에 따로 둔다. */
+    if(!_MIX){box.innerHTML=src.map(fn).join('');return;}
+    var g={},ord=[];
+    src.forEach(function(x){
+      var h2=_txHit(pt,x), k=h2?h2.jb:'_';
+      if(!g[k]){g[k]={yr:(h2&&h2.yr)||'',rows:[]};ord.push(k);}
+      if(h2&&h2.yr&&!g[k].yr)g[k].yr=h2.yr;
+      g[k].rows.push(x);
+    });
+    ord.sort(function(a,b){return a==='_'?1:(b==='_'?-1:0);});
+    box.innerHTML=ord.map(function(k){
+      var G=g[k];
+      var head=(k==='_')?'<span style="color:#8a8071">지번 미확인</span>'
+        :('<b>'+esc(k)+'</b>'+(G.yr?'<span class="meta"> · '+esc(G.yr)+'년 준공</span>':''));
+      return '<div class="deal" style="background:#f6f3ec;font-size:12.5px"><div>'+head
+        +'</div><div class="pr" style="font-size:12.5px;color:#8a8071">'+G.rows.length+'건</div></div>'
+        +G.rows.map(fn).join('');
+    }).join('');
+  }
   rd('mm');
   document.querySelectorAll('.tabs b').forEach(function(b){b.onclick=function(){document.querySelectorAll('.tabs b').forEach(function(x){x.classList.remove('on');});b.classList.add('on');rd(b.dataset.t);};});
   if(pt.lat&&pt.lng){var m=L.map('map',{zoomControl:true}).setView([pt.lat,pt.lng],16);
