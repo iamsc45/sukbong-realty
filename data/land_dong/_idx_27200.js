@@ -1,1 +1,1 @@
-window.LANDIDX=window.LANDIDX||{};LANDIDX["27200"]={"대명동":"2720010300"};
+window.LANDIDX=window.LANDIDX||{};LANDIDX["27200"]={"이천동":"2720010100","봉덕동":"2720010200","대명동":"2720010300"};
