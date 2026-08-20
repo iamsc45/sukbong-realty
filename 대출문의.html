@@ -91,10 +91,35 @@ textarea{min-height:96px;resize:vertical;line-height:1.6}
 
   <div id="form">
     <div class="sec">
+      <h2>신청 구분</h2>
+      <p class="sh">개인과 법인은 심사 기준이 달라 먼저 여쭙습니다.</p>
+      <div class="fg">
+        <div><label>구분<span class="req">*</span></label>
+          <select id="f_who">
+            <option value="개인">개인</option>
+            <option value="개인사업자">개인사업자</option>
+            <option value="법인">법인</option>
+          </select></div>
+        <div id="bizNmBox" style="display:none"><label>상호·법인명<span class="req">*</span></label>
+          <input id="f_bizname" maxlength="40" placeholder="예: 석봉산업(주)"></div>
+      </div>
+      <div class="fg sub" id="bizBox" style="display:none">
+        <div><label>업력</label>
+          <select id="f_bizyear">
+            <option>1년 미만</option><option>1~3년</option><option>3~5년</option>
+            <option>5~10년</option><option>10년 이상</option>
+          </select></div>
+        <div><label>업종</label><input id="f_bizkind" maxlength="30" placeholder="예: 제조, 도소매, 임대"></div>
+      </div>
+      <p class="sh" id="bizNote" style="display:none">
+        법인·사업자는 <b>재무제표와 사업 현황</b>을 함께 보게 됩니다. 자세한 서류는 통화에서 안내드립니다.</p>
+    </div>
+
+    <div class="sec">
       <h2>연락처</h2>
       <p class="sh">회신을 위해 필요합니다.</p>
       <div class="fg">
-        <div><label>성함<span class="req">*</span></label><input id="f_name" maxlength="30" autocomplete="name"></div>
+        <div><label id="lb_name">성함<span class="req">*</span></label><input id="f_name" maxlength="30" autocomplete="name"></div>
         <div><label>연락처<span class="req">*</span></label><input id="f_tel" maxlength="30" inputmode="tel" placeholder="010-0000-0000" autocomplete="tel"></div>
       </div>
       <div class="fg one sub">
@@ -186,6 +211,34 @@ textarea{min-height:96px;resize:vertical;line-height:1.6}
   /* 선순위 '있음'일 때만 잔액을 묻는다. 처음부터 다 보이면 폼이 길어 보인다 */
   $('f_pri').onchange=function(){$('priBox').style.display=(this.value==='있음')?'grid':'none';};
 
+  /* 🔴 개인·법인 구분 (2026-08-20 석봉님 지시)
+     담보대출은 개인과 법인의 심사 기준이 다르다 — 개인은 소득·기존 대출을 보고,
+     법인·사업자는 재무제표·업력·업종을 함께 본다. 첫 문의에서 그것만 갈라 두면
+     회신 전에 어느 쪽으로 알아볼지 정해진다.
+     ⚠️ 첫 문의 단계라 **최소한만** 묻는다. 사업자등록번호·매출은 통화에서 받는다
+        (여기서 받으면 문턱만 높아지고, 우리가 보관할 이유도 없다). */
+  var OWN = {
+    '개인':      ['본인 단독','배우자·가족 공동','타인 공동','가족 명의'],
+    '개인사업자': ['본인 단독','배우자·가족 공동','타인 공동','가족 명의'],
+    '법인':      ['법인 단독','법인·개인 공동','대표자 개인 명의','타법인 공동']
+  };
+  function syncWho(){
+    var w = val('f_who') || '개인';
+    var isBiz = (w !== '개인');
+    $('bizNmBox').style.display = isBiz ? '' : 'none';
+    $('bizBox').style.display   = isBiz ? 'grid' : 'none';
+    $('bizNote').style.display  = isBiz ? '' : 'none';
+    /* 성함 라벨도 갈린다 — 법인 문의에 「성함」만 있으면 누구 이름인지 헷갈린다 */
+    $('lb_name').innerHTML = (w === '법인' ? '담당자 성함' : '성함') + '<span class="req">*</span>';
+    /* 소유 형태 선택지도 갈아 끼운다. 법인 물건에 「본인 단독」은 말이 안 된다.
+       ⚠️ 고르던 값이 새 목록에 있으면 유지한다(다시 고르게 하지 않는다). */
+    var sel = $('f_own'), cur = sel.value, list = OWN[w] || OWN['개인'];
+    sel.innerHTML = list.map(function(x){ return '<option>' + x + '</option>'; }).join('');
+    if (list.indexOf(cur) >= 0) sel.value = cur;
+  }
+  $('f_who').onchange = syncWho;
+  syncWho();
+
   function val(id){return ($(id).value||'').trim();}
   function fail(m){var e=$('f_err');e.textContent=m;e.style.display='block';}
 
@@ -193,6 +246,8 @@ textarea{min-height:96px;resize:vertical;line-height:1.6}
     var nm=val('f_name'), tel=val('f_tel');
     if(!nm){return fail('성함을 넣어 주세요.');}
     if(!tel||tel.replace(/[^0-9]/g,'').length<9){return fail('연락 가능한 번호를 넣어 주세요.');}
+    if(val('f_who')!=='개인' && !val('f_bizname')){
+      return fail(val('f_who')==='법인'?'법인명을 넣어 주세요.':'상호를 넣어 주세요.');}
     if(!val('f_kind')){return fail('담보 물건 종류를 골라 주세요.');}
     if(!val('f_loc')){return fail('물건 소재지를 넣어 주세요.');}
     if(!val('f_amt')){return fail('희망 금액을 넣어 주세요.');}
@@ -201,7 +256,12 @@ textarea{min-height:96px;resize:vertical;line-height:1.6}
 
     var b=$('f_go'); b.disabled=true; b.textContent='접수 중…';
     var L=[];
-    L.push('[담보 상담]');
+    var who=val('f_who')||'개인';
+    L.push('[담보 상담 · '+who+']');
+    if(who!=='개인'){
+      L.push((who==='법인'?'법인명: ':'상호: ')+val('f_bizname'));
+      L.push('  업력: '+val('f_bizyear')+' · 업종: '+(val('f_bizkind')||'미기재'));
+    }
     L.push('연락 가능 시간: '+val('f_when'));
     L.push('');
     L.push('■ 담보 물건');
@@ -222,7 +282,7 @@ textarea{min-height:96px;resize:vertical;line-height:1.6}
     /* 로그인은 요구하지 않는다(2026-08-05 확정). 돈이 급한 사정은 민감해서 익명으로 남길 수
        있어야 문의가 줄지 않는다. 다만 이미 로그인한 분이면 회원과 연결해 둔다.
        user_id 칸이 없거나 비회원이면 그냥 빠진 채로 접수된다. */
-    var row={kind:'담보대출 상담',name:nm.slice(0,100),
+    var row={kind:'담보대출 상담 ('+who+')',name:nm.slice(0,100),
              contact:tel.slice(0,100),msg:L.join('\n').slice(0,2000)};
     var uid=(window.SBAuth&&SBAuth.uid&&SBAuth.uid())||'';
     if(uid)row.user_id=uid;
