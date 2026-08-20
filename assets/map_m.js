@@ -35,8 +35,26 @@
     sel.appendChild(document.getElementById('selSido'));
     sel.appendChild(document.getElementById('selSgg'));
     fp.insertBefore(sel,hd.nextSibling);
-    fp.insertBefore(document.getElementById('mcats'),sel.nextSibling);
-    fp.insertBefore(document.getElementById('rfbar'),document.getElementById('mcats').nextSibling);
+    /* 🔵 상품·거래도 아래 조건들처럼 **펼쳐서** 보여준다 (2026-08-20 석봉님 지시
+         「그냥 그 페이지에서 바로 상품 목록이 보이도록 해줘, 거래종류도 마찬가지야」).
+       전에는 이 자리에 접힌 버튼(`#mcats` 「아파트 ▾」「매매 ▾」) 둘을 옮겨 놨는데,
+       누르면 **또 다른 시트가 이 시트 위로** 떠서 고르는 동안 아무것도 안 보였다.
+       매매가·전용면적·준공·층은 전부 칩으로 펼쳐져 있는데 이 둘만 달랐다.
+       ⚠️ 칩(`#typechips`·`#uchips`)은 이미 만들어져 핸들러가 붙어 있다. **옮기기만 한다.**
+       ⚠️ `#mcats` 는 옮기지 않는다 — 데스크톱이 그 버튼을 쓴다(`map_bar.js`).
+          모바일에서는 `body.mmap #bar #mcats{display:none}` 으로 이미 가려져 있다. */
+    var anchor=sel.nextSibling;
+    [].forEach.call(document.querySelectorAll('#bar .bargrp'),function(g){
+      var lbl=g.querySelector('.lbl'), chips=g.querySelector('#typechips,#uchips');
+      if(!lbl||!chips)return;
+      lbl.className='flbl'; lbl.textContent=lbl.textContent.replace(':','');
+      chips.classList.add('fgrp');
+      var row=document.createElement('div'); row.className='frow';
+      row.appendChild(lbl); row.appendChild(chips);
+      fp.insertBefore(row,anchor);
+      if(g.parentNode)g.parentNode.removeChild(g);
+    });
+    fp.insertBefore(document.getElementById('rfbar'),anchor);
 
     /* ⚠️#fpanel을 #bar 밖으로 꺼낸다(2026-08-10 시뮬레이션에서 잡음).
        새 스킨의 #bar에는 backdrop-filter가 걸려 있는데, 그러면 그 안의 position:fixed 자식은

@@ -544,8 +544,13 @@ body.mmap #fpanel .mfsel{display:grid;grid-template-columns:1fr 1fr;gap:7px;padd
 body.mmap #fpanel #selSido,body.mmap #fpanel #selSgg{display:block!important;width:100%;height:38px;
   grid-column:auto!important;grid-row:auto!important;
   border-radius:10px;font-size:13px;padding:0 8px;box-sizing:border-box}
-body.mmap #fpanel #mcats{display:flex!important;gap:7px;padding:0 0 9px}
-body.mmap #fpanel #mcats button{flex:1;height:38px;border-radius:10px;font-size:12.5px}
+/* 상품·거래 칩을 필터 시트 안에서 펼친다(2026-08-20). `#typechips` 는 id 규칙이라
+   `.fgrp` 만으로는 안 이긴다 — 넘치면 줄바꿈되도록 여기서 눌러 준다. */
+body.mmap #fpanel #typechips,body.mmap #fpanel #uchips{
+  display:flex!important;flex-wrap:wrap;gap:6px;flex:1 1 auto;min-width:0;align-items:center}
+body.mmap #fpanel #typechips .chip,body.mmap #fpanel #uchips .chip{height:34px;padding:0 13px;font-size:12.5px}
+/* 접힌 버튼은 데스크톱 전용이 됐다(map_bar.js). 시트에는 더 이상 오지 않는다. */
+body.mmap #fpanel #mcats{display:none!important}
 body.mmap #fpanel #rfbar{display:none;width:100%;flex-wrap:wrap;row-gap:6px;padding:2px 0 10px;
   border-bottom:1px dashed #EFEBE2;margin:0}
 body.mmap.redev #fpanel #rfbar{display:flex!important}
