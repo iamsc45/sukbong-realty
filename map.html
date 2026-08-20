@@ -665,6 +665,24 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
       var v=b.querySelector('b');b.classList.toggle('set',!!(v&&v.textContent!=='전체'));});
   }
   window._labels=labels;   /* 코드로 필터를 바꿀 때 버튼 글자도 같이 맞춘다(2026-08-11) */
+  /* 🔴 2026-08-20 신설 — 필터를 **코드가** 바꿀 때는 반드시 이걸 거친다.
+     UI 갱신 함수가 셋으로 흩어져 있어(`_syncTypeUI` 칩 · `_syncUUI` 칩 · `labels` 상단 버튼)
+     어떤 경로는 칩만 고치고 상단 버튼은 그대로였다. 그래서 화면에는 「상품 아파트 · 거래 매매」인데
+     실제로는 연립·전세가 그려지는 일이 났다(2026-08-20 석봉님 제보, 「목동팔라이스10」 검색).
+     ⚠️ 셋을 각자 부르지 말고 **여기 하나만** 부를 것. 하나라도 빠지면 또 어긋난다.
+     ⚠️ 그리고 **조용히 바꾸지 않는다.** 사용자가 건 필터가 말없이 풀리면
+        「왜 내가 안 바꿨는데 바뀌었지」가 된다. 이유를 함께 알린다. */
+  window._filterChanged=function(why){
+    try{if(window._syncTypeUI)window._syncTypeUI();}catch(e){}
+    try{if(window._syncUUI)window._syncUUI();}catch(e){}
+    try{labels();}catch(e){}
+    if(why){
+      try{if(window._toast)window._toast(why,5000);}catch(e){}
+      var st=document.getElementById('stat');
+      if(st){var put=function(){var t=document.getElementById('stat');if(t)t.textContent=why;};
+             [0,600,1400].forEach(function(ms){setTimeout(put,ms);});}
+    }
+  };
   function isOn(cat,k){if(cat==='type')return k==='all'?!curTset:!!(curTset&&curTset[k]);if(cat==='u')return curU===k;return curD===k;}
   function close(){sheet.classList.remove('open');}
   function openSheet(cat){
@@ -1106,8 +1124,7 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
     window._URELAXED=1;
     var was=curU;
     curU='all';
-    try{if(window._syncUUI)window._syncUUI();}catch(e){}
-    try{if(window._labels)window._labels();}catch(e){}
+    try{ window._filterChanged(''); }catch(e){}   /* 안내는 아래 배너·토스트가 따로 한다 */
     render();
     var msg=(label?'주소: '+label+' · ':'')+'주변에 최근 '+was+' 거래가 없어 전세·월세까지 함께 표시합니다';
     var put=function(){var st=document.getElementById('stat');if(st)st.textContent=msg;};
@@ -1127,8 +1144,8 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
     var kept=TYPE[_tk]?TYPE[_tk][0]:'해당 상품';
     curTset=null;window._TRELAXED=1;
     /* 기본 거래유형(매매)만 걸려 비어 보이는 경우도 함께 푼다(전세·월세만 있는 지점) */
-    if(window._UDEFAULT&&curU!=='all'){curU='all';try{if(window._syncUUI)window._syncUUI();}catch(e){}}
-    try{if(window._syncTypeUI)window._syncTypeUI();}catch(e){}
+    if(window._UDEFAULT&&curU!=='all'){curU='all';}
+    try{ window._filterChanged(''); }catch(e){}   /* 안내는 아래 배너·토스트가 따로 한다 */
     render();
     /* 상태줄은 다음 이동에서 덮이므로 배너로도 알린다(2026-08-09) */
     var st=document.getElementById('stat');
@@ -2504,14 +2521,20 @@ function showAptCard(pt, txs){
      ⚠️딥링크(`?t=`)뿐 아니라 검색·경매 카드 등 모든 경로가 이 함수를 지나므로
      한 곳만 고치면 전부 적용된다. */
   try{
-    var _need=false;
+    var _need=false, _added=[];
     if(pt&&pt.t&&curTset&&!curTset[pt.t]){curTset[pt.t]=true;_need=true;
-      try{if(window._syncTypeUI)window._syncTypeUI();}catch(e){}}
+      _added.push((TYPE[pt.t]&&TYPE[pt.t][0])||pt.t);}
     /* 거래유형도 같은 이유로 본다 — 전월세만 있는 지점에 '매매' 기본값으로 오면 역시 안 보인다 */
     if(pt&&curU&&curU!=='all'&&(txs||[]).length&&!(txs||[]).some(function(x){return x.u===curU;})){
-      curU='all';_need=true;
-      try{if(window._syncUUI)window._syncUUI();}catch(e){}}
-    if(_need)render();
+      curU='all';_need=true; _added.push('전체 거래유형');}
+    if(_need){
+      /* 🔴 칩·상단 버튼을 함께 맞추고 **이유를 알린다**(2026-08-20).
+         전에는 칩만 고쳐서 상단은 「상품 아파트·거래 매매」인데 연립·전세가 그려졌다. */
+      /* 받침에 따라 조사가 갈리므로 「을/를」을 안 쓰는 문장으로 짠다 */
+      var _why='「'+String(pt.name||'').slice(0,18)+'」 때문에 '+_added.join('·')+' 까지 함께 켰습니다';
+      try{ window._filterChanged(_why); }catch(e){}
+      render();
+    }
   }catch(e){}
   var ti=TYPE[pt.t]||['기타','#6E6E6A'], col=ti[1];
   /* 2026-08-09: 목록은 _drawTx가 그린다(평형 칩 · 거래유형 칩 · 더 보기) */
