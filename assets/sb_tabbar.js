@@ -33,7 +33,10 @@
       {n:'실거래지도',i:'map-2',h:'map.html'},
       {n:'재개발·재건축',i:'building-community',h:'map.html?mode=redev'},
       {n:'실시간 인기',i:'flame',h:'hot.html'},
-      {n:'금리·지표',i:'chart-histogram',h:JIPYO}]},
+      {n:'금리·지표',i:'chart-histogram',h:JIPYO},
+      /* 자료실(실거래·호가 엑셀 내려받기) — 2026-08-21 개통. 위 땅값 사고와 같은 이유로
+         새 화면을 만들면 반드시 여기에도 넣는다(모바일 길잡이는 상단 nav 가 아니라 이 시트다). */
+      {n:'자료실',i:'table-export',h:'%EC%9E%90%EB%A3%8C%EC%8B%A4.html'}]},
     {g:'콘텐츠',items:[
       {n:'청약',i:'ticket',h:'apply.html'},
       {n:'경매·공매',i:'gavel',h:'auction.html'},
