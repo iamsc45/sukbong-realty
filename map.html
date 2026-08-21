@@ -2376,10 +2376,14 @@ function _drawTx(){
   function _one(t,bare){
     var py=(t.u==='매매'&&t.a)?(' <span style="color:#8a8071;font-weight:400">'+Math.round(t.p/t.a*3.305785).toLocaleString()+'만/평</span>'):'';
     /* 🔴 단독·다가구·빌딩은 지점이 곧 물건이 아니다 — 거래마다 지번·준공년을 갈라 붙인다
-       (2026-08-20 토지 세션 인수인계. 「면목동 3** · 1969년」에 1992년 건물이 붙어 있었다) */
-    var _bh=bare?null:((typeof bldgHit==='function')?bldgHit(_PT,t):null);
-    var _jb=_bh?('<span style="color:#12264A;font-weight:800">'+_bh[0]+'</span>'
-                 +(_bh[5]?'<span style="color:#8a8071;font-weight:400"> · '+_bh[5]+'년</span>':'')
+       (2026-08-20 토지 세션 인수인계. 「면목동 3** · 1969년」에 1992년 건물이 붙어 있었다)
+       ⚠️ **토지도 같다**(2026-08-22 석봉님 확정). 전에는 건물만 붙이고 토지는 「확인된 지번이
+          둘 이상」일 때만 묶어서 보여 줬는데, 하나만 확인되면 **아는 지번을 화면에서 감추고
+          있었다.** 카드 제목과 달리 이 줄은 그 거래 하나에만 붙으므로 틀릴 위험이 없다
+          (계약연월·금액·면적이 딱 한 필지에만 맞을 때만 붙는다). */
+    var _bh=bare?null:((typeof txHit==='function')?txHit(_PT,t):null);
+    var _jb=_bh?('<span style="color:#12264A;font-weight:800">'+_bh.jb+'</span>'
+                 +(_bh.yr?'<span style="color:#8a8071;font-weight:400"> · '+_bh.yr+'년</span>':'')
                  +'<span style="color:#8a8071;font-weight:400"> · </span>'):'';
     /* 🔴 지분 거래 라벨(2026-08-22) — 토지 매매의 30.7%가 필지 일부만 사고파는 거래다.
        라벨이 없으면 1㎡·3㎡ 짜리 거래가 한 지번에 몰려 「도로에 25건」처럼 읽힌다. */
@@ -2549,6 +2553,7 @@ function landJibunCached(pt, txs){
     var seen={}, sale=0, matched=0;
     (txs||[]).forEach(function(t){
       if(t.u && t.u!=='매매') return;
+      if(t.z) return;                     /* 지분은 채점에서 뺀다 — landFill() 과 같은 규칙 */
       sale++;
       var y=ym(t.cd); if(!y) return;
       var h=LD.d.filter(function(r){return r[1]===y &&
@@ -2607,6 +2612,13 @@ function landFill(pt, txs){
   var seen={}, sale=0, matched=0;
   (txs||[]).forEach(function(t){
     if(t.u && t.u!=='매매') return;
+    /* 🔴 지분 거래는 채점에서 뺀다(2026-08-22 석봉님 확정).
+       필지 일부만 사고판 거래라 **애초에 매칭 대상이 아니고** `land_dong.d` 에 아예 없다.
+       그런데 이 판정은 「매매가 전부 맞아야 한다」라서, 지분이 섞인 지점은 **영원히 통과할 수 없었다.**
+       서울 토지 매매의 81.4%(1,830건 중 1,489건)가 지분이라 이 한 줄이 대부분의 지점을 막고 있었다.
+       ⚠️ 규칙을 무르게 하는 것이 아니라 **대상 범위를 자료와 맞추는 것**이다.
+          「하나로 좁혀질 때만 쓴다」는 원칙은 그대로다(서울 실측 49곳 → 64곳). */
+    if(t.z) return;
     sale++;
     var y=ym(t.cd); if(!y) return;
     var hit=LD.d.filter(function(r){
