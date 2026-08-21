@@ -124,9 +124,13 @@ table.t2 td.n{text-align:right;white-space:nowrap}
      (`_인수인계_땅값계산기_20260818.md`). */
   function gradeTag(desc){
     desc=String(desc||'');
-    var hi = desc.indexOf('확실')===0 || desc.indexOf('연쇄')>=0;
+    /* 2026-08-22 — 자료가 코드(S/SH/SC/A/AH)로 바뀌었다(v11). 옛 한글도 함께 받는다(전환기 안전). */
+    var code=/^(S|SH|SC|A|AH)$/.test(desc);
+    var hi = code ? desc.charAt(0)==='S'
+                  : (desc.indexOf('확실')===0 || desc.indexOf('연쇄')>=0);
+    var bld = code ? desc.slice(-1)==='H' : desc.indexOf('건물지')>=0;
     var out = '<span class="tag'+(hi?' ok':'')+'">확인 수준 '+(hi?'높음':'보통')+'</span>';
-    if(desc.indexOf('건물지')>=0) out += '<span class="tag warn">건물 있는 땅</span>';
+    if(bld) out += '<span class="tag warn">건물 있는 땅</span>';
     return out;
   }
   function dTxt(d){d=String(d||''); return d.length===8?(d.slice(0,4)+'년 '+(+d.slice(4,6))+'월 '+(+d.slice(6))+'일'):'';}
