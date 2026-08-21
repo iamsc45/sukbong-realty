@@ -707,12 +707,18 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
     }
     var key=info.gu+' '+info.dong, rd=REDEV[key]||[];
     if(rd.length){
+      /* 2026-08-21 석봉님 지시 — 구역명을 지도 재개발 화면으로 딥링크.
+         형식은 CLAUDE.md 확정본(`map.html?mode=redev&q=`)이고, 표본 2건을 실제로 열어
+         구역 카드가 정확히 뜨는 것을 확인했다(가람아파트·개포우성7차). */
       var in5=rd.map(function(x){
-        return '<div class="row"><div class="k">'+esc(x[2]||'정비')+'</div><div class="v">'+esc(x[0])+
+        return '<div class="row"><div class="k">'+esc(x[2]||'정비')+'</div><div class="v">'+
+               '<a href="map.html?mode=redev&q='+encodeURIComponent(x[0])+'" '+
+               'style="color:inherit;text-decoration:underline;text-underline-offset:3px">'+esc(x[0])+'</a>'+
                ' <span class="tag">'+esc(x[1])+'</span></div></div>';
       }).join('');
       h.push(box('주변 정비구역', in5+
-        '<div class="note">같은 법정동에서 진행 중인 정비사업입니다. 위치가 이 필지와 가깝다는 뜻은 아닙니다.</div>'));
+        '<div class="note">같은 법정동에서 진행 중인 정비사업입니다. 위치가 이 필지와 가깝다는 뜻은 아닙니다. '+
+        '구역명을 누르면 지도에서 위치와 추진 단계를 볼 수 있습니다.</div>'));
     }else{
       h.push(box('주변 정비구역',
         soon('이 법정동에는 등록된 정비구역이 없거나, 아직 수집 범위 밖입니다. 정비구역 자료는 현재 <b>서울</b>만 확보돼 있고 그 외 지역은 <b>준비 중</b>입니다.')));

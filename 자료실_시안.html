@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<!-- 🔴 자료실 시안 (2026-08-21) — 라이브가 아니다. 석봉님 확인용이며 배포하지 않았다.
+     확정되면 파일명을 `자료실.html` 로 바꾸고 nav 에 넣는다.
+     ⚠️ 이 페이지는 **새 데이터 파일을 만들지 않는다.** 지도가 이미 쓰는
+        `data/detail_<시군구>.js` · `data/apt_asking_<시군구>.js` 를 그대로 받아
+        브라우저에서 표로 바꾼다. 그래서 서버에 얹히는 용량이 0이다. -->
+<meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>[시안] 자료실 · 석봉 부동산 정보방</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<link rel="stylesheet" href="assets/site.css">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root{--navy:#12264A;--navy2:#1B3F7A;--g1:#5A6478;--g2:#7A8698;--hair:#E3E8F0;--tint:#EEF3FB}
+.wrap{max-width:1080px}
+h1.pg{font-size:27px;letter-spacing:-.03em;margin:26px 0 4px}
+.pgsub{color:var(--g1);font-size:13.5px;margin:0 0 22px}
+.tabs{display:flex;gap:8px;margin:0 0 18px;flex-wrap:wrap}
+.tabs button{border:1.5px solid var(--hair);background:#fff;border-radius:100px;padding:9px 18px;
+  font:inherit;font-size:13.5px;font-weight:700;color:var(--g1);cursor:pointer}
+.tabs button.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.panel{border:1px solid var(--hair);border-radius:14px;padding:18px 18px 6px;background:#fff}
+.row{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px dashed var(--hair);flex-wrap:wrap}
+.row:last-of-type{border-bottom:0}
+.lbl{width:86px;flex:0 0 auto;font-size:12px;font-weight:800;color:var(--navy);padding-top:7px}
+.fld{flex:1;min-width:0;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+select{height:34px;border:1px solid var(--hair);border-radius:8px;padding:0 9px;font:inherit;font-size:13px;background:#fff}
+.chip{border:1px solid var(--hair);background:#fff;border-radius:100px;padding:6px 13px;
+  font:inherit;font-size:12.5px;font-weight:600;color:var(--g1);cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.chip.on{background:var(--navy2);border-color:var(--navy2);color:#fff;font-weight:800}
+.chip .dot{width:8px;height:8px;border-radius:50%}
+.mini{font-size:11.5px;color:var(--g2)}
+.act{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:16px 0 4px}
+.btn{border:0;border-radius:10px;padding:12px 22px;font:inherit;font-size:14px;font-weight:800;cursor:pointer;
+  background:var(--navy);color:#fff}
+.btn.ghost{background:#fff;color:var(--navy);border:1.5px solid var(--navy)}
+.btn:disabled{opacity:.45;cursor:default}
+.cnt{font-size:13px;color:var(--g1);font-weight:700}
+.prev{margin:18px 0 0;overflow:auto;border:1px solid var(--hair);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:12.5px;white-space:nowrap}
+th{background:var(--navy);color:#fff;font-weight:700;font-size:11.5px;padding:8px 10px;text-align:left;position:sticky;top:0}
+td{padding:7px 10px;border-bottom:1px solid var(--hair)}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+.note{font-size:12px;color:var(--g1);background:var(--tint);border-radius:10px;padding:13px 15px;margin:16px 0 0;line-height:1.7}
+.note b{color:var(--navy)}
+.warn{background:#FFF6F2;color:#8a4a3a}
+.empty{padding:34px 0;text-align:center;color:var(--g2);font-size:13.5px}
+.sbadge{display:inline-block;background:#B23A48;color:#fff;font-size:11px;font-weight:800;
+  border-radius:5px;padding:2px 7px;vertical-align:2px;margin-left:6px}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html">석봉 부동산 정보방</a>
+  <nav>
+    <a href="index.html">홈</a>
+    <a href="map.html">실거래지도</a>
+    <a href="apply.html">청약</a>
+    <a href="auction.html">경매·공매</a><a href="%EC%A7%80%ED%91%9C.html">금리·지표</a><a href="lh_%EC%A7%84%EB%8B%A8.html">LH매입</a>
+    <a href="%EA%B8%80.html">리포트</a>
+    <a href="favorites.html">★ 관심단지</a>
+  <span id="sbAuthBtn"></span></nav>
+</header>
+
+<main class="wrap">
+  <h1 class="pg">자료실<span class="sbadge">시안</span></h1>
+  <p class="pgsub">우리가 매일 모으는 자료를 엑셀로 받아 가실 수 있습니다. 회원이면 무료입니다.</p>
+
+  <div class="tabs">
+    <button type="button" data-t="tx" class="on">실거래</button>
+    <button type="button" data-t="ho">호가</button>
+  </div>
+
+  <div class="panel">
+    <div class="row">
+      <div class="lbl">지역</div>
+      <div class="fld">
+        <select id="sido"></select>
+        <select id="sgg"></select>
+        <span class="mini" id="regNote"></span>
+      </div>
+    </div>
+
+    <div class="row" data-only="tx">
+      <div class="lbl">물건종류</div>
+      <div class="fld" id="types"></div>
+    </div>
+
+    <div class="row" data-only="tx">
+      <div class="lbl">거래유형</div>
+      <div class="fld" id="deals"></div>
+    </div>
+
+    <div class="row" data-only="tx">
+      <div class="lbl">기간</div>
+      <div class="fld">
+        <select id="per"></select>
+        <span id="mBox"><select id="mFrom"></select> ~ <select id="mTo"></select></span>
+        <span class="mini" id="perNote"></span>
+      </div>
+    </div>
+
+    <div class="act">
+      <button class="btn" id="goXlsx" disabled>엑셀(.xlsx)로 받기</button>
+      <button class="btn ghost" id="goCsv" disabled>CSV로 받기</button>
+      <span class="cnt" id="cnt">지역을 고르면 미리보기가 나옵니다</span>
+    </div>
+  </div>
+
+  <div class="prev" id="prev"><div class="empty">지역을 골라 주세요</div></div>
+
+  <div class="note" id="srcNote"></div>
+  <div class="note warn" id="useNote"></div>
+</main>
+
+<script src="data/summary.js"></script>
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   자료실 시안 (2026-08-21)
+
+   🔴 설계에서 가장 중요한 판단: **새 파일을 만들지 않는다.**
+      시군구 × 물건종류로 엑셀을 미리 구워 두면 2,800개 파일이 생기고
+      GitHub Pages 용량(1GB, 지금 420MB 사용)을 위협한다.
+      대신 지도가 이미 lazy-load 하는 `detail_<코드>.js`(최대 1MB)를 그대로 받아
+      브라우저에서 표로 만든다. 서버에 얹히는 용량이 **0**이고 조건 조합도 자유롭다.
+
+   🔴 호가는 **단지별 집계본만** 준다(2026-08-21 석봉님 확정).
+      개별 매물(매물번호·동·향·층)은 네이버에서 모은 것이라 그대로 배포하지 않는다.
+
+   ⚠️ 회원 로그인은 `SBAuth` 가 있을 때만 건다. 이 시안을 파일로 바로 열면
+      (file://) 인증이 안 붙으므로 그냥 받아진다 — 화면을 보시라고 그렇게 뒀다.
+   ══════════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+  var TYPE = {
+    apt: ['아파트', '#2554E0'], offi: ['오피스텔', '#7A5AF8'], villa: ['연립·다세대', '#0FA98A'],
+    house: ['단독·다가구', '#6E6E6A'], bldg: ['빌딩', '#D4573F'],
+    comm: ['구분상가·오피스', '#E8A13A'], land: ['토지', '#4C9A4C']
+  };
+  var DEALS = ['매매', '전세', '월세'];
+  var PY = 3.305785;
+  var tab = 'tx';
+  /* 🔴 과거 자료는 **한 번에 1년치까지**(2026-08-21 석봉님 확정).
+     제한을 안내문이 아니라 **고르는 칸 자체**로 건다. 안내문은 안 읽지만 칸은 못 넘는다.
+     ⚠️ 파일은 연도로 쪼개지 않는다 — 시군구 한 덩어리(최대 1.9MB, 전송 0.3MB)로 받아
+        브라우저에서 그 해만 걸러 담는다. 연도까지 쪼개면 파일이 2,805개가 된다. */
+  var HIST_FROM = 2016;
+  var curT = { apt: 1 }, curU = { '매매': 1 };
+  var rows = [];                 /* 지금 조건에 걸린 행 */
+
+  var S = window.SB && SB.summary ? SB.summary : { regions: [], updated: '', period: {} };
+  var $ = function (id) { return document.getElementById(id); };
+
+  function py(a) {               /* ㎡ → 평. 100㎡ 미만은 소수1자리(사이트 공통 규칙) */
+    if (!a) return '';
+    var v = a / PY;
+    return a < 100 ? Math.round(v * 10) / 10 : Math.round(v);
+  }
+  function comma(n) { return (n === '' || n == null) ? '' : Number(n).toLocaleString(); }
+
+  /* ── 지역 고르기 ── */
+  function fillSido() {
+    var seen = {}, out = [];
+    S.regions.forEach(function (r) { if (!seen[r.sido]) { seen[r.sido] = 1; out.push(r.sido); } });
+    $('sido').innerHTML = out.map(function (s) { return '<option>' + s + '</option>'; }).join('');
+    fillSgg();
+  }
+  function fillSgg() {
+    var sd = $('sido').value;
+    var list = S.regions.filter(function (r) { return r.sido === sd; });
+    $('sgg').innerHTML = list.map(function (r) {
+      return '<option value="' + r.code + '">' + r.sgg + '</option>';
+    }).join('');
+    load();
+  }
+
+  /* ── 물건종류·거래유형 칩 ── */
+  function chips() {
+    $('types').innerHTML = Object.keys(TYPE).map(function (k) {
+      return '<button type="button" class="chip' + (curT[k] ? ' on' : '') + '" data-k="' + k + '">'
+        + '<span class="dot" style="background:' + TYPE[k][1] + '"></span>' + TYPE[k][0] + '</button>';
+    }).join('');
+    $('deals').innerHTML = DEALS.map(function (d) {
+      return '<button type="button" class="chip' + (curU[d] ? ' on' : '') + '" data-k="' + d + '">' + d + '</button>';
+    }).join('');
+  }
+  function toggle(box, cur, k) {
+    if (cur[k]) delete cur[k]; else cur[k] = 1;
+    if (!Object.keys(cur).length) cur[k] = 1;    /* 하나는 남긴다 */
+    chips(); draw();
+  }
+
+  /* ── 기간 고르기 ── */
+  function fillPer() {
+    var y = new Date().getFullYear(), out = ['<option value="recent">최근 6개월</option>'];
+    for (var i = y; i >= HIST_FROM; i--) out.push('<option value="' + i + '">' + i + '년</option>');
+    $('per').innerHTML = out.join('');
+  }
+  function isHist() { return $('per').value !== 'recent'; }
+
+  /* ── 계약월 ── */
+  function fillMonths(months) {
+    var opt = months.map(function (m) { return '<option>' + m + '</option>'; }).join('');
+    $('mFrom').innerHTML = opt; $('mTo').innerHTML = opt;
+    $('mFrom').value = months[0]; $('mTo').value = months[months.length - 1];
+  }
+
+  /* ── 자료 받기 (지도가 쓰는 파일 그대로) ── */
+  var loaded = {};
+  function loadJs(src, done) {
+    if (loaded[src]) { done(); return; }
+    var s = document.createElement('script');
+    s.src = src;
+    s.onload = function () { loaded[src] = 1; done(); };
+    s.onerror = function () { done('없음'); };
+    document.body.appendChild(s);
+  }
+
+  function load() {
+    var code = $('sgg').value; if (!code) return;
+    $('cnt').textContent = '불러오는 중…';
+    if (tab === 'tx' && isHist()) {
+      loadJs('data/hist_apt_' + code + '.js', function (err) {
+        if (err) { allTx = []; rows = []; draw('아직 이 지역 과거 자료를 올리지 않았습니다'); return; }
+        buildHist(code); draw();
+      });
+    } else if (tab === 'tx') {
+      loadJs('data/detail_' + code + '.js', function (err) {
+        if (err) { rows = []; draw(); return; }
+        build(code); draw();
+      });
+    } else {
+      loadJs('data/apt_asking_' + code + '.js', function (err) {
+        if (err) { rows = []; draw(); return; }
+        buildAsk(code); draw();
+      });
+    }
+  }
+
+  var allTx = [], months = [];
+  function build(code) {
+    var reg = S.regions.filter(function (r) { return r.code === code; })[0] || {};
+    var arr = (window.SB && SB.d && SB.d[code]) || [];
+    var mm = {};
+    allTx = [];
+    arr.forEach(function (pt) {
+      (pt.txs || []).forEach(function (t) {
+        var m = String(t.cd || '').slice(0, 7);
+        if (m) mm[m] = 1;
+        allTx.push({
+          sido: reg.sido, sgg: reg.sgg, dong: pt.dong || '', nm: pt.name || '',
+          jibun: pt.jibun || '', t: pt.t, u: t.u, cd: t.cd, a: t.a, f: t.f,
+          p: t.p, r: t.r || '', built: pt.extra || ''
+        });
+      });
+    });
+    months = Object.keys(mm).sort();
+    fillMonths(months);
+  }
+
+  /* 과거 연도 — 사전으로 묶어 둔 것을 풀어 최근 6개월과 **같은 모양**으로 맞춘다.
+     모양이 갈리면 표·엑셀을 두 벌 만들게 된다. */
+  function buildHist(code) {
+    var reg = S.regions.filter(function (r) { return r.code === code; })[0] || {};
+    var H = (window.HIST && HIST[code]) || null;
+    allTx = [];
+    if (!H) return;
+    var b = H.b || [];
+    (H.r || []).forEach(function (v) {
+      var k = b[v[0]] || ['', '', '', 0];
+      var ym = String(v[3]), y = ym.slice(0, 4), m = ym.slice(4);
+      allTx.push({
+        sido: reg.sido, sgg: reg.sgg, dong: k[0], nm: k[1], jibun: k[2],
+        t: 'apt', u: '매매',
+        cd: y + '-' + m + '-' + (v[4] < 10 ? '0' + v[4] : v[4]),
+        a: v[1], f: v[2], p: v[5], r: '',
+        built: k[3] ? (k[3] + '년 준공') : '',
+        cx: v[6] ? '해제' : ''
+      });
+    });
+    allTx.sort(function (x, y2) { return x.cd < y2.cd ? 1 : -1; });
+  }
+
+  function buildAsk(code) {
+    var reg = S.regions.filter(function (r) { return r.code === code; })[0] || {};
+    var box = (window.APTASK && APTASK[code]) || {};
+    allTx = [];
+    Object.keys(box).forEach(function (k) {
+      var v = box[k] || {}, p = k.split('|');
+      /* 워터마크로 심어 둔 가짜 키는 내보내지 않는다(카나리아_점검.py 와 짝) */
+      if (p[1] === '누리솔동') return;
+      allTx.push({
+        sido: reg.sido, sgg: reg.sgg, dong: p[1] || '', nm: p[0] || '',
+        mmMed: (v.mm || {}).med || '', mmPy: (v.mm || {}).py || '', mmN: (v.mm || {}).n || '',
+        jeMed: (v.je || {}).med || '', jeN: (v.je || {}).n || '',
+        woBo: (v.wo || {}).bo || '', woWol: (v.wo || {}).wol || '', woN: (v.wo || {}).n || ''
+      });
+    });
+    allTx.sort(function (a, b) { return (b.mmN || 0) - (a.mmN || 0); });
+  }
+
+  /* ── 조건 걸러 표로 ── */
+  function filtered() {
+    if (tab === 'ho') return allTx;
+    if (isHist()) {
+      var yy = $('per').value;
+      return allTx.filter(function (x) { return String(x.cd).slice(0, 4) === yy; });
+    }
+    var f = $('mFrom').value, t = $('mTo').value;
+    return allTx.filter(function (x) {
+      if (!curT[x.t]) return false;
+      if (!curU[x.u]) return false;
+      var m = String(x.cd || '').slice(0, 7);
+      if (f && m < f) return false;
+      if (t && m > t) return false;
+      return true;
+    });
+  }
+
+  var COLS_TX = [
+    ['시도', 'sido'], ['시군구', 'sgg'], ['법정동', 'dong'], ['단지·물건명', 'nm'], ['지번', 'jibun'],
+    ['물건종류', function (x) { return (TYPE[x.t] || [x.t])[0]; }],
+    ['거래유형', 'u'], ['계약일', 'cd'],
+    ['전용면적(㎡)', 'a', 1], ['전용면적(평)', function (x) { return py(x.a); }, 1],
+    ['층', 'f'],
+    ['거래금액(만원)', 'p', 1], ['월세(만원)', 'r', 1],
+    ['평당가(만원·전용)', function (x) {
+      return (x.u === '매매' && x.a && x.p) ? Math.round(x.p / x.a * PY) : '';
+    }, 1],
+    ['준공', 'built']
+  ];
+  var COLS_HO = [
+    ['시도', 'sido'], ['시군구', 'sgg'], ['법정동', 'dong'], ['단지명', 'nm'],
+    ['매매 중위(만원)', 'mmMed', 1], ['매매 평당(만원·전용)', 'mmPy', 1], ['매매 매물수', 'mmN', 1],
+    ['전세 중위(만원)', 'jeMed', 1], ['전세 매물수', 'jeN', 1],
+    ['월세 보증금(만원)', 'woBo', 1], ['월세(만원)', 'woWol', 1], ['월세 매물수', 'woN', 1]
+  ];
+  function cols() {
+    if (tab !== 'tx') return COLS_HO;
+    /* 해제 신고분은 **지우지 않고 표시만 한다.** 지우면 원본과 건수가 달라진다. */
+    return isHist() ? COLS_TX.concat([['해제여부', 'cx']]) : COLS_TX;
+  }
+  function val(c, x) { return typeof c[1] === 'function' ? c[1](x) : (x[c[1]] === undefined ? '' : x[c[1]]); }
+
+  function draw(msg) {
+    rows = filtered();
+    var C = cols();
+    var none = msg || '조건에 맞는 자료가 없습니다';
+    $('cnt').textContent = rows.length ? ('총 ' + comma(rows.length) + '행') : none;
+    $('goXlsx').disabled = $('goCsv').disabled = !rows.length;
+    if (!rows.length) { $('prev').innerHTML = '<div class="empty">' + none + '</div>'; return; }
+    var head = '<tr>' + C.map(function (c) { return '<th>' + c[0] + '</th>'; }).join('') + '</tr>';
+    var body = rows.slice(0, 15).map(function (x) {
+      return '<tr>' + C.map(function (c) {
+        var v = val(c, x);
+        return '<td' + (c[2] ? ' class="n"' : '') + '>' + (c[2] ? comma(v) : v) + '</td>';
+      }).join('') + '</tr>';
+    }).join('');
+    $('prev').innerHTML = '<table>' + head + body + '</table>';
+  }
+
+  /* ── 내려받기 ── */
+  function fname(ext) {
+    var sgg = $('sgg').options[$('sgg').selectedIndex].text;
+    var head = tab === 'tx' ? '실거래' : '호가집계';
+    var per = tab !== 'tx' ? '' : (isHist() ? ('_' + $('per').value + '년') : ('_' + $('mFrom').value + '_' + $('mTo').value));
+    return '석봉부동산_' + head + '_' + $('sido').value + '_' + sgg + per + '.' + ext;
+  }
+  function table() {
+    var C = cols();
+    var out = [C.map(function (c) { return c[0]; })];
+    rows.forEach(function (x) { out.push(C.map(function (c) { return val(c, x); })); });
+    return out;
+  }
+  function meta() {
+    return [
+      ['자료명', tab === 'tx' ? '국토교통부 실거래 신고분' : '네이버 부동산 매물 호가 · 단지별 집계'],
+      ['제공', '석봉 부동산 정보방 (https://석봉부동산정보방.com)'],
+      ['집계 기준일', S.updated || ''],
+      ['집계 기간', tab !== 'tx' ? ('수집일 ' + (window.APTASKDAY || '-'))
+        : (isHist() ? ($('per').value + '년 계약분 (아파트 매매)')
+          : ($('mFrom').value + ' ~ ' + $('mTo').value + ' 계약분'))],
+      ['면적·단가 기준', '전용면적 기준 · 평 = ㎡ ÷ 3.305785 · 평당가는 매매만'],
+      ['유의', tab === 'tx'
+        ? '신고 지연으로 최근 며칠분은 계속 늘어납니다. 해제 신고분은 원본 기준입니다.'
+        : '호가는 협상 전 매물가라 실제 체결가와 다릅니다. 개별 매물은 제공하지 않습니다.']
+    ];
+  }
+  function gate(run) {
+    /* 회원만 받게 한다. SBAuth 가 없으면(시안·파일 직접 열기) 그냥 진행한다. */
+    try {
+      if (window.SBAuth && SBAuth.isIn && !SBAuth.isIn() && SBAuth.gate) {
+        SBAuth.gate(null, run, {
+          title: '자료는 회원에게 드립니다',
+          desc: '카카오 로그인 3초, 무료입니다.<br>받으신 자료는 자유롭게 쓰셔도 됩니다.'
+        });
+        return;
+      }
+    } catch (e) { }
+    run();
+  }
+  function dlCsv() {
+    gate(function () {
+      var t = table(), m = meta();
+      var lines = m.map(function (r) { return '# ' + r[0] + ': ' + r[1]; })
+        .concat(t.map(function (r) {
+          return r.map(function (v) {
+            v = (v === null || v === undefined) ? '' : String(v);
+            return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+          }).join(',');
+        }));
+      var blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+      save(blob, fname('csv'));
+    });
+  }
+  function dlXlsx() {
+    gate(function () {
+      var wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(table()), '자료');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['항목', '내용']].concat(meta())), '출처·기준');
+      XLSX.writeFile(wb, fname('xlsx'));
+    });
+  }
+  function save(blob, name) {
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 400);
+  }
+
+  /* ── 안내문 ── */
+  function notes() {
+    if (tab === 'tx') {
+      $('srcNote').innerHTML = '<b>어디서 온 자료인가</b> · 국토교통부 실거래가 공개시스템 신고분을 '
+        + '매일 받아 시군구·물건종류별로 정리한 것입니다. 집계 기준일 <b>' + (S.updated || '-') + '</b>, '
+        + '보관 범위는 계약월 최근 6개월입니다.<br>'
+        + '면적은 <b>전용면적</b>이고 평은 ㎡ ÷ 3.305785로 환산했습니다. 평당가는 매매에만 붙습니다.';
+      $('useNote').innerHTML = '<b>읽으실 때</b> · 신고 기한이 계약 후 30일이라 <b>최근 며칠분은 계속 늘어납니다.</b> '
+        + '그날 숫자를 확정된 것으로 보지 마세요. 원본이 갱신되지 않은 날은 그 몫이 다음 날에 합쳐집니다.';
+    } else {
+      $('srcNote').innerHTML = '<b>어디서 온 자료인가</b> · 네이버 부동산에 올라온 매물 호가를 모아 '
+        + '<b>단지별로 중위값·매물수만</b> 집계한 것입니다. 수집일 <b>' + (window.APTASKDAY || '-') + '</b>.<br>'
+        + '매매 평당가는 전용면적 기준입니다.';
+      $('useNote').innerHTML = '<b>읽으실 때</b> · 호가는 <b>협상 전 부르는 값</b>이라 실제 체결가와 다릅니다. '
+        + '실거래와 함께 보셔야 뜻이 있습니다.<br>'
+        + '<b>개별 매물(동·향·층·매물번호)은 제공하지 않습니다.</b> 단지별 집계까지만 공개합니다.';
+    }
+  }
+
+  /* ── 탭 ── */
+  function setTab(t) {
+    tab = t;
+    document.querySelectorAll('.tabs button').forEach(function (b) {
+      b.classList.toggle('on', b.dataset.t === t);
+    });
+    document.querySelectorAll('[data-only]').forEach(function (el) {
+      el.style.display = (el.getAttribute('data-only') === t) ? '' : 'none';
+    });
+    notes(); load();
+  }
+
+  /* ── 붙이기 ── */
+  function perUI() {
+    var h = isHist();
+    $('mBox').style.display = h ? 'none' : '';
+    $('perNote').textContent = h
+      ? '과거 자료는 한 번에 1년치까지 · 아파트 매매만 있습니다'
+      : '최근 6개월분은 전 물건종류·전 거래유형';
+    /* 연도를 고르면 물건종류·거래유형은 뜻이 없다. 감추는 대신 왜 안 되는지 남겨 둔다. */
+    document.querySelectorAll('#types .chip, #deals .chip').forEach(function (b) {
+      b.style.opacity = h ? .35 : 1;
+      b.style.pointerEvents = h ? 'none' : '';
+    });
+  }
+  fillPer(); fillSido(); chips(); perUI(); notes();
+  $('sido').addEventListener('change', fillSgg);
+  $('sgg').addEventListener('change', load);
+  $('per').addEventListener('change', function () { perUI(); load(); });
+  $('mFrom').addEventListener('change', function () { draw(); });
+  $('mTo').addEventListener('change', function () { draw(); });
+  $('types').addEventListener('click', function (e) {
+    var b = e.target.closest('.chip'); if (b) toggle('types', curT, b.dataset.k);
+  });
+  $('deals').addEventListener('click', function (e) {
+    var b = e.target.closest('.chip'); if (b) toggle('deals', curU, b.dataset.k);
+  });
+  document.querySelector('.tabs').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (b) setTab(b.dataset.t);
+  });
+  $('goCsv').addEventListener('click', dlCsv);
+  $('goXlsx').addEventListener('click', dlXlsx);
+  $('regNote').textContent = '전국 ' + S.regions.length + '개 시군구';
+})();
+</script>
+</body></html>
