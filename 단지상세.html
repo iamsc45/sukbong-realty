@@ -804,29 +804,45 @@ function _brDaejang(code,pt){
     if(!d)d=arr[0];
     if(!d){box.innerHTML='';return;}
     function n(v,u){return v?comma(v)+(u||''):'';}
+    /* 🔴 꼬리표를 **출처대로** 붙인다 (2026-08-22 석봉님 지적 「건축물대장 내용이 계속 틀리다」).
+       전에는 단지 값이면 무조건 「단지 전체」를 붙이고 안내문에 「총괄표제부에서 온 값」이라 적었는데,
+       **둘 다 사실이 아닌 경우가 대부분이었다.** 실측(bldg 40개 파일·43,605건):
+         · 총괄표제부에서 온 값이 하나도 없는데 꼬리표가 붙은 것  **66.2%**
+         · 동이 **하나뿐**인 건물                                  **86.0%**
+       동이 하나면 그 동이 곧 단지라 「단지 전체」는 뜻이 없고, 같은 표제부에서 온 주용도·구조를
+       안내문이 「한 동의 값」이라 갈라 말해 **같은 출처를 다른 출처로 설명**하고 있었다.
+       (예: 힐스테이트 지금 디포레 — 동 1개·총괄 0건인데 연면적·주차에 「단지 전체」가 붙었다)
+       ⚠️ 자료값은 처음부터 옳았다. **틀린 것은 그 값이 어디서 왔는지에 대한 설명**이다.
+       그래서 꼬리표를 셋으로 가른다: 총괄 → 「단지 전체」 · 동 합산 → 「N개 동 합계」 · 동 1개 → 없음. */
+    var _nd=d.sdn||0;                                  /* 이 지번에 등재된 동 수(부속 제외) */
+    var _multi=_nd>1;                                  /* 동이 여럿일 때만 「합계」가 뜻이 있다 */
+    /* 총괄표제부가 있나. ⚠️**주차만 보고 판정하지 말 것** — 아시아선수촌은 총괄이 있는데
+       대지·건폐율·용적률·주차가 전부 비어 있고 **세대수(rhh)만** 들어 있다. 주차로만 재면
+       「총괄표제부가 없어」라는 틀린 안내가 나간다(2026-08-22 검증 중에 걸렸다). */
+    var _hasRecap=!!(d.spa||d.sbc||d.svl||d.rhh||d.pks==='recap');
+    function tagAll(){ return '<span class="tag">단지 전체</span>'; }
+    function tagSum(){ return _multi?'<span class="tag">'+_nd+'개 동 합계</span>':''; }
+    function rowT(ic,lab,val,tag){                     /* 꼬리표가 비면 평범한 줄로 떨어진다 */
+      return tag?frowH(ic,lab,esc(val)+tag):frow(ic,lab,val);
+    }
     var rows=''
       +frow(IC.build,'주용도',d.pu)
       +frow(IC.build,'구조',d.st)
       /* 대지면적·건폐율·용적률은 **총괄표제부(단지 전체)가 정본**이다(2026-08-17).
-         동별 표제부에는 아예 안 들어오는 경우가 많다. 있으면 단지 값을 쓰고
-         꼬리표로 그 사실을 밝힌다. */
+         동별 표제부에는 아예 안 들어오는 경우가 많다. 있으면 단지 값을 쓴다. */
       +(d.spa
-        ? frowH(IC.home,'대지면적', esc(comma(Math.round(d.spa))+'㎡('+PY(d.spa)+')')
-                +'<span class="tag">단지 전체</span>')
-        : frow(IC.home,'대지면적',d.ar?d.ar.toFixed(1)+'㎡('+PY(d.ar)+')':''))
+        ? rowT(IC.home,'대지면적', comma(Math.round(d.spa))+'㎡('+PY(d.spa)+')', tagAll())
+        : frow(IC.home,'대지면적',d.ar?comma(Math.round(d.ar*10)/10)+'㎡('+PY(d.ar)+')':''))
       +(d.stot
-        ? frowH(IC.home,'연면적 · 모든 층 바닥 합계',
-                esc(comma(Math.round(d.stot))+'㎡('+PY(d.stot)+')')
-                +'<span class="tag">단지 전체</span>')
+        ? rowT(IC.home,'연면적 · 모든 층 바닥 합계',
+               comma(Math.round(d.stot))+'㎡('+PY(d.stot)+')', tagSum())
         : frow(IC.home,'연면적 · 모든 층 바닥 합계',
                d.tot?comma(Math.round(d.tot))+'㎡('+PY(d.tot)+')':''))
       +(function(){
         var bc=d.sbc||d.bc, vl=d.svl||d.vl, whole=(d.sbc||d.svl);
         var v=(bc?bc+'%':'')+(vl?(bc?' · ':'')+vl+'%':'');
         if(!v)return '';
-        return whole ? frowH(IC.build,'건폐율 · 용적률',
-                             esc(v)+'<span class="tag">단지 전체</span>')
-                     : frow(IC.build,'건폐율 · 용적률',v);
+        return rowT(IC.build,'건폐율 · 용적률', v, whole?tagAll():'');
       })()
       /* 🔴2026-08-13 수정: 대표 동을 연면적으로만 고르다 보니 **지하주차장 동**이 뽑혀
          '지상 0층 · 지하 2층'이 나갔다(한남더힐, 실제 최고 12층). 이제 수집기가 부속을 뺀
@@ -845,8 +861,8 @@ function _brDaejang(code,pt){
       /* 세대수도 단지 합(shh)이 있으면 그쪽을 쓴다. 대지·연면적·주차가 단지 전체인데
          세대만 한 동이면 같은 표 안에서 기준이 뒤섞인다(2026-08-17). */
       +(d.shh
-        ? frowH(IC.home,'세대 · 호', esc(comma(d.shh)+'세대'
-            +(d.sdn?' · '+d.sdn+'개 동':''))+'<span class="tag">단지 전체</span>')
+        ? rowT(IC.home,'세대 · 호', comma(d.shh)+'세대'+(_multi?' · '+_nd+'개 동':''),
+               (d.rhh&&d.rhh>=d.shh)?tagAll():tagSum())
         : frow(IC.home,'세대 · 호',(d.hh?comma(d.hh)+'세대':'')
             +(d.ho?(d.hh?' · ':'')+comma(d.ho)+'호':'')))
       +frow(IC.build,'승강기',d.el?d.el+'대':'')
@@ -855,8 +871,9 @@ function _brDaejang(code,pt){
          값이 없을 때 줄을 지우지 않고 "기재 없음"을 적는 이유는, 담보 검토에서
          「0대」와 「정보 없음」이 전혀 다른 뜻이기 때문이다(2026-08-17 석봉님 지시 취지). */
       +(function(){
-        if(d.spk) return frowH(IC.build,'주차',
-                               esc(comma(d.spk)+'대')+'<span class="tag">단지 전체</span>');
+        /* 주차만은 출처가 기록돼 있다(`pks`: recap=총괄 · sum=동 합산). 그대로 밝힌다. */
+        if(d.spk) return rowT(IC.build,'주차', comma(d.spk)+'대',
+                              d.pks==='recap'?tagAll():tagSum());
         if(d.pk)  return frow(IC.build,'주차',comma(d.pk)+'대');
         return frowH(IC.build,'주차','<span style="color:#8A93A5">건축물대장에 기재 없음</span>');
       })();
@@ -868,15 +885,21 @@ function _brDaejang(code,pt){
       if(t==='준공'||t.indexOf('연면적')===0)f.style.display='none';
     });
     box.innerHTML='<div class="sec" style="margin-top:-6px"><div class="lab">건축물대장'+(d.nm?' · '+esc(d.nm):'')+'</div><div class="ov">'+rows+'</div>'
-      /* ⚠️2026-08-17: 안내문이 화면과 정반대였다. 총괄표제부를 붙이면서 대지·연면적·
-         건폐율·용적률·주차·세대가 「단지 전체」가 됐는데, 안내는 여전히 「한 동의 값」이라
-         적고 있었다. 무엇이 단지 값이고 무엇이 동 값인지 꼬리표대로 설명한다. */
+      /* ⚠️2026-08-17: 안내문이 화면과 정반대였다(단지 값인데 「한 동의 값」이라 적었다).
+         🔴2026-08-22: 그때 고친 문장도 **여전히 사실이 아니었다.** 「단지 전체 = 총괄표제부」라고
+            단정했는데 총괄이 있는 건물은 10% 남짓이고, 나머지는 동별 표제부를 더한 값이다.
+            이제 **꼬리표가 무엇이 붙었는지에 따라** 문장을 만든다. 지어내지 않는다. */
       +'<div class="note">국토교통부 건축물대장 기준입니다. '
-      +'<b>「단지 전체」 표시가 붙은 항목</b>은 총괄표제부(단지 단위)에서 온 값이고, '
-      +'표시가 없는 <b>주용도·구조·사용승인</b>은 '+esc(d.nm||'대표 동')+' 한 동의 값입니다. '
-      +'대장이 동 단위로 나오기 때문입니다'
-      +(arr.length>1?'(이 지번에 동이 '+arr.length+'개 이상 등재돼 있어 '+(guessed?'연면적이 가장 큰 동':'이 상품의 용도에 맞는 동')+'을 골랐습니다)':'')
-      +'. 주차가 「기재 없음」인 것은 0대라는 뜻이 아니라 대장에 항목이 비어 있다는 뜻입니다. '
+      +(_multi
+         ? ('이 지번에는 동이 <b>'+_nd+'개</b> 등재돼 있습니다. '
+            +'<b>「'+_nd+'개 동 합계」</b>는 동별 표제부를 더한 값이고, '
+            +(_hasRecap
+               ? '<b>「단지 전체」</b>는 총괄표제부(단지 단위)에서 온 값입니다. '
+               : '이 지번에는 <b>총괄표제부가 없어</b> 단지 단위로 직접 신고된 값은 쓰지 못했습니다. ')
+            +'꼬리표가 없는 <b>주용도·구조·사용승인·층수</b>는 '+esc(d.nm||'대표 동')+' '
+            +(guessed?'(연면적이 가장 큰 동)':'(이 상품의 용도에 맞는 동)')+' 한 동의 값입니다. ')
+         : ('이 지번에는 동이 <b>하나</b> 등재돼 있어, 표의 값은 모두 그 동(＝단지)의 대장 값입니다. '))
+      +'주차가 「기재 없음」인 것은 0대라는 뜻이 아니라 대장에 항목이 비어 있다는 뜻입니다. '
       +'실제 계약·담보 심사 때는 발급본으로 다시 확인하세요.</div></div>';
   }
   if(window.BLDGD&&window.BLDGD[code]){draw();return;}
