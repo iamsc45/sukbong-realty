@@ -826,7 +826,13 @@ function _brDaejang(code,pt){
       return tag?frowH(ic,lab,esc(val)+tag):frow(ic,lab,val);
     }
     var rows=''
-      +frow(IC.build,'주용도',d.pu)
+      /* 🔴 주용도만 적으면 **오피스텔이 「업무시설」로만** 보인다(2026-08-22 석봉님 지적).
+         대장의 세부용도(`pud`)에는 「업무시설(오피스텔) 및 판매시설…」처럼 적혀 있고,
+         담보 실무에서 오피스텔과 일반 사무실은 취급이 다르다. 값이 있을 때만 덧붙인다
+         (수집기가 주용도와 같은 말이면 빼고 보낸다). 옛 자료에는 없으므로 없으면 그냥 넘어간다. */
+      +frowH(IC.build,'주용도', d.pu
+            ? esc(d.pu)+(d.pud?'<span style="color:#5A6478;font-weight:400"> · '+esc(d.pud)+'</span>':'')
+            : '')
       +frow(IC.build,'구조',d.st)
       /* 대지면적·건폐율·용적률은 **총괄표제부(단지 전체)가 정본**이다(2026-08-17).
          동별 표제부에는 아예 안 들어오는 경우가 많다. 있으면 단지 값을 쓴다. */
