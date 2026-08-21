@@ -657,7 +657,7 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
         return;
       }
       out.innerHTML='<div class="msg">'+esc(p.text)+'<br>인근 실거래를 불러오는 중…</div>';
-      var need=4, code=cd.code, sd2=String(code).slice(0,2);
+      var need=5, code=cd.code, sd2=String(code).slice(0,2);
       function ready(){ if(--need>0)return; judge(p,sido,cd); }
       function load(src){var s=document.createElement('script');s.src=src;s.onload=s.onerror=ready;document.body.appendChild(s);}
       if(window.SB&&SB.d&&SB.d[code])ready(); else load('data/detail_'+code+'.js');
@@ -667,6 +667,11 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
          본다. 우리는 그 자료를 진작 모아 두고도(poi_school_<시도2자리>.js) 어느 화면에서도
          쓰지 않고 있었다. 없는 시도는 onerror로 그냥 넘어가 판정만 생략된다. */
       if(window.POISCH&&POISCH[sd2])ready(); else load('data/poi_school_'+sd2+'.js');
+      /* 비선호 입지(2026-08-21 추가). 그 법정동의 공장·위락 등 비선호 용도 건물 비중.
+         화면이 「자동 판정 준비 중 · 수집이 진행 중」이라고 몇 주를 서 있었는데
+         그 수집은 이미 끝나 있었다(건축물대장 지번 526만 행·법정동 15,804곳).
+         없는 시도는 onerror 로 그냥 넘어가 판정만 생략된다. */
+      if(window.LHBAD&&LHBAD[sd2])ready(); else load('data/lh_badratio_'+sd2+'.js');
     },function(){
       /* 좌표를 못 잡아도 관할은 알려준다. 대상 지역이 아니라는 답이 제일 급하다 */
       var box=hqBox(addr);
@@ -926,9 +931,37 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
       }
     }
 
-    /* 아직 자동 판정이 안 되는 두 항목 */
-    H.push(item('비선호 입지','자동 판정 준비 중','n',
-      '공장 밀집·위락시설 인근·산비탈·축산특화거리는 심의에서 감점 요인입니다. 건축물대장 주용도 데이터로 부분 판정이 가능하며 수집이 진행 중입니다.',''));
+    /* 8. 비선호 입지 (2026-08-21 자동 판정 개시)
+       그 전까지 「자동 판정 준비 중 · 수집이 진행 중」이라고 적혀 있었는데,
+       그 수집은 이미 끝나 있었다(건축물대장 지번 526만 행 · 법정동 15,804곳 · 주용도).
+       🔴 건축물대장에는 좌표가 없다. 그래서 「반경 1km 안에 공장 몇 곳」을 못 센다.
+          **법정동 단위 비중**이 정직하게 말할 수 있는 전부이고, 화면에도 그렇게 적는다.
+          산비탈·축산특화거리·위험시설 이격은 이 자료로 못 본다 — 있는 척하지 않는다.
+       문턱은 지어내지 않았다. 전국 분포에서 뽑은 값을 빌더가 파일에 함께 실어 준다
+       (`LHBADCUT`, 퍼밀). 2026-08-21 기준 중위 1.2% · 상위 10% 9.0% · 상위 5% 16.2%. */
+    var BR=(window.LHBAD||{})[String(code||'').slice(0,2)];
+    var brRec=(BR&&cd&&cd.dong)?BR[cd.code+'|'+cd.dong]:null;
+    if(brRec&&brRec[1]){
+      var brP=brRec[0]/brRec[1], brMil=Math.round(brP*1000);
+      var CUT=window.LHBADCUT||{p50:12,p90:90,p95:162};
+      var brWhere=(brMil>=CUT.p95)?'상위 5% 안':((brMil>=CUT.p90)?'상위 10% 안':
+                  ((brMil>=CUT.p50)?'전국 중위보다 높음':'전국 중위보다 낮음'));
+      var brBad=(brMil>=CUT.p90);
+      total++;
+      if(brBad){ warn++; }else{ pass++; }
+      H.push(item('비선호 입지', brBad?'확인 필요':'뚜렷한 감점 요인 안 보임', brBad?'w':'p',
+        '<b>'+esc(cd.dong)+'</b>의 건물 '+n(brRec[1])+'동 중 공장·위락·자동차관련 등 '
+        +'비선호 용도가 <b>'+n(brRec[0])+'동('+(brP*100).toFixed(1)+'%)</b>입니다. '
+        +'전국 법정동 가운데 <b>'+brWhere+'</b>입니다.'
+        +(brBad?' 공장 밀집 지역은 심의에서 감점 요인이 될 수 있으니 사업지 주변을 직접 확인해 보십시오.':''),
+        '근거: 국토교통부 건축물대장 주용도 · <b>법정동 단위</b> 집계입니다. '
+        +'대장에 좌표가 없어 반경으로는 세지 못합니다. '
+        +'산비탈·축산특화거리·위험시설 이격은 이 자료로 판정하지 않습니다.'));
+    }else{
+      H.push(item('비선호 입지','자료 없음','n',
+        '이 지역은 건축물대장 주용도 수집이 아직 닿지 않아 판정하지 않습니다. '
+        +'공장 밀집·위락시설 인근·산비탈·축산특화거리는 심의에서 감점 요인이니 직접 확인해 주십시오.',''));
+    }
     H.push(item('재무영향도','자료 확보 대기','n',
       '정부지원단가 대비 탁상감정가 비율이 2026년 심사의 핵심 계량 항목입니다. 지원단가 확보 후 붙습니다.',''));
 
