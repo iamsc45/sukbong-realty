@@ -62,7 +62,9 @@
        공개 지번(open)은 추정이 아니므로 배지를 달지 않는다. */
     if(jb && !open && loc && !loc.querySelector('.stg-lv')){
       var row=(LD.d||[]).filter(function(r){return r[0]===jb;})[0];
-      var hi=row&&(String(row[6]||'').indexOf('확실')===0||String(row[6]||'').indexOf('연쇄')>=0);
+      var g=row?String(row[6]||''):'';
+      /* v11 코드(S/SH/SC/A/AH)·옛 한글 양쪽 수용 */
+      var hi=/^S/.test(g)||g.indexOf('확실')===0||g.indexOf('연쇄')>=0;
       var sp=document.createElement('span');
       sp.className='stg-lv';
       sp.style.cssText='display:inline-block;margin-left:4px;padding:1px 6px;border-radius:3px;'
