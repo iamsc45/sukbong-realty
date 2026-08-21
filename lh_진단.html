@@ -626,6 +626,7 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
     ['생활편의성','공고문 기준 대중교통 1.5km·주거여건 3km (단지 정보로 갈음)'],
     ['교육여건','공고문 기준 3km 안 초·중·고 존재와 개수'],
     ['최소 매입 호수','지역본부가 공고에 적은 최소 호수'],
+    ['LH 매입 실적','반경 1.5km 안에서 LH가 실제로 매입한 건수·호수와 신축 비중'],
     ['비선호 입지','공장 밀집·위락시설 인근 등 감점 요인'],
     ['재무영향도','정부지원단가 대비 탁상감정가 비율']
   ];
@@ -657,7 +658,7 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
         return;
       }
       out.innerHTML='<div class="msg">'+esc(p.text)+'<br>인근 실거래를 불러오는 중…</div>';
-      var need=5, code=cd.code, sd2=String(code).slice(0,2);
+      var need=6, code=cd.code, sd2=String(code).slice(0,2);
       function ready(){ if(--need>0)return; judge(p,sido,cd); }
       function load(src){var s=document.createElement('script');s.src=src;s.onload=s.onerror=ready;document.body.appendChild(s);}
       if(window.SB&&SB.d&&SB.d[code])ready(); else load('data/detail_'+code+'.js');
@@ -672,6 +673,9 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
          그 수집은 이미 끝나 있었다(건축물대장 지번 526만 행·법정동 15,804곳).
          없는 시도는 onerror 로 그냥 넘어가 판정만 생략된다. */
       if(window.LHBAD&&LHBAD[sd2])ready(); else load('data/lh_badratio_'+sd2+'.js');
+      /* LH 실제 매입 실적(2026-08-21 추가). 반경 집계만 하면 되므로 **폴리곤이 아니라 점**을
+         받는다(폴리곤 파일은 5.6MB라 진단할 때마다 받으면 안 된다). */
+      if(window.LHNEAR&&LHNEAR[sd2])ready(); else load('data/lh_near_'+sd2+'.js');
     },function(){
       /* 좌표를 못 잡아도 관할은 알려준다. 대상 지역이 아니라는 답이 제일 급하다 */
       var box=hqBox(addr);
@@ -930,6 +934,49 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
           '계획 '+n(units)+'호 · 전용 '+area+'㎡('+PY(area)+') · 방식 '+esc(kind)));
       }
     }
+
+    /* 7-2. LH 실제 매입 실적 (2026-08-21 신설)
+       🔴 이건 **요건 판정이 아니라 참고 지표**다. 그래서 total/pass 에 넣지 않는다.
+          「이 동네에서 LH 가 실제로 샀나」는 요건 충족과 다른 이야기이고,
+          실적이 없다고 사업이 안 되는 것도 아니다. 점수로 바꾸면 거짓 확신을 준다.
+       🔴 「매입약정」이라고 쓰지 않는다 — 원본에 약정 구분 컬럼이 없다.
+          우리가 근거를 댈 수 있는 말은 **「신축 매입(준공 1년 이내)」** 까지다.
+       반경 1.5km 는 공고문 기준이 아니라 **우리가 정한 기준**이다(그렇게 밝힌다). */
+    var LHR_KM = 1.5;
+    (function(){
+      var arr=(window.LHNEAR||{})[String(code||'').slice(0,2)];
+      if(!arr||!arr.length||!lat||!lng) return;
+      var nowY=new Date().getFullYear(), cnt=0, ho=0, nw=0, cnt3=0, ho3=0, last=0;
+      for(var i=0;i<arr.length;i++){
+        var p=arr[i];
+        var dy=(p[1]-lat)*111.0, dx=(p[0]-lng)*88.8;
+        if(Math.sqrt(dx*dx+dy*dy)>LHR_KM) continue;
+        cnt++; ho+=p[2]; nw+=p[3];
+        if(p[4]&&p[4]>last) last=p[4];
+        if(p[4]&&p[4]>=nowY-3){ cnt3++; ho3+=p[2]; }
+      }
+      var body, tone;
+      if(!cnt){
+        tone='n';
+        body='반경 <b>'+LHR_KM+'km</b> 안에 LH 가 매입한 임대주택 실적이 <b>없습니다</b>. '
+            +'실적이 없다고 사업이 안 되는 것은 아니지만, 이 지역에서 LH 매입이 드물었다는 뜻입니다.';
+      }else{
+        var pctNew=ho?Math.round(nw/ho*100):0;
+        tone='p';
+        body='반경 <b>'+LHR_KM+'km</b> 안에서 LH 가 실제로 매입한 임대주택이 '
+            +'<b>'+n(cnt)+'건 · '+n(ho)+'호</b>입니다. '
+            +'그중 <b>신축 매입(준공 1년 이내)</b>이 <b>'+n(nw)+'호('+pctNew+'%)</b>입니다.'
+            +(cnt3?(' 최근 3년('+(nowY-3)+'년 이후) 매입만 보면 <b>'+n(cnt3)+'건 · '+n(ho3)+'호</b>입니다.')
+                  :(' <b>최근 3년 매입은 없습니다.</b>'))
+            +(last?(' 가장 최근 매입은 <b>'+last+'년</b>입니다.'):'');
+      }
+      H.push(item('LH 매입 실적', cnt?(cnt3?'최근 실적 있음':'과거 실적만'):'실적 없음', tone, body,
+        '근거: LH 매입임대 공급현황(2025-11-20 공개분) · 건물 16,360동을 필지에 대응시켜 집계. '
+        +'<b>실적은 과거의 사실이며 향후 매입을 보장하지 않습니다.</b> '
+        +'반경 '+LHR_KM+'km 는 공고문 기준이 아니라 우리가 정한 기준입니다. '
+        +'「신축 매입」은 매입년도에서 사용승인연도를 뺀 값이 1년 이하인 것으로, '
+        +'<b>매입약정 여부와는 다릅니다</b>(원본에 약정 구분이 없습니다).'));
+    })();
 
     /* 8. 비선호 입지 (2026-08-21 자동 판정 개시)
        그 전까지 「자동 판정 준비 중 · 수집이 진행 중」이라고 적혀 있었는데,
