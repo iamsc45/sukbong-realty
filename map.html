@@ -2721,6 +2721,30 @@ function showAptCard(pt, txs){
   var _AB=(code&&window.APTASK&&window.APTASK[code])||null;
   var _ak=(_al&&_al.a)||(pt.name+'|'+(pt.dong||''));
   var A=(_AB&&_AB[_ak])||null;
+  /* 🔴 호가가 이 단지 것이 맞는지 검사한다 (2026-08-21 석봉님 제보 「호가가 3억이라는 게 말이 안 되잖아」)
+     합정동 마포한강푸르지오2차는 **같은 이름 아래 아파트(83㎡)와 소형(23㎡)이 따로** 수집돼 있는데,
+     별칭이 소형 쪽 키를 집어 아파트 카드에 3억이 붙었다(실거래 20.9억).
+     전수 조사: 호가·실거래가 둘 다 있는 7,110개 단지 중 **109개(1.5%)**가 어긋난다(2026-08-21 실측).
+     👉 **틀린 숫자를 보여 주느니 안 보여 주는 편이 낫다.** 평당가로 재서 크게 어긋나면 통째로 감춘다.
+     ⚠️ 임계값은 실측 분포에서 잡았다 — 정상 단지의 배율은 p1 0.56 · p50 1.06 · p99 1.34 다.
+        0.65~1.6 밖은 「값이 튄 것」이 아니라 **다른 물건**이라고 보는 게 맞다.
+     ⚠️ 매매만 어긋나는 게 아니다. 키가 틀렸으면 전세·월세도 남의 것이라 **A 를 통째로 버린다.** */
+  var _askOff=false;
+  if(A&&A.mm&&A.mm.py){
+    var _rm=txs.filter(function(t){return t.u==='매매'&&t.a&&t.p;});
+    /* ⚠️ 처음에 「매매 3건 이상일 때만」으로 뒀다가 **정작 제보된 단지를 못 잡았다** —
+       합정동 마포한강푸르지오2차는 매매가 2건이었다. 표본이 적다고 틀린 값을 보여 줄 이유는 없다. */
+    if(_rm.length>=1){
+      var _rp=_rm.map(function(t){return t.p/t.a*3.305785;}).sort(function(x,y){return x-y;});
+      var _rpm=_rp[Math.floor(_rp.length/2)];
+      var _ratio=_rpm?A.mm.py/_rpm:1, _hn=A.mm.n||0;
+      /* ⚠️ 표본이 얇으면 배율은 그냥 튄다(실거래 1건 p99 1.85 · 3건 이상 p99 1.34, 2026-08-21 실측).
+         그래서 **얇은 표본만으로는 감추지 않는다** — 호가가 3건 이상이면서,
+         실거래가 2건 이상이거나 호가가 10건 이상일 때만 「다른 물건」이라고 본다.
+         멀쩡한 단지의 호가를 지우는 것도 틀린 값을 보여 주는 것만큼 나쁘다. */
+      if(_hn>=3&&(_rm.length>=2||_hn>=10)&&(_ratio<0.65||_ratio>1.6)){A=null;_askOff=true;}
+    }
+  }
   var hoSec='';
   {
     function eok2(m){if(!m)return '';var v=m/10000;return (v>=100?Math.round(v):(''+v.toFixed(1)).replace(/\.0$/,''))+'억';}
@@ -2770,7 +2794,9 @@ function showAptCard(pt, txs){
             arng2(mmT))
       +rrow('전세',eok2(md(jeT.map(function(t){return t.p;}))),(A&&A.je)?(eok2(A.je.med)+'<small style="font-weight:600;color:#a39887"> '+(A.je.n===1?'매물1건':A.je.n+'건')+'</small>'):'',arng2(jeT))
       +rrow('월세',woT.length?(eok2(md(woT.map(function(t){return t.p;})))+'/'+md(woT.map(function(t){return t.r;}))+'만'):'',(A&&A.wo&&A.wo.wol<=3000)?(eok2(A.wo.bo)+'/'+A.wo.wol+'만<small style="font-weight:600;color:#a39887"> '+(A.wo.n===1?'매물1건':A.wo.n+'건')+'</small>'):'',arng2(woT))
-      +'<div class="rc-note" style="padding:4px 0 0">'+W.mid+' · 호가=협상 전 매물가(주황). '+(A?'체결가와 다를 수 있음.':W.noAsk)+'</div></div>';
+      +'<div class="rc-note" style="padding:4px 0 0">'+W.mid+' · 호가=협상 전 매물가(주황). '
+      +(A?'체결가와 다를 수 있음.':(_askOff?'현재 잡히는 매물이 이 '+W.unit+' 것인지 확인 중이라 호가를 빼 두었습니다.':W.noAsk))
+      +'</div></div>';
   }
   /* 🔴 여러 채가 섞인 지점에서는 **대표 시세를 내지 않는다** (2026-08-20 석봉님 지적).
      지번이 가려져 있어 앞자리가 같은 남남이 한 지점으로 묶인다. 그 위에서 낸 중위·최고가는
