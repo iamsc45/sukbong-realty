@@ -55,6 +55,11 @@
       if(g.parentNode)g.parentNode.removeChild(g);
     });
     fp.insertBefore(document.getElementById('rfbar'),anchor);
+    /* 🔴 LH 매입년도 바도 같이 옮긴다(2026-08-22). 상단 `#bar` 는 모바일에서 격자가 아니라
+       그냥 한 줄이라, 여기 두면 그 폭만큼 **검색창이 278px → 57px 로 찌그러진다**(실측).
+       `#rfbar` 가 진작 이 방식으로 피해 간 것을 나란히 재 보고서야 알았다. */
+    var _lhb=document.getElementById('lhbar');
+    if(_lhb)fp.insertBefore(_lhb,anchor);
 
     /* ⚠️#fpanel을 #bar 밖으로 꺼낸다(2026-08-10 시뮬레이션에서 잡음).
        새 스킨의 #bar에는 backdrop-filter가 걸려 있는데, 그러면 그 안의 position:fixed 자식은
@@ -89,17 +94,26 @@
     LY.innerHTML=
       '<button type="button" data-l="trade" class="on"><i class="ti ti-home-dollar" aria-hidden="true"></i>실거래</button>'
      +'<button type="button" data-l="redev"><i class="ti ti-building-community" aria-hidden="true"></i>재개발</button>'
+     /* LH 매입 실적(2026-08-22). 🔴데스크톱 상단 `#modes` 는 모바일에서 display:none 이라,
+        여기에 안 넣으면 **휴대폰에서는 없는 기능이 된다**(2026-08-20 땅값이 실제로 그랬다). */
+     +'<button type="button" data-l="lh"><i class="ti ti-building-estate" aria-hidden="true"></i>LH매입</button>'
      +'<button type="button" data-l="old"><i class="ti ti-building-warehouse" aria-hidden="true"></i>노후</button>';
     mapEl.appendChild(LY);
 
-    var st={trade:true,redev:false,old:false};
+    var st={trade:true,redev:false,lh:false,old:false};
     function paint(){
       LY.querySelectorAll('button').forEach(function(b){b.classList.toggle('on',!!st[b.dataset.l]);});
     }
     function applyLayers(){
       /* 재개발이 켜져 있으면 재개발 모드로 두고, 실거래는 '겹쳐보기'로 표현한다.
          겹쳐보기 상태는 원래 버튼을 대신 눌러 맞춘다(내부 변수를 직접 만지지 않는다). */
-      if(st.redev){
+      if(st.lh){
+        /* LH 실적도 재개발과 같은 꼴이다 — 자기 모드로 두고 실거래는 겹쳐보기로 표현한다 */
+        if(window.curMode!=='lh')window.setMode('lh');
+        var lb=document.querySelector('#lhbar .lhtrade');
+        if(lb&&!!window.lhShowTrade!==!!st.trade)lb.click();
+        if(window.layer&&!window.map.hasLayer(window.layer))window.map.addLayer(window.layer);
+      }else if(st.redev){
         if(window.curMode!=='redev')window.setMode('redev');
         var tb=document.querySelector('.rfc.trade');
         if(tb&&!!window.redevShowTrade!==!!st.trade)tb.click();
@@ -116,9 +130,11 @@
          setMode가 실패하거나 다른 곳에서 모드를 바꾸면 변수와 화면이 어긋난다. */
       setTimeout(function(){
         st.redev=(window.curMode==='redev');
+        st.lh=(window.curMode==='lh');
         if(st.redev)st.trade=!!window.redevShowTrade;
+        else if(st.lh)st.trade=!!window.lhShowTrade;
         else st.trade=!!(window.layer&&window.map.hasLayer(window.layer));
-        if(!st.trade&&!st.redev)st.trade=true;
+        if(!st.trade&&!st.redev&&!st.lh)st.trade=true;
         paint();
       },80);
       paint();
@@ -132,12 +148,17 @@
         if(window._SBOLD)window._SBOLD.set(st.old);
         paint(); return;
       }
-      /* 실거래·재개발 둘 다 꺼지면 빈 지도가 된다. 마지막 하나는 못 끄게 막는다. */
-      if(st[k]&&!st[k==='trade'?'redev':'trade'])return;
+      /* 실거래·재개발·LH 가 전부 꺼지면 빈 지도가 된다. 마지막 하나는 못 끄게 막는다. */
+      if(st[k]&&!(k==='trade'?(st.redev||st.lh):(st.trade||(k==='redev'?st.lh:st.redev))))return;
+      /* 🔴 재개발과 LH 는 각자 자기 모드를 쓴다 — 동시에 켤 수 없다(켜면 다른 쪽이 꺼진다).
+         실거래는 둘 위에 겹쳐 보는 것이라 함께 켤 수 있다. */
+      if(k==='redev'&&!st.redev)st.lh=false;
+      if(k==='lh'&&!st.lh)st.redev=false;
       st[k]=!st[k]; applyLayers();
     });
-    /* 딥링크로 재개발 모드에 들어온 경우(?mode=redev) 토글도 그 상태로 맞춘다 */
+    /* 딥링크로 들어온 모드(?mode=redev·?mode=lh)에 토글도 맞춘다 */
     if(window.curMode==='redev'){st.redev=true;st.trade=!!window.redevShowTrade;paint();}
+    else if(window.curMode==='lh'){st.lh=true;st.trade=!!window.lhShowTrade;paint();}
 
     /* ── 우측 보조 버튼 ─────────────────────────────────────── */
     var TL=document.createElement('div'); TL.id='mtools';

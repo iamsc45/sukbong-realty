@@ -20,7 +20,7 @@
 <link rel="stylesheet" href="assets/site.css">
 <!-- 새 지도 디자인(2026-08-10 석봉님 확정): 네이버형 좌측 목록 + 흰 말풍선 마커.
      로직은 이 파일 그대로 두고 겉모습만 아래 두 파일이 얹는다. -->
-<link rel="stylesheet" href="assets/map_v2.css?v=9">
+<link rel="stylesheet" href="assets/map_v2.css?v=10">
 <style>
   html,body{height:100%}
   #wrap{display:flex;flex-direction:column;height:100%}
@@ -169,14 +169,20 @@
     #rfbar{grid-column:1/7}
     /* 지도 조작 시 상단바 자동 접힘(2026-07-27): 첫 줄(모드+필터)만 남김 */
     #barHandle{display:none;grid-column:1/7;border:0;background:transparent;color:var(--navy);font-size:13px;font-weight:800;padding:2px 0 3px;height:auto;line-height:1.2;cursor:pointer}
-    body.barfold #sform,body.barfold #selSido,body.barfold #selSgg,body.barfold #mcats,body.barfold #rfbar{display:none}
+    body.barfold #sform,body.barfold #selSido,body.barfold #selSgg,body.barfold #mcats,body.barfold #rfbar,body.barfold #lhbar{display:none}
+    /* ⚠️ `#lhcnt` 는 줄바꿈이 안 되는 긴 글이라, 그대로 두면 그 폭이 격자 전체를 밀어
+       **검색창이 278px → 57px 로 찌그러진다**(2026-08-22 재개발 바와 나란히 재서 확인).
+       셈은 제 줄로 내려보내고 바 자신은 최소폭을 풀어 준다. */
+    #lhbar{grid-column:1/7;min-width:0}
+    #lhbar #lhcnt{flex:1 1 100%;min-width:0}
     body.barfold #barHandle{display:block}
     /* 필터 패널: 스크롤 + 닫기 보장 */
     #fpanel{max-height:calc(100dvh - 210px);overflow:auto}
     /* 실거래 겹쳐보기: 지도 우상단 오버레이(JS가 #map으로 이동, 재개발 모드만 표시) */
-    #map .rfc.trade{display:none;position:absolute;top:10px;right:10px;z-index:900;margin:0;background:rgba(255,255,255,.95);box-shadow:0 2px 8px rgba(20,20,20,.18)}
-    #map .rfc.trade.on{background:#12203a!important;color:#fff!important;border-color:#12203a!important;border-style:solid}
+    #map .rfc.trade,#map .rfc.lhtrade{display:none;position:absolute;top:10px;right:10px;z-index:900;margin:0;background:rgba(255,255,255,.95);box-shadow:0 2px 8px rgba(20,20,20,.18)}
+    #map .rfc.trade.on,#map .rfc.lhtrade.on{background:#12203a!important;color:#fff!important;border-color:#12203a!important;border-style:solid}
     body.redev #map .rfc.trade{display:block}
+    body.lh #map .rfc.lhtrade{display:block}
     #fpanel{left:6px;right:6px;max-width:none;padding:3px 10px 7px}
     .flbl{width:60px;font-size:10.5px}
     .fnum{width:48px}
@@ -203,6 +209,9 @@
 #modes button.on{background:#12203a;color:#fff;border-color:#12203a}
 #rfbar{display:none;gap:5px;align-items:center;flex-wrap:wrap;margin-right:6px}
 body.redev #rfbar{display:flex}
+/* LH 매입 실적 모드 (2026-08-22) — 재개발 필터 바와 같은 자리를 쓴다 */
+#lhbar{display:none;gap:5px;align-items:center;flex-wrap:wrap;margin-right:6px}
+body.lh #lhbar{display:flex}
 .rflbl{color:var(--muted);font-size:11px;margin:0 2px}
 .rfc{border:1px solid #cdd3db;background:#fff;color:#5b6473;font-size:12px;font-weight:700;padding:4px 11px;border-radius:16px;cursor:pointer;white-space:nowrap;transition:background .12s ease}
 .rfc.on{background:#12203a;color:#fff;border-color:#12203a}
@@ -272,7 +281,9 @@ body.redev #rfbar{display:flex}
   </nav>
 </header>
 <div id="bar">
-  <div id="modes"><button data-m="trade" class="on">실거래</button><button data-m="redev">재개발·재건축</button></div>
+  <div id="modes"><button data-m="trade" class="on">실거래</button><button data-m="redev">재개발·재건축</button><button data-m="lh">LH 매입 실적</button></div>
+  <!-- LH 매입 실적 필지 레이어 (2026-08-22). 연도는 「매입년도」다 — 기준일 2025-11-20. -->
+  <div id="lhbar"><span class="rflbl">매입년도</span><button class="rfc" data-lhy="3">3년</button><button class="rfc" data-lhy="5">5년</button><button class="rfc" data-lhy="10">10년</button><button class="rfc" data-lhy="0">전체</button><button class="rfc lhtrade" data-lhy="-1">실거래 겹쳐보기</button><span id="lhcnt" style="font-size:11.5px;color:#5A6478;font-weight:700"></span></div>
   <div id="rfbar"><span class="rflbl">유형</span><button class="rfc on" data-rf="재개발">재개발</button><button class="rfc on" data-rf="재건축">재건축·주거환경</button><button class="rfc on" data-rf="신통">신속통합기획</button><button class="rfc on" data-rf="모아">모아주택</button><button class="rfc trade" data-rf="trade">실거래 겹쳐보기</button></div>
   <form id="sform"><input id="sq" type="search" placeholder="지역·단지·지번 검색" autocomplete="off"><button type="submit" class="sbtn">검색</button><div id="sac"></div></form>
   <button id="fbtn" type="button">필터 ▾</button>
@@ -350,6 +361,7 @@ var curTset=null;
 var curMode='trade';
 var curRF={'재개발':true,'재건축':true,'신통':true,'모아':true};
 var redevShowTrade=false;
+var lhShowTrade=false;   /* LH 실적 모드에서 실거래 말풍선 겹쳐보기(2026-08-22) */
 function matchRF(cat,tag){
   return (curRF['재개발']&&cat==='재개발') || (curRF['재건축']&&(cat==='재건축'||cat==='주거환경'))
     || (curRF['신통']&&(tag==='신통'||cat==='신통')) || (curRF['모아']&&tag==='모아');
@@ -534,6 +546,9 @@ function _bdist(r,c){   /* 화면 중심에서 그 시군구 지점 범위까지
 function render(){
   layer.clearLayers();
   if(curMode==='redev'&&!redevShowTrade)return;
+  /* LH 실적 모드도 같다(2026-08-22) — 실거래 말풍선을 함께 띄우면 필지가 통째로 가린다.
+     실측: 화곡동에서 아파트 말풍선 116개가 필지 346개를 덮었다. 겹쳐 볼지는 사용자가 켠다. */
+  if(curMode==='lh'&&!lhShowTrade)return;
   var z=map.getZoom(), nPt=0, nTx=0;
   document.getElementById('map').classList.toggle('names',z>=Z_NAME);
   if(z<Z_DETAIL){
@@ -748,6 +763,9 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
     if(mq.matches){
       var tc=document.querySelector('#rfbar .rfc.trade'),md=document.getElementById('map');
       if(tc&&md)md.appendChild(tc);
+      /* LH 실적 겹쳐보기 칩도 같이 옮긴다(2026-08-22) — 상단 바가 두 줄이 되는 것을 막는다 */
+      var lt=document.querySelector('#lhbar .lhtrade');
+      if(lt&&md)md.appendChild(lt);
     }
     /* 필터 패널 닫기 버튼 */
     var fc=document.getElementById('fclose');
@@ -1762,7 +1780,9 @@ tradeLegend();
 var popLock=false;
 map.on('popupopen',function(){popLock=true;});
 map.on('popupclose',function(){popLock=false;setTimeout(render,50);});
-map.on('moveend zoomend',function(){if(popLock)return;render();if(curMode==='redev')renderRedev();});
+map.on('moveend zoomend',function(){if(popLock)return;render();if(curMode==='redev')renderRedev();
+  /* LH 실적은 화면에 걸치는 시도만 받아 그리므로 이동할 때마다 다시 그린다(2026-08-22) */
+  if(curMode==='lh'&&typeof renderLH==='function')renderLH();});
 /* ===== 단지 검색 (검색창 자동완성 → 지도 이동 + 카드, 2026-07-25) ===== */
 (function(){
   var idxLoading=false,idxReady=false;
@@ -3018,15 +3038,172 @@ function showAptCard(pt, txs){
   };
 }
 
+/* ══ LH 매입 실적 필지 레이어 (2026-08-22) ═══════════════════════════════════
+   무엇인가: **LH 가 실제로 매입한 임대주택 16,360동**의 필지 경계다.
+   시행사가 「이 동네에서 LH 가 사 주기는 하나」를 눈으로 확인하는 것이 목적이다.
+   자료는 데이터관리 세션이 만들어 배포해 뒀고(`data/lh_parcel_<시도2자리>.js`), 화면만 붙인다.
+
+   🔴 말에 관한 규칙 셋 (어기면 사실과 다른 화면이 된다 — 사양서 1절)
+     ① **「매입약정」이라고 쓰지 않는다.** 원본에 약정 구분 컬럼이 없다. 근거를 댈 수 있는 말은
+        「LH 매입임대 주택」과 「신축 매입(준공 1년 이내)」까지다.
+     ② **「실적은 과거의 사실이며 향후 매입을 보장하지 않습니다」를 반드시 함께 적는다.**
+     ③ **순위·등급으로 색칠하지 않는다.** 「이 동네가 몇 등」 식으로 만들지 않는다.
+        색은 신축 비중의 진하기일 뿐이고, 범례에 그 뜻을 적는다.
+
+   ⚠️ 파일을 전부 받지 않는다 — **화면에 보이는 시도만** 받는다(합계 5.7MB).
+   ⚠️ 폴리곤은 첫 점과 끝 점이 같지 않다(닫는 점을 뺐다). Leaflet 은 알아서 닫는다.
+   ⚠️ `q`=필지 신뢰도. **1(97.9%)만 칠하고 2·3 은 점으로** 찍는다. 2 는 좌표가 도로 위에
+      떨어져 가장 가까운 대지를 고른 추정이라, 칠하면 남의 필지가 칠해진다. */
+var lhLayer=L.layerGroup();
+var lhRenderer=L.canvas();
+var LHY=3;                      /* 매입년도 필터(년). 0=전체. 기본은 사양서대로 최근 3년 */
+var LHBASE='2025년 11월 20일';  /* 실적 기준시점. 자료가 연 1회 갱신이라 여기 적어 둔다 */
+var lhLoading={};
+function lhSidos(){                       /* 화면에 걸치는 시도 두 자리 코드 */
+  try{
+    var b=map.getBounds(), m=0.06, out={};
+    var eb=L.latLngBounds([b.getSouth()-m,b.getWest()-m],[b.getNorth()+m,b.getEast()+m]);
+    (SB.summary.regions||[]).forEach(function(r){
+      if(!r.lat)return;
+      var hit=r.b ? eb.intersects(L.latLngBounds([r.b[0],r.b[1]],[r.b[2],r.b[3]]))
+                  : eb.contains([r.lat,r.lon]);
+      if(hit)out[String(r.code).slice(0,2)]=1;
+    });
+    return Object.keys(out);
+  }catch(e){ return []; }
+}
+function lhLoad(sd,cb){
+  window.LHPARCEL=window.LHPARCEL||{};
+  if(window.LHPARCEL[sd]!==undefined){cb();return;}
+  if(lhLoading[sd])return;
+  lhLoading[sd]=1;
+  var sc=document.createElement('script'); sc.src='data/lh_parcel_'+sd+'.js';
+  sc.onload=function(){cb();};
+  /* 없는 시도(자료가 안 만들어진 곳)는 빈 배열로 못박아 다시 안 받는다 */
+  sc.onerror=function(){window.LHPARCEL[sd]=[];cb();};
+  document.body.appendChild(sc);
+}
+function lhPass(r){                        /* 매입년도 필터 */
+  if(!LHY)return true;
+  var y=r.y||{}, lim=(new Date()).getFullYear()-LHY+1, ok=false;
+  for(var k in y){ if(parseInt(k,10)>=lim){ok=true;break;} }
+  return ok;
+}
+/* 색은 **신축 비중**의 진하기다(등급이 아니다). 분모에서 연도 결측(u)은 뺀다. */
+function lhColor(r){
+  var den=(r.n||0)-(r.u||0);
+  if(den<=0)return '#8A93A5';
+  var w=(r.w||0)/den;
+  return w>=0.8?'#12264A':(w>=0.5?'#2554E0':(w>=0.2?'#5C8AD6':'#93A3BA'));
+}
+/* 🔴 확대가 덜 됐을 때는 **점으로 찍는다**(2026-08-22 검증에서 걸렸다).
+   첫 구현은 늘 필지를 칠했는데, 화곡동 zoom 15에서 필지 하나가 **6×6 픽셀**이라
+   346동을 그려 놓고도 화면에는 아무것도 안 보였다(「떴는가」는 통과, 「보이는가」는 실패).
+   확대하면 실제 필지 모양으로 바뀐다. 이 값은 실측으로 정했다 — z17이면 한 변 24px쯤 된다. */
+var Z_LHPOLY=17;
+function lhPopup(r){
+  var y=Object.keys(r.y||{}).sort(), last=y.length?y[y.length-1]:'';
+  var den=(r.n||0)-(r.u||0), wp=den>0?Math.round((r.w||0)/den*100):null;
+  var e=function(x){return String(x==null?'':x).replace(/[&<>"]/g,function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
+  return '<div style="font-size:12.5px;line-height:1.55;min-width:210px;max-width:270px">'
+    +'<div style="font-weight:800;color:#12264A">'+e((r.ad||'').replace(/\s{2,}/g,' '))+'</div>'
+    +(r.k?'<div style="color:#5A6478">'+e(r.k)+'</div>':'')
+    +'<div style="margin-top:6px;padding-top:6px;border-top:1px solid #E3E8F0">'
+    +'LH 매입 <b>'+(r.n||0)+'호</b>'
+    +(r.w?' · 그중 <b>신축 매입 '+r.w+'호</b>'+(wp!=null?'('+wp+'%)':''):'')
+    +(last?'<br>가장 최근 매입 <b>'+e(last)+'년</b>':'')
+    +'</div>'
+    +(r.q===2?'<div style="margin-top:5px;color:#B23A48;font-weight:700">인근 필지 추정 지점입니다'
+              +(r.d?'(약 '+r.d+'m)':'')+'</div>'
+     :(r.q===3?'<div style="margin-top:5px;color:#B23A48;font-weight:700">필지를 좁히지 못한 지점입니다</div>':''))
+    +'<div style="margin-top:6px;font-size:11px;color:#7A8698;line-height:1.5">'
+    +'LH 매입임대 주택 · <b>'+LHBASE+' 기준</b><br>'
+    /* 🔴 이 문장은 빼지 말 것 — 2026-08-04 흡수율 검증에서 확정된 필수 문구다 */
+    +'실적은 과거의 사실이며 향후 매입을 보장하지 않습니다.</div></div>';
+}
+function renderLH(){
+  if(curMode!=='lh')return;
+  var sds=lhSidos(), waiting=false;
+  sds.forEach(function(sd){
+    if(!window.LHPARCEL||window.LHPARCEL[sd]===undefined){ waiting=true; lhLoad(sd,renderLH); }
+  });
+  lhLayer.clearLayers();
+  var b=map.getBounds(), z=map.getZoom(), shown=0, all=0;
+  sds.forEach(function(sd){
+    var arr=(window.LHPARCEL||{})[sd]; if(!arr)return;
+    arr.forEach(function(r){
+      var g=r.g; if(!g||!g.length)return;
+      /* 화면 밖은 그리지 않는다 — 첫 점만 봐도 충분하다(필지는 작다) */
+      if(!b.contains([g[0][1],g[0][0]]))return;
+      all++;
+      if(!lhPass(r))return;
+      shown++;
+      var c=lhColor(r);
+      if(r.q===1 && z>=Z_LHPOLY){
+        var ll=g.map(function(p){return [p[1],p[0]];});
+        L.polygon(ll,{renderer:lhRenderer,color:'#12264A',weight:1.6,fillColor:c,fillOpacity:.55})
+          .bindPopup(lhPopup(r)).addTo(lhLayer);
+      }else if(r.q===1){
+        /* 멀리서 볼 때 — 호수가 많을수록 점을 조금 키운다(개수 감각이 필요한 화면이라) */
+        L.circleMarker([g[0][1],g[0][0]],{renderer:lhRenderer,
+          radius:(r.n>=30?7:(r.n>=10?6:5)),color:'#fff',weight:1.5,fillColor:c,fillOpacity:.95})
+          .bindPopup(lhPopup(r)).addTo(lhLayer);
+      }else{
+        /* q=2·3 은 확대해도 칠하지 않는다(사양서 4절 — 남의 필지가 칠해진다).
+           속 빈 점선 원으로 「추정」임을 드러낸다. */
+        L.circleMarker([g[0][1],g[0][0]],{renderer:lhRenderer,radius:5,color:c,weight:2,
+          dashArray:'2,2',fillColor:'#fff',fillOpacity:.9})
+          .bindPopup(lhPopup(r)).addTo(lhLayer);
+      }
+    });
+  });
+  var el=document.getElementById('lhcnt');
+  if(el)el.textContent = waiting ? '불러오는 중…'
+    : (shown.toLocaleString()+'동 표시 · 이 화면 전체 '+all.toLocaleString()+'동');
+  var st=document.getElementById('stat');
+  /* 모바일에서는 위 `#lhcnt` 가 필터 시트 안으로 들어가 안 보인다. 건수를 여기에도 적는다. */
+  if(st)st.textContent='LH 매입임대 실적 '+shown.toLocaleString()+'동'
+    +(LHY?' (최근 '+LHY+'년 · 이 화면 전체 '+all.toLocaleString()+'동)':'')
+    +' · '+LHBASE+' 기준 · 실적은 향후 매입을 보장하지 않습니다';
+}
+function lhLegend(){
+  var el=document.getElementById('legend'); if(!el)return;
+  var sw=function(c,t){return '<span style="display:inline-flex;align-items:center;gap:4px;margin-right:9px">'
+    +'<i style="width:11px;height:11px;border-radius:2px;background:'+c+';display:inline-block"></i>'+t+'</span>';};
+  el.innerHTML='<b style="margin-right:7px">LH 매입 실적</b>'
+    +sw('#12264A','신축 매입 많음')+sw('#2554E0','절반쯤')+sw('#93A3BA','기축 위주')
+    +'<span style="display:inline-flex;align-items:center;gap:4px;margin-right:9px">'
+    +'<i style="width:11px;height:11px;border-radius:50%;border:2px dashed #5C8AD6;display:inline-block"></i>인근 필지 추정</span>'
+    +'<span style="color:#7A8698">색은 신축 매입 비중일 뿐 등급·순위가 아닙니다 · 확대하면 필지 모양으로 바뀝니다</span>';
+}
+document.querySelectorAll('#lhbar button').forEach(function(b){b.addEventListener('click',function(){
+  /* 겹쳐보기 칩은 연도 칩과 성격이 다르다 — 켜고 끄는 것이라 서로 배타가 아니다 */
+  if(b.dataset.lhy==='-1'){
+    lhShowTrade=!lhShowTrade; b.classList.toggle('on',lhShowTrade); render(); return;
+  }
+  LHY=parseInt(b.dataset.lhy,10)||0;
+  document.querySelectorAll('#lhbar button:not(.lhtrade)').forEach(function(x){x.classList.toggle('on',x===b);});
+  renderLH();
+});});
+try{var _lb=document.querySelector('#lhbar button[data-lhy="'+LHY+'"]'); if(_lb)_lb.classList.add('on');}catch(e){}
+
 function setMode(m){
   curMode=m;
   document.querySelectorAll('#modes button').forEach(function(b){b.classList.toggle('on',b.dataset.m===m);});
   document.body.classList.toggle('redev',m==='redev');
+  document.body.classList.toggle('lh',m==='lh');
+  if(m!=='lh'&&map.hasLayer(lhLayer))map.removeLayer(lhLayer);
   if(!map.hasLayer(layer))map.addLayer(layer);
   if(m==='trade'){
     if(map.hasLayer(redevLayer))map.removeLayer(redevLayer);
     document.getElementById('rcard').classList.remove('open');
     tradeLegend();render();
+  }else if(m==='lh'){
+    if(map.hasLayer(redevLayer))map.removeLayer(redevLayer);
+    document.getElementById('rcard').classList.remove('open');
+    if(!map.hasLayer(lhLayer))map.addLayer(lhLayer);
+    lhLegend();render();renderLH();
   }else{
     if(!map.hasLayer(redevLayer))map.addLayer(redevLayer);
     redevLegend();render();loadRedev(renderRedev);
@@ -3044,6 +3221,7 @@ document.querySelectorAll('#rfbar button,#map .rfc.trade').forEach(function(b){b
    홈에서 '재개발'을 눌러도 실거래 화면이 떴다. 명시 모드가 있으면 복원은 좌표만 한다. */
 var _urlMode=null;try{_urlMode=(new URLSearchParams(location.search)).get('mode');}catch(e){}
 if(_urlMode==='redev'){setMode('redev');}
+else if(_urlMode==='lh'){setMode('lh');}   /* ?mode=lh — 원고·배너에서 바로 열 수 있게 */
 /* 뒤로가기 복원: (명시 모드가 없을 때만) 모드까지 되돌린 뒤 보던 좌표·확대로 이동 */
 if(_BACKVIEW){try{
   if(!_urlMode){
@@ -3059,7 +3237,7 @@ render();
 <script src="assets/map_v2_poi.js?v=2"></script>
 <script src="assets/map_v2_dong.js?v=2"></script>
 <script src="assets/map_old.js?v=2"></script>
-<script src="assets/map_m.js?v=7"></script>
+<script src="assets/map_m.js?v=8"></script>
 <script src="assets/map_bar.js?v=1"></script>
 <script src="assets/sb_tabbar.js?v=9"></script>
 <script defer src="assets/sb_nav.js?v=1"></script>

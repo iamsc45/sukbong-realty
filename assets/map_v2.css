@@ -510,6 +510,7 @@ body.mmap #map .rfc.trade{display:none!important}
 #mlayers button.on i{opacity:1}
 #mlayers button[data-l="trade"].on{background:#2554E0}
 #mlayers button[data-l="redev"].on{background:#C0562E}
+#mlayers button[data-l="lh"].on{background:#12264A}   /* LH 매입 실적(2026-08-22) */
 #mlayers button[data-l="old"].on{background:#A8402A}
 
 /* ── 3. 우측 세로 보조 버튼 ───────────────────────────────── */
