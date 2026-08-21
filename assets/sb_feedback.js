@@ -27,10 +27,14 @@
   var KEY_ = 'sb_publishable_kYd1gCyqCR2Qy8Ix6KE6og_FfJUImfR';
   var MAIL = 'iamsc45@gmail.com';
 
-  /* 석봉님이 주신 문구 그대로. 고치려면 여기 한 곳만 고친다. */
-  var INTRO = '부동산 공공데이터를 다같이 무료로 공유하고 서로 도움이 되고자 만든 사이트 입니다. '
-            + '미흡하지만 계속 업데이트 하면서 좋은 정보 공유하기를 바라는 마음입니다. '
-            + '사용 피드백 주시면 적극적으로 반영 하겠습니다. 감사합니다.';
+  /* 인사 문구. 고치려면 여기 한 곳만 고친다.
+     🔴 이 팝업에서 피드백을 **조르지 않는다**(2026-08-21 석봉님 지시).
+        "둘러보고 피드백을 주는 건데 다짜고짜 피드백 달라고 하는 꼴이니까."
+        그래서 「피드백 남기기」 버튼을 뺐다. 들어오자마자 요구하는 창이 되면 안 된다.
+        피드백은 상단 「피드백 주기」로 **본인이 원할 때** 오게 둔다. */
+  var INTRO = '부동산 공공데이터를 다 같이 무료로 나누자는 마음으로 만든 사이트입니다. '
+            + '아직 미흡하지만 계속 채워 나가겠습니다. '
+            + '쓰시면서 불편한 점이 있으면 알려주세요. 감사합니다.';
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
@@ -156,12 +160,10 @@
       '<button class="x" type="button" aria-label="닫기">✕</button>'
       + '<h2>찾아와 주셔서 고맙습니다</h2>'
       + '<p>' + esc(INTRO) + '</p>'
-      + '<button class="sbfb-btn" type="button" data-go="1">피드백 남기기</button>'
-      + '<button class="sbfb-ghost" type="button" data-close="1">둘러볼게요</button>';
+      + '<button class="sbfb-btn" type="button" data-close="1">둘러보기</button>';
     d.classList.add('on');
     d.querySelector('.x').onclick = function () { d.classList.remove('on'); };
     d.querySelector('[data-close]').onclick = function () { d.classList.remove('on'); };
-    d.querySelector('[data-go]').onclick = function () { d.classList.remove('on'); openForm(); };
     try { if (window.gtag) gtag('event', 'feedback_intro_show'); } catch (e) {}
   }
 
@@ -174,8 +176,7 @@
     d.querySelector('.sbfb-box').innerHTML =
       '<button class="x" type="button" aria-label="닫기">✕</button>'
       + '<h2>어떤 점이 아쉬우셨나요</h2>'
-      + '<p style="margin-bottom:14px">불편했던 점, 있었으면 하는 기능, 잘못된 숫자 무엇이든 좋습니다. '
-      + '읽고 반영하겠습니다.</p>'
+      + '<p style="margin-bottom:14px">불편한 점, 있었으면 하는 기능, 잘못된 숫자 무엇이든 좋습니다.</p>'
       + '<label>내용<textarea id="sbFbMsg" rows="5" maxlength="1000" '
       + 'placeholder="예: 지도에서 우리 동네 빌라가 안 보여요"></textarea></label>'
       + '<label>회신받을 연락처 <span style="color:#7A8698;font-weight:600">(선택)</span>'
