@@ -67,9 +67,13 @@
       var hi=/^S/.test(g)||g.indexOf('확실')===0||g.indexOf('연쇄')>=0;
       var sp=document.createElement('span');
       sp.className='stg-lv';
-      sp.style.cssText='display:inline-block;margin-left:4px;padding:1px 6px;border-radius:3px;'
-        +'font-size:10px;font-weight:800;'
-        +(hi?'background:#EEF3FB;color:#1B3F7A':'background:rgba(255,255,255,.22)');
+      /* 🔴 대비 (2026-08-22) — `rgba(255,255,255,.22)` 는 **어두운 헤더를 전제로 한 값**이라
+         밝아진 v2 카드에서는 배경이 사라지고 글자도 `.loc` 의 회색을 물려받아 안 읽혔다.
+         본편 `map.html` 과 같은 값으로 맞춘다(두 곳이 갈리면 옮길 때 옛 스타일이 따라온다). */
+      sp.style.cssText='display:inline-block;margin-left:4px;padding:2px 7px;border-radius:4px;'
+        +'font-size:10.5px;font-weight:800;line-height:1.5;vertical-align:middle;'
+        +(hi?'background:#EEF3FB;color:#1B3F7A':'background:#F1F3F7;color:#5A6478');
+      /* ⚠️ 「보통」에 「등기부 확인 필요」류를 붙이지 말 것(석봉님 지시) — 「높음」이 확인 끝난 것으로 읽힌다 */
       sp.textContent='확인 수준 '+(hi?'높음':'보통');
       loc.appendChild(sp);
     }
