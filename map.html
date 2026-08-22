@@ -120,6 +120,20 @@
     border:1px solid var(--hair-soft);border-radius:12px;box-shadow:0 10px 26px rgba(20,20,20,.14);
     padding:3px 13px 7px;max-width:660px;font-size:12.5px}
   #fpanel.open{display:block}
+  /* 🔴 LH 매입 실적 모드는 **다른 필터를 쓴다**(2026-08-22 석봉님 지시).
+     매매가·보증금·월세는 LH 실적에 아예 없는 값이라 그대로 두면 눌러도 아무 일이
+     안 일어나는 버튼이 여섯 줄 남는다. 같은 패널을 쓰되 행만 갈아 끼운다
+     (패널을 따로 만들면 모바일 바텀시트 처리를 두 벌 유지해야 한다). */
+  #fpanel .frow.lhonly{display:none}
+  body.lh #fpanel .frow:not(.lhonly):not(.fcommon){display:none}
+  body.lh #fpanel .frow.lhonly{display:flex}
+  /* 「상품 아파트▾ · 거래 전체▾」는 실거래용이다. LH 실적에는 상품도 거래유형도 없어
+     그대로 두면 눌러도 아무 일이 안 일어나는 버튼이 두 개 남는다(2026-08-22 실측).
+     ⚠️`body.v2` 를 같이 적는다 — `map_bar.js` 가 `body.v2 #mcats{display:inline-flex!important}`
+       를 **뒤에 주입**해서, 구체성이 같으면 그쪽이 이긴다(처음에 한 번 당했다). */
+  body.lh #typechips,body.lh #uchips,body.lh .bargrp,
+  body.lh #mcats,body.v2.lh #mcats{display:none!important}
+  #fpanel .fnote{font-size:10.5px;color:#8A93A5;font-weight:600;margin-left:6px}
   .frow{display:flex;gap:5px;align-items:center;padding:4px 0;border-bottom:1px dashed var(--hair);flex-wrap:wrap}
   .frow:last-child{border-bottom:0}
   .flbl{color:var(--muted);font-size:11px;width:66px;flex:0 0 auto}
@@ -306,7 +320,13 @@ body.lh #lhbar{display:flex}
     <div class="frow"><span class="flbl">전용면적</span><span class="fgrp" id="fpA"></span></div>
     <div class="frow"><span class="flbl">준공</span><span class="fgrp" id="fpY"></span></div>
     <div class="frow"><span class="flbl">층</span><span class="fgrp" id="fpF"></span></div>
-    <div class="frow" style="border:0"><span id="fcount"></span><button class="chip" id="freset" type="button">초기화</button><button class="chip" id="fclose" type="button" style="background:var(--navy);color:#fff">닫기 ✕</button></div>
+    <div class="frow lhonly"><span class="flbl">주택유형</span><span class="fgrp" id="lpK"></span></div>
+    <div class="frow lhonly"><span class="flbl">전용면적</span><span class="fgrp" id="lpA"></span><span class="fnote">그 건물 전용면적의 중위값</span></div>
+    <div class="frow lhonly"><span class="flbl">주차</span><span class="fgrp" id="lpP"></span><span class="fnote">원본 표기 그대로</span></div>
+    <div class="frow lhonly"><span class="flbl">층수</span><span class="fgrp" id="lpF"></span><span class="fnote">지상 최고층</span></div>
+    <div class="frow lhonly"><span class="flbl">승강기</span><span class="fgrp" id="lpE"></span></div>
+    <div class="frow lhonly"><span class="flbl">매입 규모</span><span class="fgrp" id="lpN"></span></div>
+    <div class="frow fcommon" style="border:0"><span id="fcount"></span><button class="chip" id="freset" type="button">초기화</button><button class="chip" id="fclose" type="button" style="background:var(--navy);color:#fff">닫기 ✕</button></div>
   </div>
 </div>
 <div id="map"></div>
@@ -362,6 +382,21 @@ var curMode='trade';
 var curRF={'재개발':true,'재건축':true,'신통':true,'모아':true};
 var redevShowTrade=false;
 var lhShowTrade=false;   /* LH 실적 모드에서 실거래 말풍선 겹쳐보기(2026-08-22) */
+/* LH 전용 필터(2026-08-22 석봉님 「LH 모드일 때는 LH 전용 필터로」).
+   값은 원본 「LH 매입임대 공급현황」 호 단위 자료를 **필지 하나로 접은 것**이다 —
+   전용·방수는 중위, 주차·층은 그 필지에서 가장 큰 값, 승강기는 하나라도 있으면 있음.
+   ⚠️주차 0 은 「없다」가 아니라 「0 으로 적혀 있다」다(전국 필지의 53.7%).
+      다가구·다세대는 미기재를 0 으로 적는 관행이 섞여 있어 우리 자료로는 못 가른다. */
+var LHK='all',LHA='all',LHP='all',LHF='all',LHE='all',LHN='all';
+function lhKind(k){
+  k=String(k||'');
+  if(k.indexOf('다가구')>=0)return 'da';
+  if(k.indexOf('도시형')>=0)return 'do';
+  if(k.indexOf('오피스텔')>=0)return 'op';
+  if(k.indexOf('아파트')>=0)return 'ap';
+  if(k.indexOf('다세대')>=0||k.indexOf('연립')>=0)return 'ds';
+  return 'et';
+}
 function matchRF(cat,tag){
   return (curRF['재개발']&&cat==='재개발') || (curRF['재건축']&&(cat==='재건축'||cat==='주거환경'))
     || (curRF['신통']&&(tag==='신통'||cat==='신통')) || (curRF['모아']&&tag==='모아');
@@ -556,6 +591,11 @@ function _bdist(r,c){   /* 화면 중심에서 그 시군구 지점 범위까지
   return Math.sqrt(dy*dy+dx*dx);
 }
 function render(){
+  /* 🔴 LH 필지도 여기서 다시 그린다(2026-08-22 석봉님 「LH 전용 필터」 작업 중 발견).
+     필터 칩·검색·지역 선택은 전부 render() 만 부르는데 LH 필지는 renderLH() 가 그려서,
+     **칩을 눌러도 화면이 그대로였다**(누른 표시만 남고 건수가 안 변했다).
+     renderLH() 는 render() 를 부르지 않으므로 순환하지 않는다. */
+  if(curMode==='lh'){ try{ renderLH(); }catch(e){} }
   layer.clearLayers();
   if(curMode==='redev'&&!redevShowTrade)return;
   /* LH 실적 모드도 같다(2026-08-22) — 실거래 말풍선을 함께 띄우면 필지가 통째로 가린다.
@@ -792,10 +832,19 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
 (function(){
   var pn=document.getElementById('fpanel'),bt=document.getElementById('fbtn');
   function mark(){
-    var n=((fSc||fS!=='all')?1:0)+((fBc||fB!=='all')?1:0)+((fWc||fW!=='all')?1:0)
-      +(fA!=='all'?1:0)+(fY!=='all'?1:0)+(fF!=='all'?1:0);
+    var n;
+    if(document.body.classList.contains('lh')){
+      /* LH 모드는 다른 필터를 쓰므로 세는 대상도 다르다(2026-08-22).
+         실거래 필터 개수를 그대로 보여 주면 안 걸린 필터가 걸린 것처럼 보인다. */
+      n=(LHK!=='all'?1:0)+(LHA!=='all'?1:0)+(LHP!=='all'?1:0)
+       +(LHF!=='all'?1:0)+(LHE!=='all'?1:0)+(LHN!=='all'?1:0);
+    }else{
+      n=((fSc||fS!=='all')?1:0)+((fBc||fB!=='all')?1:0)+((fWc||fW!=='all')?1:0)
+       +(fA!=='all'?1:0)+(fY!=='all'?1:0)+(fF!=='all'?1:0);
+    }
     bt.textContent='필터'+(n?' '+n:'')+(pn.classList.contains('open')?' ▴':' ▾');
   }
+  window._fmark=mark;   /* 모드를 바꿀 때 버튼 숫자를 다시 계산하려고 밖에 연다 */
   function grp(el,items,get,set){
     var box=document.getElementById(el);
     items.forEach(function(it){
@@ -815,6 +864,17 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
   grp('fpA',[['all','전체'],['a1','60㎡ 미만'],['a2','60~85㎡'],['a3','85~115㎡'],['a4','115㎡ 이상']],function(){return fA;},function(v){fA=v;});
   grp('fpY',[['all','전체'],['y5','5년 내 신축'],['y10','10년 내'],['y20','20년 이상'],['y30','30년 이상'],['y40','40년 이상']],function(){return fY;},function(v){fY=v;});
   grp('fpF',[['all','전체'],['f5','5층 이상'],['f15','15층 이상']],function(){return fF;},function(v){fF=v;});
+  /* ── LH 매입 실적 전용 필터(2026-08-22) ──────────────────────────────
+     면적은 ㎡ 옆에 평을 함께 적는다(사이트 공통 규칙). 30㎡≈9.1평 · 50㎡≈15.1평 ·
+     70㎡≈21.2평. 구간 경계는 실제 분포를 보고 잡았다 — 전국 필지의 전용 중위가
+     30㎡ 미만 2,771 · 30~50㎡ 6,160 · 50~70㎡ 5,901 · 70㎡ 이상 1,526 이라
+     네 칸이 고르게 갈린다. */
+  grp('lpK',[['all','전체'],['da','다가구'],['ds','다세대·연립'],['do','도시형생활주택'],['op','오피스텔'],['ap','아파트'],['et','기타']],function(){return LHK;},function(v){LHK=v;});
+  grp('lpA',[['all','전체'],['a1','30㎡(9평) 미만'],['a2','30~50㎡(9~15평)'],['a3','50~70㎡(15~21평)'],['a4','70㎡(21평) 이상']],function(){return LHA;},function(v){LHA=v;});
+  grp('lpP',[['all','전체'],['p3','30대 이상'],['p2','10~29대'],['p1','1~9대'],['p0','0대로 표기']],function(){return LHP;},function(v){LHP=v;});
+  grp('lpF',[['all','전체'],['f1','5층 이하'],['f2','6~10층'],['f3','11층 이상']],function(){return LHF;},function(v){LHF=v;});
+  grp('lpE',[['all','전체'],['y','있는 곳만']],function(){return LHE;},function(v){LHE=v;});
+  grp('lpN',[['all','전체'],['n1','10호 이상'],['n2','30호 이상']],function(){return LHN;},function(v){LHN=v;});
   /* 직접 입력 (설정 시 해당 줄 프리셋 해제, 칩 클릭 시 직접 입력 해제) */
   function wireCustom(boxId,minId,maxId,mult,setC){
     var mi=document.getElementById(minId),ma=document.getElementById(maxId);
@@ -841,6 +901,15 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
     mark();
   });
   document.getElementById('freset').addEventListener('click',function(){
+    /* LH 모드에서는 LH 필터만 되돌린다 — 안 보이는 실거래 필터를 건드려 봐야
+       화면은 그대로고, 반대로 LH 필터가 안 풀려 「초기화가 안 된다」가 된다. */
+    if(document.body.classList.contains('lh')){
+      LHK=LHA=LHP=LHF=LHE=LHN='all';
+      ['lpK','lpA','lpP','lpF','lpE','lpN'].forEach(function(id){
+        document.getElementById(id).querySelectorAll('.chip').forEach(function(x,i){x.classList.toggle('on',i===0);});
+      });
+      mark();render();return;
+    }
     fS=fB=fW=fA=fY=fF='all';fSc=fBc=fWc=null;
     ['fSmin','fSmax','fBmin','fBmax','fWmin','fWmax'].forEach(function(id){document.getElementById(id).value='';});
     ['fpS','fpB','fpW','fpA','fpY','fpF'].forEach(function(id){
@@ -3101,11 +3170,48 @@ function lhLoad(sd,cb){
   sc.onerror=function(){window.LHPARCEL[sd]=[];cb();};
   document.body.appendChild(sc);
 }
-function lhPass(r){                        /* 매입년도 필터 */
-  if(!LHY)return true;
-  var y=r.y||{}, lim=(new Date()).getFullYear()-LHY+1, ok=false;
-  for(var k in y){ if(parseInt(k,10)>=lim){ok=true;break;} }
-  return ok;
+function lhPass(r){                        /* 매입년도 + LH 전용 필터 */
+  if(LHY){
+    var y=r.y||{}, lim=(new Date()).getFullYear()-LHY+1, ok=false;
+    for(var k in y){ if(parseInt(k,10)>=lim){ok=true;break;} }
+    if(!ok)return false;
+  }
+  if(LHK!=='all'&&lhKind(r.k)!==LHK)return false;
+  if(LHA!=='all'){
+    var a=r.ar||0;
+    /* 값이 없으면(전국 2건) 거르지 않는다 — 모른다고 없는 것으로 치면 실적이
+       있는 필지가 조용히 사라진다. 주차만 예외다(아래 주석 참고). */
+    if(a){
+      if(LHA==='a1'&&!(a<30))return false;
+      if(LHA==='a2'&&!(a>=30&&a<50))return false;
+      if(LHA==='a3'&&!(a>=50&&a<70))return false;
+      if(LHA==='a4'&&!(a>=70))return false;
+    }
+  }
+  if(LHP!=='all'){
+    /* 주차는 **없으면 0 으로 친다.** 원본이 0 을 적은 것과 우리가 안 실은 것이
+       같은 뜻이기 때문이다(0 은 파일에서 빼고 싣는다). */
+    var pk=r.pk||0;
+    if(LHP==='p0'&&pk!==0)return false;
+    if(LHP==='p1'&&!(pk>=1&&pk<10))return false;
+    if(LHP==='p2'&&!(pk>=10&&pk<30))return false;
+    if(LHP==='p3'&&!(pk>=30))return false;
+  }
+  if(LHF!=='all'){
+    var fl=r.fl||0;
+    if(fl){
+      if(LHF==='f1'&&!(fl<=5))return false;
+      if(LHF==='f2'&&!(fl>=6&&fl<=10))return false;
+      if(LHF==='f3'&&!(fl>=11))return false;
+    }
+  }
+  if(LHE==='y'&&!r.ev)return false;
+  if(LHN!=='all'){
+    var n=r.n||0;
+    if(LHN==='n1'&&!(n>=10))return false;
+    if(LHN==='n2'&&!(n>=30))return false;
+  }
+  return true;
 }
 /* 색은 **신축 비중**의 진하기다(등급이 아니다). 분모에서 연도 결측(u)은 뺀다. */
 function lhColor(r){
@@ -3153,6 +3259,23 @@ function showLhCard(r,sd){
     +bar('4년 이상',r.o||0)
     +(r.u?'<div class="rc-dl"><span style="color:#a39887">매입년도 미상</span><b>'+r.u+'호</b></div>':'')
     +'</div>'
+    /* 건물 생김새 — 필터로 고른 값을 카드에서 확인할 수 있어야 한다(2026-08-22).
+       걸러 놓고 그 값을 안 보여 주면 사용자가 「제대로 걸린 건가」를 확인할 길이 없다.
+       면적은 ㎡ 옆에 평을 병기한다(사이트 공통 규칙). 값이 없으면 그 줄을 빼고,
+       주차만 「0대로 표기」라고 적는다 — 없는 것과 안 적힌 것을 우리가 못 가르기 때문이다. */
+    +(function(){
+      var d=[];
+      if(r.ar)d.push(['전용면적(중위)',r.ar+'㎡('+(r.ar/3.305785).toFixed(r.ar<100?1:0)+'평)']);
+      if(r.rm)d.push(['방수(중위)',r.rm+'개']);
+      if(r.fl)d.push(['지상 최고층',r.fl+'층']);
+      d.push(['주차',(r.pk||0)?(r.pk+'대'):'0대로 표기']);
+      d.push(['승강기',r.ev?'있음':'없음']);
+      if(r.by)d.push(['사용승인',r.by+'년']);
+      return '<div class="rc-sec"><div class="rc-lab">건물</div>'
+        +d.map(function(x){return '<div class="rc-dl"><span style="color:#6b6355">'+x[0]
+          +'</span><b>'+e(x[1])+'</b></div>';}).join('')
+        +'<div class="rc-note" style="padding:5px 0 0">여러 동이 한 필지에 있으면 층·주차는 가장 큰 값, 면적·방수는 중위값입니다.</div></div>';
+    })()
     /* 매입년도 — 「최근에도 사고 있나」가 핵심이라 최신부터 */
     +(ys.length?('<div class="rc-sec"><div class="rc-lab">매입년도별</div>'
         +ys.slice().reverse().slice(0,8).map(function(y){
@@ -3245,6 +3368,8 @@ function setMode(m){
   document.querySelectorAll('#modes button').forEach(function(b){b.classList.toggle('on',b.dataset.m===m);});
   document.body.classList.toggle('redev',m==='redev');
   document.body.classList.toggle('lh',m==='lh');
+  /* 필터 버튼 숫자는 모드마다 세는 대상이 다르다 — 모드를 바꾸면 다시 계산한다 */
+  try{ if(window._fmark)window._fmark(); }catch(e){}
   if(m!=='lh'&&map.hasLayer(lhLayer))map.removeLayer(lhLayer);
   if(!map.hasLayer(layer))map.addLayer(layer);
   if(m==='trade'){
@@ -3255,7 +3380,7 @@ function setMode(m){
     if(map.hasLayer(redevLayer))map.removeLayer(redevLayer);
     document.getElementById('rcard').classList.remove('open');
     if(!map.hasLayer(lhLayer))map.addLayer(lhLayer);
-    lhLegend();render();renderLH();
+    lhLegend();render();          /* render() 가 renderLH() 를 부른다 */
   }else{
     if(!map.hasLayer(redevLayer))map.addLayer(redevLayer);
     redevLegend();render();loadRedev(renderRedev);
