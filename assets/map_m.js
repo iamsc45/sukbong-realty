@@ -110,7 +110,9 @@
       if(st.lh){
         /* LH 실적도 재개발과 같은 꼴이다 — 자기 모드로 두고 실거래는 겹쳐보기로 표현한다 */
         if(window.curMode!=='lh')window.setMode('lh');
-        var lb=document.querySelector('#lhbar .lhtrade');
+        /* ⚠️`#lhbar .lhtrade` 로 찾으면 안 된다 — 모바일에서는 이 칩이 `#map` 안으로
+           옮겨져 있다(상단 바가 두 줄이 되는 것을 막으려고). 재개발 쪽처럼 부모를 안 건다. */
+        var lb=document.querySelector('.lhtrade');
         if(lb&&!!window.lhShowTrade!==!!st.trade)lb.click();
         if(window.layer&&!window.map.hasLayer(window.layer))window.map.addLayer(window.layer);
       }else if(st.redev){

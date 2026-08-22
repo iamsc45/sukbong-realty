@@ -20,7 +20,7 @@
 <link rel="stylesheet" href="assets/site.css">
 <!-- 새 지도 디자인(2026-08-10 석봉님 확정): 네이버형 좌측 목록 + 흰 말풍선 마커.
      로직은 이 파일 그대로 두고 겉모습만 아래 두 파일이 얹는다. -->
-<link rel="stylesheet" href="assets/map_v2.css?v=12">
+<link rel="stylesheet" href="assets/map_v2.css?v=13">
 <style>
   html,body{height:100%}
   #wrap{display:flex;flex-direction:column;height:100%}
@@ -3383,7 +3383,11 @@ function lhLegend(){
     +'<i style="width:11px;height:11px;border-radius:50%;border:2px dashed #5C8AD6;display:inline-block"></i>인근 필지 추정</span>'
     +'<span style="color:#7A8698">색은 신축 매입 비중일 뿐 등급·순위가 아닙니다 · 확대하면 필지 모양으로 바뀝니다</span>';
 }
-document.querySelectorAll('#lhbar button').forEach(function(b){b.addEventListener('click',function(){
+/* 🔴 모바일에서는 `.lhtrade` 칩이 **`#map` 안으로 옮겨져 있다**(상단 바가 두 줄이 되는 것을 막으려고).
+   그래서 `#lhbar button` 만 훑으면 그 칩에는 핸들러가 아예 안 걸린다 — 2026-08-22 석봉님 제보
+   「모바일에서 LH 모드일 때 실거래가 안 눌려 겹쳐 볼 수가 없다」의 원인이 이것이다.
+   재개발 쪽(`#rfbar button,#map .rfc.trade`)은 처음부터 두 자리를 다 잡고 있었다. */
+document.querySelectorAll('#lhbar button,#map .lhtrade').forEach(function(b){b.addEventListener('click',function(){
   /* 겹쳐보기 칩은 연도 칩과 성격이 다르다 — 켜고 끄는 것이라 서로 배타가 아니다 */
   if(b.dataset.lhy==='-1'){
     lhShowTrade=!lhShowTrade; b.classList.toggle('on',lhShowTrade); render(); return;
@@ -3458,7 +3462,7 @@ render();
 <script src="assets/map_v2_poi.js?v=2"></script>
 <script src="assets/map_v2_dong.js?v=2"></script>
 <script src="assets/map_old.js?v=2"></script>
-<script src="assets/map_m.js?v=8"></script>
+<script src="assets/map_m.js?v=9"></script>
 <script src="assets/map_bar.js?v=3"></script>
 <script src="assets/sb_tabbar.js?v=10"></script>
 <script defer src="assets/sb_feedback.js?v=4"></script>
