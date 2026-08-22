@@ -555,13 +555,12 @@ tr:last-child td{border-bottom:0}
       if (isHist()) {
         var low = histKinds().filter(function (k) { return HKIND[k].jb < 100; });
         if (low.length) {
+          /* ⚠️어떻게 채울 것인지(무엇과 맞춘다든지)는 쓰지 않는다 — 준비 중이라는 사실만 알린다.
+             2026-08-22 석봉님 지시. */
           u += '<br><b>지번</b> · ' + low.map(function (k) {
             var j = HKIND[k].jb;
             return (TYPE[k] || [k])[0] + (j ? ' 약 ' + j + '%' : ' 전부 가려짐');
-          }).join(', ') + '. 국토교통부가 물건종류마다 지번을 다르게 공개해 '
-            + '가려진 자리는 <b>3*</b> 처럼 나옵니다(저희가 지운 것이 아닙니다). '
-            + '<b>공공 필지 자료와 맞춰 지번을 채우는 작업을 하고 있습니다.</b> '
-            + '되는 대로 이 자료에도 반영하겠습니다.';
+          }).join(', ') + '. <b>준비 중입니다. 최대한 빨리 제공할 수 있도록 하겠습니다.</b>';
         }
       }
       $('useNote').innerHTML = u;
