@@ -422,6 +422,18 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
 .m-promo .mp.lh i{color:#0F6E56}
 .m-promo .mp-t{font-size:13px;font-weight:800;letter-spacing:-0.02em}
 .m-promo .mp-d{font-size:10.5px;color:var(--g2);font-weight:600;line-height:1.35}
+/* 모바일 청약 스트립 (2026-08-22) — 첫 화면에서 바로 보이는 청약 일정 */
+.m-apply{margin:14px 0 0;border:1.5px solid var(--blk);background:var(--wh);padding:12px 13px 10px}
+.m-apply .ma-h{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px}
+.m-apply .ma-h b{font-size:13px;font-weight:800;letter-spacing:-0.02em}
+.m-apply .ma-h a{font-size:11.5px;font-weight:700;color:var(--blue);text-decoration:none}
+.m-apply .ma-r{display:flex;gap:8px;align-items:baseline;padding:7px 0;border-top:1px solid var(--hair)}
+.m-apply .ma-r .dt{flex:0 0 auto;font-size:11px;font-weight:800;color:var(--blue)}
+.m-apply .ma-r .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-size:12.5px;font-weight:700;color:var(--blk)}
+.m-apply .ma-r .sb{flex:0 0 auto;font-size:10.5px;color:var(--g2);font-weight:600}
+.m-apply .ma-rem{display:block;margin-top:8px;padding:8px 10px;border-radius:8px;background:#12264A;
+  color:#fff;font-size:11.5px;font-weight:800;text-align:center;text-decoration:none}
 /* 모바일 허브 (m-home 안) */
 .hubgrid-m{display:grid;grid-template-columns:repeat(4,1fr);margin:22px 0 0;
   border-top:2px solid var(--blk);border-left:1px solid var(--hair)}
@@ -756,6 +768,15 @@ document.addEventListener('click',function(e){if(n.classList.contains('m-open')&
       <span class="mp-d">8개 항목 참고용 셀프진단</span>
     </a>
   </div>
+  <!-- 🔴 모바일 청약 스트립(2026-08-22 석봉님 지시 「비중있게 배치, 유입을 늘리기 위한 목적」).
+       모바일 홈은 한 화면 완결형이라 대시보드가 「마켓 대시보드 보기 ↓」 뒤에 숨어 있다.
+       그대로 두면 **휴대폰에서는 청약이 한 번 눌러야 나오는 것**이 된다 — 유입 목적과 어긋난다.
+       그래서 접수 임박 두 건과 무순위 건수만 뽑아 첫 화면에 둔다. -->
+  <div class="m-apply" id="mApply" style="display:none">
+    <div class="ma-h"><b>다가오는 청약</b><a href="apply.html">전체 →</a></div>
+    <div id="maList"></div>
+    <a class="ma-rem" id="maRem" href="apply.html#rem" style="display:none"></a>
+  </div>
   <div class="hubgrid-m" id="hubMob"></div>
   <a class="m-ad" href="#" id="adMob"><i class="ti ti-speakerphone" aria-hidden="true"></i>배너 광고 · 제휴 문의</a>
   <div class="m-ch">
@@ -770,16 +791,27 @@ document.addEventListener('click',function(e){if(n.classList.contains('m-open')&
 <main class="wrap">
   <section class="dash" id="dash">
     <div class="sec rv"><h2>마켓 대시보드</h2><span class="d" id="basis"></span></div>
-    <div class="grid g-main">
+    <!-- 🔴 청약을 대시보드 맨 위로 올렸다(2026-08-22 석봉님 지시 「비중있게 배치, 유입을 늘리기 위한 목적」).
+         전에는 차트 두 개 아래 셋째 줄이라 스크롤해야 보였다. 검색으로 들어오는 사람이
+         가장 많이 찾는 것이 청약이라 첫 화면에 둔다. -->
+    <div class="grid g-main rv">
+      <div class="panel"><h3>다가오는 청약 일정</h3><p class="cap" id="capApply">한국부동산원 청약홈</p><div id="applyList"></div></div>
+      <div class="panel"><h3>청약 한눈에</h3><p class="cap" id="capApply2"></p><div id="applyStat"></div>
+        <a href="apply.html" style="display:inline-block;margin-top:14px;font-size:12.5px;font-weight:700;color:var(--blue);text-decoration:none">전체 청약 일정 보기 →</a></div>
+    </div>
+    <!-- 무순위·잔여세대(「줍줍」) — 통장 없이 지원 가능한 청약. 관심이 가장 몰리는 갈래다.
+         자료는 2026-08-22부터 매일 09:10 에 모으고 있었는데 화면이 없어 아무도 못 보고 있었다. -->
+    <div class="panel rv" id="remPanel" style="margin-top:14px;display:none">
+      <h3>통장 없이 지원 가능한 청약 <span style="font-size:12px;font-weight:700;color:var(--blue);vertical-align:2px">무순위 · 줍줍</span></h3>
+      <p class="cap" id="capRem"></p>
+      <div id="remList"></div>
+      <a href="apply.html#rem" style="display:inline-block;margin-top:12px;font-size:12.5px;font-weight:700;color:var(--blue);text-decoration:none">무순위·잔여세대 전체 보기 →</a>
+    </div>
+    <div class="grid g-main" style="margin-top:14px">
       <div class="panel rv"><h3>일별 실거래 신고 추이</h3><p class="cap">계약일 기준 최근 30일 · 매매 vs 전월세</p>
         <canvas id="trend" height="118"></canvas></div>
       <div class="panel rv"><h3>상품별 거래 비중</h3><p class="cap" id="capProd">수집 데이터 전체</p>
         <canvas id="prod" height="158"></canvas></div>
-    </div>
-    <div class="grid g-main rv" style="margin-top:14px">
-      <div class="panel"><h3>다가오는 청약 일정</h3><p class="cap" id="capApply">한국부동산원 청약홈</p><div id="applyList"></div></div>
-      <div class="panel"><h3>청약 한눈에</h3><p class="cap" id="capApply2"></p><div id="applyStat"></div>
-        <a href="apply.html" style="display:inline-block;margin-top:14px;font-size:12.5px;font-weight:700;color:var(--blue);text-decoration:none">전체 청약 일정 보기 →</a></div>
     </div>
     <!-- 거래량 기준 전환 (2026-08-04). 기본은 아파트 매매 — 데일리 카드뉴스와 같은 기준이다. -->
     <div class="tglrow rv">
@@ -937,6 +969,7 @@ document.addEventListener('click',function(e){if(n.classList.contains('m-open')&
 <script src="data/summary.js"></script>
 <script src="data/stats.js"></script>
 <script src="data/apply.js"></script>
+<script src="data/apply_rem.js"></script>
 <script src="data/hotchip.js" onerror="this.dataset.failed=1"></script>
 <!-- 금리·시장 지표. 없거나 실패해도 홈은 그대로 뜬다(줄만 숨김). -->
 <script src="data/rates.js" onerror="this.dataset.failed=1"></script>
@@ -1175,6 +1208,66 @@ if(window.SB&&SB.apply&&SB.apply.items&&SB.apply.items.length){
     +'<div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--g2);border-top:1px solid var(--hair);margin-top:8px;padding-top:8px"><span>이번 주 접수</span><b style="color:var(--blue)">'+soon7+'건</b></div>'
     +(maxHi?'<div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--g2);border-top:1px solid var(--hair);margin-top:8px;padding-top:8px"><span>최고 분양가</span><b style="color:var(--blue)">'+eok(maxHi)+'</b></div>':"");
 }
+/* 무순위·잔여세대(「줍줍」) — 통장 없이 지원 가능한 청약 (2026-08-22 석봉님 지시)
+   ⚠️ 건수는 자료에 들어 있는 counts 를 그대로 쓰지 않고 **status 로 직접 센다.**
+      counts.open 은 「접수중 + 접수예정」 합이라 화면 말과 어긋난다(실측 8 = 1 + 7). */
+if(window.SB&&SB.applyRem&&SB.applyRem.items&&SB.applyRem.items.length){
+  var RM=SB.applyRem, RI=RM.items;
+  var nowN=RI.filter(function(x){return x.status==='접수중';});
+  var soonN=RI.filter(function(x){return x.status==='접수예정';});
+  var live=nowN.concat(soonN);
+  var pane=document.getElementById('remPanel');
+  if(pane&&live.length){
+    pane.style.display='';
+    document.getElementById('remList').innerHTML=live.slice(0,6).map(function(x){
+      var nm=x.url?'<a href="'+x.url+'" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">'+x.nm+' ↗</a>':x.nm;
+      var on=(x.status==='접수중');
+      var price=(x.amtLo&&x.amtHi)?(eok(x.amtLo)+(x.amtHi!==x.amtLo?'~'+eok(x.amtHi):'')):'';
+      return '<div style="padding:9px 0;border-bottom:1px solid var(--hair)">'
+       +'<div style="display:flex;gap:8px;align-items:baseline">'
+         +'<span style="flex:0 0 auto;font-size:10.5px;font-weight:800;padding:1px 6px;border-radius:4px;'
+         +(on?'background:#12264A;color:#fff':'background:#EEF3FB;color:#1B3F7A')+'">'+(on?'접수중':'예정')+'</span>'
+         +'<b style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px">'+nm+'</b>'
+         +'<span style="font-weight:700;color:var(--blue);white-space:nowrap;font-size:12px">'
+         +(x.rcept_s?x.rcept_s.slice(5).replace('-','/'):'?')+(x.rcept_e&&x.rcept_e!==x.rcept_s?'~'+x.rcept_e.slice(5).replace('-','/'):'')+'</span></div>'
+       +'<div style="display:flex;gap:8px;font-size:11px;color:var(--g2);margin-top:3px">'
+         +'<span>'+(x.cat||'')+' · '+(x.area||'')+(x.hsh?' · '+x.hsh.toLocaleString()+'세대':'')+'</span>'
+         +(price?'<span style="margin-left:auto;color:var(--g1);font-weight:700;white-space:nowrap">'+price+'</span>':'')
+       +'</div></div>';
+    }).join('');
+    document.getElementById('capRem').textContent=
+      '청약통장 없이 지원 가능 · 접수중 '+nowN.length+'건 · 예정 '+soonN.length+'건'
+      +' · 최근 '+(RM.days||30)+'일 공고 '+RI.length+'건 · 단지명을 누르면 청약홈으로 · 기준일 '+RM.updated;
+  }
+}
+/* 모바일 첫 화면 청약 스트립 (2026-08-22) — 대시보드를 안 펴도 보이게 */
+try{(function(){
+  var box=document.getElementById('mApply'); if(!box)return;
+  var today=new Date().toISOString().slice(0,10), rows=[];
+  if(window.SB&&SB.apply&&SB.apply.items){
+    rows=SB.apply.items.filter(function(x){return (x.s||'')>=today;})
+      .sort(function(a,b){return (a.s||'').localeCompare(b.s||'');}).slice(0,3);
+  }
+  if(rows.length){
+    document.getElementById('maList').innerHTML=rows.map(function(x){
+      return '<div class="ma-r"><span class="dt">'+(x.s?x.s.slice(5).replace('-','/'):'?')+'</span>'
+        +'<span class="nm">'+x.nm+'</span>'
+        +'<span class="sb">'+(x.area||'')+(x.n?' '+x.n.toLocaleString()+'세대':'')+'</span></div>';
+    }).join('');
+    box.style.display='';
+  }
+  /* 무순위는 건수만 — 첫 화면에서 자리를 많이 못 준다. 누르면 청약 페이지의 그 섹션으로 간다. */
+  if(window.SB&&SB.applyRem&&SB.applyRem.items){
+    var RI=SB.applyRem.items;
+    var n1=RI.filter(function(x){return x.status==='접수중';}).length;
+    var n2=RI.filter(function(x){return x.status==='접수예정';}).length;
+    if(n1+n2){
+      var a=document.getElementById('maRem');
+      a.textContent='통장 없이 지원 가능한 청약(무순위·줍줍) 접수중 '+n1+' · 예정 '+n2+' →';
+      a.style.display=''; box.style.display='';
+    }
+  }
+})();}catch(e){}
 /* 모바일 구글형: 지역 검색 + 인기 지역 + 지표 한 줄 + 대시보드 접기 */
 try{
   function goMap(v,src){

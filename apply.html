@@ -134,6 +134,18 @@ h1.pg{font-size:clamp(34px,5.5vw,60px);letter-spacing:-0.045em;font-weight:800;m
       <small>분양가가 주변 시세와 얼마나 차이 나는지 지도에서 바로 확인하세요 · 전국 실거래가 · 전국 순차 업데이트 중</small></span>
     <span class="mc-a" aria-hidden="true">→</span>
   </a>
+  <!-- 무순위·잔여세대(「줍줍」) — 청약통장 없이 지원 가능한 공고 (2026-08-22 석봉님 지시).
+       자료는 2026-08-22부터 매일 09:10 에 모으고 있었는데 화면이 없어 아무도 못 보던 것이다.
+       ⚠️ 아래 본 목록(SB.apply)은 아파트 분양 공고이고, 이건 **다른 자료**다. 섞지 않는다. -->
+  <section id="rem" style="margin:18px 0 6px;border:1.5px solid #12264A;border-radius:14px;padding:15px 17px 8px;background:#fff">
+    <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">
+      <h2 style="font-size:17px;margin:0;letter-spacing:-.02em">통장 없이 지원 가능한 청약</h2>
+      <span style="font-size:12px;font-weight:800;color:#1B3F7A;background:#EEF3FB;border-radius:5px;padding:2px 7px">무순위 · 줍줍</span>
+    </div>
+    <p class="pgsub" id="remCap" style="margin:6px 0 10px"></p>
+    <div id="remBox"><div class="empty">불러오는 중…</div></div>
+  </section>
+
   <form class="ap-search" id="apSearch">
     <input id="apQ" type="search" placeholder="지역·단지 검색 (예: 화성, 검단, 자이)" autocomplete="off">
     <button type="submit">검색</button>
@@ -156,6 +168,7 @@ h1.pg{font-size:clamp(34px,5.5vw,60px);letter-spacing:-0.045em;font-weight:800;m
   <div class="fine">원자료: 한국부동산원 청약홈 · 편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 무단 전재·재배포 금지 · 방문 통계 수집을 위해 Google Analytics(쿠키)를 사용합니다</div>
 </footer>
 <script src="data/apply.js"></script>
+<script src="data/apply_rem.js"></script>
 <script>
 (function(){
 function eok(man){var e=man/10000;if(e>=100)return Math.round(e).toLocaleString()+"억";
@@ -260,6 +273,63 @@ document.querySelectorAll("#tabs .tab").forEach(function(t){
     t.classList.add("on");render(t.dataset.f);
   });
 });
+})();
+/* ══ 무순위·잔여세대(「줍줍」) 목록 (2026-08-22) ═════════════════════════
+   ⚠️ 위 본 목록(SB.apply)과 **다른 자료**다(SB.applyRem). 한 표에 섞지 않는다 —
+      아파트 분양 공고와 무순위·오피스텔은 자격도 일정도 성격이 다르다.
+   ⚠️ 건수는 `counts` 를 쓰지 않고 status 로 직접 센다. counts.open 은
+      「접수중 + 접수예정」 합이라 화면 말과 어긋난다(실측 8 = 1 + 7). */
+(function(){
+  var box=document.getElementById('remBox'), cap=document.getElementById('remCap');
+  if(!box)return;
+  var RM=(window.SB&&SB.applyRem)||null;
+  if(!RM||!RM.items||!RM.items.length){
+    box.innerHTML='<div class="empty">무순위·잔여세대 공고가 아직 연결되지 않았습니다.</div>';
+    return;
+  }
+  function esc(x){return String(x==null?'':x).replace(/[&<>"]/g,function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function eok(m){var v=(+m||0)/10000; if(!m)return '';
+    return (v>=100?Math.round(v):(''+v.toFixed(1)).replace(/\.0$/,''))+'억';}
+  function md(d){return d?esc(d).slice(5).replace('-','/'):'?';}
+  var RI=RM.items;
+  var now=RI.filter(function(x){return x.status==='접수중';});
+  var soon=RI.filter(function(x){return x.status==='접수예정';});
+  var live=now.concat(soon);
+  cap.textContent='청약통장 없이 지원 가능 · 접수중 '+now.length+'건 · 예정 '+soon.length+'건'
+    +' · 최근 '+(RM.days||30)+'일 공고 '+RI.length+'건 · 자료: 한국부동산원 청약홈 · 기준일 '+RM.updated;
+  var show=live.length?live:RI.slice(0,10);
+  box.innerHTML=show.map(function(x){
+    var on=(x.status==='접수중');
+    var nm=x.url?('<a href="'+esc(x.url)+'" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">'+esc(x.nm)+' ↗</a>'):esc(x.nm);
+    var price=(x.amtLo?eok(x.amtLo)+((x.amtHi&&x.amtHi!==x.amtLo)?'~'+eok(x.amtHi):''):'');
+    /* 🔴 ㎡ 옆에는 평을 반드시 병기한다(CLAUDE.md 2026-07-26 원칙).
+       100㎡ 미만은 소수 1자리, 이상은 정수. 평당가도 함께 — 분양가 비교의 기준이 된다. */
+    var py=function(m){var v=(+m||0)/3.305785;return v?(m<100?Math.round(v*10)/10:Math.round(v)):0;};
+    var m1=function(m){return (Math.round(m*10)/10)+'㎡('+py(m)+'평)';};
+    var ex=(x.exLo?m1(x.exLo)+((x.exHi&&x.exHi!==x.exLo)?'~'+m1(x.exHi):''):'');
+    var pp=(x.ppLo?('평당 '+x.ppLo.toLocaleString()+((x.ppHi&&x.ppHi!==x.ppLo)?'~'+x.ppHi.toLocaleString():'')+'만('+esc(x.ppBase||'전용')+')'):'');
+    return '<div style="padding:10px 0;border-bottom:1px solid #E3E8F0">'
+      +'<div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap">'
+      +'<span style="flex:0 0 auto;font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:5px;'
+      +(on?'background:#12264A;color:#fff':(x.status==='접수예정'?'background:#EEF3FB;color:#1B3F7A':'background:#F0F0EE;color:#7A8698'))+'">'
+      +esc(x.status)+'</span>'
+      +'<b style="flex:1;min-width:150px;font-size:14px">'+nm+'</b>'
+      +'<span style="font-weight:800;color:#1B3F7A;white-space:nowrap;font-size:12.5px">'
+      +md(x.rcept_s)+((x.rcept_e&&x.rcept_e!==x.rcept_s)?'~'+md(x.rcept_e):'')+' 접수</span></div>'
+      +'<div style="display:flex;gap:10px;flex-wrap:wrap;font-size:11.5px;color:#7A8698;margin-top:4px">'
+      +'<span>'+esc(x.cat||'')+' · '+esc(x.area||'')+(x.hsh?' · '+x.hsh.toLocaleString()+'세대':'')+'</span>'
+      +(ex?'<span>'+esc(x.arBase||'전용')+' '+ex+'</span>':'')
+      +(pp?'<span>'+pp+'</span>':'')
+      +(x.win?'<span>발표 '+md(x.win)+'</span>':'')
+      +(price?'<span style="margin-left:auto;color:#5A6478;font-weight:800;white-space:nowrap">'+price+'</span>':'')
+      +'</div>'
+      +(x.addr?'<div style="font-size:11px;color:#9AA3B2;margin-top:2px">'+esc(x.addr)+'</div>':'')
+      +'</div>';
+  }).join('')
+  +'<p class="notice2" style="margin:10px 0 0">※ 무순위·잔여세대는 <b>청약통장이 없어도</b> 지원할 수 있는 대신, '
+  +'거주지·재당첨 제한 등 조건이 공고마다 다릅니다. 반드시 공고문을 확인하세요. '
+  +'오피스텔·도시형생활주택은 주택 수 산입 여부가 다를 수 있습니다. 본 정보는 투자 권유가 아닙니다.</p>';
 })();
 </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
