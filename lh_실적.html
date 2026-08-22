@@ -30,14 +30,18 @@ h1{font-size:25px;letter-spacing:-.02em;margin:0 0 4px}
 .loc{color:var(--g1);font-size:13.5px;margin:0 0 16px}
 .tag{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:4px;background:var(--tint);
   color:var(--navy2);font-size:11px;font-weight:800;vertical-align:2px}
-h2{font-size:16px;margin:26px 0 8px;padding-bottom:6px;border-bottom:1.5px solid var(--navy)}
-.kpi{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 6px}
-.kpi div{flex:1;min-width:132px;background:var(--tint);border-radius:12px;padding:13px 15px}
-.kpi .n{font-size:24px;font-weight:800;color:var(--navy);line-height:1.1}
-.kpi .l{font-size:11.5px;color:var(--g1);margin-top:4px}
-table{width:100%;border-collapse:collapse;font-size:14px}
-th{background:var(--navy);color:#fff;font-weight:700;font-size:12px;padding:8px 10px;text-align:left}
-td{padding:8px 10px;border-bottom:1px solid var(--hair)}
+/* 🔴 컴팩트 우선(석봉님 상시 지시). 박스는 **내용에 맞춰** 줄인다 —
+   빈 상자를 크게 벌려 놓는 것이 가장 안 좋다. 값이 세 개면 세 개만큼만 차지한다. */
+h2{font-size:15px;margin:20px 0 7px;padding-bottom:5px;border-bottom:1.5px solid var(--navy)}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,186px));gap:8px;margin:0 0 6px;
+  justify-content:start}   /* 상한을 둔다 — 값 세 개가 화면 폭만큼 벌어지면 그게 여백이다 */
+.kpi div{background:var(--tint);border-radius:10px;padding:10px 12px}
+.kpi .n{font-size:20px;font-weight:800;color:var(--navy);line-height:1.15;letter-spacing:-.02em}
+.kpi .n em{font-style:normal;font-size:12.5px;font-weight:700;color:var(--navy2)}
+.kpi .l{font-size:11px;color:var(--g1);margin-top:2px;line-height:1.35}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{background:var(--navy);color:#fff;font-weight:700;font-size:11.5px;padding:6px 10px;text-align:left}
+td{padding:6px 10px;border-bottom:1px solid var(--hair)}
 td.n{text-align:right;font-variant-numeric:tabular-nums}
 tr:last-child td{border-bottom:0}
 .note{font-size:12.5px;color:var(--g1);background:var(--tint);border-radius:10px;padding:13px 15px;margin:14px 0 0;line-height:1.7}
@@ -47,12 +51,28 @@ tr:last-child td{border-bottom:0}
 .cta.line{background:#fff;color:var(--navy);border:1.5px solid var(--navy)}
 .msg{padding:40px 0;text-align:center;color:var(--g2)}
 /* 인근 정보 카드 (2026-08-22 개편) */
-.cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 0 4px}
-.card{border:1px solid var(--hair);border-radius:14px;padding:15px 16px;background:#fff}
-.card h3{font-size:13px;margin:0 0 9px;color:var(--navy);letter-spacing:-.01em;
+/* 카드는 내용 높이만큼만. 4칸을 억지로 같은 높이로 늘이지 않는다(빈칸이 생긴다). */
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 4px;align-items:start}
+.card{border:1px solid var(--hair);border-radius:12px;padding:12px 14px;background:#fff}
+.card h3{font-size:12.5px;margin:0 0 7px;color:var(--navy);letter-spacing:-.01em;
   display:flex;align-items:baseline;justify-content:space-between;gap:8px}
-.card h3 small{font-size:10.5px;font-weight:600;color:var(--g2)}
-.dl{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid var(--hair);font-size:13px}
+.card h3 small{font-size:10px;font-weight:600;color:var(--g2)}
+/* 수익률 한 줄 — 임대 카드 안에 넣는다. 상자를 하나 더 만들 만큼의 정보가 아니다. */
+.yield{display:flex;align-items:baseline;gap:7px;margin:8px 0 0;padding:8px 10px;
+  background:var(--tint);border-radius:9px}
+.yield b{font-size:18px;font-weight:800;color:var(--navy);letter-spacing:-.02em}
+.yield span{font-size:10.5px;color:var(--g1);line-height:1.35}
+/* 매입 추이 막대 — 그래프 하나 그리자고 라이브러리를 얹지 않는다. div 높이면 된다. */
+.trend{display:flex;align-items:flex-end;gap:3px;height:54px;margin:2px 0 0}
+.trend .b{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;height:100%}
+.trend .bar{background:var(--navy2);border-radius:3px 3px 0 0;min-height:2px}
+.trend .b.z .bar{background:var(--hair)}
+.trend .b.hi .bar{background:var(--navy)}
+.tlab{display:flex;gap:3px;margin:3px 0 0}
+.tlab span{flex:1;min-width:0;text-align:center;font-size:9.5px;color:var(--g2);font-weight:700}
+.tval{display:flex;gap:3px}
+.tval span{flex:1;min-width:0;text-align:center;font-size:9.5px;color:var(--navy2);font-weight:800}
+.dl{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-top:1px solid var(--hair);font-size:12.5px}
 .dl:first-of-type{border-top:0}
 .dl .k{color:var(--g1)}
 .dl .v{font-weight:800;color:var(--navy);white-space:nowrap;font-variant-numeric:tabular-nums}
@@ -126,12 +146,33 @@ tr:last-child td{border-bottom:0}
   };
   document.body.appendChild(sc);
 
+  /* 이 법정동 연도별 매입 추이 — 「늘고 있나 줄고 있나」가 시행사의 물음이다.
+     ⚠️ 라이브러리를 얹지 않는다. 막대 열 개면 div 높이로 충분하다(그래프 하나에 200KB 는 낭비).
+     ⚠️ 거래가 없는 해도 **빈칸으로 남긴다** — 있는 해만 이으면 끊긴 기간이 안 보인다. */
+  function trendBars(byYear){
+    var ys=Object.keys(byYear||{}).filter(function(y){return /^\d{4}$/.test(y);});
+    if(ys.length<2)return '';
+    var now=(new Date()).getFullYear(), from=Math.max(Math.min.apply(null,ys.map(Number)), now-9);
+    var span=[], mx=0;
+    for(var y=from;y<=now;y++){ var v=byYear[String(y)]||0; span.push([y,v]); if(v>mx)mx=v; }
+    if(!mx)return '';
+    return '<div class="trend">'+span.map(function(p){
+        var h=Math.round(p[1]/mx*100);
+        return '<div class="b'+(p[1]?(p[1]===mx?' hi':''):' z')+'">'
+          +'<div class="bar" style="height:'+(p[1]?Math.max(h,4):2)+'%"></div></div>';
+      }).join('')+'</div>'
+      +'<div class="tval">'+span.map(function(p){return '<span>'+(p[1]||'')+'</span>';}).join('')+'</div>'
+      +'<div class="tlab">'+span.map(function(p){
+        return '<span>'+((p[0]-from)%2===0||p[0]===now?String(p[0]).slice(2):'')+'</span>';}).join('')+'</div>';
+  }
+
   function draw(r,arr){
     var ad=(r.ad||'').replace(/\s{2,}/g,' ');
     document.title=ad+' · LH 매입 실적 · 석봉 부동산 정보방';
     var den=(r.n||0)-(r.u||0), wp=den>0?Math.round((r.w||0)/den*100):null;
     var ys=Object.keys(r.y||{}).sort();
     var last=ys.length?ys[ys.length-1]:'';
+    var multiKind=false;   /* 매입 형태가 두 종류 이상인가 — 안내 문구가 갈린다 */
 
     /* 같은 법정동의 실적을 함께 보여 준다 — 「이 동네에서 사 주기는 하나」가 이 화면의 물음이다.
        ⚠️ PNU 앞 10자리가 법정동이다. 자료를 새로 만들지 않고 받아 둔 배열에서 센다. */
@@ -162,18 +203,31 @@ tr:last-child td{border-bottom:0}
       +'<div><div class="n">'+(last?e(last)+'년':'-')+'</div><div class="l">가장 최근 매입</div></div>'
       +'</div>'
 
+      /* ⚠️ 값이 한 종류뿐이면 **표를 만들지 않는다**(2026-08-22). 머리글 두 줄에 값 한 줄이면
+         표가 정보보다 크다. 화곡동이 실제로 「2~3년 27호 100%」 한 줄뿐이었다. */
       +'<h2>매입 형태</h2>'
-      +'<table><tr><th>구분</th><th style="text-align:right">호수</th><th style="text-align:right">비중</th></tr>'
-      +row('신축 매입 (준공 1년 이내)',r.w||0)
-      +row('2~3년',r.m||0)
-      +row('4년 이상',r.o||0)
-      +(r.u?'<tr><td>매입년도 미상</td><td class="n">'+r.u+'호</td><td class="n">-</td></tr>':'')
-      +'</table>'
-      +'<div class="note">비중은 <b>매입년도가 확인된 '+den+'호</b>를 분모로 했습니다. '
+      +(function(){
+        var parts=[['신축 매입 (준공 1년 이내)',r.w||0],['2~3년',r.m||0],['4년 이상',r.o||0]]
+          .filter(function(x){return x[1];});
+        if(r.u)parts.push(['매입년도 미상',r.u]);
+        multiKind = parts.length>1;
+        if(parts.length<=1){
+          var one=parts[0]||['-',0];
+          return '<div class="note" style="margin:0">이 자리 '+(r.n||0)+'호는 <b>모두 '+e(one[0])+'</b>입니다.</div>';
+        }
+        return '<table><tr><th>구분</th><th style="text-align:right">호수</th><th style="text-align:right">비중</th></tr>'
+          +parts.map(function(x){
+            var pct=den>0?Math.round(x[1]/den*100):0;
+            return '<tr><td>'+e(x[0])+'</td><td class="n">'+x[1]+'호</td><td class="n">'
+              +(x[0]==='매입년도 미상'?'-':pct+'%')+'</td></tr>';}).join('')+'</table>';
+      })()
+      /* ⚠️ 한 종류뿐이라 표를 안 그렸으면 「비중」을 설명하지 않는다 — 없는 것을 설명하는 꼴이다 */
+      +'<div class="note">'
+      +(multiKind?'비중은 <b>매입년도가 확인된 '+den+'호</b>를 분모로 했습니다. ':'')
       +'「신축 매입」은 <b>준공 1년 이내</b>에 LH 가 사들인 것을 말합니다. '
       +'원본에 약정 구분 항목이 없어 <b>매입약정 여부는 알 수 없습니다.</b></div>'
 
-      +(ys.length?('<h2>매입년도별</h2><table><tr><th>연도</th><th style="text-align:right">호수</th></tr>'
+      +(ys.length>1?('<h2>매입년도별</h2><table><tr><th>연도</th><th style="text-align:right">호수</th></tr>'
         +ys.slice().reverse().map(function(y){
           return '<tr><td>'+e(y)+'년</td><td class="n">'+r.y[y]+'호</td></tr>';}).join('')
         +'</table>'):'')
@@ -184,6 +238,7 @@ tr:last-child td{border-bottom:0}
       +'<div><div class="n">'+sameN.toLocaleString()+'호</div><div class="l">합계 매입 호수</div></div>'
       +'<div><div class="n">'+recentN.toLocaleString()+'호</div><div class="l">최근 5년 매입</div></div>'
       +'</div>'
+      +trendBars(sameY)
       +'<div class="note">같은 법정동 안에서만 셌습니다. 반경으로 보시려면 아래 진단을 이용하세요.</div>'
 
       /* 아래 네 칸은 자료가 도착하는 대로 채운다(2026-08-22 석봉님 지시로 신설).
@@ -266,12 +321,6 @@ tr:last-child td{border-bottom:0}
         if(t.u==='전세'&&t.p)je.push(t.p);
         if(t.u==='월세'&&t.r){wo.push(t.r); woB.push(t.p||0);}
       });});
-      put('cRent',(je.length||wo.length)
-        ? (dl('전세 보증금 중위',eok(med(je)),je.length?je.length+'건':'표본 없음')
-          +dl('월세 중위',wo.length?(eok(med(woB))+' / '+med(wo).toLocaleString()+'만'):'-',
-              wo.length?wo.length+'건':'표본 없음')
-          +'<div class="none" style="padding-top:7px">전용 19~85㎡ · 국토부 실거래 신고분</div>')
-        : '');
       /* 매매 — 평당가(전용)로 낸다. 우리 표기 원칙이 평당이다. */
       var pys=[], amt=[];
       near.forEach(function(x){ (x.txs||[]).forEach(function(t){
@@ -279,10 +328,36 @@ tr:last-child td{border-bottom:0}
         if(a<19||a>85)return;
         pys.push(t.p/a*3.305785); amt.push(t.p);
       });});
+      /* 🔴 표면 임대수익률 역산 (2026-08-22 석봉님 요청).
+         (월세×12) ÷ (매매가 − 보증금). 셋 다 **같은 반경·같은 면적대의 중위**라 서로 견줄 만하다.
+         ⚠️ 세금·공실·수선비·대출이자를 뺀 값이 아니다 — 그렇게 읽히지 않게 밑에 한 줄로 밝힌다.
+         ⚠️ 보증금이 매매가보다 크면(표본이 얇은 동네) 음수가 나온다. 그럴 땐 아예 안 그린다. */
+      var yBox='';
+      if(wo.length&&pys.length){
+        var P=med(amt), B=med(woB), M=med(wo);
+        var invest=P-B;
+        if(invest>0&&M>0){
+          var yr=M*12/invest*100;
+          /* ⚠️ 식에 적는 숫자는 **계산에 쓴 값 그대로**여야 한다(2026-08-22 검증에서 걸렸다).
+             처음엔 「2.5억 − 0.8억」으로 적었는데 그대로 계산하면 3.88%, 화면은 4.00% 였다.
+             억으로 반올림한 값을 식에 적었기 때문이다. 만원 단위로 적어 손검산이 맞게 한다. */
+          if(yr>0&&yr<30) yBox='<div class="yield"><b>'+(Math.round(yr*100)/100).toFixed(2)+'%</b>'
+            +'<span>표면 수익률 · 월세 '+M.toLocaleString()+'만×12 ÷ (매매 '+P.toLocaleString()
+            +'만 − 보증금 '+B.toLocaleString()+'만)<br>'
+            +'세금·공실·수선비·대출이자는 빼지 않은 값입니다</span></div>';
+        }
+      }
+      put('cRent',(je.length||wo.length)
+        ? (dl('전세 보증금 중위',eok(med(je)),je.length?je.length+'건':'표본 없음')
+          +dl('월세 중위',wo.length?(eok(med(woB))+' / '+med(wo).toLocaleString()+'만'):'-',
+              wo.length?wo.length+'건':'표본 없음')
+          +yBox
+          +'<div class="none" style="padding-top:6px">전용 19~85㎡ · 국토부 실거래 신고분</div>')
+        : '');
       put('cSale', pys.length
         ? (dl('평당 중위',Math.round(med(pys)).toLocaleString()+'만','전용')
           +dl('거래가 중위',eok(med(amt)),pys.length+'건')
-          +'<div class="none" style="padding-top:7px">전용 19~85㎡ · 국토부 실거래 신고분</div>')
+          +'<div class="none" style="padding-top:6px">전용 19~85㎡ · 국토부 실거래 신고분</div>')
         : '');
     },function(){ put('cRent',''); put('cSale',''); });
 
