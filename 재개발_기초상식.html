@@ -46,7 +46,10 @@ h3{font-size:16px;margin:18px 0 7px;color:var(--ink)}
 .step .impact{display:inline-block;margin-top:4px;font-size:12px;color:var(--redev);background:#f3e4dd;padding:1px 8px;border-radius:20px;font-weight:600}
 dl{margin:4px 0}dt{font-weight:700;margin-top:12px}dd{margin:2px 0 0;color:#40382c;font-size:15px}
 .tl{margin:8px 0}
-.tl .ti{display:flex;gap:12px;padding:9px 0;border-bottom:1px dotted #e3ddd0}
+/* 🔴 클래스 `ti` 는 Tabler 아이콘 폰트가 가져간다(2026-08-22 발견) — `tli` 로 바꿨다.
+   `sb_tabbar.js` 가 아이콘 CSS 를 넣으면 `.ti{font-family:tabler-icons!important}` 가 걸려
+   이 줄의 글자가 아이콘 폰트로 그려진다(숫자·영문이 통째로 사라진다). */
+.tl .tli{display:flex;gap:12px;padding:9px 0;border-bottom:1px dotted #e3ddd0}
 .tl .tp{flex:0 0 128px;font-weight:700;font-size:14px}
 .tl .tx{font-size:14.5px;color:#40382c}
 .tag{display:inline-block;font-size:11.5px;font-weight:700;padding:1px 8px;border-radius:20px;margin-left:6px}
@@ -158,12 +161,12 @@ a.back:active{transform:translateY(2px);box-shadow:0 0 0 rgba(0,0,0,.22)}
 </div>
 <h3>투기과열지구에서 거래(조합원 지위 양도)가 막히는 시점</h3>
 <div class="tl">
-<div class="ti"><div class="tp">조합설립 전</div><div class="tx">헌 주택 자체로 거래 가능<span class="tag ok">거래 가능</span></div></div>
-<div class="ti"><div class="tp">재건축 · 조합설립인가 후</div><div class="tx">투기과열지구면 이후에 산 사람은 조합원이 못 되고 현금청산. 재건축은 이렇게 이른 단계부터 막힌다<span class="tag no">거래 막힘</span></div></div>
-<div class="ti"><div class="tp">재개발 · 관리처분인가 후</div><div class="tx">재개발은 재건축보다 늦게, 관리처분인가부터 조합원 지위 양도가 금지된다<span class="tag no">거래 막힘</span></div></div>
-<div class="ti"><div class="tp">관리처분인가 ~ 이전등기</div><div class="tx">투기과열지구 입주권은 이 구간 전매 금지<span class="tag no">거래 묶임</span></div></div>
-<div class="ti"><div class="tp">일반분양 당첨 후</div><div class="tx">분양권은 전매제한 기간이 끝나야 거래<span class="tag no">기간 후 가능</span></div></div>
-<div class="ti"><div class="tp">준공·이전등기 후</div><div class="tx">일반 아파트처럼 자유롭게 거래<span class="tag ok">거래 가능</span></div></div>
+<div class="tli"><div class="tp">조합설립 전</div><div class="tx">헌 주택 자체로 거래 가능<span class="tag ok">거래 가능</span></div></div>
+<div class="tli"><div class="tp">재건축 · 조합설립인가 후</div><div class="tx">투기과열지구면 이후에 산 사람은 조합원이 못 되고 현금청산. 재건축은 이렇게 이른 단계부터 막힌다<span class="tag no">거래 막힘</span></div></div>
+<div class="tli"><div class="tp">재개발 · 관리처분인가 후</div><div class="tx">재개발은 재건축보다 늦게, 관리처분인가부터 조합원 지위 양도가 금지된다<span class="tag no">거래 막힘</span></div></div>
+<div class="tli"><div class="tp">관리처분인가 ~ 이전등기</div><div class="tx">투기과열지구 입주권은 이 구간 전매 금지<span class="tag no">거래 묶임</span></div></div>
+<div class="tli"><div class="tp">일반분양 당첨 후</div><div class="tx">분양권은 전매제한 기간이 끝나야 거래<span class="tag no">기간 후 가능</span></div></div>
+<div class="tli"><div class="tp">준공·이전등기 후</div><div class="tx">일반 아파트처럼 자유롭게 거래<span class="tag ok">거래 가능</span></div></div>
 </div>
 <div class="law"><b>정리하면 재건축은 조합설립인가부터, 재개발은 관리처분인가부터 투기과열지구에서 조합원 지위 양도가 막힙니다.</b> 매매 자체가 불법은 아니지만 사도 입주권을 못 받아 사실상 거래가 안 됩니다. 투기과열지구가 아니면 이 제한은 없습니다. 예외로는 상속, 이혼에 따른 재산분할, 1세대 1주택자로 10년 보유·5년 거주, 세대원 전원 해외이주, 조합설립인가 후 3년 이상 사업시행인가 미신청, 사업시행인가 후 3년 내 미착공, 법원 판결 등이 있습니다. 지역 지정 여부와 예외는 구역마다 다르니 실제 매매 전에는 반드시 법률 검토가 필요합니다. (근거: 도시 및 주거환경정비법 제39조 · 작성 2026년 7월 24일)</div>
 </div></details>
@@ -195,9 +198,9 @@ a.back:active{transform:translateY(2px);box-shadow:0 0 0 rgba(0,0,0,.22)}
 <h3>1. 집값 구간별 상한 (수도권·규제지역)</h3>
 <p>집값에 따라 빌릴 수 있는 절대 상한이 정해져 있습니다. LTV와 별개로 먼저 걸리는 천장입니다.</p>
 <div class="tl">
-<div class="ti"><div class="tp">15억 이하</div><div class="tx">최대 <b>6억</b></div></div>
-<div class="ti"><div class="tp">15억 초과 25억 이하</div><div class="tx">최대 <b>4억</b></div></div>
-<div class="ti"><div class="tp">25억 초과</div><div class="tx">최대 <b>2억</b></div></div>
+<div class="tli"><div class="tp">15억 이하</div><div class="tx">최대 <b>6억</b></div></div>
+<div class="tli"><div class="tp">15억 초과 25억 이하</div><div class="tx">최대 <b>4억</b></div></div>
+<div class="tli"><div class="tp">25억 초과</div><div class="tx">최대 <b>2억</b></div></div>
 </div>
 <h3>2. LTV (집값 대비 비율)</h3>
 <p>규제지역 40%, 비규제지역 70%, 생애최초는 70%까지입니다.</p>

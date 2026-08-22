@@ -32,21 +32,43 @@
 .wrap{max-width:960px}
 h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;margin:48px 0 6px}
 .pgsub{color:var(--muted);font-size:13.5px;margin:0 0 26px}
-.filters{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 22px}
-.filters button{border:1px solid var(--text);border-radius:100px;padding:7px 16px;font-size:12.5px;
-  font-weight:700;cursor:pointer;background:transparent;color:var(--text);font-family:inherit}
+/* 🔴 버튼 크기를 같게, 글자는 가운데로(2026-08-22 석봉님 지시).
+   flex + padding 이라 글자 길이대로 폭이 제각각이었다(실측 50~81px). 격자로 바꿔 칸을 나눈다. */
+.filters{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin:0 0 22px}
+.filters button{border:1px solid var(--text);border-radius:100px;padding:8px 4px;font-size:12.5px;
+  font-weight:700;cursor:pointer;background:transparent;color:var(--text);font-family:inherit;
+  text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+@media (max-width:720px){
+  .filters{grid-template-columns:repeat(4,1fr);gap:6px}
+  .filters button{font-size:12px;padding:8px 2px}
+}
 .filters button.on{background:var(--text);color:#fff}
 .plist{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:60px}
 .pcard{background:var(--soft);border:1px solid var(--hair);border-radius:14px;overflow:hidden;
   text-decoration:none;display:flex;flex-direction:column;transition:border-color 140ms ease}
 .pcard:hover{border-color:var(--text)}
-.pcard .th{width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--gray);display:block}
+/* 🔴 미리보기 이미지가 흉하게 잘리던 것(2026-08-22 석봉님 지적).
+   우리 카드뉴스·인포그래픽은 **1080×1350 세로(4:5)** 인데 4:3 상자에 cover 로 넣어
+   위아래가 반씩 잘려 문장 한가운데가 보였다. 상자를 16:10 으로 눕히고 **위쪽을 기준**으로
+   자른다 — 우리 그래픽은 위에 제목·머리글이 있어 그 띠만 보여도 무슨 글인지 안다. */
+.pcard .th{width:100%;aspect-ratio:16/10;object-fit:cover;object-position:top center;
+  background:var(--gray);display:block}
 .pcard .bd{padding:14px 16px 16px;display:block}
 /* 카드 속 요소는 <a> 안이라 전부 span으로 짰다. block을 주지 않으면
    분류 라벨이 제목에 들러붙는다('청약수원 당수지구…', 2026-08-02 첫 배포에서 확인) */
 .pcard .bd>span{display:block}
 .pcard .cat{font-size:11px;font-weight:800;letter-spacing:.06em;color:var(--muted)}
-.pcard .ti{font-size:15.5px;font-weight:800;line-height:1.4;letter-spacing:-0.02em;color:var(--text);margin:5px 0 6px}
+/* 🔴 클래스 이름 `ti` 를 쓰지 말 것 — **Tabler 아이콘 폰트가 가져간다**(2026-08-22 발견).
+   `@import tabler-icons` 가 `.ti{font-family:tabler-icons!important}` 를 걸어 두는데,
+   우리가 제목에 같은 이름을 써서 **제목 글꼴이 아이콘 폰트가 됐다.** 한글은 대체 글꼴로
+   넘어가 멀쩡했지만 **숫자 글리프가 없어 통째로 사라졌다** —
+   「3기 신도시 사전청약…」이 화면에는 「기 신도시 사전청약…」으로 나갔다.
+   석봉님이 「제목이 안 이쁘게 잘려 있다」고 하신 것이 이것이다. `pt` 로 바꾼다. */
+.pcard .pt{font-size:15.5px;font-weight:800;line-height:1.4;letter-spacing:-0.02em;color:var(--text);margin:5px 0 6px}
+/* 제목이 두 줄·세 줄로 들쭉날쭉해 카드 높이가 어긋났다. `.bd>span{display:block}` 을 이기려면
+   같은 무게(.pcard .bd>span.ti)로 적어야 한다 — 아래 `.ex` 가 같은 이유로 그렇게 돼 있다. */
+.pcard .bd>span.pt{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  overflow:hidden;word-break:keep-all;min-height:2.8em}
 /* .bd>span 규칙보다 뒤에 오고 선택자도 같은 무게라 이쪽이 이긴다.
    앞 규칙이 이기면 3줄 자르기가 풀려 카드 높이가 제각각이 된다(2026-08-02 확인) */
 .pcard .bd>span.ex{font-size:13px;color:var(--muted);line-height:1.6;
@@ -224,7 +246,7 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
     var th=p.img?'<img class="th" src="'+encodeURI(p.img)+'" alt="" loading="lazy">':'';
     return '<a class="pcard" href="'+encodeURI('글/'+p.f)+'">'+th
       +'<span class="bd"><span class="cat">'+esc(p.c)+'</span>'
-      +'<span class="ti">'+esc(p.t)+'</span>'
+      +'<span class="pt">'+esc(p.t)+'</span>'
       +'<span class="ex">'+esc(p.e)+'</span>'
       +'<span class="dt">'+esc(p.d)+'</span></span></a>';
   }
