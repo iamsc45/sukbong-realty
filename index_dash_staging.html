@@ -496,7 +496,37 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
 @media(max-width:720px){.applysec{margin:0 0 18px}}
 /* 시안: 검은 지표 블록을 대시보드 안으로 옮겼을 때의 모서리·여백 */
 .dash .block{border-radius:18px;overflow:hidden;margin:0 0 16px}
-@media(max-width:720px){.dash .block{border-radius:14px}}
+
+/* 🔴 모바일에서는 **검은색을 벗긴다**(2026-08-22 석봉님 지시).
+   데스크톱은 첫 화면에 바로 보이는 자리라 검게 해서 눈에 띄게 한 것이고,
+   모바일은 「마켓 대시보드 보기 ↓」 뒤에 접혀 있어 눈길을 끌 이유가 없다.
+   접고 들어온 사람에게는 **주변 흰 패널과 같은 양식으로 값만** 보이는 편이 읽기 좋다. */
+@media(max-width:720px){
+  .dash .block{background:var(--wh);color:var(--ink,#1a1a1a);border:1px solid var(--hair);
+    border-radius:14px;margin:0 0 14px}
+  .dash .block-in{padding:16px 15px 12px}
+  .dash .blabel{color:var(--g2);letter-spacing:.12em;font-size:10px}
+  .dash .kpis{grid-template-columns:repeat(2,1fr);gap:12px 0;margin-top:11px}
+  .dash .kpi{border-left:0;padding:0 10px 0 0}
+  .dash .kpi:nth-child(even){padding:0 0 0 12px;border-left:1px solid var(--hair)}
+  .dash .kpi .v{font-size:20px}
+  .dash .kpi .v small{color:var(--g2);font-size:12px}
+  .dash .kpi .l{color:var(--g2);font-size:10.5px;line-height:1.4}
+  /* 숫자 색은 어두운 배경용이라 흰 바탕에서는 안 읽힌다 — 브랜드 네이비 계열로 */
+  .dash .kpi:nth-child(1) .v,.dash .kpi:nth-child(2) .v,
+  .dash .kpi:nth-child(3) .v{color:#12264A}
+  .dash .rates{border-top:1px solid var(--hair);padding:12px 15px 14px}
+  .dash .rates .rlab{color:var(--g2);font-size:10px}
+  .dash .rc{border-left:0;padding:0 6px}
+  .dash .rc .rv{color:#12264A;font-size:15px}
+  .dash .rc .rv small{color:var(--g2)}
+  .dash .rc .rn{color:var(--g2)}
+  .dash .rc .rd{color:var(--g2);opacity:.8}
+  .dash .rc.hi .rv{color:#B23A48}
+  .dash .rc.pt .rv{color:#1E7A5A}
+  /* 흐르는 띠는 좁은 화면에서 읽히지도 않고 자리만 먹는다 */
+  .dash .ticker{display:none}
+}
 </style><meta property="og:title" content="석봉 부동산 정보방">
 <meta property="og:description" content="전국 실거래가를 지도와 대시보드로 · 매일 갱신되는 아파트·오피스텔·빌딩 실거래 데이터, 평당가·전세가율·청약 정보까지 무료.">
 <meta property="og:type" content="website">
