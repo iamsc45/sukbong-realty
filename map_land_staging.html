@@ -2637,9 +2637,9 @@ function landFill(pt, txs){
       d.id='rcLandNote'; d.className='rc-note';
       d.style.cssText='padding:8px 0 0;line-height:1.5';
       /* 안내는 「추정이다」와 「등기부로 확인하라」까지만. 어떻게 좁혔는지는 적지 않는다. */
-      d.innerHTML='이 지번은 <b>확정이 아니라 추정</b>입니다. 국토부 실거래는 토지 지번을 '
-        +'일부 가려서 제공합니다. <b>다른 필지일 수 있으니</b> 금액이 걸린 판단에는 '
-        +'등기부로 확인하세요.'
+      /* 🔴 2026-08-22 — 방법 설명을 뺐다(본편 map.html 과 같은 문구). */
+      d.innerHTML='이 지번은 <b>확정이 아니라 추정</b>입니다. '
+        +'<b>다른 필지일 수 있으니</b> 금액이 걸린 판단에는 등기부로 확인하세요.'
         +(pt.ax?'<br>이 지점은 <b>좌표가 동 단위 개략 위치</b>입니다.':'');
       tx.parentNode.insertBefore(d, tx.nextSibling);
     }
