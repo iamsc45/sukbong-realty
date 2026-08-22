@@ -490,6 +490,42 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
 .inq-alt a{color:var(--blk)}
 .inq-ok{display:none;text-align:center;font-size:14px;line-height:1.7;padding:18px 0 8px}
 .inq-x{position:absolute;top:8px;right:10px;background:none;border:0;font-size:22px;line-height:1;cursor:pointer;color:var(--g2);padding:4px}
+.applysec{margin:0 0 26px}
+.applysec .sec{display:flex;align-items:baseline;gap:10px;margin:0 0 12px}
+@media(max-width:720px){.applysec{margin:0 0 18px}}
+/* 검은 지표 블록을 대시보드 맨 위로 옮겼다(2026-08-22) */
+.dash .block{border-radius:18px;overflow:hidden;margin:0 0 16px}
+
+/* 🔴 모바일에서는 **검은색을 벗긴다**(2026-08-22 석봉님 지시).
+   데스크톱은 첫 화면에 바로 보이는 자리라 검게 해서 눈에 띄게 한 것이고,
+   모바일은 「마켓 대시보드 보기 ↓」 뒤에 접혀 있어 눈길을 끌 이유가 없다.
+   접고 들어온 사람에게는 **주변 흰 패널과 같은 양식으로 값만** 보이는 편이 읽기 좋다. */
+@media(max-width:720px){
+  .dash .block{background:var(--wh);color:var(--ink,#1a1a1a);border:1px solid var(--hair);
+    border-radius:14px;margin:0 0 14px}
+  .dash .block-in{padding:16px 15px 12px}
+  .dash .blabel{color:var(--g2);letter-spacing:.12em;font-size:10px}
+  .dash .kpis{grid-template-columns:repeat(2,1fr);gap:12px 0;margin-top:11px}
+  .dash .kpi{border-left:0;padding:0 10px 0 0}
+  .dash .kpi:nth-child(even){padding:0 0 0 12px;border-left:1px solid var(--hair)}
+  .dash .kpi .v{font-size:20px}
+  .dash .kpi .v small{color:var(--g2);font-size:12px}
+  .dash .kpi .l{color:var(--g2);font-size:10.5px;line-height:1.4}
+  /* 숫자 색은 어두운 배경용이라 흰 바탕에서는 안 읽힌다 — 브랜드 네이비 계열로 */
+  .dash .kpi:nth-child(1) .v,.dash .kpi:nth-child(2) .v,
+  .dash .kpi:nth-child(3) .v{color:#12264A}
+  .dash .rates{border-top:1px solid var(--hair);padding:12px 15px 14px}
+  .dash .rates .rlab{color:var(--g2);font-size:10px}
+  .dash .rc{border-left:0;padding:0 6px}
+  .dash .rc .rv{color:#12264A;font-size:15px}
+  .dash .rc .rv small{color:var(--g2)}
+  .dash .rc .rn{color:var(--g2)}
+  .dash .rc .rd{color:var(--g2);opacity:.8}
+  .dash .rc.hi .rv{color:#B23A48}
+  .dash .rc.pt .rv{color:#1E7A5A}
+  /* 흐르는 띠는 좁은 화면에서 읽히지도 않고 자리만 먹는다 */
+  .dash .ticker{display:none}
+}
 </style><meta property="og:title" content="석봉 부동산 정보방">
 <meta property="og:description" content="전국 실거래가를 지도와 대시보드로 · 매일 갱신되는 아파트·오피스텔·빌딩 실거래 데이터, 평당가·전세가율·청약 정보까지 무료.">
 <meta property="og:type" content="website">
@@ -788,17 +824,6 @@ document.addEventListener('click',function(e){if(n.classList.contains('m-open')&
     <a class="prod" href="auction.html"><span class="dot" style="background:#0F6E56"></span>경매·공매</a>
     <a class="prod" href="apply.html"><span class="dot" style="background:#185FA5"></span>청약·분양</a>
   </div>
-  <div class="block blk-anim">
-    <div class="block-in">
-      <div class="blabel" id="blabel">Live Data</div>
-      <div class="kpis" id="kpis"></div>
-    </div>
-    <div class="rates" id="ratesRow" hidden>
-      <div class="rlab">금리·시장 지표 · <a href="%EC%A7%80%ED%91%9C.html" style="color:#B9B9B4;font-weight:700">전체 지표 보기 →</a> · <a href="%EA%B8%88%EB%A6%AC%EC%A7%80%ED%91%9C_%EC%9D%BD%EB%8A%94%EB%B2%95.html" style="color:#B9B9B4;font-weight:700">읽는 법 →</a></div>
-      <div class="rgrid" id="rgrid"></div>
-    </div>
-    <div class="ticker"><div class="ticker-in"><div class="ticker-track" id="ticker"></div></div></div>
-  </div>
 </header>
 
 <section class="hub wrap">
@@ -863,14 +888,12 @@ document.addEventListener('click',function(e){if(n.classList.contains('m-open')&
 </div>
 
 <main class="wrap">
-  <section class="dash" id="dash">
-    <div class="sec rv"><h2>마켓 대시보드</h2><span class="d" id="basis"></span></div>
-    <!-- 🔴 청약을 대시보드 맨 위로 올렸다(2026-08-22 석봉님 지시 「비중있게 배치, 유입을 늘리기 위한 목적」).
-         전에는 차트 두 개 아래 셋째 줄이라 스크롤해야 보였다. 검색으로 들어오는 사람이
-         가장 많이 찾는 것이 청약이라 첫 화면에 둔다. -->
-    <!-- 🔴 오른쪽 칸을 「청약 한눈에」에서 **무순위(줍줍)** 로 바꿨다(2026-08-22 석봉님 지시).
-         전에는 공고 건수·총 공급 세대 같은 요약이었는데, 사람들이 실제로 찾는 것은
-         통장 없이 넣을 수 있는 무순위·잔여세대다. 요약 수치는 청약 페이지에 그대로 있다. -->
+  <!-- 🔴 청약을 마켓 대시보드에서 **떼어 냈다**(2026-08-22 석봉님 지시
+       「마켓 대시보드에 있는 청약은 따로 빼줘」). 청약은 시장 지표가 아니라 **일정**이라
+       성격이 다르다. 대시보드 안에 두면 차트들 사이에 목록이 끼어 읽는 흐름이 끊긴다.
+       자리는 대시보드 **바로 앞** — 시의성이 가장 높아 위에 두는 것이 맞다. -->
+  <section class="applysec" id="applysec">
+    <div class="sec rv"><h2>청약</h2><span class="d">접수 일정과 통장 없이 지원 가능한 물량</span></div>
     <div class="grid g-main rv">
       <div class="panel"><h3>다가오는 청약 일정</h3><p class="cap" id="capApply">한국부동산원 청약홈</p><div id="applyList"></div>
         <!-- 왼쪽 칸 아래가 112px 비어 있었다(2026-08-22 실측·석봉님 지적). 오른쪽 무순위 칸이 더 길어서다.
@@ -885,6 +908,29 @@ document.addEventListener('click',function(e){if(n.classList.contains('m-open')&
         <a href="apply.html#rem" style="display:inline-block;margin-top:12px;font-size:12.5px;font-weight:700;color:var(--blue);text-decoration:none">무순위·잔여세대 전체 보기 →</a>
       </div>
     </div>
+    <div style="text-align:right;margin-top:10px">
+      <a class="rv" href="apply.html" style="font-size:12.5px;font-weight:700;color:var(--blue);text-decoration:none">청약 전체 보기 →</a>
+    </div>
+  </section>
+
+  <section class="dash" id="dash">
+    <div class="sec rv"><h2>마켓 대시보드</h2><span class="d" id="basis"></span></div>
+    <!-- 🔴 검은 지표 블록을 히어로에서 **여기로 옮겼다**(2026-08-22 석봉님 지시).
+         히어로 안에서는 검색창 아래 곁들이처럼 보였는데, 실제로는 이 사이트에서 가장
+         밀도 높은 숫자 묶음이다. 대시보드의 머리로 올리면 아래 차트들과 한 흐름으로 읽힌다.
+         ⚠️`#kpis`·`#ratesRow`·`#ticker` 의 **id 를 그대로 둔다** — 채우는 스크립트가 id 로 찾는다. -->
+  <div class="block blk-anim">
+    <div class="block-in">
+      <div class="blabel" id="blabel">Live Data</div>
+      <div class="kpis" id="kpis"></div>
+    </div>
+    <div class="rates" id="ratesRow" hidden>
+      <div class="rlab">금리·시장 지표 · <a href="%EC%A7%80%ED%91%9C.html" style="color:#B9B9B4;font-weight:700">전체 지표 보기 →</a> · <a href="%EA%B8%88%EB%A6%AC%EC%A7%80%ED%91%9C_%EC%9D%BD%EB%8A%94%EB%B2%95.html" style="color:#B9B9B4;font-weight:700">읽는 법 →</a></div>
+      <div class="rgrid" id="rgrid"></div>
+    </div>
+    <div class="ticker"><div class="ticker-in"><div class="ticker-track" id="ticker"></div></div></div>
+  </div>
+
     <div class="grid g-main" style="margin-top:14px">
       <div class="panel rv"><h3>일별 실거래 신고 추이</h3><p class="cap">계약일 기준 최근 30일 · 매매 vs 전월세</p>
         <canvas id="trend" height="118"></canvas></div>
@@ -1547,7 +1593,10 @@ function build(){
     box.appendChild(d);
   });
   if(!box.children.length)return;
-  var head=q(".dash .sec");
+  /* 🔴 모바일 요약은 **지표 블록 다음**에 넣는다(2026-08-22 석봉님 「마켓 대시보드 가장 위로」).
+     제목 바로 뒤에 꽂으면 지표 블록이 두 번째로 밀린다. 블록이 있으면 그 뒤,
+     없으면 종전대로 제목 뒤에 둔다. */
+  var head=q(".dash .block")||q(".dash .sec");
   if(head)head.insertAdjacentElement("afterend",box); else dash.insertBefore(box,dash.firstChild);
   /* 옮기고 남은 빈 그리드 제거 */
   dash.querySelectorAll(".grid").forEach(function(g){if(!g.querySelector(".panel"))g.parentNode.removeChild(g);});
