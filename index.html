@@ -163,6 +163,8 @@ h1 .thin{color:var(--g3)}
 .block-in{padding:30px 48px 18px}
 @media(max-width:640px){.block-in{padding:22px 24px 14px}}
 .blabel{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#8A8A85}
+/* 데스크톱은 종전처럼 한 줄 — 가운뎃점으로 이어 붙인다 */
+.blabel .bl-p:before{content:' · '}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:0;margin-top:14px}
 .kpi{padding:4px 22px 10px 0;border-left:1px solid #2E2E2B;padding-left:22px}
 .kpi:first-child{border-left:none;padding-left:0}
@@ -505,6 +507,10 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
     border-radius:14px;margin:0 0 14px}
   .dash .block-in{padding:16px 15px 12px}
   .dash .blabel{color:var(--g2);letter-spacing:.12em;font-size:10px}
+  /* 좁은 화면에서는 기간을 아랫줄로 내린다 — 한 줄에 붙이면 기준일이 잘린다 */
+  .dash .blabel .bl-p{display:block;margin-top:3px;letter-spacing:.04em;line-height:1.45;
+    text-transform:none;word-break:keep-all}
+  .dash .blabel .bl-p:before{content:none}
   .dash .kpis{grid-template-columns:repeat(2,1fr);gap:12px 0;margin-top:11px}
   .dash .kpi{border-left:0;padding:0 10px 0 0}
   .dash .kpi:nth-child(even){padding:0 0 0 12px;border-left:1px solid var(--hair)}
@@ -1202,7 +1208,11 @@ function startCounts(){if(cntStarted)return;cntStarted=true;document.querySelect
 var kio=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){startCounts();kio.disconnect();}});},{threshold:.3});
 kio.observe(document.getElementById("kpis"));
 document.getElementById("basis").textContent="계약일 "+PER+" · 기준일 "+T.updated+" · 매일 자동 갱신";
-document.getElementById("blabel").textContent="Live Data · 계약일 "+PER+" · 기준일 "+T.updated;
+/* 🔴 라벨과 기간을 **두 조각으로** 나눈다(2026-08-22 석봉님 「계약일하고 기준일을 한 칸 내리자」).
+   한 줄로 붙여 놓으니 좁은 화면에서 「기준일 2026-08-」 하고 잘렸다.
+   좁은 화면에서는 아랫줄로 내리고 데스크톱에서는 종전처럼 한 줄로 이어 붙인다(CSS 가 가른다). */
+document.getElementById("blabel").innerHTML='<span class="bl-t">Live Data</span>'
+  +'<span class="bl-p">계약일 '+PER+' · 기준일 '+T.updated+'</span>';
 document.getElementById("capProd").textContent="계약일 "+PER;
 /* capRank는 drawRank()가 기준(전체/아파트 매매)에 맞춰 다시 쓴다 */
 document.getElementById("capTop").textContent="계약일 "+PER+" · 매매 상위 10 · 빌딩 포함 (고가 거래는 국토부가 지번 일부 비공개)";
