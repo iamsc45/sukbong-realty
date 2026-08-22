@@ -81,7 +81,41 @@ tr:last-child td{border-bottom:0}
   font-size:10.5px;font-weight:800;margin-right:5px}
 .none{font-size:12.5px;color:var(--g2);padding:6px 0}
 @media(max-width:640px){.cards{grid-template-columns:1fr}}
-@media(max-width:560px){.wrap{padding:18px 14px 60px}h1{font-size:21px}}
+/* 🔴 모바일을 데스크톱 축소판으로 두지 않는다(2026-08-22 석봉님 지적).
+   여기 규칙이 두 줄뿐이던 탓에 **KPI 세 칸이 세로로 346px** 을 먹었다(화면의 41%).
+   폭 186px 상한도 좁은 화면에서는 오른쪽을 비우는 값이라 그대로 두면 안 된다.
+   방문자의 70.9% 가 모바일이다 — 이 화면의 기본은 모바일이다. */
+@media(max-width:560px){
+  .wrap{padding:16px 13px 56px}
+  h1{font-size:19.5px;line-height:1.3}
+  .loc{font-size:12px;margin:0 0 12px;line-height:1.5}
+  h2{font-size:13.5px;margin:16px 0 6px}
+  /* KPI 는 **가로 세 칸**. 세로로 쌓으면 첫 화면이 숫자 세 개로 끝난다. */
+  .kpi{grid-template-columns:repeat(3,1fr);gap:5px;justify-content:stretch}
+  .kpi div{padding:8px 7px;border-radius:9px}
+  .kpi .n{font-size:16px;letter-spacing:-.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .kpi .n em{display:block;font-size:10px;margin-top:1px}
+  .kpi .l{font-size:9.5px;margin-top:3px;line-height:1.3;word-break:keep-all}
+  .card{padding:10px 11px;border-radius:11px}
+  .card h3{font-size:11.5px;margin:0 0 6px}
+  .note{font-size:11.5px;padding:11px 12px;line-height:1.6;border-radius:9px}
+  table{font-size:12.5px}
+  th{font-size:10.5px;padding:5px 8px}
+  td{padding:5px 8px}
+  .dl{font-size:12px;padding:4px 0}
+  .dl .v small{font-size:10.5px}
+  .trend{height:44px}
+  /* 버튼은 화면 폭을 꽉 채운다 — 좁은 화면에서 반쯤 걸친 버튼이 제일 누르기 어렵다 */
+  .cta{display:block;margin:9px 0 0;padding:13px 14px;text-align:center;font-size:13px}
+  /* 수익률은 값과 설명을 위아래로 — 한 줄에 두면 설명이 세 줄로 접혀 읽기 어렵다 */
+  .yield{display:block;padding:8px 10px}
+  .yield b{font-size:17px;display:block;margin-bottom:2px}
+  .yield span{font-size:10px;display:block}
+}
+@media(max-width:360px){
+  .kpi .n{font-size:14.5px}
+  .kpi .l{font-size:9px}
+}
 </style>
 </head>
 <body>
@@ -197,10 +231,13 @@ tr:last-child td{border-bottom:0}
       +'<div class="loc">'+e(ad)+' · LH 매입임대 주택 · '+LHBASE+' 기준</div>'
 
       +'<div class="kpi">'
-      +'<div><div class="n">'+(r.n||0)+'호</div><div class="l">이 자리 LH 매입 호수</div></div>'
-      +'<div><div class="n">'+(r.w||0)+'호'+(wp!=null?' <span style="font-size:14px">('+wp+'%)</span>':'')
-        +'</div><div class="l">그중 신축 매입 (준공 1년 이내)</div></div>'
-      +'<div><div class="n">'+(last?e(last)+'년':'-')+'</div><div class="l">가장 최근 매입</div></div>'
+      +'<div><div class="n">'+(r.n||0)+'호</div><div class="l">이 자리 매입</div></div>'
+      /* 🔴 퍼센트를 **라벨 줄로 내렸다**(2026-08-22). 숫자 줄에 「213호 (100%)」를 함께 두니
+         좁은 화면에서 세 줄로 접혀 그 칸만 100px 이 됐고, 같은 행의 나머지 칸도 따라 늘어났다.
+         숫자 줄은 한 덩어리로 두고 부연은 라벨에 붙인다. */
+      +'<div><div class="n">'+(r.w||0)+'호</div>'
+        +'<div class="l">신축 매입'+(wp!=null?' · '+wp+'%':'')+'</div></div>'
+      +'<div><div class="n">'+(last?e(last)+'년':'-')+'</div><div class="l">최근 매입</div></div>'
       +'</div>'
 
       /* ⚠️ 값이 한 종류뿐이면 **표를 만들지 않는다**(2026-08-22). 머리글 두 줄에 값 한 줄이면
@@ -234,8 +271,8 @@ tr:last-child td{border-bottom:0}
 
       +'<h2>이 법정동 전체</h2>'
       +'<div class="kpi">'
-      +'<div><div class="n">'+sameB.toLocaleString()+'곳</div><div class="l">LH 가 매입한 건물</div></div>'
-      +'<div><div class="n">'+sameN.toLocaleString()+'호</div><div class="l">합계 매입 호수</div></div>'
+      +'<div><div class="n">'+sameB.toLocaleString()+'곳</div><div class="l">매입한 건물</div></div>'
+      +'<div><div class="n">'+sameN.toLocaleString()+'호</div><div class="l">합계 호수</div></div>'
       +'<div><div class="n">'+recentN.toLocaleString()+'호</div><div class="l">최근 5년 매입</div></div>'
       +'</div>'
       +trendBars(sameY)
