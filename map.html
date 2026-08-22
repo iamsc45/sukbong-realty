@@ -20,7 +20,7 @@
 <link rel="stylesheet" href="assets/site.css">
 <!-- 새 지도 디자인(2026-08-10 석봉님 확정): 네이버형 좌측 목록 + 흰 말풍선 마커.
      로직은 이 파일 그대로 두고 겉모습만 아래 두 파일이 얹는다. -->
-<link rel="stylesheet" href="assets/map_v2.css?v=13">
+<link rel="stylesheet" href="assets/map_v2.css?v=14">
 <style>
   html,body{height:100%}
   #wrap{display:flex;flex-direction:column;height:100%}
@@ -1170,12 +1170,72 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
     document.body.appendChild(s);
   }
   window._jsonp=_jsonp;
+  /* 지번 주소 카드 — 우리 실거래에 없는 지번을 검색했을 때(2026-08-22).
+     ⚠️「자료가 없습니다」로 끝내지 않는다. 그 자리 주변에서 무엇이 얼마에 거래됐는지가
+       실제로 궁금한 것이고, 그건 우리가 가진 자료로 바로 답할 수 있다. */
+  function showAddrCard(lat,lng,label){
+    var rc=document.getElementById('rcard'); if(!rc)return;
+    var e=function(x){return String(x==null?'':x).replace(/[&<>"]/g,function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
+    var near=[];
+    try{
+      /* ⚠️`_PTS` 의 원소는 지점이 아니라 **{pt, txs} 묶음**이다(map_v2 의 sorted 가 `x.pt.name`
+         으로 읽는 것과 같다). 처음에 `p.lat` 로 바로 읽었다가 전부 undefined 라
+         주변 목록이 **조용히 0건**이 됐다. 오류도 안 나서 「주변에 거래가 없다」로 보였다. */
+      (window._PTS||[]).forEach(function(o){
+        var p=(o&&o.pt)||o; if(!p||p.lat==null)return;
+        var txs=(o&&o.txs)||p.txs||[];
+        var d=_hav(lat,lng,p.lat,p.lng);
+        if(d<=500)near.push({p:p,txs:txs,d:d});
+      });
+      near.sort(function(a,b){return a.d-b.d;});
+    }catch(err){}
+    var TN={apt:'아파트',offi:'오피스텔',villa:'연립·다세대',house:'단독·다가구',
+            bldg:'빌딩',comm:'상가·오피스',land:'토지'};
+    var rows=near.slice(0,6).map(function(x,i){
+      var p=x.p, n=(x.txs||p.txs||[]).length;
+      return '<div class="rc-dl adr-i" data-i="'+i+'" style="cursor:pointer">'
+        +'<span style="color:#6b6355">'+e(p.name||'이름 없음')
+        +' <span style="color:#a39887;font-weight:400">'+Math.round(x.d)+'m</span></span>'
+        +'<b>'+(TN[p.t]||'')+(n?' · '+n+'건':'')+'</b></div>';
+    }).join('');
+    rc.innerHTML='<button id="rcClose" style="position:absolute;top:8px;right:10px;border:0;'
+      +'background:rgba(255,255,255,.28);color:#fff;font-size:18px;width:28px;height:28px;'
+      +'border-radius:50%;cursor:pointer;z-index:2">×</button>'
+      +'<div class="rc-h" style="background:#12264A"><div class="k">지번 주소</div>'
+      +'<h2 style="font-size:17px">'+e(label)+'</h2>'
+      +'<div class="loc">이 지번으로 신고된 실거래는 없습니다</div></div>'
+      +(rows?('<div class="rc-sec"><div class="rc-lab">주변 실거래</div>'+rows
+          +'<div class="rc-note" style="padding:6px 0 0">반경 500m 이내 · 줄을 누르면 그 건물의 실거래와 호가가 열립니다.</div></div>')
+        :'<div class="rc-sec"><div class="rc-lab">주변 실거래</div>'
+          +'<div class="rc-note" style="padding:2px 0 0">반경 500m 안에는 지금 조건에 맞는 거래가 없습니다. '
+          +'위쪽에서 상품과 거래유형을 넓혀 보세요.</div></div>')
+      +'<a class="rc-cta" href="%ED%86%A0%EC%A7%80%EA%B2%80%EC%83%89.html" style="background:#12203a">이 땅 값 알아보기 →</a>'
+      +'<div class="rc-note">주소는 국가공간정보(VWorld)로 찾은 위치입니다. '
+      +'실거래는 국토교통부 신고분이라, 신고가 없는 필지는 여기 나오지 않습니다.</div>';
+    rc.classList.add('open');
+    var cl=document.getElementById('rcClose');
+    if(cl)cl.onclick=function(){rc.classList.remove('open');};
+    rc.querySelectorAll('.adr-i').forEach(function(el){
+      el.addEventListener('click',function(){
+        var x=near[+el.dataset.i]; if(!x)return;
+        try{go(x.p.lat,x.p.lng,Math.max(map.getZoom(),17));}catch(err){}
+        setTimeout(function(){try{showAptCard(x.p,(x.txs||x.p.txs||[]).slice());}catch(err){}},350);
+      });
+    });
+  }
   function _addrMark(lat,lng,label,z){
     if(window._addrMk){try{map.removeLayer(window._addrMk);}catch(e){}}
     window._addrMk=L.circleMarker([lat,lng],{radius:9,color:'#c0392b',weight:3,fillColor:'#fff',fillOpacity:.9}).addTo(map).bindPopup(label);
     try{map.setView([lat,lng],z||17);}catch(e){}
     setTimeout(function(){try{window._addrMk.openPopup();}catch(e){}},300);
     var st=document.getElementById('stat');if(st)st.textContent='주소: '+label;
+    /* 🔴 카드도 함께 연다(2026-08-22 석봉님 제보 「지번 검색하면 점만 찍히고 카드가 안 뜬다」).
+       그 지번에 우리 실거래가 있으면 openPt() 가 단지 카드를 열지만, **없으면 여기로 온다.**
+       전에는 빨간 점과 말풍선 한 줄이 전부였다 — 찾아온 사람 입장에서는 아무 정보가 없다.
+       주변에 무엇이 거래됐는지와 다음 갈 곳(땅값 조회)을 카드로 준다.
+       ⚠️지도가 새 자리로 옮겨 간 뒤에 주변을 세야 하므로 한 박자 쉰다. */
+    setTimeout(function(){try{showAddrCard(lat,lng,label);}catch(e){}},900);
     /* 다른 지역 주소로 건너뛴 경우 앞 검색 필터 때문에 0건이 되는 것을 푼다(2026-08-08).
        ⚠️순서가 중요하다(2026-08-11). ①필터 해제 ②그래도 비면 **범위를 넓힌다** ③그래도 비면 상품 해제.
        전에는 ②가 없어서, 주변에 거래가 아예 없는 신축 분양지에서는 상품을 다 풀어도 빈 화면이었다. */

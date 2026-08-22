@@ -53,17 +53,19 @@ a.hc:hover{border-color:var(--acc-blue)}
 @media(max-width:640px){.hotg{grid-template-columns:1fr}}
 .notice2{font-size:11.5px;color:var(--muted);line-height:1.7;margin:26px 0 50px}
 @media(max-width:640px){
-  .tb th:nth-child(4),.tb td:nth-child(4){display:none}
+  /* 🔴 **낙찰가율(4번째 칸)을 숨기지 않는다**(2026-08-22 석봉님 제보 「모바일에 낙찰률만 보인다」).
+     2026-07-27 에 폭을 만들려고 이 칸을 감췄는데, 낙찰가율은 이 페이지의 두 기둥 중 하나다.
+     「얼마나 팔렸나(낙찰률)」와 「얼마에 팔렸나(낙찰가율)」는 같이 봐야 뜻이 생긴다.
+     대신 **막대·표본이 들어가는 마지막 칸을 감춰** 자리를 만든다(그건 보조 표시다). */
+  .tb th:nth-child(5),.tb td:nth-child(5){display:none}
   /* 모바일 정렬(2026-07-27): 줄바꿈 금지·막대 숨김·수치 우측 정렬 유지 */
-  .tb{font-size:12.5px}
-  .tb th,.tb td{padding:8px 5px;white-space:nowrap}
+  .tb{font-size:11.5px}
+  .tb th,.tb td{padding:7px 4px;white-space:nowrap}
   .bar{display:none}
-  /* 월별 추이표의 5번째 칸은 낙찰가율 옆에 붙는 표본 주석이라, 낙찰가율(4번째)이
-     모바일에서 숨겨지면 같이 숨긴다(2026-08-02). 안 그러면 값 없는 주석만 남는다. */
-  .tb.mtr th:nth-child(5),.tb.mtr td:nth-child(5){display:none}
-  /* 같은 이유로 '집계 제외' 설명도 숨긴다. 모바일에는 월별 낙찰가율이 아예 안 보이므로
-     설명할 대상이 없다. KPI 기준은 하단 총 주석이 계속 알려준다. */
-  .mtnote{display:none}
+}
+@media(max-width:360px){
+  .tb{font-size:11px}
+  .tb th,.tb td{padding:6px 3px}
 }
 </style>
 <meta property="og:title" content="경매·공매 · 석봉 부동산 정보방">
