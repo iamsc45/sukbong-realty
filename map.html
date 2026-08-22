@@ -372,7 +372,7 @@ function matchRF(cat,tag){
    (블로그·경매 딥링크가 지정한 상품을 기본값이 덮으면 안 된다). */
 try{var P0=new URLSearchParams(location.search);var t0=P0.get('t');if(t0&&TYPE[t0]){curTset={};curTset[t0]=true;window._TPARAM=t0;}
 else{curTset={apt:true};window._TDEFAULT=1;}
-var u0=P0.get('u');if(u0==='매매'||u0==='전세'||u0==='월세')curU=u0;
+var u0=P0.get('u');if(u0==='매매'||u0==='전세'||u0==='월세'){curU=u0;window._UPARAM=u0;}
 else if(!P0.get('mode')){curU='매매';window._UDEFAULT=1;}}catch(e){curTset={apt:true};curU='매매';window._TDEFAULT=1;window._UDEFAULT=1;}
 /* 상세 필터 상태 (매매가·보증금·월세·면적·연식·층) — fXc는 직접 입력 [최소,최대+1) 만원 */
 var fS='all', fB='all', fW='all', fA='all', fY='all', fF='all';
@@ -393,7 +393,9 @@ var _MAPVIEW_KEY='sb_mapview', _BACKVIEW=null;
     var nav=(performance.getEntriesByType&&performance.getEntriesByType('navigation')[0])||null;
     var isBack=(nav&&nav.type==='back_forward')||(performance.navigation&&performance.navigation.type===2);
     var ref=decodeURIComponent(document.referrer||'');
-    var fromDetail=/단지상세|구역상세|재개발_기초상식/.test(ref);
+    /* ⚠️ 상세 화면을 새로 만들면 여기에 이름을 더한다(2026-08-22 토지상세 누락 발견).
+       빠지면 그 화면에서 돌아왔을 때 보던 지도가 복원되지 않는다. */
+    var fromDetail=/단지상세|구역상세|토지상세|재개발_기초상식/.test(ref);
     var v=JSON.parse(sessionStorage.getItem(_MAPVIEW_KEY)||'null');
     /* 뒤로가기·상세에서 복귀면 6시간, 그 외 같은 세션 재방문이면 30분 이내만 복원 */
     if(v&&v.lat){
@@ -411,9 +413,19 @@ var _MAPVIEW_KEY='sb_mapview', _BACKVIEW=null;
       if(v&&((((isBack||fromDetail)&&age<6*3600*1000)||age<30*60*1000)))_BACKVIEW=v;
     }
   }catch(e){}
+  /* 🔴 좌표·확대만 저장하면 **보던 상품이 안 돌아온다**(2026-08-22 석봉님 지적).
+     토지·빌딩·상가를 보다가 상세로 갔다 뒤로 오면 상품 필터가 다시 아파트가 됐다
+     (첫 진입 기본값이 `{apt:true}` 라서 그렇다). 상품·거래유형도 함께 기억한다. */
   function save(){try{var c=map.getCenter();
-    sessionStorage.setItem(_MAPVIEW_KEY,JSON.stringify({lat:c.lat,lng:c.lng,z:map.getZoom(),m:(typeof curMode!=='undefined'?curMode:'trade'),t:Date.now()}));}catch(e){}}
+    sessionStorage.setItem(_MAPVIEW_KEY,JSON.stringify({lat:c.lat,lng:c.lng,z:map.getZoom(),
+      m:(typeof curMode!=='undefined'?curMode:'trade'),
+      ts:(typeof curTset!=='undefined'?curTset:null),
+      u:(typeof curU!=='undefined'?curU:'all'),
+      t:Date.now()}));}catch(e){}}
   map.on('moveend',save);map.on('zoomend',save);
+  /* 필터만 바꾸고 지도를 안 움직인 채 상세로 들어가는 동선이 있다(카드 → 상세).
+     그때도 남게 이벤트를 하나 더 건다. */
+  window._saveMapView=save;
 })();
 var baseV=L.tileLayer('https://api.vworld.kr/req/wmts/1.0.0/EBC23601-6E41-3269-9ECB-821DEECCF3F0/Base/{z}/{y}/{x}.png',
   {attribution:'&copy; VWorld(국토교통부)',maxZoom:19,maxNativeZoom:18,minZoom:6}).addTo(map);
@@ -3101,37 +3113,57 @@ function lhColor(r){
    346동을 그려 놓고도 화면에는 아무것도 안 보였다(「떴는가」는 통과, 「보이는가」는 실패).
    확대하면 실제 필지 모양으로 바뀐다. 이 값은 실측으로 정했다 — z17이면 한 변 24px쯤 된다. */
 var Z_LHPOLY=17;
-function lhPopup(r){
-  var y=Object.keys(r.y||{}).sort(), last=y.length?y[y.length-1]:'';
-  var den=(r.n||0)-(r.u||0), wp=den>0?Math.round((r.w||0)/den*100):null;
+/* 🔴 필지를 누르면 **카드**를 연다(2026-08-22 석봉님 지적 「팝업밖에 안 나온다」).
+   다른 물건은 전부 카드 → 상세로 이어지는데 LH 만 팝업에서 끊겼다.
+   팝업은 지도를 가리고, 스크롤도 안 되고, 링크 하나 붙이면 꽉 찬다. */
+function showLhCard(r,sd){
+  var rc=document.getElementById('rcard'); if(!rc)return;
   var e=function(x){return String(x==null?'':x).replace(/[&<>"]/g,function(c){
     return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
-  return '<div style="font-size:12.5px;line-height:1.55;min-width:210px;max-width:270px">'
-    +'<div style="font-weight:800;color:#12264A">'+e((r.ad||'').replace(/\s{2,}/g,' '))+'</div>'
-    +(r.k?'<div style="color:#5A6478">'+e(r.k)+'</div>':'')
-    +'<div style="margin-top:6px;padding-top:6px;border-top:1px solid #E3E8F0">'
-    +'LH 매입 <b>'+(r.n||0)+'호</b>'
-    +(r.w?' · 그중 <b>신축 매입 '+r.w+'호</b>'+(wp!=null?'('+wp+'%)':''):'')
-    +(last?'<br>가장 최근 매입 <b>'+e(last)+'년</b>':'')
+  var ad=(r.ad||'').replace(/\s{2,}/g,' ');
+  var den=(r.n||0)-(r.u||0), wp=den>0?Math.round((r.w||0)/den*100):null;
+  var ys=Object.keys(r.y||{}).sort(), last=ys.length?ys[ys.length-1]:'';
+  var bar=function(lab,v,col){
+    if(!v)return '';
+    var pct=den>0?Math.round(v/den*100):0;
+    return '<div class="rc-dl"><span style="color:#6b6355">'+lab
+      +' <span style="color:#a39887;font-weight:400">'+pct+'%</span></span><b>'+v+'호</b></div>';
+  };
+  var html='<button id="rcClose" style="position:absolute;top:8px;right:10px;border:0;background:rgba(255,255,255,.28);color:#fff;font-size:18px;width:28px;height:28px;border-radius:50%;cursor:pointer;z-index:2">×</button>'
+    +'<div class="rc-h" style="background:#12264A"><div class="k">LH 매입임대 · 실적</div>'
+    +'<h2>'+e(r.k||'LH 매입 주택')+'</h2><div class="loc">'+e(ad)
+    +(r.q===2?'<span style="display:inline-block;margin-left:6px;padding:1px 6px;border-radius:3px;background:rgba(255,255,255,.22);font-size:10px;font-weight:800">인근 필지 추정</span>':'')
+    +(r.q===3?'<span style="display:inline-block;margin-left:6px;padding:1px 6px;border-radius:3px;background:rgba(255,255,255,.22);font-size:10px;font-weight:800">필지 미확정</span>':'')
+    +'</div></div>'
+    /* 호수 구성 — 시행사가 보는 곳이라 신축 비중을 맨 위에 크게 */
+    +'<div class="rc-sec"><div class="rc-lab">이 자리에서 LH 가 매입한 호수</div>'
+    +'<div style="background:#f4f0e6;border-radius:10px;padding:9px 12px;margin:0 0 8px">'
+    +'<div style="font-size:11px;color:#8a8071">총 매입</div>'
+    +'<div style="font-size:19px;font-weight:800;color:#12264A">'+(r.n||0)+'호'
+    +(wp!=null?' <span style="font-size:12.5px;font-weight:700;color:#7a3b12">· 신축 매입 '+wp+'%</span>':'')
+    +'</div></div>'
+    +bar('신축 매입 (준공 1년 이내)',r.w||0)
+    +bar('2~3년',r.m||0)
+    +bar('4년 이상',r.o||0)
+    +(r.u?'<div class="rc-dl"><span style="color:#a39887">매입년도 미상</span><b>'+r.u+'호</b></div>':'')
     +'</div>'
-    +(r.q===2?'<div style="margin-top:5px;color:#B23A48;font-weight:700">인근 필지 추정 지점입니다'
-              +(r.d?'(약 '+r.d+'m)':'')+'</div>'
-     :(r.q===3?'<div style="margin-top:5px;color:#B23A48;font-weight:700">필지를 좁히지 못한 지점입니다</div>':''))
-    /* 진단기로 보내는 동선(2026-08-22). 「여기서 LH 가 샀었나」를 본 사람의 다음 물음은
-       「그럼 내가 지으면 사 줄까」다. 진단기는 `?addr=` 하나만 받고 바로 판정을 돌린다.
-       🔑 **주소 문자열로 보낸다 — PNU 로 조인하지 않는다.** 사양서가 경고한 전남·광주
-          신·구코드(12xxx ↔ 29xxx) 문제는 PNU 를 맞출 때 생기는 것이라, 주소로 넘기면
-          애초에 생기지 않는다. 라이브에서 다섯 표본으로 확인했다(전남광주 원본 표기
-          「전남광주통합특별시 남구 백운동 691」·세종 공백 2칸 포함, 전부 정상 판정).
-       ⚠️ 실적(과거)과 진단(앞으로)은 다른 이야기다. 문구에서 그 둘을 섞지 말 것. */
-    +'<a href="lh_%EC%A7%84%EB%8B%A8.html?addr='+encodeURIComponent((r.ad||'').replace(/\s{2,}/g,' '))+'"'
-    +' style="display:block;margin-top:7px;padding:7px 0;text-align:center;border-radius:8px;'
-    +'background:#12264A;color:#fff;font-weight:800;font-size:12px;text-decoration:none">'
-    +'이 자리에 지으면? · 매입약정 진단 →</a>'
-    +'<div style="margin-top:6px;font-size:11px;color:#7A8698;line-height:1.5">'
-    +'LH 매입임대 주택 · <b>'+LHBASE+' 기준</b><br>'
-    /* 🔴 이 문장은 빼지 말 것 — 2026-08-04 흡수율 검증에서 확정된 필수 문구다 */
-    +'실적은 과거의 사실이며 향후 매입을 보장하지 않습니다.</div></div>';
+    /* 매입년도 — 「최근에도 사고 있나」가 핵심이라 최신부터 */
+    +(ys.length?('<div class="rc-sec"><div class="rc-lab">매입년도별</div>'
+        +ys.slice().reverse().slice(0,8).map(function(y){
+          return '<div class="rc-dl"><span style="color:#6b6355">'+e(y)+'년</span><b>'+r.y[y]+'호</b></div>';
+        }).join('')
+        +(ys.length>8?'<div class="rc-note" style="padding:4px 0 0">외 '+(ys.length-8)+'개 연도</div>':'')
+        +'</div>'):'')
+    +'<a class="rc-cta" id="rcCta" href="lh_%EC%8B%A4%EC%A0%81.html?sd='+encodeURIComponent(sd)
+      +'&p='+encodeURIComponent(r.p||'')+'" style="background:#12203a">이 자리 LH 실적 상세 →</a>'
+    +'<div style="text-align:center;margin-top:7px">'
+    +'<a href="lh_%EC%A7%84%EB%8B%A8.html?addr='+encodeURIComponent(ad)+'" '
+    +'style="font-size:12.5px;color:#7a3b12;font-weight:800;text-decoration:underline">이 자리에 지으면? · 매입약정 진단 →</a></div>'
+    +'<div class="rc-note">LH 매입임대 주택 · '+LHBASE+' 기준 · '
+    +'실적은 과거의 사실이며 향후 매입을 보장하지 않습니다.</div>';
+  rc.innerHTML=html; rc.classList.add('open');
+  var cb=document.getElementById('rcClose');
+  if(cb)cb.onclick=function(){rc.classList.remove('open');};
 }
 function renderLH(){
   if(curMode!=='lh')return;
@@ -3154,18 +3186,18 @@ function renderLH(){
       if(r.q===1 && z>=Z_LHPOLY){
         var ll=g.map(function(p){return [p[1],p[0]];});
         L.polygon(ll,{renderer:lhRenderer,color:'#12264A',weight:1.6,fillColor:c,fillOpacity:.55})
-          .bindPopup(lhPopup(r)).addTo(lhLayer);
+          .on('click',function(){showLhCard(r,sd);}).addTo(lhLayer);
       }else if(r.q===1){
         /* 멀리서 볼 때 — 호수가 많을수록 점을 조금 키운다(개수 감각이 필요한 화면이라) */
         L.circleMarker([g[0][1],g[0][0]],{renderer:lhRenderer,
           radius:(r.n>=30?7:(r.n>=10?6:5)),color:'#fff',weight:1.5,fillColor:c,fillOpacity:.95})
-          .bindPopup(lhPopup(r)).addTo(lhLayer);
+          .on('click',function(){showLhCard(r,sd);}).addTo(lhLayer);
       }else{
         /* q=2·3 은 확대해도 칠하지 않는다(사양서 4절 — 남의 필지가 칠해진다).
            속 빈 점선 원으로 「추정」임을 드러낸다. */
         L.circleMarker([g[0][1],g[0][0]],{renderer:lhRenderer,radius:5,color:c,weight:2,
           dashArray:'2,2',fillColor:'#fff',fillOpacity:.9})
-          .bindPopup(lhPopup(r)).addTo(lhLayer);
+          .on('click',function(){showLhCard(r,sd);}).addTo(lhLayer);
       }
     });
   });
@@ -3237,14 +3269,27 @@ else if(_urlMode==='lh'){setMode('lh');}   /* ?mode=lh — 원고·배너에서 
 if(_BACKVIEW){try{
   if(!_urlMode){
     if(_BACKVIEW.m==='redev'&&curMode!=='redev')setMode('redev');
-    else if(_BACKVIEW.m!=='redev'&&curMode==='redev')setMode('trade');
+    else if(_BACKVIEW.m==='lh'&&curMode!=='lh')setMode('lh');
+    else if(_BACKVIEW.m!=='redev'&&_BACKVIEW.m!=='lh'&&curMode!=='trade')setMode('trade');
+  }
+  /* 🔴 보던 상품·거래유형을 되돌린다(2026-08-22 석봉님 지적 「토지 보다 돌아오면 아파트로 바뀐다」).
+     ⚠️ URL 이 `?t=` 로 상품을 지정했으면 그게 사용자의 의도다 — 복원이 이기면 안 된다
+        (모드에서 이미 한 번 겪은 실수다. 2026-08-08 「홈에서 재개발을 눌러도 실거래가 뜬다」). */
+  if(!window._TPARAM && _BACKVIEW.ts !== undefined){
+    var _rt=_BACKVIEW.ts;
+    /* 저장된 것이 기본값과 같으면 굳이 손대지 않는다(불필요한 재렌더 방지) */
+    if(JSON.stringify(_rt)!==JSON.stringify(curTset)){
+      curTset=_rt; window._TDEFAULT=0;
+      if(_BACKVIEW.u&&!window._UPARAM)curU=_BACKVIEW.u;
+      try{ if(window._filterChanged)window._filterChanged(''); }catch(e){}
+    }
   }
   setTimeout(function(){try{map.invalidateSize();map.setView([_BACKVIEW.lat,_BACKVIEW.lng],_BACKVIEW.z,{animate:false});}catch(e){}},80);
 }catch(e){}}
 
 render();
 </script>
-<script src="assets/map_v2.js?v=15"></script>
+<script src="assets/map_v2.js?v=16"></script>
 <script src="assets/map_v2_poi.js?v=2"></script>
 <script src="assets/map_v2_dong.js?v=2"></script>
 <script src="assets/map_old.js?v=2"></script>

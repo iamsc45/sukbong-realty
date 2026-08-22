@@ -188,7 +188,10 @@
     /* 필터가 걸려 있을 때만 권한다. 아무 조건이 없는데 0건이면 정말 거래가 없는 곳이다. */
     var filtered=!!(window.curTset)||(window.curU&&window.curU!=='all');
     var redev=document.body.classList.contains('redev');
-    emptyCTA.classList.toggle('on', z>=13 && n===0 && filtered && !redev);
+    /* LH 매입 실적 모드도 실거래를 일부러 안 그린다(2026-08-22) — 그 화면에서
+       「조건에 맞는 거래가 없습니다」는 틀린 안내다. 재개발과 같이 뺀다. */
+    var lh=document.body.classList.contains('lh');
+    emptyCTA.classList.toggle('on', z>=13 && n===0 && filtered && !redev && !lh);
   }
 
   /* 카드 헤더의 인라인 상품색을 --c로 옮긴다(마커와 같은 방식).

@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- 홈 화면 앱(PWA) — 데이터관리/스크립트/앱메타_주입.py 가 넣습니다 -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#F2F2EF">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="석봉부동산">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="icon" href="/icons/favicon-32.png" sizes="32x32">
+<script>if('serviceWorker' in navigator){addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}</script>
+<title>LH 매입 실적 상세 · 석봉 부동산 정보방</title>
+<meta name="description" content="LH 가 실제로 매입한 임대주택 한 자리의 호수·신축 매입 비중·매입년도를 봅니다. 실적은 과거의 사실이며 향후 매입을 보장하지 않습니다.">
+<meta property="og:title" content="LH 매입 실적 상세 · 석봉 부동산 정보방">
+<meta property="og:description" content="이 자리에서 LH 가 몇 호를, 언제, 신축으로 샀는지.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="석봉 부동산 정보방">
+<!-- 파라미터로만 뜻이 생기는 화면이라 색인하지 않는다(토지상세와 같은 처리) -->
+<meta name="robots" content="noindex">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Y7P41Z09PV"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-Y7P41Z09PV');</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+:root{--navy:#12264A;--navy2:#1B3F7A;--g1:#5A6478;--g2:#7A8698;--hair:#E3E8F0;--tint:#EEF3FB}
+.wrap{max-width:860px;margin:0 auto;padding:26px 20px 70px}
+h1{font-size:25px;letter-spacing:-.02em;margin:0 0 4px}
+.loc{color:var(--g1);font-size:13.5px;margin:0 0 16px}
+.tag{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:4px;background:var(--tint);
+  color:var(--navy2);font-size:11px;font-weight:800;vertical-align:2px}
+h2{font-size:16px;margin:26px 0 8px;padding-bottom:6px;border-bottom:1.5px solid var(--navy)}
+.kpi{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 6px}
+.kpi div{flex:1;min-width:132px;background:var(--tint);border-radius:12px;padding:13px 15px}
+.kpi .n{font-size:24px;font-weight:800;color:var(--navy);line-height:1.1}
+.kpi .l{font-size:11.5px;color:var(--g1);margin-top:4px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{background:var(--navy);color:#fff;font-weight:700;font-size:12px;padding:8px 10px;text-align:left}
+td{padding:8px 10px;border-bottom:1px solid var(--hair)}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+.note{font-size:12.5px;color:var(--g1);background:var(--tint);border-radius:10px;padding:13px 15px;margin:14px 0 0;line-height:1.7}
+.warn{background:#FFF6F2;color:#8a4a3a}
+.cta{display:inline-block;margin:16px 8px 0 0;padding:12px 20px;border-radius:11px;text-decoration:none;
+  font-weight:800;font-size:13.5px;background:var(--navy);color:#fff}
+.cta.line{background:#fff;color:var(--navy);border:1.5px solid var(--navy)}
+.msg{padding:40px 0;text-align:center;color:var(--g2)}
+@media(max-width:560px){.wrap{padding:18px 14px 60px}h1{font-size:21px}}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html">석봉 부동산 정보방</a>
+  <nav>
+    <a href="index.html">홈</a>
+    <a href="map.html">실거래지도</a>
+    <a href="apply.html">청약</a>
+    <a href="auction.html">경매·공매</a><a href="%EC%A7%80%ED%91%9C.html">금리·지표</a><a href="lh_%EC%A7%84%EB%8B%A8.html" class="on">LH매입</a><a href="%ED%86%A0%EC%A7%80%EA%B2%80%EC%83%89.html">땅값</a><a href="%EC%9D%B4%EC%9A%A9%EC%95%88%EB%82%B4.html">이용안내</a>
+    <a href="%EA%B8%80.html">리포트</a>
+    <a href="%EC%9E%90%EB%A3%8C%EC%8B%A4.html">자료실</a>
+    <a href="favorites.html">★ 관심단지</a>
+    <a href="https://blog.naver.com/seokbongnews" target="_blank" rel="noopener">블로그</a>
+    <a href="channels.html">채널</a>
+    <a href="%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html">대출 문의</a>
+  <span id="sbAuthBtn"></span></nav>
+</header>
+
+<main class="wrap" id="app"><div class="msg">불러오는 중…</div></main>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   LH 매입 실적 상세 (2026-08-22 신설)
+
+   왜 만드나
+     지도에서 필지를 누르면 팝업만 떴다(석봉님 지적 「카드와 상세페이지도 있어야 함」).
+     다른 물건은 전부 카드 → 상세로 이어지는데 LH 만 거기서 끊겨 있었다.
+
+   🔴 말에 관한 규칙 (사양서 1절 — 어기면 사실과 다른 화면이 된다)
+     ① 이 자료를 **「매입약정」이라 부르지 않는다.** 원본에 약정 구분 컬럼이 없다.
+        근거를 댈 수 있는 말은 「LH 매입임대 주택」과 「신축 매입(준공 1년 이내)」까지다.
+     ② **「실적은 과거의 사실이며 향후 매입을 보장하지 않습니다」** 를 반드시 적는다.
+     ③ **순위·등급으로 만들지 않는다.**
+     ④ 기준시점(2025년 11월 20일)을 함께 적는다.
+
+   ⚠️ 새 자료를 만들지 않는다 — 지도가 쓰는 `data/lh_parcel_<시도2>.js` 를 그대로 받는다.
+   ══════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  var LHBASE='2025년 11월 20일';
+  var TYPEQ={1:'',2:'인근 필지 추정',3:'필지 미확정'};
+  function e(x){return String(x==null?'':x).replace(/[&<>"]/g,function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function qs(k){try{return new URLSearchParams(location.search).get(k)||'';}catch(err){return '';}}
+  var app=document.getElementById('app');
+  function fail(m){app.innerHTML='<div class="msg">'+e(m)+'<br><br>'
+    +'<a class="cta line" href="map.html?mode=lh">실거래지도에서 LH 매입 실적 보기 →</a></div>';}
+
+  var sd=qs('sd'), pnu=qs('p');
+  if(!/^\d{2}$/.test(sd)||!/^\d{19}$/.test(pnu)){fail('주소가 올바르지 않습니다.');return;}
+
+  var sc=document.createElement('script');
+  sc.src='data/lh_parcel_'+sd+'.js';
+  sc.onerror=function(){fail('그 지역 자료를 찾지 못했습니다.');};
+  sc.onload=function(){
+    var arr=(window.LHPARCEL||{})[sd]||[];
+    var r=null;
+    for(var i=0;i<arr.length;i++){ if(String(arr[i].p)===pnu){r=arr[i];break;} }
+    if(!r){fail('그 필지를 찾지 못했습니다.');return;}
+    draw(r,arr);
+  };
+  document.body.appendChild(sc);
+
+  function draw(r,arr){
+    var ad=(r.ad||'').replace(/\s{2,}/g,' ');
+    document.title=ad+' · LH 매입 실적 · 석봉 부동산 정보방';
+    var den=(r.n||0)-(r.u||0), wp=den>0?Math.round((r.w||0)/den*100):null;
+    var ys=Object.keys(r.y||{}).sort();
+    var last=ys.length?ys[ys.length-1]:'';
+
+    /* 같은 법정동의 실적을 함께 보여 준다 — 「이 동네에서 사 주기는 하나」가 이 화면의 물음이다.
+       ⚠️ PNU 앞 10자리가 법정동이다. 자료를 새로 만들지 않고 받아 둔 배열에서 센다. */
+    var dcode=pnu.slice(0,10), sameN=0, sameW=0, sameB=0, sameY={};
+    arr.forEach(function(x){
+      if(String(x.p).slice(0,10)!==dcode)return;
+      sameB++; sameN+=(x.n||0); sameW+=(x.w||0);
+      for(var y in (x.y||{})) sameY[y]=(sameY[y]||0)+x.y[y];
+    });
+    var sameYs=Object.keys(sameY).sort();
+    var recent=sameYs.filter(function(y){return parseInt(y,10)>=(new Date()).getFullYear()-4;});
+    var recentN=recent.reduce(function(a,y){return a+sameY[y];},0);
+
+    function row(lab,v){
+      if(!v)return '';
+      var pct=den>0?Math.round(v/den*100):0;
+      return '<tr><td>'+lab+'</td><td class="n">'+v+'호</td><td class="n">'+pct+'%</td></tr>';
+    }
+    var h='<h1>'+e(r.k||'LH 매입 주택')
+      +(TYPEQ[r.q]?'<span class="tag">'+TYPEQ[r.q]+(r.q===2&&r.d?' · 약 '+r.d+'m':'')+'</span>':'')
+      +'</h1>'
+      +'<div class="loc">'+e(ad)+' · LH 매입임대 주택 · '+LHBASE+' 기준</div>'
+
+      +'<div class="kpi">'
+      +'<div><div class="n">'+(r.n||0)+'호</div><div class="l">이 자리 LH 매입 호수</div></div>'
+      +'<div><div class="n">'+(r.w||0)+'호'+(wp!=null?' <span style="font-size:14px">('+wp+'%)</span>':'')
+        +'</div><div class="l">그중 신축 매입 (준공 1년 이내)</div></div>'
+      +'<div><div class="n">'+(last?e(last)+'년':'-')+'</div><div class="l">가장 최근 매입</div></div>'
+      +'</div>'
+
+      +'<h2>매입 형태</h2>'
+      +'<table><tr><th>구분</th><th style="text-align:right">호수</th><th style="text-align:right">비중</th></tr>'
+      +row('신축 매입 (준공 1년 이내)',r.w||0)
+      +row('2~3년',r.m||0)
+      +row('4년 이상',r.o||0)
+      +(r.u?'<tr><td>매입년도 미상</td><td class="n">'+r.u+'호</td><td class="n">-</td></tr>':'')
+      +'</table>'
+      +'<div class="note">비중은 <b>매입년도가 확인된 '+den+'호</b>를 분모로 했습니다. '
+      +'「신축 매입」은 <b>준공 1년 이내</b>에 LH 가 사들인 것을 말합니다. '
+      +'원본에 약정 구분 항목이 없어 <b>매입약정 여부는 알 수 없습니다.</b></div>'
+
+      +(ys.length?('<h2>매입년도별</h2><table><tr><th>연도</th><th style="text-align:right">호수</th></tr>'
+        +ys.slice().reverse().map(function(y){
+          return '<tr><td>'+e(y)+'년</td><td class="n">'+r.y[y]+'호</td></tr>';}).join('')
+        +'</table>'):'')
+
+      +'<h2>이 법정동 전체</h2>'
+      +'<div class="kpi">'
+      +'<div><div class="n">'+sameB.toLocaleString()+'곳</div><div class="l">LH 가 매입한 건물</div></div>'
+      +'<div><div class="n">'+sameN.toLocaleString()+'호</div><div class="l">합계 매입 호수</div></div>'
+      +'<div><div class="n">'+recentN.toLocaleString()+'호</div><div class="l">최근 5년 매입</div></div>'
+      +'</div>'
+      +'<div class="note">같은 법정동 안에서만 셌습니다. 반경으로 보시려면 아래 진단을 이용하세요.</div>'
+
+      +'<a class="cta" href="lh_%EC%A7%84%EB%8B%A8.html?addr='+encodeURIComponent(ad)+'">이 자리에 지으면? · 매입약정 진단 →</a>'
+      +'<a class="cta line" href="map.html?mode=lh&q='+encodeURIComponent(ad.split(/\s+/).slice(-2,-1)[0]||'')+'">지도에서 이 동네 보기 →</a>'
+      +'<a class="cta line" href="lh_%EC%9A%94%EA%B1%B4.html">지역본부별 매입 요건 비교 →</a>'
+
+      /* 🔴 필수 문구 — 2026-08-04 흡수율 검증에서 확정됐다. 빼지 말 것. */
+      +'<div class="note warn"><b>실적은 과거의 사실이며 향후 매입을 보장하지 않습니다.</b><br>'
+      +'LH 공개 자료(매입임대 공급현황) 기준이고, 기준시점은 '+LHBASE+'입니다. '
+      +'필지 경계는 공공 연속지적도에서 맞춘 것이라 실제 대지와 다를 수 있습니다'
+      +(r.q===2?'(이 자리는 <b>인근 필지로 추정</b>했습니다)':'')
+      +'. 참고용이며 LH 심사를 대신하지 않습니다.</div>';
+    app.innerHTML=h;
+  }
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets/sb_auth.js?v=8"></script>
+<script defer src="assets/sb_tabbar.js?v=9"></script>
+<script defer src="assets/sb_nav.js?v=1"></script>
+</body></html>

@@ -102,6 +102,7 @@ table.t2 td.n{text-align:right;white-space:nowrap}
   var qs=new URLSearchParams(location.search);
   var code=(qs.get('code')||'').replace(/[^0-9]/g,'');
   var jb=(qs.get('jb')||'').trim();
+  var dongQ=(qs.get('dong')||'').trim();
 
   function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){
     return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
@@ -139,14 +140,26 @@ table.t2 td.n{text-align:right;white-space:nowrap}
   var B=null;
   (window.LANDBJD||[]).some(function(x){ if(x[0]===code){B=x;return true;} return false;});
 
-  if(!code||!jb){
+  /* 🔴 2026-08-22: 지도가 **지번을 못 찾았을 때** `?code=<시군구 5자리>&dong=<동이름>` 으로
+     보낸다(`map.html` 의 토지 카드 CTA). 그 규약을 이 페이지가 받지 않아
+     「주소가 올바르지 않습니다」만 뜨고 있었다 — 버튼을 눌렀는데 막다른 길이었다.
+     이제 5자리 코드 + 동 이름으로 10자리 법정동코드를 찾아 **동 단위 화면**을 연다
+     (필지가 특정 안 됐을 뿐, 그 동의 지목별 평당가와 인근 실거래는 보여줄 수 있다). */
+  if(!B && code.length<10 && dongQ){
+    (window.LANDBJD||[]).some(function(x){
+      if(x[0].slice(0,5)===code.slice(0,5) && x[3]===dongQ){ B=x; code=x[0]; return true; }
+      return false;
+    });
+  }
+
+  if(!code||(!jb&&!B)){
     $('state').className='err';
     $('state').textContent='주소가 올바르지 않습니다. 지도나 땅값 조회에서 다시 들어와 주세요.';
     return;
   }
-  $('ttl').textContent=(B?B[3]:'')+' '+jb;
+  $('ttl').textContent=(B?B[3]:'')+(jb?' '+jb:'');
   $('loc').textContent=B?(B[1]+' '+B[2]+' '+B[3]):('법정동코드 '+code);
-  document.title=(B?B[3]+' ':'')+jb+' 토지 상세 · 석봉 부동산 정보방';
+  document.title=(B?B[3]+' ':'')+(jb?jb+' ':'')+'토지 상세 · 석봉 부동산 정보방';
 
   fetch('data/land_dong/'+code+'.json')
     .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
@@ -173,7 +186,12 @@ table.t2 td.n{text-align:right;white-space:nowrap}
     var area=meta?(meta[3]||meta[2]||0):0;
     if(!area && blds.length) area=blds[0][3]||0;
 
-    if(!deals.length&&!lots.length&&!blds.length){
+    if(!jb){
+      /* 지도가 지번을 못 찾아 동 단위로 넘어온 경우(2026-08-22). 필지 이야기를 하지 않는다. */
+      h.push('<div class="disc"><b>지번이 특정되지 않아 이 동네 정보를 보여 드립니다.</b><br>'+
+        '국토부 실거래는 토지 지번을 가려서 제공합니다. 지도에서 지번이 확정된 지점을 고르시면 '+
+        '그 필지의 거래와 매물까지 볼 수 있습니다.</div>');
+    }else if(!deals.length&&!lots.length&&!blds.length){
       h.push('<div class="disc"><b>이 지번으로 확정된 거래나 매물이 아직 없습니다.</b><br>'+
         '국토부 실거래는 토지 지번을 가려서 제공합니다. 우리는 공부 자료로 좁혀 되짚는데, '+
         '아직 이 필지까지 닿지 않았습니다. 아래 이 동네 시세와 땅값 조회를 이용해 주세요.</div>');
