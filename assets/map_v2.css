@@ -634,3 +634,8 @@ body.mmap #rcard #rcClose{right:8px!important;top:9px!important;
   #v2sheet .v2sort button.on{background:#12203A;border-color:#12203A;color:#fff}
   #v2sheet .sh-h{padding:2px 16px 10px}
 }
+
+/* 🔴 LH 매입 실적 모드에서는 정렬 칩을 감춘다(2026-08-22).
+   그 칩은 실거래용(최신순·고가순·거래많은순)이라 LH 목록에는 맞는 뜻이 하나도 없다.
+   LH 목록은 **매입 호수 많은 순** 하나로 고정이고, 그건 목록 부제에 적혀 있다. */
+body.lh .v2sort{display:none!important}
