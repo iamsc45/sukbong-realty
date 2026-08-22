@@ -186,19 +186,38 @@ tr:last-child td{border-bottom:0}
   function comma(n) { return (n === '' || n == null) ? '' : Number(n).toLocaleString(); }
 
   /* ── 지역 고르기 ── */
+  /* 🔴 열자마자 **엉뚱한 지역 결과가 뜨던 것**을 막는다(2026-08-22 석봉님 지적).
+     시도·시군구 select 가 첫 항목(서울 종로구)으로 자동 선택돼, 아무것도 고르지 않았는데
+     종로구 70행이 표로 깔렸다. 「내가 고른 것」이 아닌 자료를 먼저 보여 주면 오해한다.
+     이제 **둘 다 고를 때까지 아무 결과도 그리지 않는다.** */
   function fillSido() {
     var seen = {}, out = [];
     S.regions.forEach(function (r) { if (!seen[r.sido]) { seen[r.sido] = 1; out.push(r.sido); } });
-    $('sido').innerHTML = out.map(function (s) { return '<option>' + s + '</option>'; }).join('');
+    $('sido').innerHTML = '<option value="">시·도 선택</option>'
+      + out.map(function (s) { return '<option value="' + s + '">' + s + '</option>'; }).join('');
     fillSgg();
   }
   function fillSgg() {
     var sd = $('sido').value;
+    if (!sd) {
+      $('sgg').innerHTML = '<option value="">시·군·구 선택</option>';
+      $('sgg').disabled = true;
+      reset(); return;
+    }
+    $('sgg').disabled = false;
     var list = S.regions.filter(function (r) { return r.sido === sd; });
-    $('sgg').innerHTML = list.map(function (r) {
-      return '<option value="' + r.code + '">' + r.sgg + '</option>';
-    }).join('');
-    load();
+    $('sgg').innerHTML = '<option value="">시·군·구 선택</option>'
+      + list.map(function (r) {
+          return '<option value="' + r.code + '">' + r.sgg + '</option>';
+        }).join('');
+    reset();
+  }
+  /* 지역이 안 정해졌을 때의 빈 화면. 받기 버튼도 잠근다. */
+  function reset() {
+    rows = []; allTx = [];
+    $('prev').innerHTML = '<div class="empty">시·도와 시·군·구를 고르면 자료가 나옵니다</div>';
+    $('cnt').textContent = '지역을 고르면 미리보기가 나옵니다';
+    $('goXlsx').disabled = true; $('goCsv').disabled = true;
   }
 
   /* ── 물건종류·거래유형 칩 ── */
@@ -244,7 +263,8 @@ tr:last-child td{border-bottom:0}
   }
 
   function load() {
-    var code = $('sgg').value; if (!code) return;
+    var code = $('sgg').value;
+    if (!code) { reset(); return; }
     $('cnt').textContent = '불러오는 중…';
     if (tab === 'tx' && isHist()) {
       loadJs('data/hist_apt_' + code + '.js', function (err) {

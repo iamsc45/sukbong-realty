@@ -82,8 +82,20 @@ h1.pg{font-size:clamp(34px,5.5vw,60px);letter-spacing:-0.045em;font-weight:800;m
   .kpis{grid-template-columns:repeat(2,1fr);gap:8px}
   .kpi2{padding:12px 14px}
   .kpi2 .v{font-size:24px}
-  #rtabs{gap:6px}
-  .rchip{padding:7px 10px;font-size:12px}
+  /* 🔴 모바일 지역 선택을 **가로 한 줄**로 바꿨다(2026-08-22 석봉님 지적 「너무 기니까」).
+     전에는 16개가 2열 격자로 깔려 화면 절반을 먹고, 공고 목록이 스크롤 두 번 아래에 있었다.
+     드롭다운도 후보였지만 **건수(경기 47 · 서울 12)가 사라진다** — 그 숫자가 어디를 볼지
+     정하는 데 실제로 쓰인다. 그래서 숫자를 살리면서 한 줄로 접는 가로 스크롤을 골랐다.
+     칩은 건수 많은 순이라 앞쪽 넷(전국·경기·서울·인천)만 봐도 대개 끝난다.
+     ⚠️ 오른쪽 끝 페이드로 「더 있다」를 알린다. 없으면 뒤쪽 지역이 있는 줄도 모른다. */
+  .rwrap{position:relative;margin:0 0 16px}
+  .rwrap:after{content:'';position:absolute;top:0;right:0;bottom:0;width:34px;pointer-events:none;
+    background:linear-gradient(90deg,rgba(250,249,246,0),var(--bg,#faf9f6))}
+  #rtabs{display:flex;gap:6px;overflow-x:auto;scroll-snap-type:x proximity;
+    -webkit-overflow-scrolling:touch;padding:0 30px 2px 0;margin:0;
+    scrollbar-width:none}
+  #rtabs::-webkit-scrollbar{display:none}
+  .rchip{flex:0 0 auto;scroll-snap-align:start;padding:8px 12px;font-size:12.5px;border-radius:100px}
   .ap{padding:15px 16px;gap:10px}
   .ap .nm{font-size:15px}
   .ap .pr{text-align:left}
@@ -156,7 +168,7 @@ h1.pg{font-size:clamp(34px,5.5vw,60px);letter-spacing:-0.045em;font-weight:800;m
     <button class="tab" data-f="soon">접수예정</button>
     <button class="tab" data-f="done">접수마감</button>
   </div>
-  <div id="rtabs"></div>
+  <div class="rwrap"><div id="rtabs"></div></div>
   <div class="aps" id="list"><div class="empty">청약 데이터 연결 대기 중입니다.</div></div>
   <p class="notice2">※ 자료: 한국부동산원 청약홈 분양정보 (매일 갱신) · 분양가는 주택형별 최고 공급금액 기준이며 ㎡당 단가는 공급면적 기준 중위 근사치입니다.
     ※ "주변 실거래" 비교는 같은 시군구의 최근 실거래 아파트 매매(전용면적 기준, 국토교통부 신고분) 중위 단가입니다. 연식·입지 구분 없는 시군구 전체 중위값이라 신축 분양가는 통상 높게 비교되는 점을 감안하세요.
@@ -324,7 +336,16 @@ document.querySelectorAll("#tabs .tab").forEach(function(t){
       box.innerHTML='<div class="empty">'+(RQ?'무순위·잔여세대 공고에는 없습니다.':'지금 지원 가능한 무순위 공고가 없습니다.')+'</div>';
       return;
     }
-    box.innerHTML=rows(show);
+    /* 🔴 모바일에서 8건을 다 펴면 **아래 본 목록이 스크롤 세 번 밑으로 밀린다**(2026-08-22 실측).
+       처음엔 4건만 보이고 나머지는 눌러서 편다. 데스크톱은 자리가 있어 그대로 다 편다. */
+    var CAP=(window.matchMedia&&window.matchMedia('(max-width:720px)').matches)?4:show.length;
+    box.innerHTML=rows(show.slice(0,CAP))
+      +(show.length>CAP?('<button type="button" id="remMore" style="width:100%;margin-top:9px;'
+        +'border:1px solid #E3E8F0;background:#fff;color:#1B3F7A;font:inherit;font-size:12.5px;'
+        +'font-weight:800;border-radius:10px;padding:9px 0;cursor:pointer">'
+        +(show.length-CAP)+'건 더 보기</button>'):'');
+    var mb=document.getElementById('remMore');
+    if(mb)mb.onclick=function(){box.innerHTML=rows(show);hint(hit.length);};
     hint(hit.length);
   }
   /* 🔴 아파트 목록이 0건인데 무순위에는 있는 경우가 검색의 절반이다(실측: 「선유」·「춘천」).
