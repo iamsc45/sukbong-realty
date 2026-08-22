@@ -3117,6 +3117,17 @@ function lhPopup(r){
     +(r.q===2?'<div style="margin-top:5px;color:#B23A48;font-weight:700">인근 필지 추정 지점입니다'
               +(r.d?'(약 '+r.d+'m)':'')+'</div>'
      :(r.q===3?'<div style="margin-top:5px;color:#B23A48;font-weight:700">필지를 좁히지 못한 지점입니다</div>':''))
+    /* 진단기로 보내는 동선(2026-08-22). 「여기서 LH 가 샀었나」를 본 사람의 다음 물음은
+       「그럼 내가 지으면 사 줄까」다. 진단기는 `?addr=` 하나만 받고 바로 판정을 돌린다.
+       🔑 **주소 문자열로 보낸다 — PNU 로 조인하지 않는다.** 사양서가 경고한 전남·광주
+          신·구코드(12xxx ↔ 29xxx) 문제는 PNU 를 맞출 때 생기는 것이라, 주소로 넘기면
+          애초에 생기지 않는다. 라이브에서 다섯 표본으로 확인했다(전남광주 원본 표기
+          「전남광주통합특별시 남구 백운동 691」·세종 공백 2칸 포함, 전부 정상 판정).
+       ⚠️ 실적(과거)과 진단(앞으로)은 다른 이야기다. 문구에서 그 둘을 섞지 말 것. */
+    +'<a href="lh_%EC%A7%84%EB%8B%A8.html?addr='+encodeURIComponent((r.ad||'').replace(/\s{2,}/g,' '))+'"'
+    +' style="display:block;margin-top:7px;padding:7px 0;text-align:center;border-radius:8px;'
+    +'background:#12264A;color:#fff;font-weight:800;font-size:12px;text-decoration:none">'
+    +'이 자리에 지으면? · 매입약정 진단 →</a>'
     +'<div style="margin-top:6px;font-size:11px;color:#7A8698;line-height:1.5">'
     +'LH 매입임대 주택 · <b>'+LHBASE+' 기준</b><br>'
     /* 🔴 이 문장은 빼지 말 것 — 2026-08-04 흡수율 검증에서 확정된 필수 문구다 */
