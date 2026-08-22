@@ -494,6 +494,9 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
 .applysec{margin:0 0 26px}
 .applysec .sec{display:flex;align-items:baseline;gap:10px;margin:0 0 12px}
 @media(max-width:720px){.applysec{margin:0 0 18px}}
+/* 시안: 검은 지표 블록을 대시보드 안으로 옮겼을 때의 모서리·여백 */
+.dash .block{border-radius:18px;overflow:hidden;margin:0 0 16px}
+@media(max-width:720px){.dash .block{border-radius:14px}}
 </style><meta property="og:title" content="석봉 부동산 정보방">
 <meta property="og:description" content="전국 실거래가를 지도와 대시보드로 · 매일 갱신되는 아파트·오피스텔·빌딩 실거래 데이터, 평당가·전세가율·청약 정보까지 무료.">
 <meta property="og:type" content="website">
@@ -792,17 +795,6 @@ document.addEventListener('click',function(e){if(n.classList.contains('m-open')&
     <a class="prod" href="auction.html"><span class="dot" style="background:#0F6E56"></span>경매·공매</a>
     <a class="prod" href="apply.html"><span class="dot" style="background:#185FA5"></span>청약·분양</a>
   </div>
-  <div class="block blk-anim">
-    <div class="block-in">
-      <div class="blabel" id="blabel">Live Data</div>
-      <div class="kpis" id="kpis"></div>
-    </div>
-    <div class="rates" id="ratesRow" hidden>
-      <div class="rlab">금리·시장 지표 · <a href="%EC%A7%80%ED%91%9C.html" style="color:#B9B9B4;font-weight:700">전체 지표 보기 →</a> · <a href="%EA%B8%88%EB%A6%AC%EC%A7%80%ED%91%9C_%EC%9D%BD%EB%8A%94%EB%B2%95.html" style="color:#B9B9B4;font-weight:700">읽는 법 →</a></div>
-      <div class="rgrid" id="rgrid"></div>
-    </div>
-    <div class="ticker"><div class="ticker-in"><div class="ticker-track" id="ticker"></div></div></div>
-  </div>
 </header>
 
 <section class="hub wrap">
@@ -894,6 +886,22 @@ document.addEventListener('click',function(e){if(n.classList.contains('m-open')&
 
   <section class="dash" id="dash">
     <div class="sec rv"><h2>마켓 대시보드</h2><span class="d" id="basis"></span></div>
+    <!-- 🔴 검은 지표 블록을 히어로에서 **여기로 옮겼다**(2026-08-22 석봉님 지시).
+         히어로 안에서는 검색창 아래 곁들이처럼 보였는데, 실제로는 이 사이트에서 가장
+         밀도 높은 숫자 묶음이다. 대시보드의 머리로 올리면 아래 차트들과 한 흐름으로 읽힌다.
+         ⚠️`#kpis`·`#ratesRow`·`#ticker` 의 **id 를 그대로 둔다** — 채우는 스크립트가 id 로 찾는다. -->
+  <div class="block blk-anim">
+    <div class="block-in">
+      <div class="blabel" id="blabel">Live Data</div>
+      <div class="kpis" id="kpis"></div>
+    </div>
+    <div class="rates" id="ratesRow" hidden>
+      <div class="rlab">금리·시장 지표 · <a href="%EC%A7%80%ED%91%9C.html" style="color:#B9B9B4;font-weight:700">전체 지표 보기 →</a> · <a href="%EA%B8%88%EB%A6%AC%EC%A7%80%ED%91%9C_%EC%9D%BD%EB%8A%94%EB%B2%95.html" style="color:#B9B9B4;font-weight:700">읽는 법 →</a></div>
+      <div class="rgrid" id="rgrid"></div>
+    </div>
+    <div class="ticker"><div class="ticker-in"><div class="ticker-track" id="ticker"></div></div></div>
+  </div>
+
     <div class="grid g-main" style="margin-top:14px">
       <div class="panel rv"><h3>일별 실거래 신고 추이</h3><p class="cap">계약일 기준 최근 30일 · 매매 vs 전월세</p>
         <canvas id="trend" height="118"></canvas></div>
