@@ -251,10 +251,16 @@
     try { seen = ONCE_PER_VISIT && !!sessionStorage.getItem(SKEY); } catch (e) { seen = false; }
     if (seen) return;
     setTimeout(function () {
-      /* 첫 방문 안내 팝업이 떠 있으면 오늘은 건너뛴다 */
+      /* 🔴 홈 안내 팝업이 떠 있으면 건너뛰되 **이번 방문은 본 것으로 친다**(2026-08-22).
+         전에는 그냥 return 이라 sessionStorage 가 안 남았고, 홈에서 안내 팝업을 닫고
+         다른 화면으로 옮기는 순간 이 팝업이 또 떴다. 한 번 들어와서 창을 두 번 닫게 하는 꼴이다.
+         홈 안내 팝업 안에 피드백 안내 한 줄이 들어가 있으므로 메시지는 이미 전달됐다. */
       var g = document.getElementById('guidePop');
-      if (g && getComputedStyle(g).display !== 'none') return;
       try { sessionStorage.setItem(SKEY, '1'); } catch (e) {}
+      if (g && getComputedStyle(g).display !== 'none') return;
+      /* 이용안내를 읽으러 들어온 분께는 띄우지 않는다 — 안내를 가리는 창이 된다.
+         링크는 그대로 있으니 원하실 때 누르시면 된다. */
+      if (/%EC%9D%B4%EC%9A%A9%EC%95%88%EB%82%B4|이용안내/.test(location.pathname)) return;
       openIntro();
     }, 1700);
   }
