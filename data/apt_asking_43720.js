@@ -1,1 +1,1 @@
-window.APTASK=window.APTASK||{};APTASK["43720"]={"조일|마로면":{"mm":{"med":1500,"py":99,"n":1}},"대림|보은읍":{"mm":{"med":8000,"py":456,"n":1}},"석봉리치타워|누리솔동":{"mm":{"med":137500,"py":4182,"n":3}}};window.APTASKDAY="2026-08-18";
+window.APTASK=window.APTASK||{};APTASK["43720"]={"조일|마로면":{"mm":{"med":1500,"py":99,"n":1}},"대림|보은읍":{"mm":{"med":8000,"py":456,"n":1}},"석봉리치타워|누리솔동":{"mm":{"med":137500,"py":4182,"n":3}}};window.APTASKDAY="2026-08-23";
