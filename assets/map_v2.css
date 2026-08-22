@@ -428,6 +428,12 @@ body.v2.shownames .pricetag:hover .nm,body.v2.shownames .pricetag.hl .nm{color:r
    노후도를 켜면 경계가 마우스를 먼저 먹어 노후 말풍선이 안 떴다(2026-08-10 시뮬레이션에서 확인).
    노후도를 켠 동안은 경계가 이벤트를 받지 않게 비켜 준다. */
 body.oldon .dongzone{pointer-events:none!important}
+/* 🔴 LH 매입 실적도 같은 병에 걸렸다(2026-08-22 석봉님 「LH 폴리곤이 안 눌려」).
+   동 경계(sbdong, z-index **415**)가 우리 필지 폴리곤(overlayPane **400**) 위에 있고
+   `fillOpacity:0.001` 로 마우스를 받도록 돼 있어, 클릭이 경계에 먼저 먹혔다.
+   데스크톱·모바일 둘 다 같은 원인이다(모바일은 경계에 click 핸들러까지 붙어 있다).
+   노후도(2026-08-10)와 똑같은 처리를 한다 — LH 모드에서는 경계가 이벤트를 비켜 준다. */
+body.lh .dongzone{pointer-events:none!important}
 
 /* 말풍선 */
 #oldtip{position:absolute;z-index:935;pointer-events:none;max-width:210px;

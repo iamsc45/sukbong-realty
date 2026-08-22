@@ -286,8 +286,70 @@
     });
   }
 
+  /* 🔴 LH 매입 실적 모드에서도 왼쪽 목록을 채운다(2026-08-22 석봉님 지시).
+     전에는 실거래 지점(`_PTS`)만 보고 그려서 「표시할 거래 없음」만 떴다 —
+     지도에는 필지가 보이는데 목록은 비어 있으니 화면이 반쪽으로 보인다.
+     ⚠️ 목록을 여기서 다시 만들지 않는다. 지도가 그린 것을 `window._LHLIST` 로 받아 그대로 쓴다
+        (두 곳에서 거르면 지도와 목록의 건수가 갈린다). */
+  function lhItemHTML(o){
+    var r=o.r, ad=(r.ad||'').replace(/\s{2,}/g,' ');
+    var den=(r.n||0)-(r.u||0), wp=den>0?Math.round((r.w||0)/den*100):null;
+    var ys=Object.keys(r.y||{}).sort(), last=ys.length?ys[ys.length-1]:'';
+    return '<div class="v2i" style="--c:#12264A">'
+      +'<div class="ic">LH</div>'
+      +'<div class="bd">'
+        +'<div class="nm">'+(r.k||'LH 매입 주택')+'</div>'
+        +'<div class="ad">'+ad+'</div>'
+        +'<div class="pr"><span class="u">매입</span>'+(r.n||0)+'호</div>'
+        +'<div class="mt">'+(wp!=null?'신축 매입 '+wp+'%':'신축 비중 미상')
+          +(last?' · '+last+'년 매입':'')
+          +(r.q===2?' · 인근 필지 추정':'')+'</div>'
+      +'</div></div>';
+  }
+  function paintLhList(){
+    var a=(window._LHLIST||[]).slice().sort(function(x,y){return (y.r.n||0)-(x.r.n||0);});
+    var k='lh'+a.length+'|'+(a[0]?a[0].r.p:'');
+    if(k!==lastKey)shown=LIMIT;
+    lastKey=k;
+    var body=document.querySelectorAll('.v2b');
+    var head=a.length?a.length.toLocaleString()+'곳':'표시할 실적 없음';
+    var n=a.reduce(function(t,o){return t+(o.r.n||0);},0);
+    var sub=a.length?('LH 매입 '+n.toLocaleString()+'호 · 2025년 11월 20일 기준')
+                    :'매입년도 필터를 넓히거나 지도를 옮겨 보세요';
+    var html=a.length
+      ? a.slice(0,shown).map(lhItemHTML).join('')
+        +(a.length>shown?'<div class="v2more" data-more="1">'+(a.length-shown).toLocaleString()+'곳 더 보기</div>':'')
+      : '<div class="v2empty"><b>'+head+'</b><br>'+sub+'</div>';
+    for(var i=0;i<body.length;i++)body[i].innerHTML=html;
+    var t=document.getElementById('v2t'),s2=document.getElementById('v2s');
+    if(t)t.textContent=head; if(s2)s2.textContent=sub;
+    var st=document.getElementById('v2st'),ss=document.getElementById('v2ss');
+    if(st)st.textContent=head; if(ss)ss.textContent=sub;
+    var _els=[];
+    ['#v2list','#v2sheet'].forEach(function(sel){
+      var box=document.querySelector(sel); if(!box)return;
+      Array.prototype.forEach.call(box.querySelectorAll('.v2i'),function(el,i){_els.push([el,i]);});
+    });
+    _els.forEach(function(pair){
+      var el=pair[0], o=a[pair[1]]; if(!o)return;
+      el.onclick=function(){
+        var g=o.r.g||[]; if(!g.length)return;
+        var lat=0,lng=0; g.forEach(function(q){lng+=q[0];lat+=q[1];});
+        try{window.go(lat/g.length,lng/g.length,Math.max(window.map.getZoom(),17));}catch(e){}
+        setTimeout(function(){try{window.showLhCard(o.r,o.sd);}catch(e){}},420);
+        document.querySelectorAll('.v2i.on').forEach(function(x){x.classList.remove('on');});
+        el.classList.add('on');
+        var sh=document.getElementById('v2sheet');
+        if(sh&&window.innerWidth<=720){sh.classList.remove('half');sh.classList.add('min');}
+      };
+    });
+    var mb=document.querySelector('.v2more');
+    if(mb)mb.onclick=function(){shown+=LIMIT;lastKey='';paintLhList();};
+  }
+
   function paintList(force){
     var _z=0;try{_z=window.map.getZoom();}catch(e){}
+    if(document.body.classList.contains('lh')){paintLhList();checkEmpty();return;}
     if(_z<13){lastKey='region'+_z;paintRegionList();checkEmpty();return;}
     var list=window._PTS||[];
     var k=key(list); if(!force&&k===lastKey)return; if(k!==lastKey)shown=LIMIT; lastKey=k;

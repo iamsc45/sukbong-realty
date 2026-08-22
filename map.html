@@ -20,7 +20,7 @@
 <link rel="stylesheet" href="assets/site.css">
 <!-- 새 지도 디자인(2026-08-10 석봉님 확정): 네이버형 좌측 목록 + 흰 말풍선 마커.
      로직은 이 파일 그대로 두고 겉모습만 아래 두 파일이 얹는다. -->
-<link rel="stylesheet" href="assets/map_v2.css?v=10">
+<link rel="stylesheet" href="assets/map_v2.css?v=11">
 <style>
   html,body{height:100%}
   #wrap{display:flex;flex-direction:column;height:100%}
@@ -3068,7 +3068,13 @@ function showAptCard(pt, txs){
       떨어져 가장 가까운 대지를 고른 추정이라, 칠하면 남의 필지가 칠해진다. */
 var lhLayer=L.layerGroup();
 var lhRenderer=L.canvas();
-var LHY=3;                      /* 매입년도 필터(년). 0=전체. 기본은 사양서대로 최근 3년 */
+var LHY=0;   /* 매입년도 필터(년). 0=전체.
+   🔴 기본을 **전체**로 바꿨다(2026-08-22 석봉님 「지도에 표시되는 매입이 적은 것 같은데」).
+      사양서는 「최근 3년」을 기본으로 하라고 했지만, 전수로 재 보니 그건 **전국 16,360동의 7.7%**뿐이다
+      (2022년 이후 13.6% · 2021년 이후 20.5% · 가장 두꺼운 해가 2019~2021).
+      「옛 실적이 과대해석되지 않게」라는 취지는 알겠지만, 92%를 감추면 시행사가
+      **「여기는 LH 가 안 사는구나」로 읽는다** — 그것도 사실과 다른 화면이다.
+      대신 연도 칩과 목록에 늘 건수를 적어 어느 기간을 보고 있는지 드러낸다. */
 var LHBASE='2025년 11월 20일';  /* 실적 기준시점. 자료가 연 1회 갱신이라 여기 적어 둔다 */
 var lhLoading={};
 function lhSidos(){                       /* 화면에 걸치는 시도 두 자리 코드 */
@@ -3165,6 +3171,7 @@ function showLhCard(r,sd){
   var cb=document.getElementById('rcClose');
   if(cb)cb.onclick=function(){rc.classList.remove('open');};
 }
+window.showLhCard=showLhCard;
 function renderLH(){
   if(curMode!=='lh')return;
   var sds=lhSidos(), waiting=false;
@@ -3172,7 +3179,7 @@ function renderLH(){
     if(!window.LHPARCEL||window.LHPARCEL[sd]===undefined){ waiting=true; lhLoad(sd,renderLH); }
   });
   lhLayer.clearLayers();
-  var b=map.getBounds(), z=map.getZoom(), shown=0, all=0;
+  var b=map.getBounds(), z=map.getZoom(), shown=0, all=0, _lhList=[];
   sds.forEach(function(sd){
     var arr=(window.LHPARCEL||{})[sd]; if(!arr)return;
     arr.forEach(function(r){
@@ -3181,7 +3188,7 @@ function renderLH(){
       if(!b.contains([g[0][1],g[0][0]]))return;
       all++;
       if(!lhPass(r))return;
-      shown++;
+      shown++; _lhList.push({r:r,sd:sd});
       var c=lhColor(r);
       if(r.q===1 && z>=Z_LHPOLY){
         var ll=g.map(function(p){return [p[1],p[0]];});
@@ -3201,6 +3208,8 @@ function renderLH(){
       }
     });
   });
+  window._LHLIST=_lhList;                 /* 왼쪽 목록이 이걸 그대로 그린다(2026-08-22) */
+  try{ if(window._v2repaint) window._v2repaint(); }catch(e){}
   var el=document.getElementById('lhcnt');
   if(el)el.textContent = waiting ? '불러오는 중…'
     : (shown.toLocaleString()+'동 표시 · 이 화면 전체 '+all.toLocaleString()+'동');
@@ -3289,7 +3298,7 @@ if(_BACKVIEW){try{
 
 render();
 </script>
-<script src="assets/map_v2.js?v=16"></script>
+<script src="assets/map_v2.js?v=17"></script>
 <script src="assets/map_v2_poi.js?v=2"></script>
 <script src="assets/map_v2_dong.js?v=2"></script>
 <script src="assets/map_old.js?v=2"></script>
