@@ -22,6 +22,8 @@
 (function () {
   'use strict';
   var ONCE_PER_VISIT = true;
+  var LKEY = 'sb_fb_intro_at';   /* 마지막으로 인사 팝업을 띄운 시각 */
+  var REST_DAYS = 3;             /* 그 뒤 며칠 쉬는가 */
   var SKEY = 'sb_fb_intro';
   var URL_ = 'https://bwgoufxonqamglbqsife.supabase.co/rest/v1/inquiries';
   var KEY_ = 'sb_publishable_kYd1gCyqCR2Qy8Ix6KE6og_FfJUImfR';
@@ -74,15 +76,30 @@
     '.sbfb-ok .ic{width:44px;height:44px;border-radius:50%;background:#1E7A5A;color:#fff;',
     '  font-size:22px;line-height:44px;margin:0 auto 12px}',
     /* 상단 링크 — 광고 문의 옆에 나란히. 눈에 띄되 경쟁하지 않게 테두리만 준다 */
-    '.sb-fb-lnk{flex:0 0 auto;white-space:nowrap;display:inline-flex;align-items:center;gap:5px;',
-    '  border:1px solid #C6D3E6;border-radius:100px;color:#1B3F7A;text-decoration:none;',
-    '  font-weight:700;font-size:13px;padding:0 13px;height:38px;line-height:1;background:#fff}',
-    '.sb-fb-lnk:hover{background:#12264A;border-color:#12264A;color:#fff}',
-    '@media(max-width:1100px){.sb-fb-lnk{height:36px;font-size:12px;padding:0 11px}}',
+    /* 🔴 헤더가 두 종류다(2026-08-22 석봉님 「주변 디자인에 맞게」). 한 규격으로 쓰면 반드시 튄다.
+         · 홈(`.nav`)      = 큰 버튼들 — 높이 42px · 15px · 완전 둥근 pill(광고·제휴, 로그인, 지도 열기)
+         · 그 밖(`.site-header nav`) = 작은 텍스트 링크 13.5px + 로그인 pill 25px
+       전에는 둘 다 38px/13px 이라 **홈에서는 혼자 작고, 다른 페이지에서는 혼자 컸다.**
+       ⚠️게다가 `.site-header nav a{padding:4px 0}` 가 더 구체적이라 좌우 여백이 0 이 됐다
+         — 글자가 테두리에 딱 붙어 보이던 원인이다. 선택자를 `nav a.sb-fb-lnk` 로 올려 이긴다. */
+    /* 공통 */
+    '.sb-fb-lnk{flex:0 0 auto;white-space:nowrap;display:inline-flex;align-items:center;',
+    '  border-radius:100px;text-decoration:none;line-height:1;background:#fff;',
+    '  transition:background 150ms ease,color 150ms ease,border-color 150ms ease}',
+    /* 그 밖의 페이지 — 옆에 있는 로그인 pill(25px)에 맞춘다 */
+    '.site-header nav a.sb-fb-lnk{height:26px;box-sizing:border-box;gap:5px;',
+    '  padding:0 11px;font-size:12.5px;font-weight:700;',
+    '  border:1px solid #DCD8CE;color:#6E6E6A}',
+    '.site-header nav a.sb-fb-lnk:hover{border-color:#12264A;color:#12264A;background:#fff}',
+    /* 홈 — 광고·제휴 문의와 같은 규격 */
+    '.nav a.sb-fb-lnk{height:42px;box-sizing:border-box;gap:7px;padding:0 18px;',
+    '  font-size:15px;font-weight:700;border:1.5px solid #141414;color:#141414}',
+    '.nav a.sb-fb-lnk:hover{background:#141414;color:#fff}',
+    '@media(max-width:1100px){.nav a.sb-fb-lnk{height:36px;font-size:13px;padding:0 13px}}',
     /* 🔴 모바일에서 링크를 통째로 숨기면 안 된다 — 방문자의 70.9%가 모바일이다(2026-08 실측).
        홈만 예외다. 홈은 좁은 화면에서 nav 링크를 전부 감추고 햄버거 패널로 보내므로,
        그 패널에 한 줄을 넣고 상단 링크는 숨긴다(그 경우에만 body 에 표시가 붙는다). */
-    '@media(max-width:720px){.sb-fb-lnk{height:30px;font-size:11.5px;padding:0 10px;gap:4px}',
+    '@media(max-width:720px){.site-header nav a.sb-fb-lnk{height:24px;font-size:11.5px;padding:0 9px;gap:4px}',
     '  body.sb-fb-panel .sb-fb-lnk{display:none}}'
   ].join('');
   document.head.appendChild(css);
@@ -250,14 +267,25 @@
     var seen = false;
     try { seen = ONCE_PER_VISIT && !!sessionStorage.getItem(SKEY); } catch (e) { seen = false; }
     if (seen) return;
+    /* 🔴 방문마다 뜨면 지친다(2026-08-22). 한 번 본 뒤로는 **사흘 동안** 쉰다.
+       상단 「✉ 피드백 주기」 링크는 늘 있으므로 원하실 때 언제든 열 수 있다. */
+    try {
+      var last = +(localStorage.getItem(LKEY) || 0);
+      if (last && Date.now() - last < REST_DAYS * 864e5) return;
+    } catch (e) {}
     setTimeout(function () {
       /* 🔴 홈 안내 팝업이 떠 있으면 건너뛰되 **이번 방문은 본 것으로 친다**(2026-08-22).
          전에는 그냥 return 이라 sessionStorage 가 안 남았고, 홈에서 안내 팝업을 닫고
          다른 화면으로 옮기는 순간 이 팝업이 또 떴다. 한 번 들어와서 창을 두 번 닫게 하는 꼴이다.
          홈 안내 팝업 안에 피드백 안내 한 줄이 들어가 있으므로 메시지는 이미 전달됐다. */
+      /* 🔴 홈에서는 **아예 띄우지 않는다**(2026-08-22 석봉님 「모바일에서 다시 들어가면 계속 뜬다」).
+         홈 안내 팝업(#guidePop)을 이미 본 사람에게는 그게 안 뜨니까 이 팝업이 대신 떴고,
+         방문마다 한 번이라 브라우저를 껐다 켤 때마다 다시 떴다. 홈 안내 팝업 안에
+         피드백 안내 한 줄이 들어가 있으므로 여기서 또 요청할 이유가 없다. */
       var g = document.getElementById('guidePop');
       try { sessionStorage.setItem(SKEY, '1'); } catch (e) {}
-      if (g && getComputedStyle(g).display !== 'none') return;
+      if (g) return;                       /* 홈(안내 팝업이 있는 페이지) */
+      try { localStorage.setItem(LKEY, String(Date.now())); } catch (e) {}
       /* 이용안내를 읽으러 들어온 분께는 띄우지 않는다 — 안내를 가리는 창이 된다.
          링크는 그대로 있으니 원하실 때 누르시면 된다. */
       if (/%EC%9D%B4%EC%9A%A9%EC%95%88%EB%82%B4|이용안내/.test(location.pathname)) return;

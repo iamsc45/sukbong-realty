@@ -447,6 +447,13 @@ var _MAPVIEW_KEY='sb_mapview', _BACKVIEW=null;
       var hasDeep=/[?&](q|r|s|at)=/.test(location.search);
       if(hasDeep&&!isBack)v=null;
       if(v&&((((isBack||fromDetail)&&age<6*3600*1000)||age<30*60*1000)))_BACKVIEW=v;
+      /* 🔴 **모드(실거래·재개발·LH)는 뒤로가기·상세 복귀일 때만 되살린다**(2026-08-22 석봉님 제보
+         「이용안내에서 '실거래와 호가를 나란히'를 누르면 LH 매입 지도가 뜬다」).
+         30분 안에 LH 모드를 본 적이 있으면, 사이트 안 다른 페이지에서 `map.html` 링크를
+         눌러 들어와도 그 모드가 복원돼 **엉뚱한 화면**이 떴다. 좌표·확대·상품은 그대로
+         되살리되 모드만 뺀다 — 모드는 화면 성격을 통째로 바꾸므로 「보던 자리」와는 다르다.
+         ⚠️`?mode=` 를 명시한 링크는 아래 setMode 분기에서 그 값이 이긴다. */
+      if(_BACKVIEW&&!(isBack||fromDetail))_BACKVIEW=Object.assign({},_BACKVIEW,{m:null});
     }
   }catch(e){}
   /* 🔴 좌표·확대만 저장하면 **보던 상품이 안 돌아온다**(2026-08-22 석봉님 지적).
@@ -3454,6 +3461,6 @@ render();
 <script src="assets/map_m.js?v=8"></script>
 <script src="assets/map_bar.js?v=3"></script>
 <script src="assets/sb_tabbar.js?v=10"></script>
-<script defer src="assets/sb_feedback.js?v=3"></script>
+<script defer src="assets/sb_feedback.js?v=4"></script>
 <script defer src="assets/sb_nav.js?v=1"></script>
 </body></html>
