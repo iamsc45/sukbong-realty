@@ -172,14 +172,17 @@ tr:last-child td{border-bottom:0}
      제한을 안내문이 아니라 **고르는 칸 자체**로 건다. 안내문은 안 읽지만 칸은 못 넘는다.
      ⚠️ 파일은 연도로 쪼개지 않는다 — 시군구 한 덩어리(최대 1.9MB, 전송 0.3MB)로 받아
         브라우저에서 그 해만 걸러 담는다. 연도까지 쪼개면 파일이 2,805개가 된다. */
-  var HIST_FROM = 2016;
+  var HIST_FROM = 2021;   /* 2026-08-22: 아파트 매매도 2021년~ 로 줄였다(전월세 자리를 만들려고) */
   /* 🔴 과거 자료는 종류마다 **있는 기간과 지역 수가 다르다**(2026-08-22 실측).
      아파트만 2016년부터고 나머지는 2021년부터다. 없는 해를 고르면 빈 표가 나오므로
      연도 선택지도 종류에 맞춰 줄인다. `cov` 는 시군구 수 — 전국(256)이 아닌 것은 화면에 적는다.
      ⚠️`jb` 는 **원본이 지번을 실제로 주는 비율**이다. 국토부가 종류마다 다르게 가린다
         (토지·단독다가구는 전부 `3*` 처럼 뒤를 지워서 준다). 이걸 감추지 않는다. */
   var HKIND = {
-    apt:   { pre: 'hist_apt_',   from: 2016, cov: 255, jb: 100 },
+    apt:   { pre: 'hist_apt_',   from: 2021, cov: 255, jb: 100 },
+    /* 아파트 전월세는 **거래유형**으로 갈린다 — 종류 칩에는 없고, 아파트를 고른 채
+       전세·월세를 켜면 이 파일을 함께 받는다(2026-08-22). */
+    rent:  { pre: 'hist_rent_',  from: 2021, cov: 255, jb: 100 },
     land:  { pre: 'hist_land_',  from: 2021, cov: 256, jb: 0 },
     comm:  { pre: 'hist_comm_',  from: 2021, cov: 256, jb: 33 },
     villa: { pre: 'hist_villa_', from: 2021, cov: 192, jb: 100 },
@@ -187,7 +190,15 @@ tr:last-child td{border-bottom:0}
     fact:  { pre: 'hist_fact_',  from: 2021, cov: 10,  jb: 4, to: 2024 }
   };
   function histKinds() {                 /* 과거 모드에서 고른 종류 중 자료가 있는 것 */
-    return Object.keys(HKIND).filter(function (k) { return curT[k]; });
+    return Object.keys(HKIND).filter(function (k) { return k !== 'rent' && curT[k]; });
+  }
+  /* 실제로 받을 파일 — 아파트에 전세·월세를 켜면 전월세 파일이 하나 더 붙는다 */
+  function histFiles() {
+    var ks = histKinds();
+    if (curT.apt && (curU['전세'] || curU['월세'])) ks = ks.concat(['rent']);
+    /* 매매를 껐으면 아파트 매매 파일은 받지 않는다 */
+    if (!curU['매매']) ks = ks.filter(function (k) { return k !== 'apt'; });
+    return ks;
   }
   var curT = { apt: 1 }, curU = { '매매': 1 };
   var rows = [];                 /* 지금 조건에 걸린 행 */
@@ -294,8 +305,8 @@ tr:last-child td{border-bottom:0}
     if (tab === 'tx' && isHist()) {
       /* 🔴 고른 종류를 **모두** 받아 합친다(2026-08-22). 종류마다 파일이 따로라
          하나만 받으면 칩을 여러 개 켜 둔 사람에게 조용히 일부만 나간다. */
-      var ks = histKinds();
-      if (!ks.length) { allTx = []; rows = []; draw('물건종류를 하나 이상 골라 주세요'); return; }
+      var ks = histFiles();
+      if (!ks.length) { allTx = []; rows = []; draw('물건종류와 거래유형을 골라 주세요'); return; }
       var left = ks.length, miss = 0;
       ks.forEach(function (k) {
         loadJs('data/' + HKIND[k].pre + code + '.js', function (err) {
@@ -355,14 +366,18 @@ tr:last-child td{border-bottom:0}
       (H.r || []).forEach(function (v) {
         var k = b[v[0]] || ['', '', '', 0];
         var ym = String(v[3]), y = ym.slice(0, 4), m = ym.slice(4);
+        /* 전월세는 값이 둘이다 — 8번째 칸이 월세이고, 0이면 전세다.
+           ⚠️`sh`(지분)도 8번째를 쓰지만 종류가 다르므로 섞이지 않는다. */
+        var isRent = (kind === 'rent');
         allTx.push({
           sido: reg.sido, sgg: reg.sgg, dong: k[0], nm: k[1], jibun: k[2],
-          t: kind, u: '매매',
+          t: isRent ? 'apt' : kind,
+          u: isRent ? (v[7] ? '월세' : '전세') : '매매',
           cd: y + '-' + m + '-' + (v[4] < 10 ? '0' + v[4] : v[4]),
-          a: v[1], f: v[2] || '', p: v[5], r: '',
+          a: v[1], f: v[2] || '', p: v[5], r: isRent ? (v[7] || '') : '',
           built: k[3] ? (k[3] + '년 준공') : '',
-          cx: v[6] ? '해제' : '',
-          sh: v[7] ? '지분' : ''      /* 토지·상가만 있는 칸. 없으면 빈값 */
+          cx: (!isRent && v[6]) ? '해제' : '',
+          sh: (!isRent && v[7]) ? '지분' : ''
         });
       });
     });
@@ -395,7 +410,7 @@ tr:last-child td{border-bottom:0}
       /* 연도 + 고른 물건종류. 종류를 안 걸면 방금 끈 칩의 자료가 표에 남는다
          (파일은 이미 받아 놨으므로 allTx 에 들어 있다). */
       return allTx.filter(function (x) {
-        return String(x.cd).slice(0, 4) === yy && !!curT[x.t];
+        return String(x.cd).slice(0, 4) === yy && !!curT[x.t] && !!curU[x.u];
       });
     }
     var f = $('mFrom').value, t = $('mTo').value;
@@ -543,8 +558,10 @@ tr:last-child td{border-bottom:0}
           u += '<br><b>지번</b> · ' + low.map(function (k) {
             var j = HKIND[k].jb;
             return (TYPE[k] || [k])[0] + (j ? ' 약 ' + j + '%' : ' 전부 가려짐');
-          }).join(', ') + '. 국토교통부가 물건종류마다 지번을 다르게 공개합니다'
-            + '(가려진 자리는 <b>3*</b> 처럼 나옵니다). 우리가 지운 것이 아닙니다.';
+          }).join(', ') + '. 국토교통부가 물건종류마다 지번을 다르게 공개해 '
+            + '가려진 자리는 <b>3*</b> 처럼 나옵니다(저희가 지운 것이 아닙니다). '
+            + '<b>공공 필지 자료와 맞춰 지번을 채우는 작업을 하고 있습니다.</b> '
+            + '되는 대로 이 자료에도 반영하겠습니다.';
         }
       }
       $('useNote').innerHTML = u;
@@ -581,7 +598,7 @@ tr:last-child td{border-bottom:0}
     if (h) {
       var ks = histKinds();
       var lim = ks.filter(function (k) { return HKIND[k].cov < 250; });
-      msg = '과거 자료는 한 번에 1년치 · 매매만';
+      msg = '과거 자료는 한 번에 1년치 · 전월세는 아파트만';
       if (lim.length) {
         msg += ' · ' + lim.map(function (k) {
           return (TYPE[k] || [k])[0] + ' ' + HKIND[k].cov + '개 시군구';
@@ -591,12 +608,10 @@ tr:last-child td{border-bottom:0}
       msg = '최근분은 전 물건종류·전 거래유형';
     }
     $('perNote').textContent = msg;
-    /* 거래유형만 잠근다(과거는 매매뿐). 물건종류는 열어 둔다. */
-    document.querySelectorAll('#deals .chip').forEach(function (b) {
-      b.style.opacity = h ? .35 : 1;
-      b.style.pointerEvents = h ? 'none' : '';
-    });
-    document.querySelectorAll('#types .chip').forEach(function (b) {
+    /* 🔴 이제 과거도 거래유형을 고를 수 있다(2026-08-22 아파트 전월세 추가).
+       다만 **전월세가 있는 것은 아파트뿐**이라, 다른 종류에 전세·월세를 걸면 0행이 된다.
+       칩을 잠그는 대신 위 안내에 그 사실을 적는다. */
+    document.querySelectorAll('#deals .chip, #types .chip').forEach(function (b) {
       b.style.opacity = 1; b.style.pointerEvents = '';
     });
   }
@@ -613,7 +628,10 @@ tr:last-child td{border-bottom:0}
     if (isHist()) { fillPer(); perUI(); notes(); load(); }
   });
   $('deals').addEventListener('click', function (e) {
-    var b = e.target.closest('.chip'); if (b) toggle('deals', curU, b.dataset.k);
+    var b = e.target.closest('.chip'); if (!b) return;
+    toggle('deals', curU, b.dataset.k);
+    /* 과거 모드에서는 거래유형이 곧 파일이다(전월세는 별도 파일) — 다시 받는다 */
+    if (isHist()) { perUI(); notes(); load(); }
   });
   document.querySelector('.tabs').addEventListener('click', function (e) {
     var b = e.target.closest('button'); if (b) setTab(b.dataset.t);
