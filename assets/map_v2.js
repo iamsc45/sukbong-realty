@@ -20,6 +20,27 @@
     try{if(window.map)setTimeout(function(){window.map.invalidateSize({animate:false});},60);}catch(e){}
   }
   window.addEventListener('resize',fitTop);
+
+  /* 🔴 지도 도구(노후 건물·지적도·단지명·위성)가 상단 바에 가려지던 것(2026-08-22 석봉님 제보).
+     둘 다 `top: var(--v2-top) + 12px` 에서 시작하는데, 상단 바는 오른쪽 끝까지 뻗어 있고
+     z-index 도 950 대 900 으로 바가 위다. 그래서 **네 개 중 위 두 개가 통째로 바 밑에 깔렸다**
+     (실측 1024·1280·1440 전부, 모드 상관없이).
+     ⚠️바 높이를 숫자로 박으면 안 된다 — 폭과 모드에 따라 52px(1440 실거래)에서
+       147px(1280 재개발)까지 변한다. 실측해서 CSS 변수로 넘긴다(--v2-top 과 같은 방식).
+     ⚠️`resize` 만으로는 부족하다 — 모드를 바꾸거나 검색 결과가 줄바꿈되면 폭은 그대로인데
+       바 높이만 변한다. ResizeObserver 로 바 자체를 지켜본다. */
+  function fitBar(){
+    var b=document.getElementById('bar');
+    if(!b)return;
+    var h=Math.round(b.getBoundingClientRect().height);
+    if(h>0)document.documentElement.style.setProperty('--v2-barh',h+'px');
+  }
+  fitBar();
+  window.addEventListener('resize',fitBar);
+  try{
+    var _bo=document.getElementById('bar');
+    if(_bo&&window.ResizeObserver)new ResizeObserver(fitBar).observe(_bo);
+  }catch(e){}
   /* 지도 색 비교용(soft=예전 연한 톤 · plain=타일 원본 · vivid=더 진하게) */
   var tone=P.get('tone'); if(tone)document.body.classList.add('tone-'+tone);
 

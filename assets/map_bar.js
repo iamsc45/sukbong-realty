@@ -85,7 +85,9 @@
       'body.v2 #msheet .ms-opt>span:first-child:not(:has(.dot)){padding-left:20px}',
 
       /* ── 지도 도구: 오른쪽 세로 (모바일과 같은 자리) ── */
-      'body.v2 #sbTools{position:absolute;right:14px;top:calc(var(--v2-top,52px) + 12px);z-index:900;',
+      /* 상단 바 아래로 내린다(2026-08-22). 바 높이는 map_v2.js 가 실측해 --v2-barh 로 넘긴다. */
+      'body.v2 #sbTools{position:absolute;right:14px;z-index:900;',
+      '  top:calc(var(--v2-top,52px) + 12px + var(--v2-barh,52px) + 10px);',
       '  display:flex!important;flex-direction:column;gap:7px;margin:0}',
       'body.v2 #sbTools button{min-width:66px;width:auto;height:54px;border:0!important;border-radius:13px;',
       '  background:rgba(255,255,255,.97)!important;color:#4a453d!important;',
