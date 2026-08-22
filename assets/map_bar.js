@@ -102,7 +102,10 @@
 
     /* ── 순서 정리: 모드 | 검색·필터 | 상품·거래·지역 ── */
     function vr() { var d = document.createElement('span'); d.className = 'vr'; return d; }
-    var order = ['modes', '|', 'sform', 'fbtn', '|', 'mcats', 'selSido', 'selSgg'];
+    /* 필터 버튼은 **지역 선택 옆**에 둔다(2026-08-22 석봉님 지시).
+       검색창 바로 뒤에 있던 때는 「검색 → 필터」로 읽혀서, 지역을 고르고 조건을 좁히는
+       실제 순서와 어긋났다. 이제 상품·거래·지역을 고른 끝에 필터가 온다. */
+    var order = ['modes', '|', 'sform', '|', 'mcats', 'selSido', 'selSgg', 'fbtn'];
     order.forEach(function (id) {
       if (id === '|') { bar.appendChild(vr()); return; }
       var el = document.getElementById(id);

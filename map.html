@@ -325,7 +325,8 @@ body.lh #lhbar{display:flex}
     <div class="frow lhonly"><span class="flbl">주차</span><span class="fgrp" id="lpP"></span><span class="fnote">원본 표기 그대로</span></div>
     <div class="frow lhonly"><span class="flbl">층수</span><span class="fgrp" id="lpF"></span><span class="fnote">지상 최고층</span></div>
     <div class="frow lhonly"><span class="flbl">승강기</span><span class="fgrp" id="lpE"></span></div>
-    <div class="frow lhonly"><span class="flbl">매입 규모</span><span class="fgrp" id="lpN"></span></div>
+    <div class="frow lhonly"><span class="flbl">임대유형</span><span class="fgrp" id="lpT"></span><span class="fnote">한 호라도 있으면 표시</span></div>
+    <div class="frow lhonly"><span class="flbl">매입 호수</span><span class="fgrp" id="lpN"></span><span class="fnote">그 자리에서 LH 가 사들인 호수</span></div>
     <div class="frow fcommon" style="border:0"><span id="fcount"></span><button class="chip" id="freset" type="button">초기화</button><button class="chip" id="fclose" type="button" style="background:var(--navy);color:#fff">닫기 ✕</button></div>
   </div>
 </div>
@@ -387,7 +388,7 @@ var lhShowTrade=false;   /* LH 실적 모드에서 실거래 말풍선 겹쳐보
    전용·방수는 중위, 주차·층은 그 필지에서 가장 큰 값, 승강기는 하나라도 있으면 있음.
    ⚠️주차 0 은 「없다」가 아니라 「0 으로 적혀 있다」다(전국 필지의 53.7%).
       다가구·다세대는 미기재를 0 으로 적는 관행이 섞여 있어 우리 자료로는 못 가른다. */
-var LHK='all',LHA='all',LHP='all',LHF='all',LHE='all',LHN='all';
+var LHK='all',LHA='all',LHP='all',LHF='all',LHE='all',LHN='all',LHT='all';
 function lhKind(k){
   k=String(k||'');
   if(k.indexOf('다가구')>=0)return 'da';
@@ -836,8 +837,8 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
     if(document.body.classList.contains('lh')){
       /* LH 모드는 다른 필터를 쓰므로 세는 대상도 다르다(2026-08-22).
          실거래 필터 개수를 그대로 보여 주면 안 걸린 필터가 걸린 것처럼 보인다. */
-      n=(LHK!=='all'?1:0)+(LHA!=='all'?1:0)+(LHP!=='all'?1:0)
-       +(LHF!=='all'?1:0)+(LHE!=='all'?1:0)+(LHN!=='all'?1:0);
+      n=(LHK!=='all'?1:0)+(LHA!=='all'?1:0)+(LHP!=='all'?1:0)+(LHF!=='all'?1:0)
+       +(LHE!=='all'?1:0)+(LHN!=='all'?1:0)+(LHT!=='all'?1:0);
     }else{
       n=((fSc||fS!=='all')?1:0)+((fBc||fB!=='all')?1:0)+((fWc||fW!=='all')?1:0)
        +(fA!=='all'?1:0)+(fY!=='all'?1:0)+(fF!=='all'?1:0);
@@ -874,7 +875,12 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
   grp('lpP',[['all','전체'],['p3','30대 이상'],['p2','10~29대'],['p1','1~9대'],['p0','0대로 표기']],function(){return LHP;},function(v){LHP=v;});
   grp('lpF',[['all','전체'],['f1','5층 이하'],['f2','6~10층'],['f3','11층 이상']],function(){return LHF;},function(v){LHF=v;});
   grp('lpE',[['all','전체'],['y','있는 곳만']],function(){return LHE;},function(v){LHE=v;});
-  grp('lpN',[['all','전체'],['n1','10호 이상'],['n2','30호 이상']],function(){return LHN;},function(v){LHN=v;});
+  /* 임대유형은 실제로 있는 것만 칩으로 만든다. 전국 호수 기준
+     기존주택 109,735 · 청년 27,978 · 신혼Ⅰ 23,516 · 신혼Ⅱ 14,159 · 든든전세 6,692 ·
+     고령자 2,906 · 기숙사 2,166. 「다자녀」는 원본에 0건이라 넣지 않았다. */
+  grp('lpT',[['all','전체'],['청년','청년'],['신혼Ⅰ','신혼·신생아Ⅰ'],['신혼Ⅱ','신혼·신생아Ⅱ'],['고령자','고령자'],['기존주택','기존주택'],['든든전세','든든전세'],['기숙사','기숙사']],function(){return LHT;},function(v){LHT=v;});
+  /* 구간은 실제 분포에 맞췄다 — 1~4호 2,441 · 5~9호 6,693 · 10~19호 5,795 · 20호 이상 1,432 */
+  grp('lpN',[['all','전체'],['n1','1~4호'],['n2','5~9호'],['n3','10~19호'],['n4','20호 이상']],function(){return LHN;},function(v){LHN=v;});
   /* 직접 입력 (설정 시 해당 줄 프리셋 해제, 칩 클릭 시 직접 입력 해제) */
   function wireCustom(boxId,minId,maxId,mult,setC){
     var mi=document.getElementById(minId),ma=document.getElementById(maxId);
@@ -904,8 +910,8 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
     /* LH 모드에서는 LH 필터만 되돌린다 — 안 보이는 실거래 필터를 건드려 봐야
        화면은 그대로고, 반대로 LH 필터가 안 풀려 「초기화가 안 된다」가 된다. */
     if(document.body.classList.contains('lh')){
-      LHK=LHA=LHP=LHF=LHE=LHN='all';
-      ['lpK','lpA','lpP','lpF','lpE','lpN'].forEach(function(id){
+      LHK=LHA=LHP=LHF=LHE=LHN=LHT='all';
+      ['lpK','lpA','lpP','lpF','lpE','lpT','lpN'].forEach(function(id){
         document.getElementById(id).querySelectorAll('.chip').forEach(function(x,i){x.classList.toggle('on',i===0);});
       });
       mark();render();return;
@@ -3208,8 +3214,16 @@ function lhPass(r){                        /* 매입년도 + LH 전용 필터 */
   if(LHE==='y'&&!r.ev)return false;
   if(LHN!=='all'){
     var n=r.n||0;
-    if(LHN==='n1'&&!(n>=10))return false;
-    if(LHN==='n2'&&!(n>=30))return false;
+    if(LHN==='n1'&&!(n>=1&&n<5))return false;
+    if(LHN==='n2'&&!(n>=5&&n<10))return false;
+    if(LHN==='n3'&&!(n>=10&&n<20))return false;
+    if(LHN==='n4'&&!(n>=20))return false;
+  }
+  if(LHT!=='all'){
+    /* 「그 유형을 **한 호라도** 산 적이 있나」로 본다. 한 건물에 청년·신혼이 섞인
+       곳이 6.7% 라, 대표 유형 하나로 판정하면 나머지 실적이 사라진다. */
+    var t=r.t||{};
+    if(!t[LHT])return false;
   }
   return true;
 }
@@ -3275,6 +3289,16 @@ function showLhCard(r,sd){
         +d.map(function(x){return '<div class="rc-dl"><span style="color:#6b6355">'+x[0]
           +'</span><b>'+e(x[1])+'</b></div>';}).join('')
         +'<div class="rc-note" style="padding:5px 0 0">여러 동이 한 필지에 있으면 층·주차는 가장 큰 값, 면적·방수는 중위값입니다.</div></div>';
+    })()
+    /* 임대유형 — 「이 자리를 LH 가 어느 프로그램으로 샀나」(2026-08-22).
+       ⚠️취득 방식이 아니라 **입주 대상별 임대 프로그램 이름**이다. 「기존주택매입임대」로
+         적혀 있어도 실제로는 절반이 신축 매입이라, 약정 여부를 이걸로 읽으면 안 된다. */
+    +(function(){
+      var t=r.t||{}, ks=Object.keys(t).sort(function(a,b){return t[b]-t[a];});
+      if(!ks.length)return '';
+      return '<div class="rc-sec"><div class="rc-lab">임대유형</div>'
+        +ks.map(function(k){return '<div class="rc-dl"><span style="color:#6b6355">'+e(k)
+          +'</span><b>'+t[k]+'호</b></div>';}).join('')+'</div>';
     })()
     /* 매입년도 — 「최근에도 사고 있나」가 핵심이라 최신부터 */
     +(ys.length?('<div class="rc-sec"><div class="rc-lab">매입년도별</div>'
@@ -3428,7 +3452,7 @@ render();
 <script src="assets/map_v2_dong.js?v=2"></script>
 <script src="assets/map_old.js?v=2"></script>
 <script src="assets/map_m.js?v=8"></script>
-<script src="assets/map_bar.js?v=1"></script>
+<script src="assets/map_bar.js?v=2"></script>
 <script src="assets/sb_tabbar.js?v=10"></script>
 <script defer src="assets/sb_nav.js?v=1"></script>
 </body></html>
