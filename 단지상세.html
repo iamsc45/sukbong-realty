@@ -674,7 +674,7 @@ function render(pt,code){
         +'<span>호가<small>협상 전·중위'+(dh?' · 수집 '+dh:'')+'</small></span></div>';
     })()
     +cmpr('매매',mmR,mmH,arng(mm))+cmpr('전세',jeR,jeH,arng(je))+cmpr('월세',woR,woH,arng(wo))+'</div>'
-    +'<div class="note"><b>면적 기준</b>: <b>'+W.mid+'</b>입니다(면적대별은 아래 표 참고). 실거래 기준=최근 계약 '+(txs.length?txs.map(function(t){return t.cd;}).sort().pop().replace(/-/g,'.'):'-')+' (국토부 실거래·해제 제외) · 호가 기준=수집일 '+(window.APTASKDAY||'-')+' (네이버 매물·협상 전). 호가는 실제 체결가와 다를 수 있습니다.'
+    +'<div class="note"><b>면적 기준</b>: <b>'+W.mid+'</b>입니다('+((_isLand||_isBldg)?'면적대별':'평형별')+'은 아래 표 참고). 실거래 기준=최근 계약 '+(txs.length?txs.map(function(t){return t.cd;}).sort().pop().replace(/-/g,'.'):'-')+' (국토부 실거래·해제 제외) · 호가 기준=수집일 '+(window.APTASKDAY||'-')+' (네이버 매물·협상 전). 호가는 실제 체결가와 다를 수 있습니다.'
     +(_askOff?(' <b>현재 잡히는 매물이 이 '+W.unit+' 것인지 확인 중이라 호가를 빼 두었습니다.</b>'):'')+'</div></div>';
   if(!info){h+='<div id="brSec"></div>';setTimeout(function(){_brDaejang(code,pt);},0);}
   if(info){
