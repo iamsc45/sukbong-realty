@@ -654,6 +654,10 @@ function render(){
     var d=SB.d[r.code]; if(!d)return;
     d.forEach(function(pt){
       if(!b.contains([pt.lat,pt.lng]))return;
+      /* 지목 「도로」 토지는 지도에 안 띄운다(2026-08-23 석봉님 지시 — 3㎡ 짜리 도로 지분
+         말풍선이 화면만 어지럽힌다). ⚠️지도 표시만 뺀다 — 자료실·토지상세·땅값 조회에는
+         그대로 있다(도로 필지는 담보 실무에서 인접 도로 매입 판단에 쓰인다, 8/13 지시). */
+      if(pt.t==='land' && pt.name==='도로')return;
       var txs=ptTxs(pt); if(!txs.length)return;
       pts.push({pt:pt,txs:txs,code:r.code});
     });
@@ -1202,6 +1206,7 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
       var _ps=String(label||'').trim().split(/\s+/);
       var _jb2=_ps[_ps.length-1]||'', _dg=_ps[_ps.length-2]||'';
       if(/^산?\d+(-\d+)?$/.test(_jb2) && /[동가리]$/.test(_dg)){
+        label=_dg+' '+_jb2;      /* 제목을 폴리곤 카드와 같은 「동 지번」으로(2026-08-23 통일) */
         landFill._code10=landFill._code10||{};
         var _c10=landFill._code10[_dg];
         if(!_c10 && window.LANDIDX){
@@ -1263,7 +1268,10 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
       +'<div class="rc-h" style="background:#12264A"><div class="k">지번 주소</div>'
       +'<h2 style="font-size:17px">'+e(label)+'</h2>'
       +'<div class="loc">'+(opt&&opt.jb
-          ?'최근 지도 화면(계약일 창)에는 이 필지 거래가 없습니다'
+          ?(opt.g==='L'
+             /* L = 매물만 있는 필지(범례와 같은 말). 「과거 거래」라고 하면 거짓말이 된다. */
+             ?'최근 실거래는 없고, 지금 나와 있는 매물이 있는 필지입니다'
+             :'최근 지도 화면(계약일 창)에는 이 필지 거래가 없습니다')
           :'이 지번으로 신고된 실거래는 없습니다')+'</div></div>'
       +(rows?('<div class="rc-sec"><div class="rc-lab">주변 실거래</div>'+rows
           +'<div class="rc-note" style="padding:6px 0 0">반경 500m 이내 · 줄을 누르면 그 건물의 실거래와 호가가 열립니다.</div></div>')
@@ -1272,7 +1280,8 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
           +'위쪽에서 상품과 거래유형을 넓혀 보세요.</div></div>')
       +((opt&&opt.jb&&opt.c10)
           ?('<a class="rc-cta" href="%ED%86%A0%EC%A7%80%EC%83%81%EC%84%B8.html?code='+opt.c10
-            +'&jb='+encodeURIComponent(opt.jb)+'">이 필지 과거 거래·매물 보기 →</a>')
+            +'&jb='+encodeURIComponent(opt.jb)+'">'
+            +(opt.g==='L'?'이 필지 매물 보기 →':'이 필지 과거 거래·매물 보기 →')+'</a>')
           :'')
       +'<a class="rc-cta" href="%ED%86%A0%EC%A7%80%EA%B2%80%EC%83%89.html" style="background:#12203a">이 땅 값 알아보기 →</a>'
       /* ⚠️어떤 서비스로 좌표를 찍었는지는 쓰지 않는다(2026-08-22 석봉님 지시).
@@ -2970,11 +2979,17 @@ function landPolyClick(jb,c10,ev){
     if(c!==c10) return;
     var txs=(o&&o.txs)||pt.txs||[];
     /* 🔴 `pt.jibun` 은 **원본이 가린 값**(`6**`)이라 폴리곤 지번(`613`)과 절대 안 맞는다
-       (2026-08-23 실측에서 카드가 안 열려 찾았다). 짝을 지을 때는 우리가 되짚은 지번,
-       즉 `landJibunCached()` 가 돌려주는 값을 쓴다 — 폴리곤과 같은 출처다.
-       ⚠️토지가 아닌 지점(단독·빌딩)은 그 함수가 빈 값을 주므로 원본 지번으로 한 번 더 본다. */
+       (2026-08-23 실측에서 카드가 안 열려 찾았다). 짝을 지을 때는 우리가 되짚은 지번을 쓴다 —
+       토지는 `landJibunCached()`, **단독·빌딩·상가는 거래별 `txHit()`**(2026-08-23 확장.
+       전에는 토지만 봐서, 건물 필지 폴리곤은 그 거래 마커가 화면에 있어도 못 찾았다). */
     var jj='';
     try{ jj=landJibunCached(pt,txs)||''; }catch(e){}
+    if(!jj && (pt.t==='house'||pt.t==='bldg'||pt.t==='comm')){
+      try{ for(var ti=0;ti<txs.length;ti++){
+        var th=txHit(pt,txs[ti]);
+        if(th && String(th.jb)===String(jb)){ jj=String(jb); break; }
+      } }catch(e){}
+    }
     if(jj===String(jb) || (!jj && String(pt.jibun||'')===String(jb)))
       hit={pt:pt,txs:txs};
   });
@@ -2988,8 +3003,9 @@ function landPolyClick(jb,c10,ev){
   try{
     var ll=(ev&&ev.latlng)||null;
     var dn=''; try{ for(var k in (landFill._code10||{})) if(landFill._code10[k]===c10){dn=k;break;} }catch(e){}
+    var gr=''; try{ gr=(window._LANDP[c10][jb]||[])[0]||''; }catch(e){}
     if(ll && typeof showAddrCard==='function'){
-      showAddrCard(ll.lat,ll.lng,(dn?dn+' ':'')+jb,{jb:jb,c10:c10}); return; }
+      showAddrCard(ll.lat,ll.lng,(dn?dn+' ':'')+jb,{jb:jb,c10:c10,g:gr}); return; }
   }catch(e){}
   try{ if(window._toast) window._toast(jb+' · 이 필지로 신고된 실거래는 화면에 없습니다',3500); }catch(e){}
 }
