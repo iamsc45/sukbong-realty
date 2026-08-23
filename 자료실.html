@@ -114,6 +114,23 @@ tr:last-child td{border-bottom:0}
       <div class="fld" id="types"></div>
     </div>
 
+    <!-- 호가 전용 필터 (2026-08-23 석봉님 지시 「호가도 실거래 검색처럼 필터목록 줘야」) -->
+    <div class="row" data-only="ho">
+      <div class="lbl">물건종류</div>
+      <div class="fld" id="hoTypes"></div>
+    </div>
+    <div class="row" data-only="ho">
+      <div class="lbl">거래유형</div>
+      <div class="fld" id="hoDeals"></div>
+    </div>
+    <div class="row" data-only="ho">
+      <div class="lbl">법정동</div>
+      <div class="fld">
+        <select id="hoDong"><option value="">전체</option></select>
+        <span class="mini">호가 자료는 계속 업데이트 중입니다</span>
+      </div>
+    </div>
+
     <div class="row" data-only="tx">
       <div class="lbl">거래유형</div>
       <div class="fld" id="deals"></div>
@@ -268,6 +285,34 @@ tr:last-child td{border-bottom:0}
     $('goXlsx').disabled = true; $('goCsv').disabled = true;
   }
 
+  /* ── 호가 탭 필터 (2026-08-23) ──────────────────────────────
+     자료가 단지별 집계 한 파일이라 실거래처럼 종류·기간이 넓지 않다.
+     지금 있는 것(아파트 · 매매·전세·월세 · 법정동)만 필터로 내고,
+     없는 종류는 「준비 중」으로 보여준다 — 감추면 없는 줄 알고, 켜 두면 고장난 줄 안다. */
+  var curHoU = { '매매': 1, '전세': 1, '월세': 1 };
+  function hoChips() {
+    var el = $('hoTypes'); if (!el) return;
+    el.innerHTML = Object.keys(TYPE).map(function (k) {
+      var on = (k === 'apt');
+      return '<button type="button" class="chip' + (on ? ' on' : '') + '" data-k="' + k + '"'
+        + (on ? '' : ' disabled style="opacity:.45;cursor:default" title="준비 중입니다"')
+        + '><span class="dot" style="background:' + TYPE[k][1] + '"></span>' + TYPE[k][0]
+        + (on ? '' : ' <span style="font-size:10px">준비 중</span>') + '</button>';
+    }).join('');
+    $('hoDeals').innerHTML = DEALS.map(function (d) {
+      return '<button type="button" class="chip' + (curHoU[d] ? ' on' : '') + '" data-k="' + d + '">' + d + '</button>';
+    }).join('');
+  }
+  function hoDongFill() {
+    var el = $('hoDong'); if (!el) return;
+    var keep = el.value, seen = {}, ds = [];
+    allTx.forEach(function (x) { if (x.dong && !seen[x.dong]) { seen[x.dong] = 1; ds.push(x.dong); } });
+    ds.sort();
+    el.innerHTML = '<option value="">전체 (' + ds.length + '개 동)</option>'
+      + ds.map(function (d) { return '<option value="' + d + '">' + d + '</option>'; }).join('');
+    el.value = keep; if (el.value !== keep) el.value = '';
+  }
+
   /* ── 물건종류·거래유형 칩 ── */
   function chips() {
     $('types').innerHTML = Object.keys(TYPE).map(function (k) {
@@ -420,11 +465,19 @@ tr:last-child td{border-bottom:0}
       });
     });
     allTx.sort(function (a, b) { return (b.mmN || 0) - (a.mmN || 0); });
+    hoDongFill();
   }
 
   /* ── 조건 걸러 표로 ── */
   function filtered() {
-    if (tab === 'ho') return allTx;
+    if (tab === 'ho') {
+      var dg = ($('hoDong') && $('hoDong').value) || '';
+      return allTx.filter(function (x) {
+        if (dg && x.dong !== dg) return false;
+        /* 고른 거래유형의 매물이 하나라도 있는 단지만 */
+        return (curHoU['매매'] && x.mmN) || (curHoU['전세'] && x.jeN) || (curHoU['월세'] && x.woN);
+      });
+    }
     if (isHist()) {
       var yy = $('per').value;
       /* 연도 + 고른 물건종류. 종류를 안 걸면 방금 끈 칩의 자료가 표에 남는다
@@ -463,7 +516,16 @@ tr:last-child td{border-bottom:0}
     ['월세 보증금(만원)', 'woBo', 1], ['월세(만원)', 'woWol', 1], ['월세 매물수', 'woN', 1]
   ];
   function cols() {
-    if (tab !== 'tx') return COLS_HO;
+    if (tab !== 'tx') {
+      /* 고른 거래유형의 열만 낸다 — 전세만 골랐는데 매매 열이 비어 늘어서면 표만 넓다 */
+      return COLS_HO.filter(function (c) {
+        var t = c[0];
+        if (/^매매/.test(t)) return !!curHoU['매매'];
+        if (/^전세/.test(t)) return !!curHoU['전세'];
+        if (/^월세/.test(t)) return !!curHoU['월세'];
+        return true;
+      });
+    }
     /* 해제 신고분은 **지우지 않고 표시만 한다.** 지우면 원본과 건수가 달라진다. */
     if (!isHist()) return COLS_TX;
     var ks = histKinds(), add = [['해제여부', 'cx']];
@@ -590,7 +652,9 @@ tr:last-child td{border-bottom:0}
         + '매매 평당가는 전용면적 기준입니다.';
       $('useNote').innerHTML = '<b>읽으실 때</b> · 호가는 <b>협상 전 부르는 값</b>이라 실제 체결가와 다릅니다. '
         + '실거래와 함께 보셔야 뜻이 있습니다.<br>'
-        + '<b>개별 매물(동·향·층·매물번호)은 제공하지 않습니다.</b> 단지별 집계까지만 공개합니다.';
+        + '<b>개별 매물(동·향·층·매물번호)은 제공하지 않습니다.</b> 단지별 집계까지만 공개합니다.<br>'
+        + '<b>지금은 아파트 단지별 집계만 있습니다.</b> 다른 물건종류와 지난 시점 자료는 '
+        + '<b>계속 업데이트하고 있습니다.</b> 준비되는 대로 여기에 올라갑니다.';
     }
   }
 
@@ -603,6 +667,7 @@ tr:last-child td{border-bottom:0}
     document.querySelectorAll('[data-only]').forEach(function (el) {
       el.style.display = (el.getAttribute('data-only') === t) ? '' : 'none';
     });
+    if (t === 'ho') hoChips();
     notes(); load();
   }
 
@@ -652,6 +717,14 @@ tr:last-child td{border-bottom:0}
     /* 과거 모드에서는 거래유형이 곧 파일이다(전월세는 별도 파일) — 다시 받는다 */
     if (isHist()) { perUI(); notes(); load(); }
   });
+  $('hoDeals').addEventListener('click', function (e) {
+    var b = e.target.closest('.chip'); if (!b) return;
+    var k = b.dataset.k;
+    if (curHoU[k]) delete curHoU[k]; else curHoU[k] = 1;
+    if (!Object.keys(curHoU).length) curHoU[k] = 1;   /* 하나는 남긴다 */
+    hoChips(); draw();
+  });
+  $('hoDong').addEventListener('change', function () { draw(); });
   document.querySelector('.tabs').addEventListener('click', function (e) {
     var b = e.target.closest('button'); if (b) setTab(b.dataset.t);
   });
