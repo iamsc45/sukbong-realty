@@ -42,6 +42,14 @@
     cursor:pointer;transition:transform 120ms ease,box-shadow 120ms ease,border-color 120ms ease}
   .pricetag:hover{transform:scale(1.15);box-shadow:0 4px 12px rgba(18,38,74,.6)}
   .pricetag.sel{transform:scale(1.18);border-color:#141414;box-shadow:0 4px 14px rgba(20,20,20,.5)}
+  /* 필지 풍선(2026-08-23 석봉님 지시 「다른 매물들처럼 필지 위에 풍선」) — 폴리곤만 있으면
+     마커 있는 필지와 성격이 달라 보인다. 같은 말풍선 문법으로 얹되 「지금 창 밖」임이 보이게
+     흰 바탕·점선 테두리로 가른다. 남색 글자=과거 실거래, 주황 글자=매물 호가. */
+  .lp-tag{background:#fff;border-radius:12px;padding:2px 8px;font-size:11.5px;font-weight:800;
+    white-space:nowrap;text-align:center;cursor:pointer;box-shadow:0 1px 4px rgba(18,38,74,.25);
+    border:1.5px dashed #1B3F7A;color:#1B3F7A;line-height:1.25}
+  .lp-tag .s{display:block;font-size:9.5px;font-weight:600;color:#7A8698}
+  .lp-tag.ho{border-color:#C77700;color:#8A4B1E}
   .pricetag.apx{border-style:dashed;opacity:.93}
   .leaflet-marker-icon:hover{z-index:10000!important}
   .clus{transition:transform 120ms ease}
@@ -2896,7 +2904,9 @@ function renderLandPoly(){
   var on = (curMode==='trade') && z>=Z_LANDPOLY
         && !!(curTset && (curTset.land||curTset.house||curTset.bldg));
   if(!on){ if(map.hasLayer(landPolyLayer))map.removeLayer(landPolyLayer);
-           try{ landPolyMini(); }catch(e){} return; }
+           try{ landPolyMini(); }catch(e){}
+           try{ landTagLayer.clearLayers(); if(map.hasLayer(landTagLayer))map.removeLayer(landTagLayer); }catch(e){}
+           return; }
   if(!map.hasLayer(landPolyLayer)) map.addLayer(landPolyLayer);
   var b=map.getBounds(), drawn=0;
   var codes={};
@@ -2944,6 +2954,78 @@ function renderLandPoly(){
   try{ if(curMode==='trade' && typeof tradeLegend==='function') tradeLegend(); }catch(e){}
   try{ landPolyMini(); }catch(e){}
   try{ landPolySnap(); }catch(e){}
+  try{ landPolyTags(); }catch(e){}
+}
+
+/* ── 필지 풍선(2026-08-23) — 폴리곤 필지에도 말풍선을 단다.
+   왜: 옆의 최근 거래는 풍선, 매칭된 과거 거래는 색칠뿐이라 **같은 실거래 필지인데
+   다른 성격으로 읽혔다**(석봉님 지적). 과거 거래 = 금액+계약 시점(남색 점선),
+   매물만 = 호가(주황 점선). 화면 지점과 짝이 있는 필지는 이미 풍선이 있으니 건너뛴다.
+   ⚠️줌 17 이상에서만 — 16에서는 폴리곤이 작아 풍선이 서로 덮는다. 한 화면 120개 상한. */
+var landTagLayer=L.layerGroup();
+function landPolyTags(){
+  landTagLayer.clearLayers();
+  var z=0; try{ z=map.getZoom(); }catch(e){ return; }
+  var on = z>=17 && map.hasLayer(landPolyLayer) && landPolyLayer.getLayers().length;
+  if(!on){ if(map.hasLayer(landTagLayer))map.removeLayer(landTagLayer); return; }
+  if(!map.hasLayer(landTagLayer)) map.addLayer(landTagLayer);
+  /* 화면 지점과 이미 짝지어진 필지 — 풍선이 이미 있다 */
+  var paired={};
+  (window._PTS||[]).forEach(function(o){
+    var pt=(o&&o.pt)||o; if(!pt)return;
+    var c=(landFill._code10||{})[pt.dong]; if(!c)return;
+    var txs=(o&&o.txs)||pt.txs||[];
+    var jj=''; try{ jj=landJibunCached(pt,txs)||''; }catch(e){}
+    if(jj)paired[c+'|'+jj]=1;
+    if(pt.t==='house'||pt.t==='bldg'||pt.t==='comm'){
+      try{ txs.forEach(function(t){ var h=txHit(pt,t); if(h&&h.jb)paired[c+'|'+h.jb]=1; }); }catch(e){}
+    }
+  });
+  var ymf=function(ym){ym=String(ym||'');return ym.length===4?(ym.slice(0,2)+'-'+ym.slice(2)):'';};
+  var n=0;
+  landTagLayer._need={};
+  landPolyLayer.eachLayer(function(pg){
+    if(n>=120) return;
+    var jb=pg._jb, c10=pg._c10; if(!jb||!c10) return;
+    if(paired[c10+'|'+jb]) return;
+    /* 거래·매물 값은 land_dong 에 있다 — 폴리곤 동의 것이 아직 없으면 받아 온다 */
+    window._LANDD=window._LANDD||{};
+    var D=window._LANDD[c10];
+    if(D===undefined){ landTagLayer._need[c10]=1; return; }
+    if(!D) return;
+    var g=(window._LANDP[c10][jb]||[])[0]||'';
+    var html='';
+    if(g==='L'){
+      var ls=(D.l||[]).filter(function(x){return x[0]===jb;});
+      if(!ls.length) return;              /* 매물이 내려갔으면 풍선도 없다 */
+      ls.sort(function(a,b){return (+b[1]||0)-(+a[1]||0);});
+      html='<div class="lp-tag ho">'+_eok(ls[0][1])
+        +'<span class="s">호가'+(ls.length>1?' 외 '+(ls.length-1)+'건':'')+'</span></div>';
+    }else{
+      var ds=(D.d||[]).filter(function(x){return x[0]===jb;});
+      if(!ds.length) return;
+      ds.sort(function(a,b){return String(b[1]).localeCompare(String(a[1]));});
+      html='<div class="lp-tag">'+_eok(ds[0][2])
+        +'<span class="s">'+ymf(ds[0][1])+' 계약'+(ds.length>1?' 외 '+(ds.length-1)+'건':'')+'</span></div>';
+    }
+    var c=pg.getBounds().getCenter();
+    L.marker(c,{icon:L.divIcon({className:'',html:html,iconSize:[0,0],iconAnchor:[24,12]})})
+      .on('click',function(){ try{ landPolyClick(jb,c10,{latlng:c}); }catch(e){} })
+      .addTo(landTagLayer);
+    n++;
+  });
+  /* 없던 land_dong 을 받아 한 번 다시 그린다(폴리곤 fetch 와 같은 패턴) */
+  for(var need in landTagLayer._need){
+    (function(cc){
+      landPolyTags._f=landPolyTags._f||{}; if(landPolyTags._f[cc])return; landPolyTags._f[cc]=1;
+      fetch('data/land_dong/'+cc+'.json')
+        .then(function(r){ return r.ok?r.json():null; })
+        .then(function(j){ window._LANDD[cc]=j||null;
+          clearTimeout(landPolyTags._t);
+          landPolyTags._t=setTimeout(function(){try{landPolyTags();}catch(e){}},200); })
+        .catch(function(){ window._LANDD[cc]=null; });
+    })(need);
+  }
 }
 
 /* 지번을 되짚은 지점의 마커를 **그 필지 위로** 옮긴다(2026-08-23 석봉님 확정 —
