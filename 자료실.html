@@ -127,7 +127,13 @@ tr:last-child td{border-bottom:0}
       <div class="lbl">법정동</div>
       <div class="fld">
         <select id="hoDong"><option value="">전체</option></select>
-        <span class="mini">호가 자료는 계속 업데이트 중입니다</span>
+      </div>
+    </div>
+    <div class="row" data-only="ho">
+      <div class="lbl">기간</div>
+      <div class="fld">
+        <select id="hoPer"></select>
+        <span class="mini">지난 시점 호가는 준비 중입니다 · 자료는 계속 업데이트하고 있습니다</span>
       </div>
     </div>
 
@@ -302,6 +308,11 @@ tr:last-child td{border-bottom:0}
     $('hoDeals').innerHTML = DEALS.map(function (d) {
       return '<button type="button" class="chip' + (curHoU[d] ? ' on' : '') + '" data-k="' + d + '">' + d + '</button>';
     }).join('');
+    /* 기간(2026-08-23 석봉님 지시) — 호가는 시점 스냅샷이라 지금은 최신 수집분 하나뿐이다.
+       ⚠️없는 시점을 선택지로 만들지 않는다(고르면 빈 표가 되는 가짜 선택지가 된다).
+       지난 시점을 쌓으면 여기 option 이 늘어난다 — 원천은 아파트호가_누적.csv(수집일별)에 이미 있다. */
+    var hp = $('hoPer');
+    if (hp) hp.innerHTML = '<option value="latest">최신 수집분 (' + (window.APTASKDAY || '-') + ' 수집)</option>';
   }
   function hoDongFill() {
     var el = $('hoDong'); if (!el) return;
@@ -311,6 +322,9 @@ tr:last-child td{border-bottom:0}
     el.innerHTML = '<option value="">전체 (' + ds.length + '개 동)</option>'
       + ds.map(function (d) { return '<option value="' + d + '">' + d + '</option>'; }).join('');
     el.value = keep; if (el.value !== keep) el.value = '';
+    /* 수집일(APTASKDAY)은 지역 파일이 와야 안다 — 동 목록을 채울 때 기간 표기도 같이 갱신 */
+    var hp = $('hoPer');
+    if (hp) hp.innerHTML = '<option value="latest">최신 수집분 (' + (window.APTASKDAY || '-') + ' 수집)</option>';
   }
 
   /* ── 물건종류·거래유형 칩 ── */
