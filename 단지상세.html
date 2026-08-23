@@ -431,7 +431,30 @@ function feeSec(fee,myArea){
 }
 function render(pt,code){
   _CURDONG=pt.dong||'';
-  document.title=pt.name+' · 단지 상세';
+  /* 🔴 물건종류에 맞는 말을 쓴다(2026-08-19 석봉님 지시 · 2026-08-23 이 화면에 적용).
+     본문 지표는 진작 `pt.t` 로 갈라져 있었는데 **머리 라벨·관심 버튼·각주만 아파트 말**이라,
+     지도 카드가 「☆ 관심 건물 등록」인 물건이 상세로 들어오면 「☆ 관심단지 등록」이 됐다
+     (2026-08-23 주간 동선점검에서 부산 해운대 상가로 실측). 카드와 상세가 어긋나면
+     같은 물건인지 의심하게 된다.
+     ⚠️ 말을 여러 곳에 흩어 적으면 반드시 갈린다 — **여기 한 곳에서만 정한다.**
+        낱말은 지어내지 말고 `map.html` 의 `W` 와 **같은 것**을 쓴다(그쪽이 먼저 정한 양식이다).
+        토지=필지 · 단독/빌딩/상가=건물 · 아파트/오피스텔/연립=단지. */
+  var _isLand=(pt.t==='land');
+  var _isBldg=(pt.t==='house'||pt.t==='bldg'||pt.t==='comm');
+  var W={
+    unit : _isLand?'필지':(_isBldg?'건물':'단지'),
+    head : _isLand?'필지 상세':(_isBldg?'건물 상세':'단지 상세'),
+    fav  : _isLand?'☆ 관심 필지 등록':(_isBldg?'☆ 관심 건물 등록':'☆ 관심단지 등록'),
+    favOn: '★ 등록됨 · 목록 보기',
+    favGo: _isLand?'관심 필지 목록으로 이동할까요? (취소=등록 해제)'
+           :(_isBldg?'관심 건물 목록으로 이동할까요? (취소=등록 해제)'
+                    :'관심단지 목록으로 이동할까요? (취소=등록 해제)'),
+    /* 땅·건물에는 평형이 없다 — 면적으로 말한다 */
+    mid  : (_isLand||_isBldg)?'특정 면적대가 아니라 거래된 전체 면적의 중위값'
+                             :'특정 평형이 아니라 거래된 전 평형의 중위값'
+  };
+  window._W=W;
+  document.title=pt.name+' · '+W.head;
   var txs=pt.txs||[];
   var info=findInfo(code,pt.name);
   var mm=txs.filter(function(t){return t.u==='매매';}),
@@ -441,9 +464,21 @@ function render(pt,code){
   var mmamt=med(mm.map(function(t){return t.p;}));
   var jemed=med(je.map(function(t){return t.p;}));
   var jr=(mmamt&&jemed)?Math.round(jemed/mmamt*100):0;
-  document.getElementById('kk').textContent='단지 상세 · '+esc(pt.dong||'');
+  document.getElementById('kk').textContent=W.head+' · '+esc(pt.dong||'');
+  /* 정적 HTML 로 박아 둔 글자도 물건종류에 맞춘다(2026-08-23) — 상가·빌딩에
+     「지도에서 이 단지 보기」·「세대수·시공사… 단지 정보」가 그대로 나갔다.
+     ⚠️ href 는 boot 에서 좌표로 이미 바꿔 끼웠다. 여기서는 **글자만** 손댄다. */
+  try{
+    var _gmL=document.getElementById('goMap');
+    if(_gmL)_gmL.textContent='지도에서 이 '+W.unit+' 보기 →';
+    var _srcL=document.querySelector('.src');
+    if(_srcL&&(_isLand||_isBldg))
+      _srcL.textContent='자료: 국토교통부 실거래가(해제 건 제외) · 석봉 부동산 정보방 · 참고용, 법적효력 없음.'
+        +(_isLand?' 지목·용도지역 등 필지 정보는 순차 추가됩니다.'
+                 :' 연면적·주용도·층수 등 건물 정보는 순차 추가됩니다.');
+  }catch(e){}
   document.getElementById('nm').textContent=pt.name;
-  /* 관심단지 등록 버튼 (회원 기능 · 카카오 원클릭 가입 유도) */
+  /* 관심 등록 버튼 (회원 기능 · 카카오 원클릭 가입 유도) · 낱말은 위 W 에서만 가져온다 */
   (function(){
     var fid=code+'|'+pt.name;
     var item={id:fid,nm:pt.name,code:code,dong:pt.dong||'',lastN:(pt.txs||[]).length};
@@ -451,14 +486,14 @@ function render(pt,code){
     if(!b){b=document.createElement('button');b.id='favBtn';
       b.style.cssText='display:block;margin:10px 0 0;border:1.5px solid #b08434;border-radius:100px;padding:9px 20px;font:inherit;font-size:13.5px;font-weight:800;cursor:pointer;background:#fff;color:#5c4300';
       document.querySelector('.mast').appendChild(b);}
-    function paint(on){b.textContent=on?'★ 관심단지 등록됨 (목록 보기)':'☆ 관심단지 등록';
+    function paint(on){b.textContent=on?W.favOn:W.fav;
       b.style.background=on?'#ffd24d':'#fff';}
     function sync(){paint(window.SBAuth&&SBAuth.isIn()&&SBAuth.favHas(fid));}
     if(window.SBAuth){SBAuth.whenReady(sync);SBAuth.onChange(sync);}else{paint(false);}
     b.onclick=function(){
       if(!(window.SBAuth&&SBAuth.isIn())){if(window.SBAuth)SBAuth.gate(item,null);return;}
       if(SBAuth.favHas(fid)){
-        if(confirm('관심단지 목록으로 이동할까요? (취소=등록 해제)')){location.href='favorites.html';return;}
+        if(confirm(W.favGo)){location.href='favorites.html';return;}
         SBAuth.delFav(fid).then(function(ok){if(ok)paint(false);});return;
       }
       SBAuth.addFav(item).then(function(ok){if(ok)paint(true);});
@@ -639,8 +674,8 @@ function render(pt,code){
         +'<span>호가<small>협상 전·중위'+(dh?' · 수집 '+dh:'')+'</small></span></div>';
     })()
     +cmpr('매매',mmR,mmH,arng(mm))+cmpr('전세',jeR,jeH,arng(je))+cmpr('월세',woR,woH,arng(wo))+'</div>'
-    +'<div class="note"><b>면적 기준</b>: 특정 평형이 아니라 <b>거래된 전 평형의 중위값</b>입니다(평형별은 아래 표 참고). 실거래 기준=최근 계약 '+(txs.length?txs.map(function(t){return t.cd;}).sort().pop().replace(/-/g,'.'):'-')+' (국토부 실거래·해제 제외) · 호가 기준=수집일 '+(window.APTASKDAY||'-')+' (네이버 매물·협상 전). 호가는 실제 체결가와 다를 수 있습니다.'
-    +(_askOff?' <b>현재 잡히는 매물이 이 단지 것인지 확인 중이라 호가를 빼 두었습니다.</b>':'')+'</div></div>';
+    +'<div class="note"><b>면적 기준</b>: <b>'+W.mid+'</b>입니다(면적대별은 아래 표 참고). 실거래 기준=최근 계약 '+(txs.length?txs.map(function(t){return t.cd;}).sort().pop().replace(/-/g,'.'):'-')+' (국토부 실거래·해제 제외) · 호가 기준=수집일 '+(window.APTASKDAY||'-')+' (네이버 매물·협상 전). 호가는 실제 체결가와 다를 수 있습니다.'
+    +(_askOff?(' <b>현재 잡히는 매물이 이 '+W.unit+' 것인지 확인 중이라 호가를 빼 두었습니다.</b>'):'')+'</div></div>';
   if(!info){h+='<div id="brSec"></div>';setTimeout(function(){_brDaejang(code,pt);},0);}
   if(info){
     h+='<div class="sec"><div class="lab">단지 개요</div><div class="ov">'
@@ -694,12 +729,13 @@ function render(pt,code){
         +'<div class="pv">'+eok(am)+'<span class="s">'+(kind==='매매'?comma(py)+'만/평':'보증금 중위')+'</span></div></div>';}).join('');
   }
   var pyr=bandRows(mm,'매매')||bandRows(je,'전세')||bandRows(wo,'월세보증금');
-  // 평형 라인업(실거래에 나타난 전용면적 종류)
+  // 면적 라인업(실거래에 나타난 전용면적 종류) — 땅·건물에는 평형이 없어 「면적」으로 부른다
   var ars=[];txs.forEach(function(t){if(t.a&&ars.indexOf(+t.a.toFixed(1))<0)ars.push(+t.a.toFixed(1));});
   ars.sort(function(a,b){return a-b;});
-  var lineup=ars.length?('<div class="sec"><div class="lab">평형 라인업 · 실거래 확인 전용면적 '+ars.length+'종</div><div class="chips">'
+  var _lnLab=(_isLand||_isBldg)?'면적 라인업':'평형 라인업';
+  var lineup=ars.length?('<div class="sec"><div class="lab">'+_lnLab+' · 실거래 확인 전용면적 '+ars.length+'종</div><div class="chips">'
     +ars.map(function(a){return '<span class="chip">'+a+'㎡<small>'+PY(a)+'</small></span>';}).join('')
-    +'</div><div class="note" style="padding-top:6px">최근 실거래(매매·전월세)에 나타난 전용면적입니다. 거래가 없던 평형은 표시되지 않을 수 있습니다.</div></div>'):'';
+    +'</div><div class="note" style="padding-top:6px">최근 실거래(매매·전월세)에 나타난 전용면적입니다. 거래가 없던 '+((_isLand||_isBldg)?'면적대':'평형')+'는 표시되지 않을 수 있습니다.</div></div>'):'';
   /* 🔴 대출 안내는 상품별로 다르다(2026-08-09 석봉님 지시).
      종전에는 아파트·상가·빌딩·토지에 똑같이 주택 규제(집값 구간 상한 + LTV 40%)를 적용했다.
      주택 규제는 주택 담보에만 적용되고, 상가·빌딩·토지는 감정가 기준 담보인정비율과
@@ -757,14 +793,14 @@ h+=lineup;
     var b=0,bn=0;for(var k in c){if(c[k]>bn){bn=c[k];b=k;}}
     return b?s[b]/c[b]:0;})();
   h+=feeSec(_fee,_myA);
-  h+='<div class="grid2"><div class="sec"><div class="lab">평형별 시세 (전용)</div>'+(pyr||'<div style="color:#8a8071;padding:8px 2px">최근 매매 표본 부족</div>')+'</div>'
+  h+='<div class="grid2"><div class="sec"><div class="lab">'+((_isLand||_isBldg)?'면적대별 시세 (전용)':'평형별 시세 (전용)')+'</div>'+(pyr||'<div style="color:#8a8071;padding:8px 2px">최근 매매 표본 부족</div>')+'</div>'
     +'<div class="sec"><div class="lab">'+_loanTitle+'</div>'+loan+'</div></div>';
   var _tr=findTrend(code,pt.name,pt.dong);
   h+='<div class="sec"><div class="lab">시세 추이 (평당·연도별)</div>'
     +(_tr?trendSection(_tr):'<div class="soon">'
       +'<svg viewBox="0 0 48 28" width="54" height="31" fill="none" stroke="#a8792c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,24 12,16 22,19 32,9 46,3"/><circle cx="46" cy="3" r="2.6" fill="#a8792c" stroke="none"/></svg>'
       +'<div class="tag">표본 부족</div>'
-      +'<div>이 단지는 과거 매매 실거래가 두 개 연도 이상 확인되지 않아 추이를 그릴 수 없습니다. 거래가 쌓이면 자동으로 표시됩니다.</div></div>')
+      +'<div>이 '+W.unit+'은 과거 매매 실거래가 두 개 연도 이상 확인되지 않아 추이를 그릴 수 없습니다. 거래가 쌓이면 자동으로 표시됩니다.</div></div>')
     +'</div>';
   // 인근 정비구역
   var near=nearZones(pt.lat,pt.lng);
