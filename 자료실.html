@@ -172,22 +172,24 @@ tr:last-child td{border-bottom:0}
      제한을 안내문이 아니라 **고르는 칸 자체**로 건다. 안내문은 안 읽지만 칸은 못 넘는다.
      ⚠️ 파일은 연도로 쪼개지 않는다 — 시군구 한 덩어리(최대 1.9MB, 전송 0.3MB)로 받아
         브라우저에서 그 해만 걸러 담는다. 연도까지 쪼개면 파일이 2,805개가 된다. */
-  var HIST_FROM = 2021;   /* 2026-08-22: 아파트 매매도 2021년~ 로 줄였다(전월세 자리를 만들려고) */
+  var HIST_FROM = 2022;   /* 2026-08-22: 전 종류 2022년~ 로 통일(용량 확보) */
   /* 🔴 과거 자료는 종류마다 **있는 기간과 지역 수가 다르다**(2026-08-22 실측).
      아파트만 2016년부터고 나머지는 2021년부터다. 없는 해를 고르면 빈 표가 나오므로
      연도 선택지도 종류에 맞춰 줄인다. `cov` 는 시군구 수 — 전국(256)이 아닌 것은 화면에 적는다.
      ⚠️`jb` 는 **원본이 지번을 실제로 주는 비율**이다. 국토부가 종류마다 다르게 가린다
         (토지·단독다가구는 전부 `3*` 처럼 뒤를 지워서 준다). 이걸 감추지 않는다. */
   var HKIND = {
-    apt:   { pre: 'hist_apt_',   from: 2021, cov: 255, jb: 100 },
+    /* 🔴 전 종류 **2022년~ 로 맞췄다**(2026-08-22 석봉님 결정). 2021년 한 해를 덜어
+       70MB 를 만들고 그 자리에 오피스텔·필지 폴리곤을 얹기로 했다.
+       ⚠️**공장·창고는 뺐다** — 10개 시군구·2024년까지뿐이라 자리를 쓸 값이 아니다. */
+    apt:   { pre: 'hist_apt_',   from: 2022, cov: 255, jb: 100 },
     /* 아파트 전월세는 **거래유형**으로 갈린다 — 종류 칩에는 없고, 아파트를 고른 채
        전세·월세를 켜면 이 파일을 함께 받는다(2026-08-22). */
-    rent:  { pre: 'hist_rent_',  from: 2021, cov: 255, jb: 100 },
-    land:  { pre: 'hist_land_',  from: 2021, cov: 256, jb: 0 },
-    comm:  { pre: 'hist_comm_',  from: 2021, cov: 256, jb: 33 },
-    villa: { pre: 'hist_villa_', from: 2021, cov: 192, jb: 100 },
-    house: { pre: 'hist_house_', from: 2021, cov: 256, jb: 0 },
-    fact:  { pre: 'hist_fact_',  from: 2021, cov: 10,  jb: 4, to: 2024 }
+    rent:  { pre: 'hist_rent_',  from: 2022, cov: 255, jb: 100 },
+    land:  { pre: 'hist_land_',  from: 2022, cov: 256, jb: 0 },
+    comm:  { pre: 'hist_comm_',  from: 2022, cov: 256, jb: 33 },
+    villa: { pre: 'hist_villa_', from: 2022, cov: 192, jb: 100 },
+    house: { pre: 'hist_house_', from: 2022, cov: 256, jb: 0 }
   };
   function histKinds() {                 /* 과거 모드에서 고른 종류 중 자료가 있는 것 */
     return Object.keys(HKIND).filter(function (k) { return k !== 'rent' && curT[k]; });
