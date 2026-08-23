@@ -20,7 +20,7 @@
 <link rel="stylesheet" href="assets/site.css">
 <!-- 새 지도 디자인(2026-08-10 석봉님 확정): 네이버형 좌측 목록 + 흰 말풍선 마커.
      로직은 이 파일 그대로 두고 겉모습만 아래 두 파일이 얹는다. -->
-<link rel="stylesheet" href="assets/map_v2.css?v=15">
+<link rel="stylesheet" href="assets/map_v2.css?v=16">
 <style>
   html,body{height:100%}
   #wrap{display:flex;flex-direction:column;height:100%}
@@ -342,6 +342,9 @@ window._toast=function(msg,ms){var t=document.getElementById('mtoast');if(!t||!m
   window._toastT=setTimeout(function(){t.style.display='none';},ms||4000);};
 </script>
 <div id="legend"></div>
+<!-- 🔴모바일은 `#legend` 가 display:none 이라 필지 등급 범례가 통째로 안 보인다(2026-08-23 실측).
+     「등급을 나눴다」는 석봉님 확정 사항이라 좁은 화면용 미니 범례를 따로 띄운다. -->
+<div id="lpleg" hidden></div>
 <!-- 대출 문의 상시 칩(2026-08-02 석봉님 지시 "지도 화면에 자연스럽게").
      지금은 준비 중 안내 페이지 — 목적지 교체는 대출문의.html 한 파일만. -->
 <a id="loanChip" href="%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html?ctx=map"
@@ -2449,7 +2452,9 @@ function tradeLegend(){
   var per=(SB.summary.period?('계약일 '+SB.summary.period.f.replace(/-/g,'.')+' ~ '+SB.summary.period.t.slice(5).replace(/-/g,'.')+' · '):'')+'기준일 '+SB.summary.updated;
   if(window.matchMedia('(max-width:720px)').matches){
     var SHORTN={apt:'아파트',offi:'오피스텔',villa:'연립',house:'단독',bldg:'빌딩',comm:'상가',land:'토지'};
-    document.getElementById('legend').innerHTML=Object.keys(TYPE).map(function(t){return '<span style="margin-right:6px;white-space:nowrap"><span class="dot" style="background:'+TYPE[t][1]+'"></span>'+(SHORTN[t]||TYPE[t][0])+'</span>';}).join('')+'<br>'+per;
+    /* 🔴모바일도 폴리곤 범례를 받는다 — 2026-08-23 첫 배포에서 이 early return 때문에
+       모바일에만 「등급을 나눴다」가 안 보였다(석봉님 확정 사항이라 빠지면 안 된다). */
+    document.getElementById('legend').innerHTML=Object.keys(TYPE).map(function(t){return '<span style="margin-right:6px;white-space:nowrap"><span class="dot" style="background:'+TYPE[t][1]+'"></span>'+(SHORTN[t]||TYPE[t][0])+'</span>';}).join('')+'<br>'+per+landPolyLegend(1);
     return;
   }
   document.getElementById('legend').innerHTML=Object.keys(TYPE).map(function(t){return '<span style="margin-right:8px"><span class="dot" style="background:'+TYPE[t][1]+'"></span>'+TYPE[t][0]+'</span>';}).join('')+'<br>'+per
@@ -2457,7 +2462,28 @@ function tradeLegend(){
 }
 /* 필지 폴리곤이 그려질 때만 범례를 덧붙인다. 「등급을 나눴다」가 사용자에게 보여야 한다(석봉님 지시).
    ⚠️여기서 더 설명하지 않는다 — 무엇을 무엇과 맞춰 알아냈는지는 화면에 쓰지 않는다. */
-function landPolyLegend(){
+function landPolyMini(){
+  var el=document.getElementById('lpleg'); if(!el) return;
+  var on=false;
+  try{ on = window.matchMedia('(max-width:720px)').matches
+          && map.hasLayer(landPolyLayer) && !!landPolyLayer.getLayers().length; }catch(e){}
+  if(!on){ el.hidden=true; return; }
+  if(!el.dataset.built){
+    var box=function(st,t,dash){
+      return '<span style="display:inline-flex;align-items:center;gap:3px">'
+        +'<i style="width:10px;height:10px;border-radius:2px;background:'+st.fillColor+';'
+        +'opacity:.6;border:1.5px '+(dash?'dashed':'solid')+' '+st.color+'"></i>'+t+'</span>';
+    };
+    el.innerHTML='<div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap">'
+      +'<b style="color:#12264A">필지 · 지번 추정</b>'
+      +box(LANDPOLY_STYLE.S,'높음',0)+box(LANDPOLY_STYLE.A,'보통',1)
+      +box(LANDPOLY_STYLE.L,'매물만',0)+'</div>'
+      +'<div style="color:#7A8698;margin-top:2px">확정이 아닙니다 · 등기부로 확인하세요</div>';
+    el.dataset.built='1';
+  }
+  el.hidden=false;
+}
+function landPolyLegend(compact){
   try{
     if(!map.hasLayer(landPolyLayer) || !landPolyLayer.getLayers().length) return '';
   }catch(e){ return ''; }
@@ -2466,6 +2492,12 @@ function landPolyLegend(){
       +'<i style="width:12px;height:12px;border-radius:2px;background:'+st.fillColor+';'
       +'opacity:.55;border:1.5px '+(dash?'dashed':'solid')+' '+st.color+';display:inline-block"></i>'+t+'</span>';
   };
+  if(compact)
+    return '<br><b style="margin-right:6px">필지 · 지번 추정</b>'
+      + box(LANDPOLY_STYLE.S,'높음',0)
+      + box(LANDPOLY_STYLE.A,'보통',1)
+      + box(LANDPOLY_STYLE.L,'매물만',0)
+      + '<br><span style="color:#7A8698">확정이 아닙니다 · 등기부로 확인하세요</span>';
   return '<br><b style="margin-right:7px">실거래 필지 · 지번 추정</b>'
     + box(LANDPOLY_STYLE.S,'확인 수준 높음',0)
     + box(LANDPOLY_STYLE.A,'확인 수준 보통',1)
@@ -2782,7 +2814,8 @@ function renderLandPoly(){
   /* 실거래 모드에서 땅·건물 상품을 보고 있을 때만. 재개발·LH 모드에서는 그쪽 폴리곤이 주인공이다. */
   var on = (curMode==='trade') && z>=Z_LANDPOLY
         && !!(curTset && (curTset.land||curTset.house||curTset.bldg));
-  if(!on){ if(map.hasLayer(landPolyLayer))map.removeLayer(landPolyLayer); return; }
+  if(!on){ if(map.hasLayer(landPolyLayer))map.removeLayer(landPolyLayer);
+           try{ landPolyMini(); }catch(e){} return; }
   if(!map.hasLayer(landPolyLayer)) map.addLayer(landPolyLayer);
   var b=map.getBounds(), drawn=0;
   var codes={};
@@ -2819,6 +2852,7 @@ function renderLandPoly(){
   }
   /* 그린 뒤에 범례를 다시 만든다 — 자료가 늦게 오면 첫 렌더에는 폴리곤이 없다 */
   try{ if(curMode==='trade' && typeof tradeLegend==='function') tradeLegend(); }catch(e){}
+  try{ landPolyMini(); }catch(e){}
 }
 
 /* 필지를 누르면 **그 지번의 거래 지점 카드**를 연다. 지번은 `land_dong` 과 같은 문자열이라
