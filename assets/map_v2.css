@@ -644,3 +644,19 @@ body.mmap #rcard #rcClose{right:8px!important;top:9px!important;
    그 칩은 실거래용(최신순·고가순·거래많은순)이라 LH 목록에는 맞는 뜻이 하나도 없다.
    LH 목록은 **매입 호수 많은 순** 하나로 고정이고, 그건 목록 부제에 적혀 있다. */
 body.lh .v2sort{display:none!important}
+
+/* 필지 폴리곤 미니 범례 — 좁은 화면 전용(`#legend` 가 모바일에서 숨겨져 있다, 2026-08-23) */
+#lpleg{display:none}
+@media(max-width:720px){
+  #lpleg{display:inline-block;position:fixed;left:8px;right:auto;max-width:calc(100% - 16px);
+    /* 접힌 목록 시트(#v2sheet · 손잡이+머리글 56px) 와 하단 탭바(50px) 위에 놓는다.
+       처음엔 62px 로 뒀다가 시트에 완전히 가려졌다(2026-08-23 스크린샷에서 발견). */
+    bottom:calc(env(safe-area-inset-bottom,0px) + 114px);
+    z-index:885;background:rgba(255,255,255,.94);border:1px solid #E3E8F0;
+    border-radius:9px;padding:7px 10px;font-size:11.5px;line-height:1.45;
+    box-shadow:0 2px 10px rgba(18,38,74,.10);pointer-events:none}
+  #lpleg[hidden]{display:none}
+}
+
+/* 목록 시트를 올리면 범례는 비켜 준다 — 목록을 볼 때는 필요 없다 */
+body.sheetup #lpleg{display:none!important}
