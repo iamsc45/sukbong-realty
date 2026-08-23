@@ -187,7 +187,10 @@ tr:last-child td{border-bottom:0}
        전세·월세를 켜면 이 파일을 함께 받는다(2026-08-22). */
     rent:  { pre: 'hist_rent_',  from: 2022, cov: 255, jb: 100 },
     land:  { pre: 'hist_land_',  from: 2022, cov: 256, jb: 0 },
-    comm:  { pre: 'hist_comm_',  from: 2022, cov: 256, jb: 33 },
+    /* 상업업무용 한 파일을 지도와 같은 기준으로 갈랐다(2026-08-23) — 「일반」=빌딩(통건물),
+       「집합」=상가·오피스. 지번 공개율도 크게 다르다(실측: 빌딩 0% · 상가 52%). */
+    comm:  { pre: 'hist_comm_',  from: 2022, cov: 254, jb: 52 },
+    bldg:  { pre: 'hist_bldg_',  from: 2022, cov: 256, jb: 0 },
     villa: { pre: 'hist_villa_', from: 2022, cov: 192, jb: 100 },
     house: { pre: 'hist_house_', from: 2022, cov: 256, jb: 0 }
   };
