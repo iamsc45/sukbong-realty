@@ -604,6 +604,7 @@ function render(){
      **칩을 눌러도 화면이 그대로였다**(누른 표시만 남고 건수가 안 변했다).
      renderLH() 는 render() 를 부르지 않으므로 순환하지 않는다. */
   if(curMode==='lh'){ try{ renderLH(); }catch(e){} }
+  try{ renderLandPoly(); }catch(e){}      /* 실거래 모드·줌 16 이상·땅건물 상품일 때만 그린다 */
   layer.clearLayers();
   if(curMode==='redev'&&!redevShowTrade)return;
   /* LH 실적 모드도 같다(2026-08-22) — 실거래 말풍선을 함께 띄우면 필지가 통째로 가린다.
@@ -1173,6 +1174,9 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
   /* 지번 주소 카드 — 우리 실거래에 없는 지번을 검색했을 때(2026-08-22).
      ⚠️「자료가 없습니다」로 끝내지 않는다. 그 자리 주변에서 무엇이 얼마에 거래됐는지가
        실제로 궁금한 것이고, 그건 우리가 가진 자료로 바로 답할 수 있다. */
+  /* ⚠️이 함수는 IIFE 안이라 바깥(전역 `landPolyClick` 등)에서는 안 보인다.
+     2026-08-23 필지 폴리곤 클릭이 조용히 토스트로 빠진 원인이 이것이었다. */
+  window.showAddrCard=showAddrCard;
   function showAddrCard(lat,lng,label){
     var rc=document.getElementById('rcard'); if(!rc)return;
     var e=function(x){return String(x==null?'':x).replace(/[&<>"]/g,function(c){
@@ -2448,7 +2452,25 @@ function tradeLegend(){
     document.getElementById('legend').innerHTML=Object.keys(TYPE).map(function(t){return '<span style="margin-right:6px;white-space:nowrap"><span class="dot" style="background:'+TYPE[t][1]+'"></span>'+(SHORTN[t]||TYPE[t][0])+'</span>';}).join('')+'<br>'+per;
     return;
   }
-  document.getElementById('legend').innerHTML=Object.keys(TYPE).map(function(t){return '<span style="margin-right:8px"><span class="dot" style="background:'+TYPE[t][1]+'"></span>'+TYPE[t][0]+'</span>';}).join('')+'<br>'+per;
+  document.getElementById('legend').innerHTML=Object.keys(TYPE).map(function(t){return '<span style="margin-right:8px"><span class="dot" style="background:'+TYPE[t][1]+'"></span>'+TYPE[t][0]+'</span>';}).join('')+'<br>'+per
+    + landPolyLegend();
+}
+/* 필지 폴리곤이 그려질 때만 범례를 덧붙인다. 「등급을 나눴다」가 사용자에게 보여야 한다(석봉님 지시).
+   ⚠️여기서 더 설명하지 않는다 — 무엇을 무엇과 맞춰 알아냈는지는 화면에 쓰지 않는다. */
+function landPolyLegend(){
+  try{
+    if(!map.hasLayer(landPolyLayer) || !landPolyLayer.getLayers().length) return '';
+  }catch(e){ return ''; }
+  var box=function(st,t,dash){
+    return '<span style="display:inline-flex;align-items:center;gap:4px;margin-right:9px">'
+      +'<i style="width:12px;height:12px;border-radius:2px;background:'+st.fillColor+';'
+      +'opacity:.55;border:1.5px '+(dash?'dashed':'solid')+' '+st.color+';display:inline-block"></i>'+t+'</span>';
+  };
+  return '<br><b style="margin-right:7px">실거래 필지 · 지번 추정</b>'
+    + box(LANDPOLY_STYLE.S,'확인 수준 높음',0)
+    + box(LANDPOLY_STYLE.A,'확인 수준 보통',1)
+    + box(LANDPOLY_STYLE.L,'매물만 있는 필지',0)
+    + '<span style="color:#7A8698">확정이 아닙니다 · 등기부로 확인하세요</span>';
 }
 function _hav(a,b,c,d){var R=6371000,rl=Math.PI/180;var x=Math.sin((c-a)*rl/2);var y=Math.sin((d-b)*rl/2);var h=x*x+Math.cos(a*rl)*Math.cos(c*rl)*y*y;return 2*R*Math.asin(Math.sqrt(h));}
 window._NZ=[];
@@ -2716,6 +2738,123 @@ function landPrefetch(pt){
       .catch(function(){ window._LANDD[c10]=null; });
   }catch(e){}
 }
+/* ══ 실거래 필지 폴리곤 (2026-08-23) ═══════════════════════════════════════
+   토지 지번 매칭 갈래가 만든 `data/land_poly/<법정동코드10>.json` 을 그린다.
+   자료·등급·색은 그쪽 사양서(`_사양_필지폴리곤_홈페이지세션.md`)를 그대로 따른다.
+
+   🔴 **확정이 아니라 추정이다.** 그래서 등급을 색과 선 스타일 둘로 나누고
+      범례를 항상 띄운다. 「우리가 어떻게 알아냈는지」는 **화면에 쓰지 않는다**
+      (석봉님 지시 · 오답노트 P12). 사용자에게 필요한 것은 「확정이 아니다」와
+      「등기부로 확인하라」뿐이다.
+   ⚠️ `A` 테두리를 채움색(#E8A13A)으로 쓰지 말 것 — 밝은 타일에서 대비 1.73:1 로 묻힌다.
+      채움만 주황이고 테두리는 진갈색이다(사양서 실측).
+   ⚠️ 좌표는 [경도, 위도] 순서(GeoJSON)다. Leaflet 은 [위도, 경도]라 뒤집어 넣는다. */
+var landPolyLayer=L.layerGroup();
+var landPolyRenderer=L.canvas();
+var Z_LANDPOLY=16;                 /* 이보다 작으면 안 그린다 — 필지가 몇 픽셀이라 안 보인다 */
+var LANDPOLY_STYLE={
+  S:{color:'#1B3F7A',weight:2,  fillColor:'#1B3F7A',fillOpacity:.28,dashArray:null},
+  A:{color:'#8A5E12',weight:2,  fillColor:'#E8A13A',fillOpacity:.24,dashArray:'5,4'},
+  L:{color:'#7A8698',weight:1,  fillColor:'#7A8698',fillOpacity:.14,dashArray:null}
+};
+window._LANDP={};                  /* 법정동코드10 → {지번:[등급,좌표]} 또는 null */
+
+function landPolyFetch(c10){
+  if(!c10 || window._LANDP[c10]!==undefined) return;
+  window._LANDP[c10]=null;         /* 받는 중 — 두 번 받지 않는다 */
+  fetch('data/land_poly/'+c10+'.json')
+    .then(function(r){ return r.ok?r.json():null; })
+    .then(function(j){
+      if(!j||!j.p){ window._LANDP[c10]=null; return; }
+      var m={};
+      for(var i=0;i<j.p.length;i++) m[j.p[i][0]]=[j.p[i][1],j.p[i][2]];
+      window._LANDP[c10]=m;
+      clearTimeout(landPolyFetch._t);
+      landPolyFetch._t=setTimeout(function(){try{renderLandPoly();}catch(e){}},200);
+    })
+    .catch(function(){ window._LANDP[c10]=null; });
+}
+
+function renderLandPoly(){
+  if(!landPolyLayer) return;
+  landPolyLayer.clearLayers();
+  var z=0; try{ z=map.getZoom(); }catch(e){ return; }
+  /* 실거래 모드에서 땅·건물 상품을 보고 있을 때만. 재개발·LH 모드에서는 그쪽 폴리곤이 주인공이다. */
+  var on = (curMode==='trade') && z>=Z_LANDPOLY
+        && !!(curTset && (curTset.land||curTset.house||curTset.bldg));
+  if(!on){ if(map.hasLayer(landPolyLayer))map.removeLayer(landPolyLayer); return; }
+  if(!map.hasLayer(landPolyLayer)) map.addLayer(landPolyLayer);
+  var b=map.getBounds(), drawn=0;
+  var codes={};
+  /* 화면 안 지점의 법정동만 본다 — 전국을 훑지 않는다 */
+  (window._PTS||[]).forEach(function(o){
+    var pt=(o&&o.pt)||o; if(!pt||pt.lat==null) return;
+    if(pt.t!=='land'&&pt.t!=='house'&&pt.t!=='bldg') return;
+    if(!b.contains([pt.lat,pt.lng])) return;
+    var c10=(landFill._code10||{})[pt.dong];
+    if(c10) codes[c10]=1;
+  });
+  for(var c10 in codes){
+    if(window._LANDP[c10]===undefined){ landPolyFetch(c10); continue; }
+    var m=window._LANDP[c10]; if(!m) continue;
+    for(var jb in m){
+      var g=m[jb][1]; if(!g||!g.length) continue;
+      /* 첫 점만 보고 화면 밖이면 건너뛴다(필지는 작다 — LH 레이어와 같은 방식) */
+      if(!b.contains([g[0][1],g[0][0]])) continue;
+      var st=LANDPOLY_STYLE[m[jb][0]]||LANDPOLY_STYLE.L;
+      var ll=new Array(g.length);
+      for(var i=0;i<g.length;i++) ll[i]=[g[i][1],g[i][0]];
+      (function(_jb,_c10){
+        var pg=L.polygon(ll,{renderer:landPolyRenderer,color:st.color,weight:st.weight,
+                      fillColor:st.fillColor,fillOpacity:st.fillOpacity,
+                      dashArray:st.dashArray,interactive:true});
+        pg._jb=_jb; pg._c10=_c10;      /* 점검·검증에서 지번으로 찾아낼 수 있게 */
+        pg.on('click',function(ev){ try{ landPolyClick(_jb,_c10,ev);}catch(e){} })
+          .addTo(landPolyLayer);
+      })(jb,c10);
+      drawn++;
+      if(drawn>1500) break;        /* 한 화면에 너무 많으면 그만 — 확대하면 다 보인다 */
+    }
+    if(drawn>1500) break;
+  }
+  /* 그린 뒤에 범례를 다시 만든다 — 자료가 늦게 오면 첫 렌더에는 폴리곤이 없다 */
+  try{ if(curMode==='trade' && typeof tradeLegend==='function') tradeLegend(); }catch(e){}
+}
+
+/* 필지를 누르면 **그 지번의 거래 지점 카드**를 연다. 지번은 `land_dong` 과 같은 문자열이라
+   화면에 이미 있는 지점과 그대로 짝지어진다. 짝이 없으면(매물만 있는 필지) 알려만 준다. */
+function landPolyClick(jb,c10,ev){
+  var hit=null;
+  (window._PTS||[]).forEach(function(o){
+    if(hit) return;
+    var pt=(o&&o.pt)||o; if(!pt) return;
+    var c=(landFill._code10||{})[pt.dong];
+    if(c!==c10) return;
+    var txs=(o&&o.txs)||pt.txs||[];
+    /* 🔴 `pt.jibun` 은 **원본이 가린 값**(`6**`)이라 폴리곤 지번(`613`)과 절대 안 맞는다
+       (2026-08-23 실측에서 카드가 안 열려 찾았다). 짝을 지을 때는 우리가 되짚은 지번,
+       즉 `landJibunCached()` 가 돌려주는 값을 쓴다 — 폴리곤과 같은 출처다.
+       ⚠️토지가 아닌 지점(단독·빌딩)은 그 함수가 빈 값을 주므로 원본 지번으로 한 번 더 본다. */
+    var jj='';
+    try{ jj=landJibunCached(pt,txs)||''; }catch(e){}
+    if(jj===String(jb) || (!jj && String(pt.jibun||'')===String(jb)))
+      hit={pt:pt,txs:txs};
+  });
+  if(hit){
+    try{ showAptCard(hit.pt,(hit.txs||[]).slice()); }catch(e){}
+    return;
+  }
+  /* 짝이 없는 것이 흔하다 — 폴리곤은 우리가 되짚은 필지 전부이고,
+     화면 지점은 최근 구간의 실거래만이라 대부분은 화면에 없다.
+     빈손으로 돌려보내지 말고 **그 자리의 필지 카드**를 연다(주변 실거래가 함께 나온다). */
+  try{
+    var ll=(ev&&ev.latlng)||null;
+    var dn=''; try{ for(var k in (landFill._code10||{})) if(landFill._code10[k]===c10){dn=k;break;} }catch(e){}
+    if(ll && typeof showAddrCard==='function'){ showAddrCard(ll.lat,ll.lng,(dn?dn+' ':'')+jb); return; }
+  }catch(e){}
+  try{ if(window._toast) window._toast(jb+' · 이 필지로 신고된 실거래는 화면에 없습니다',3500); }catch(e){}
+}
+
 /* 팝업용 — 받아 둔 자료가 있을 때만 지번을 돌려준다(없으면 빈 문자열).
    ⚠️ 판정은 landFill() 과 같아야 한다 — 한쪽만 고치면 화면마다 말이 갈린다. */
 function landJibunCached(pt, txs){
