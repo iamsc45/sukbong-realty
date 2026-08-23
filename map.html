@@ -1187,7 +1187,11 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
   /* ⚠️이 함수는 IIFE 안이라 바깥(전역 `landPolyClick` 등)에서는 안 보인다.
      2026-08-23 필지 폴리곤 클릭이 조용히 토스트로 빠진 원인이 이것이었다. */
   window.showAddrCard=showAddrCard;
-  function showAddrCard(lat,lng,label){
+  /* 4번째 인자 opt={jb,c10} — **필지 폴리곤에서 온 클릭**이면 넘어온다(2026-08-23 석봉님 지적).
+     폴리곤은 누적 전체(서울 2021년~)를 칠하는데 지도 지점은 최근 계약일 창뿐이라,
+     과거 거래로 매칭된 필지를 누르면 「실거래가 없습니다」라는 **틀린 문구**가 나갔다.
+     없는 게 아니라 최근 화면에 없는 것이다 — 문구를 가르고 과거 거래(토지상세)로 잇는다. */
+  function showAddrCard(lat,lng,label,opt){
     var rc=document.getElementById('rcard'); if(!rc)return;
     var e=function(x){return String(x==null?'':x).replace(/[&<>"]/g,function(c){
       return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
@@ -1218,12 +1222,18 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
       +'border-radius:50%;cursor:pointer;z-index:2">×</button>'
       +'<div class="rc-h" style="background:#12264A"><div class="k">지번 주소</div>'
       +'<h2 style="font-size:17px">'+e(label)+'</h2>'
-      +'<div class="loc">이 지번으로 신고된 실거래는 없습니다</div></div>'
+      +'<div class="loc">'+(opt&&opt.jb
+          ?'최근 지도 화면(계약일 창)에는 이 필지 거래가 없습니다'
+          :'이 지번으로 신고된 실거래는 없습니다')+'</div></div>'
       +(rows?('<div class="rc-sec"><div class="rc-lab">주변 실거래</div>'+rows
           +'<div class="rc-note" style="padding:6px 0 0">반경 500m 이내 · 줄을 누르면 그 건물의 실거래와 호가가 열립니다.</div></div>')
         :'<div class="rc-sec"><div class="rc-lab">주변 실거래</div>'
           +'<div class="rc-note" style="padding:2px 0 0">반경 500m 안에는 지금 조건에 맞는 거래가 없습니다. '
           +'위쪽에서 상품과 거래유형을 넓혀 보세요.</div></div>')
+      +((opt&&opt.jb&&opt.c10)
+          ?('<a class="rc-cta" href="%ED%86%A0%EC%A7%80%EC%83%81%EC%84%B8.html?code='+opt.c10
+            +'&jb='+encodeURIComponent(opt.jb)+'">이 필지 과거 거래·매물 보기 →</a>')
+          :'')
       +'<a class="rc-cta" href="%ED%86%A0%EC%A7%80%EA%B2%80%EC%83%89.html" style="background:#12203a">이 땅 값 알아보기 →</a>'
       /* ⚠️어떤 서비스로 좌표를 찍었는지는 쓰지 않는다(2026-08-22 석봉님 지시).
          우리가 무엇으로 어떻게 만들었는지는 화면에 드러낼 이유가 없다. */
@@ -2938,7 +2948,8 @@ function landPolyClick(jb,c10,ev){
   try{
     var ll=(ev&&ev.latlng)||null;
     var dn=''; try{ for(var k in (landFill._code10||{})) if(landFill._code10[k]===c10){dn=k;break;} }catch(e){}
-    if(ll && typeof showAddrCard==='function'){ showAddrCard(ll.lat,ll.lng,(dn?dn+' ':'')+jb); return; }
+    if(ll && typeof showAddrCard==='function'){
+      showAddrCard(ll.lat,ll.lng,(dn?dn+' ':'')+jb,{jb:jb,c10:c10}); return; }
   }catch(e){}
   try{ if(window._toast) window._toast(jb+' · 이 필지로 신고된 실거래는 화면에 없습니다',3500); }catch(e){}
 }
