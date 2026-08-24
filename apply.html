@@ -305,6 +305,24 @@ document.querySelectorAll("#tabs .tab").forEach(function(t){
     return (v>=100?Math.round(v):(''+v.toFixed(1)).replace(/\.0$/,''))+'억';}
   function md(d){return d?esc(d).slice(5).replace('-','/'):'?';}
   var RI=RM.items;
+  /* 🔴 status 는 **자료를 만든 날 기준으로 박힌 값**이다 — 오늘 날짜로 다시 판정한다.
+     2026-08-24 사고(청약 세션 인수인계): 자료가 하루 늦어 그날 접수 시작한 4곳이
+     「접수예정」으로 표시돼 「접수중」에서 통째로 빠졌다(화면 1건 / 실제 5건).
+     무순위는 33건 중 27건이 당일 접수·당일 마감이라, 하루만 밀려도 「접수중」으로
+     보이는 날이 사실상 없다. 배포 지연은 수집 쪽에서 막았지만 한 번이라도 밀리면
+     화면이 다시 틀리므로 여기서 한 겹 더 막는다.
+     ⚠️접수일이 없는 건(계약 기준·수시)은 건드리지 않는다 — 수집기와 같은 규칙이다.
+     ⚠️`counts` 를 쓰지 말 것(`counts.open` 은 접수중+접수예정 합이라 화면 말과 어긋난다). */
+  (function(){
+    var TD=(function(){var d=new Date();
+      return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);})();
+    RI.forEach(function(x){
+      var s=x.rcept_s, e=x.rcept_e||x.rcept_s;
+      if(!s) return;                                   /* 계약 기준·수시 — 그대로 둔다 */
+      x.status = (TD<s) ? '접수예정' : ((TD<=e) ? '접수중' : '접수마감');
+      x.open   = (x.status!=='접수마감');
+    });
+  })();
   var now=RI.filter(function(x){return x.status==='접수중';});
   var soon=RI.filter(function(x){return x.status==='접수예정';});
   var live=now.concat(soon);
