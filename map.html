@@ -2896,6 +2896,18 @@ function landPolyFetch(c10){
     .catch(function(){ window._LANDP[c10]=null; });
 }
 
+/* land_dong 을 폴리곤 갈래에서도 받아 온다 — 도로 판정·필지 풍선이 쓴다(2026-08-24) */
+function landDongFetch(c10){
+  window._LANDD=window._LANDD||{};
+  if(!c10||window._LANDD[c10]!==undefined)return;
+  landDongFetch._f=landDongFetch._f||{}; if(landDongFetch._f[c10])return; landDongFetch._f[c10]=1;
+  fetch('data/land_dong/'+c10+'.json')
+    .then(function(r){ return r.ok?r.json():null; })
+    .then(function(j){ window._LANDD[c10]=j||null;
+      clearTimeout(landDongFetch._t);
+      landDongFetch._t=setTimeout(function(){try{renderLandPoly();}catch(e){}},200); })
+    .catch(function(){ window._LANDD[c10]=null; });
+}
 function renderLandPoly(){
   if(!landPolyLayer) return;
   landPolyLayer.clearLayers();
@@ -2906,8 +2918,14 @@ function renderLandPoly(){
   if(!on){ if(map.hasLayer(landPolyLayer))map.removeLayer(landPolyLayer);
            try{ landPolyMini(); }catch(e){}
            try{ landTagLayer.clearLayers(); if(map.hasLayer(landTagLayer))map.removeLayer(landTagLayer); }catch(e){}
+           /* 🔴pane 을 통째로 숨긴다(2026-08-24 석봉님 제보 「LH 폴리곤이 모바일에서 안 눌려」).
+              레이어를 걷어도 **캔버스 요소는 pane(z430)에 남아**, 아래층(z400)의 LH 폴리곤
+              탭을 빈 캔버스가 삼킨다. 실거래 토지를 본 「뒤」 LH 로 넘어간 화면에서만 나서
+              LH 로 바로 들어간 검증은 통과했었다 — 모드 전환 순서까지 밟아야 잡히는 사고다. */
+           try{ var _pn=map.getPane('sbland'); if(_pn)_pn.style.display='none'; }catch(e){}
            return; }
   if(!map.hasLayer(landPolyLayer)) map.addLayer(landPolyLayer);
+  try{ var _pn2=map.getPane('sbland'); if(_pn2)_pn2.style.display=''; }catch(e){}
   var b=map.getBounds(), drawn=0;
   var codes={};
   /* 화면 안 지점의 법정동만 본다 — 전국을 훑지 않는다 */
@@ -2921,7 +2939,19 @@ function renderLandPoly(){
   for(var c10 in codes){
     if(window._LANDP[c10]===undefined){ landPolyFetch(c10); continue; }
     var m=window._LANDP[c10]; if(!m) continue;
+    /* 지목 「도로」 필지는 폴리곤도 안 칠한다(2026-08-24 석봉님 지시 — 마커 제외에 이어.
+       가늘고 긴 도로 띠가 화면만 어지럽힌다). 지목은 land_dong 거래(d)에 있다 —
+       그 지번의 거래가 전부 도로일 때만 뺀다(섞인 필지는 남긴다). 자료가 아직 안 왔으면
+       일단 그리고, 도착하면 다시 그려져 빠진다. ⚠️매물만(L) 필지는 지목을 몰라 못 거른다. */
+    var D=(window._LANDD||{})[c10];
+    if(D===undefined) landDongFetch(c10);
+    if(D&&D.d&&!D._roads){
+      var _cnt={},_rd={};
+      D.d.forEach(function(x){ _cnt[x[0]]=(_cnt[x[0]]||0)+1; if(x[4]==='도로')_rd[x[0]]=(_rd[x[0]]||0)+1; });
+      D._roads={}; for(var _q in _rd) if(_rd[_q]===_cnt[_q]) D._roads[_q]=1;
+    }
     for(var jb in m){
+      if(D&&D._roads&&D._roads[jb]) continue;
       var g=m[jb][1]; if(!g||!g.length) continue;
       /* 🔴첫 점만 보면 「깊이 확대해 필지 안에 들어간」 순간 첫 꼭짓점이 화면 밖이라
          스킵된다 — 필지가 화면을 가득 채울 때 사라지는 가장 이상한 동작(2026-08-23 제보).
@@ -3014,18 +3044,8 @@ function landPolyTags(){
       .addTo(landTagLayer);
     n++;
   });
-  /* 없던 land_dong 을 받아 한 번 다시 그린다(폴리곤 fetch 와 같은 패턴) */
-  for(var need in landTagLayer._need){
-    (function(cc){
-      landPolyTags._f=landPolyTags._f||{}; if(landPolyTags._f[cc])return; landPolyTags._f[cc]=1;
-      fetch('data/land_dong/'+cc+'.json')
-        .then(function(r){ return r.ok?r.json():null; })
-        .then(function(j){ window._LANDD[cc]=j||null;
-          clearTimeout(landPolyTags._t);
-          landPolyTags._t=setTimeout(function(){try{landPolyTags();}catch(e){}},200); })
-        .catch(function(){ window._LANDD[cc]=null; });
-    })(need);
-  }
+  /* 없던 land_dong 은 공용 로더가 받는다(renderLandPoly 재실행 → 풍선도 다시 그려진다) */
+  for(var need in landTagLayer._need) landDongFetch(need);
 }
 
 /* 지번을 되짚은 지점의 마커를 **그 필지 위로** 옮긴다(2026-08-23 석봉님 확정 —
