@@ -225,10 +225,20 @@ table.t2 td b,.kpi .n{font-variant-numeric:tabular-nums}
 
     /* ── 이 필지가 어떤 땅인가 (실거래·매물 어느 쪽에서든 지목·용도지역을 얻는다)
        ⚠️ 건물 거래(`b`)에는 지목·용도지역이 없다 — 대지면적만 쓴다. */
+    /* 🔴 **거래(d)와 매물(l)은 배열 규격이 다르다**(2026-08-24 석봉님 캡처에서 발견).
+         거래 d = [지번, 연월, 금액, **면적**, 지목, 용도지역, 등급]
+         매물 l = [지번, 호가, **면적**, 확인일, 지목, 용도지역, …]
+       종전에는 둘을 같은 규격으로 읽어 `meta[3]` 을 면적으로 썼는데, 매물에서는 그 자리가
+       **확인일(20260821)** 이라 화면에 「20,260,821㎡ (6,128,899평)」이 나갔다.
+       ⚠️같은 이름의 배열이라도 출처가 다르면 규격을 따로 읽을 것. */
+    var jimok='', useZ='', area=0;
+    if(deals.length){
+      jimok=deals[0][4]||''; useZ=deals[0][5]||''; area=+deals[0][3]||0;
+    }else if(lots.length){
+      jimok=lots[0][4]||''; useZ=lots[0][5]||''; area=+lots[0][2]||0;
+    }
     var meta=deals[0]||lots[0]||null;
-    var jimok=meta?(meta[4]||''):'', useZ=meta?(meta[5]||''):'';
-    var area=meta?(meta[3]||meta[2]||0):0;
-    if(!area && blds.length) area=blds[0][3]||0;
+    if(!area && blds.length) area=+blds[0][3]||0;
 
     if(!jb){
       /* 지도가 지번을 못 찾아 동 단위로 넘어온 경우(2026-08-22). 필지 이야기를 하지 않는다.
