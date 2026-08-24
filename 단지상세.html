@@ -355,10 +355,22 @@ function findInfo(code,name){
 /* 호가 키는 '단지명|법정동'이다(2026-07-30). 전에는 단지명뿐이라 같은 구의
    동명이단지 호가가 한 덩어리로 합쳐졌다(압구정 현대1차에 개포동 호가가 붙어
    실거래보다 낮게 표시된 사고). 별칭이 없어도 법정동을 붙여 찾는다. */
-function findAsk(code,name){
+/* 🔴 한 이름 아래 종류가 섞인 곳에서는 **그 지점의 상품에 맞는 값**을 쓴다(2026-08-24).
+   주상복합은 아파트분과 오피스텔분이 같은 단지명으로 수집돼 중위가 섞였다
+   (전국 51,224키 중 348키, 그중 28키는 매매 중위가 15% 이상 벌어졌다 —
+    송파파크하비오푸르지오 4.8억 대 21억). 빌더가 섞인 키에만 `ts` 를 실어 준다.
+   ⚠️키를 쪼개지 않았다 — 쪼개면 별칭·카나리아·감시 골든이 한꺼번에 어긋난다.
+   ⚠️그 상품 값이 없으면 **합산값 그대로** 쓴다(없는 것을 지어내지 않는다). */
+function findAsk(code,name,ptype){
   var box=(window.APTASK&&window.APTASK[code])||null; if(!box)return null;
   var ak=aliasOf(code,name,'a');
-  return (ak&&box[ak])||box[name+'|'+(_CURDONG||'')]||null;
+  var A=(ak&&box[ak])||box[name+'|'+(_CURDONG||'')]||null;
+  if(A&&A.ts&&ptype&&A.ts[ptype]){
+    var sub=A.ts[ptype];
+    /* 원본 객체를 건드리지 않는다(다른 곳에서도 같은 참조를 쓴다) */
+    return {mm:sub.mm,je:sub.je,wo:sub.wo,t:A.t,_split:ptype};
+  }
+  return A;
 }
 function findFee(code,name){
   var box=(window.APTFEE&&window.APTFEE[code])||null; if(!box)return null;
@@ -552,7 +564,7 @@ function render(pt,code){
         +'(예: '+esc(String(pt.jibun||''))+'). 그래서 서로 다른 '+_UNIT+'이 한 자리에 묶여 있습니다.'
         +' <b>대표 시세를 내지 않고</b>, 아래 실거래 이력을 '+_UNIT+'별로 나눠 두었습니다.</div></div>'):'');
   var womed=med(wo.map(function(t){return t.p;})),womedw=med(wo.map(function(t){return t.r;}));
-  var A=findAsk(code,pt.name);
+  var A=findAsk(code,pt.name,pt.t);
   /* 🔴 이 호가가 정말 이 단지 것인지 검사한다(2026-08-21, 지도 카드와 같은 규칙).
      같은 이름 아래 아파트와 소형(오피스텔·도시형)이 따로 수집돼, 별칭이 소형 쪽을 집으면
      아파트 화면에 3억짜리 호가가 붙는다(합정동 마포한강푸르지오2차 실제 사례).
