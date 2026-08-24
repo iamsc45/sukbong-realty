@@ -1306,7 +1306,10 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
       });
     });
   }
-  function _addrMark(lat,lng,label,z){
+  /* opt = {jb,c10} — 필지에서 온 좌표 링크면 필지 카드로 열리게 넘긴다(2026-08-24).
+     ⚠️이 함수가 900ms 뒤에 `showAddrCard` 를 부르므로, 밖에서 따로 부르면 **덮인다.**
+       실제로 그렇게 만들었다가 카드 제목이 비고 옛 문구가 떴다. 반드시 여기로 넘길 것. */
+  function _addrMark(lat,lng,label,z,opt){
     if(window._addrMk){try{map.removeLayer(window._addrMk);}catch(e){}}
     window._addrMk=L.circleMarker([lat,lng],{radius:9,color:'#c0392b',weight:3,fillColor:'#fff',fillOpacity:.9}).addTo(map).bindPopup(label);
     try{map.setView([lat,lng],z||17);}catch(e){}
@@ -1317,7 +1320,7 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
        전에는 빨간 점과 말풍선 한 줄이 전부였다 — 찾아온 사람 입장에서는 아무 정보가 없다.
        주변에 무엇이 거래됐는지와 다음 갈 곳(땅값 조회)을 카드로 준다.
        ⚠️지도가 새 자리로 옮겨 간 뒤에 주변을 세야 하므로 한 박자 쉰다. */
-    setTimeout(function(){try{showAddrCard(lat,lng,label);}catch(e){}},900);
+    setTimeout(function(){try{showAddrCard(lat,lng,label||'선택한 위치',opt||null);}catch(e){}},900);
     /* 다른 지역 주소로 건너뛴 경우 앞 검색 필터 때문에 0건이 되는 것을 푼다(2026-08-08).
        ⚠️순서가 중요하다(2026-08-11). ①필터 해제 ②그래도 비면 **범위를 넓힌다** ③그래도 비면 상품 해제.
        전에는 ②가 없어서, 주변에 거래가 아예 없는 신축 분양지에서는 상품을 다 풀어도 빈 화면이었다. */
@@ -1939,6 +1942,13 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
     var mm=String(at||'').split(',');
     var la=+mm[0],ln=+mm[1];
     if(!isFinite(la)||!isFinite(ln))return false;
+    /* 🔴필지에서 온 링크(`&jb=`)면 **종류 폴백을 끈다**(2026-08-24 석봉님 제보).
+       종전에는 그 종류에 가까운 지점이 없으면 전체 종류로 다시 찾았는데, 토지 필지 자리
+       40m 안에 아파트가 있으면 **옆 아파트 카드**가 열렸다(홍익동 147-23 → THE청아진).
+       필지로 온 링크는 그 필지가 주인공이다 — 못 찾으면 필지 카드를 연다. */
+    var _jbq=null,_c10q=null;
+    try{ var _PQ=new URLSearchParams(location.search);
+         _jbq=_PQ.get('jb'); _c10q=_PQ.get('c10'); }catch(e){}
     function pick(){
       var d=(code&&SB.d[code])||[],best=null,bd=1e9;
       /* ⚠️ 주상복합은 **같은 좌표에 아파트와 구분상가가 겹쳐** 있다(2026-08-15 실측:
@@ -1953,6 +1963,7 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
           if(dd<bd){bd=dd;best=d[i];}
         }
         if(best&&bd<0.0004)break;
+        if(pass===0&&typ&&_jbq){best=null;break;}   /* 필지 링크: 다른 종류로 넘어가지 않는다 */
         if(pass===0&&typ){best=null;bd=1e9;}   /* 그 종류에 가까운 게 없으면 전체에서 다시 */
       }
       /* 약 30m 안쪽이면 같은 지점으로 본다(좌표는 지번 기준 개략이라 소수점이 조금 다르다) */
@@ -1964,7 +1975,19 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
         /* 카드로 열 자료가 없으면 위치만이라도 정확히 보여 준다 — 종전엔 이 경우
            엉뚱한 지역으로 튀어 "어딘지 확인이 안 된다"는 말을 들었다. */
         go(la,ln,17);
-        try{_addrMark(la,ln,'');}catch(e){}
+        /* 🔴필지에서 온 링크(`&jb=`·`&c10=`)면 **그 필지 카드**를 연다(2026-08-24 석봉님 제보).
+           토지상세의 「이 필지 자리에서 주변 보기」로 왔는데 「이 지번으로 신고된 실거래는
+           없습니다」가 떴다 — 그 필지의 거래는 최근 계약일 창 밖(2021년)이라 지도 지점이
+           없을 뿐인데, 문구가 「없다」라고 말해 버린 것이다. 폴리곤 클릭과 같은 카드를 쓴다. */
+        if(_jbq){
+          var _dn2=''; try{ for(var k in (landFill._code10||{}))
+            if(landFill._code10[k]===_c10q){_dn2=k;break;} }catch(e){}
+          /* 동 이름을 아직 모르면 법정동 색인을 받아 둔다(카드가 열릴 때쯤 채워진다) */
+          if(!_dn2 && _c10q){ try{ landPolyFetch(_c10q); }catch(e){} }
+          try{ _addrMark(la,ln,(_dn2?_dn2+' ':'')+_jbq,17,{jb:_jbq,c10:_c10q}); }catch(e){}
+        }else{
+          try{_addrMark(la,ln,'');}catch(e){}
+        }
       }
     }
     if(code&&!loaded[code]){loadDetail(code,pick);setTimeout(function(){if(!loaded[code])go(la,ln,17);},2500);}
