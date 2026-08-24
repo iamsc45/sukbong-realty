@@ -75,6 +75,16 @@ table.t2 td b,.kpi .n{font-variant-numeric:tabular-nums}
   table.t2 td.n{white-space:normal;word-break:keep-all}
   table.t2 th,table.t2 td{padding:8px 6px}
   .kpi .n{font-size:16px;word-break:break-all}
+  /* 🔴진짜 원인은 **매물 줄의 긴 배지**였다(2026-08-24 석봉님 캡처 4번).
+     `.tag{white-space:nowrap}` 이 걸린 채로
+     「건물 있음 104㎡ · 제2종근린생활시설 · 1945년 (노후)」가 한 줄을 요구해
+     표가 화면보다 넓어졌다(360px 뷰포트에서 **레이아웃이 410px 로 벌어짐**).
+     ⚠️이래서 `scrollWidth` 만 보면 못 잡는다 — 브라우저가 화면을 넓혀 버리므로
+       **`innerWidth > 지정 폭`** 을 함께 봐야 한다(CLAUDE.md 배포 게이트 규칙과 같다).
+     ⚠️처음 검증에서 놓친 이유: **매물이 없는 필지(218-3·389)로만 봤다.**
+       배지는 매물 줄에만 붙는다 — 「자료가 있는 화면」으로 보지 않으면 안 나온다. */
+  .tag{white-space:normal;word-break:keep-all;display:inline-block;margin:2px 0 0 4px}
+  table.t2 td:first-child{word-break:keep-all}
 }
 </style>
 </head><body>
@@ -403,8 +413,11 @@ table.t2 td b,.kpi .n{font-variant-numeric:tabular-nums}
           var g=j.p[i][2]; if(!g||!g.length) return;
           var la=0, lo=0;
           for(var k=0;k<g.length;k++){ la+=g[k][1]; lo+=g[k][0]; }
+          /* 지번·법정동코드10 도 함께 넘긴다 — 그 좌표에 지도 지점이 없을 때(과거 거래 등)
+             지도가 「없습니다」가 아니라 **그 필지 카드**를 열 수 있게(2026-08-24). */
           a.href='map.html?t=land&at='+(la/g.length).toFixed(6)+','+(lo/g.length).toFixed(6)
-                 +'&code='+encodeURIComponent(String(code10).slice(0,5));
+                 +'&code='+encodeURIComponent(String(code10).slice(0,5))
+                 +'&jb='+encodeURIComponent(jbun)+'&c10='+encodeURIComponent(code10);
           a.textContent='이 필지 자리에서 주변 보기 →';
           return;
         }
