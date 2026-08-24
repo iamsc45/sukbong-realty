@@ -138,6 +138,7 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
 <script defer src="assets/sb_tabbar.js?v=10"></script>
 <script defer src="assets/sb_feedback.js?v=4"></script>
 <script src="data/land_bjd.js?v=2"></script>
+<script src="data/land_band.js?v=1"></script>
 <script>
 (function(){
   var FN='https://bwgoufxonqamglbqsife.supabase.co/functions/v1/land-lookup';
@@ -202,10 +203,12 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
       var n2=cands.filter(function(b){return b[1].indexOf(sd)===0;});
       if(n2.length)cands=n2;
     }
+    /* 🔴 2026-08-24 석봉님 제보 — 「신월동 75-8」처럼 시군구를 안 붙이면 여기서 막혔다.
+       신월동은 전국 7곳(서울 양천 · 여수 · 제천 · 창원 2 · 정읍 · 김제)이라 좁혀지지 않는다.
+       **자동으로 서울을 고르지 않는다**(행정구역 추측 금지와 같은 취지 — 틀리면 조용히 썩는다).
+       대신 후보를 눌러서 고르게 한다. 실무자는 다시 타이핑하지 않아도 되고, 우리는 안 찍는다. */
     if(cands.length>1){
-      var names=cands.slice(0,6).map(function(b){
-        return b[1]+' '+b[2]+' '+(b[4]?b[4]+' ':'')+b[3];}).join(', ');
-      return {err:'같은 이름의 동·리가 여럿입니다. 시군구나 읍·면을 붙여 주세요.\n→ '+names};
+      return {amb:cands.slice(0,8), bun:bun, bu:bu, san:san, more:cands.length-8};
     }
     var b=cands[0];
     var pad=function(n,w){n=String(n);while(n.length<w)n='0'+n;return n;};
@@ -255,6 +258,60 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
     var latest=(d.price||[]).slice().sort(function(a,b){return String(b.stdrYear).localeCompare(String(a.stdrYear));})[0];
     var ch=(d.characteristics||[]).slice().sort(function(a,b){return String(b.stdrYear).localeCompare(String(a.stdrYear));})[0];
 
+    /* ── 맨 위 한 줄 요약 (2026-08-24 석봉님 지시)
+       "토지는 얼마고 건물은 얼마인데 정보가 많아 실무자가 아니면 헷갈린다" →
+       **결론을 맨 위에 한 번** 보여주고, 세부는 그대로 아래에 둔다.
+       근거 우선순위(석봉님 확정): ①심사표 구간(land_band — 실거래 직접·시점보정·두 경로)
+       ②없으면 서버의 참고 시세 구간(공시지가 배율) ③둘 다 없으면 구간을 만들지 않는다.
+       🔴 「평가금액」·「감정」으로 쓰지 않는다 — 확정이 아니라 관찰 구간이다(정본 6장). */
+    var usedBand=false;   /* 위 요약이 심사표 구간을 썼는가 — 아래 섹션과 말이 어긋나지 않게 */
+    (function(){
+      var area=ch&&+ch.lndpclAr?+ch.lndpclAr:0;
+      var b=(window.LANDBAND&&info&&info.pnu)?window.LANDBAND[String(info.pnu).slice(0,10)]:null;
+      var lo,mid,hi,src,note,gradeTxt;
+      if(b){
+        lo=b[0];mid=b[1];hi=b[2];src='실거래';usedBand=true;
+        var parts=[];
+        if(b[3])parts.push('빈 땅 거래 '+comma(b[3])+'건');
+        if(b[4])parts.push('건물 있는 필지에서 되짚은 땅값 '+comma(b[4])+'건');
+        note=parts.join(' · ')+' (같은 동) · 오늘 시점으로 보정';
+        gradeTxt=(b[5]===2?'높음 · 서로 다른 두 방법이 같은 구간':'보통 · 한 가지 방법');
+      }else if(d.estimate){
+        lo=d.estimate.unit_lo;mid=0;hi=d.estimate.unit_hi;src='공시지가 배율';
+        note=esc(d.estimate.scope)+' 실거래 '+comma(d.estimate.n)+'건 · 공시지가의 '+d.estimate.lo+'~'+d.estimate.hi+'배';
+        gradeTxt=esc(d.estimate.grade);
+      }
+      if(!lo){
+        h.push('<div class="card" style="border:2px solid #E3E8F0;margin:22px 0 10px">'
+          +'<div style="font-size:13px;color:#5A6478;letter-spacing:1px">이 필지 참고 구간</div>'
+          +'<div class="note" style="margin-top:6px">이 지역·지목은 거래 표본이 적어 <b>구간을 제시하지 않습니다</b>. '
+          +'아래 공시지가와 건축물대장은 그대로 확인하실 수 있습니다.</div></div>');
+        return;
+      }
+      h.push('<div class="card" style="border:2px solid #12264A;margin:22px 0 10px">'
+        +'<div style="font-size:13px;color:#5A6478;letter-spacing:1px">이 필지 참고 구간 <span class="tag">토지</span></div>');
+      if(area){
+        /* 큰 글씨는 억 단위로 줄여 한 줄에 담고(모바일 390px 에서 두 줄로 넘쳤다),
+           정확한 값은 바로 아래 작은 글씨에 그대로 둔다 — 한눈에 읽되 값은 안 잃는다. */
+        var eok=function(w){var v=w/1e8;return (v>=10?v.toFixed(0):v.toFixed(1))+'억';};
+        h.push('<div class="v big" style="font-size:30px;line-height:1.3;margin:4px 0 2px">'
+          +eok(lo*area)+' ~ '+eok(hi*area)+'</div>'
+          +'<div style="font-size:14px;color:#5A6478">'+wonAbs(lo*area)+' ~ '+wonAbs(hi*area)+'</div>'
+          +'<div style="font-size:14px;color:#5A6478;margin-top:2px">평당 '+wonPy(lo)+' ~ '+wonPy(hi)
+          +(mid?' · 가운데값 '+wonPy(mid):'')+' · 대지 '+m2py(area)+'</div>');
+      }else{
+        h.push('<div class="v big" style="font-size:24px;margin:4px 0 2px">평당 '+wonPy(lo)+' ~ '+wonPy(hi)+'</div>'
+          +'<div style="font-size:14px;color:#5A6478">필지 면적이 없어 총액은 아래 토지특성 확인 후 계산해 주세요.</div>');
+      }
+      h.push('<div class="row" style="margin-top:8px"><div class="k">근거</div><div class="v">'+note
+        +' <span class="tag">신뢰도 '+gradeTxt+'</span></div></div>');
+      /* 건물은 합산하지 않는다(석봉님 확정) — 잔여법이 이미 건물값을 뺀 「땅값」이라 더하면 이중 계상. */
+      h.push('<div class="note" style="margin-top:8px"><b>땅값 기준입니다.</b> 건물이 있으면 그 값은 별도로, '
+        +'아래 <b>개별주택가격·건축물대장</b>에서 확인해 주세요. '
+        +'구간은 같은 동 거래의 가운데 절반(25~75%)이며 도로·형상·규제에 따라 이 밖일 수 있습니다. '
+        +'감정평가가 아닙니다.</div></div>');
+    })();
+
     if(latest){
       var unit=+latest.pblntfPclnd;
       h.push('<h2>개별공시지가</h2><div class="card">');
@@ -287,7 +344,9 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
     }
     if(d.estimate){
       var e=d.estimate;
-      h.push('<h2>참고 시세 구간</h2><div class="card">');
+      /* 위 요약이 실거래 구간을 이미 보여줬으면 제목으로 근거가 다름을 밝힌다(2026-08-24).
+         안 그러면 값이 두 개라 「어느 게 맞나」가 된다 — 헷갈림을 없애려다 늘리는 꼴. */
+      h.push('<h2>참고 시세 구간'+(usedBand?' <span style="font-size:13px;font-weight:400;color:#5A6478">(공시지가 배율 기준 · 위 구간과 산출 방법이 다릅니다)</span>':'')+'</h2><div class="card">');
       h.push('<div class="row"><div class="k">평당</div><div class="v big">'+wonPy(e.unit_lo)+' ~ '+wonPy(e.unit_hi)+'</div></div>');
       if(ch&&ch.lndpclAr){
         /* 총액 = ㎡당 구간값 × 필지면적(㎡). 위와 같은 이유로 wonAbs (2026-08-12 수정) */
@@ -296,7 +355,9 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
       h.push('<div class="row"><div class="k">근거</div><div class="v">'+esc(e.scope)+' 실거래 '+comma(e.n)+'건 · 공시지가의 '+e.lo+'~'+e.hi+'배 <span class="tag">신뢰도 '+esc(e.grade)+'</span></div></div>');
       h.push('<div class="note">2021~2026년 국토교통부 실거래 신고를 모은 통계 구간입니다. 이 필지의 값이 아니라 같은 지역·지목·용도지역 거래의 분포입니다.</div>');
       h.push('</div>');
-    }else{
+    }else if(!usedBand){
+      /* 🔴 위에서 이미 구간을 보여줬으면 이 섹션을 아예 내보내지 않는다(2026-08-24 로컬 렌더에서 발견).
+         「구간 제시」와 「구간 없음」이 한 화면에 같이 나오면 그 자체가 오해를 만든다. */
       h.push('<h2>참고 시세 구간</h2><div class="card"><div class="note">이 지역·지목은 거래 표본이 적거나 편차가 커서 시세 구간을 제시하지 않습니다. 정확한 판단이 필요하시면 아래 상담 문의를 이용해 주세요.</div></div>');
     }
     /* 🔴 2026-08-18 신설 — 우리가 매칭으로 확보한 것들을 여기서 보여준다.
@@ -783,6 +844,26 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
     var p=toPnu(v);
     $('jump').style.display='none';$('jump').innerHTML='';   /* 새 조회 — 옛 바로가기 치운다 */
     if(p.err){$('state').className='err';$('state').textContent=p.err;$('out').innerHTML='';return;}
+    /* 동명이동 — 후보를 눌러 고르게 한다(2026-08-24). 고르면 그 주소로 다시 조회한다. */
+    if(p.amb){
+      $('state').className='';$('state').textContent='같은 이름의 동·리가 '+(p.amb.length+(p.more>0?p.more:0))+'곳입니다. 어디인가요?';
+      var jb=(p.san==='2'?'산 ':'')+p.bun+(p.bu?'-'+p.bu:'');
+      var hh=['<div class="card"><div class="note" style="margin:0 0 8px">누르시면 바로 조회합니다.</div>'];
+      p.amb.forEach(function(b){
+        var full=b[1]+' '+b[2]+' '+(b[4]?b[4]+' ':'')+b[3];
+        hh.push('<button type="button" class="ambpick" data-a="'+esc(full+' '+jb)+'" '
+          +'style="display:block;width:100%;text-align:left;margin:0 0 6px;padding:11px 13px;'
+          +'border:1px solid #E3E8F0;border-radius:8px;background:#fff;cursor:pointer;font-size:15px">'
+          +esc(full)+' <b>'+esc(jb)+'</b></button>');
+      });
+      if(p.more>0)hh.push('<div class="note">그 밖에 '+p.more+'곳이 더 있습니다. 시군구를 붙여 주세요.</div>');
+      hh.push('</div>');
+      $('out').innerHTML=hh.join('');
+      Array.prototype.forEach.call(document.querySelectorAll('.ambpick'),function(el){
+        el.addEventListener('click',function(){$('addr').value=el.getAttribute('data-a');lookup();});
+      });
+      return;
+    }
     $('go').disabled=true;
     $('state').className='';$('state').textContent=p.label+' 조회 중…';
     $('out').innerHTML='';
