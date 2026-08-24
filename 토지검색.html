@@ -289,27 +289,65 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
         return;
       }
       h.push('<div class="card" style="border:2px solid #12264A;margin:22px 0 10px">'
-        +'<div style="font-size:13px;color:#5A6478;letter-spacing:1px">이 필지 참고 구간 <span class="tag">토지</span></div>');
-      if(area){
-        /* 큰 글씨는 억 단위로 줄여 한 줄에 담고(모바일 390px 에서 두 줄로 넘쳤다),
-           정확한 값은 바로 아래 작은 글씨에 그대로 둔다 — 한눈에 읽되 값은 안 잃는다. */
-        var eok=function(w){var v=w/1e8;return (v>=10?v.toFixed(0):v.toFixed(1))+'억';};
-        h.push('<div class="v big" style="font-size:30px;line-height:1.3;margin:4px 0 2px">'
-          +eok(lo*area)+' ~ '+eok(hi*area)+'</div>'
-          +'<div style="font-size:14px;color:#5A6478">'+wonAbs(lo*area)+' ~ '+wonAbs(hi*area)+'</div>'
-          +'<div style="font-size:14px;color:#5A6478;margin-top:2px">평당 '+wonPy(lo)+' ~ '+wonPy(hi)
-          +(mid?' · 가운데값 '+wonPy(mid):'')+' · 대지 '+m2py(area)+'</div>');
-      }else{
+        +'<div style="font-size:13px;color:#5A6478;letter-spacing:1px">이 물건 참고 구간</div>');
+      var eok=function(w){var v=w/1e8;return (v>=10?v.toFixed(0):v.toFixed(1))+'억';};
+      if(!area){
         h.push('<div class="v big" style="font-size:24px;margin:4px 0 2px">평당 '+wonPy(lo)+' ~ '+wonPy(hi)+'</div>'
-          +'<div style="font-size:14px;color:#5A6478">필지 면적이 없어 총액은 아래 토지특성 확인 후 계산해 주세요.</div>');
+          +'<div style="font-size:14px;color:#5A6478">필지 면적이 없어 총액은 아래 토지특성 확인 후 계산해 주세요.</div>'
+          +'<div class="row" style="margin-top:8px"><div class="k">근거</div><div class="v">'+note
+          +' <span class="tag">신뢰도 '+gradeTxt+'</span></div></div></div>');
+        return;
       }
-      h.push('<div class="row" style="margin-top:8px"><div class="k">근거</div><div class="v">'+note
+      /* ── 건물값 (2026-08-24 석봉님 정정 — 「토지비 · 건물 가격 · 합친 전체」 셋을 위에)
+         산출은 감정평가 실무의 원가법 그대로: 재조달원가 × 잔존연수비 × 연면적.
+         상수(100만원/㎡ · 내용연수 45년)는 부산 전포동 감정평가서에 인쇄된 값이다.
+         🔑 이중 계상이 아니다 — 토지 구간은 「건물값을 뺀 땅값」으로 만든 것이라(잔여법),
+            여기에 건물값을 더하면 원래의 물건 전체로 돌아온다. 앞뒤가 맞물린다.
+         ⚠️ 용도·구조별 단가 차이는 반영하지 못한다(그래서 「개략」이라고 밝힌다). */
+      var bTot=0,bYear=0,bNote='';
+      var _t=(d.building&&d.building.title)||[],_r=(d.building&&d.building.recap)||[];
+      if(_r.length&&+_r[0].totArea)bTot=+_r[0].totArea;
+      else _t.forEach(function(t){if(+t.totArea)bTot+=+t.totArea;});
+      _t.forEach(function(t){var ap=String(t.useAprDay||'');
+        if(ap.length===8){var y=+ap.slice(0,4);if(!bYear||y>bYear)bYear=y;}});
+      /* ⚠️ hp(개별주택가격)는 이 블록보다 «아래»에서 정의된다 — 직접 읽는다(호이스팅으로 undefined). */
+      if(!bTot){
+        var _hp=(d.houseprice||[]).slice().sort(function(a,b){
+          return String(b.stdrYear||'').localeCompare(String(a.stdrYear||''));})[0];
+        if(_hp&&+_hp.buldAllTotAr)bTot=+_hp.buldAllTotAr;
+      }
+      var bVal=0;
+      if(bTot&&bYear){
+        var life=45,used=Math.max(new Date().getFullYear()-bYear,0);
+        var rem=Math.max(life-used,0)/life;
+        bVal=1000000*rem*bTot;
+        bNote='연면적 '+m2py(bTot)+' · '+bYear+'년 준공(잔존 '+Math.round(rem*100)+'%)';
+      }else if(bTot){
+        bNote='연면적 '+m2py(bTot)+' · 준공년도 미상이라 건물값을 매기지 않았습니다';
+      }
+      /* 합계 = 토지 구간 + 건물 개략값 (건물은 구간이 아니라 한 값이라 구간 폭은 토지에서 온다) */
+      h.push('<div class="v big" style="font-size:30px;line-height:1.3;margin:4px 0 2px">'
+        +eok(lo*area+bVal)+' ~ '+eok(hi*area+bVal)+'</div>'
+        +'<div style="font-size:14px;color:#5A6478;margin-bottom:10px">'
+        +wonAbs(lo*area+bVal)+' ~ '+wonAbs(hi*area+bVal)+(bVal?' (토지+건물)':' (토지)')+'</div>');
+      h.push('<div class="row"><div class="k">토지</div><div class="v"><b>'+eok(lo*area)+' ~ '+eok(hi*area)+'</b>'
+        +'<div style="font-size:13px;color:#5A6478;margin-top:2px">평당 '+wonPy(lo)+' ~ '+wonPy(hi)
+        +(mid?' · 가운데값 '+wonPy(mid):'')+' · 대지 '+m2py(area)+'</div></div></div>');
+      if(bVal){
+        h.push('<div class="row"><div class="k">건물</div><div class="v"><b>약 '+eok(bVal)+'</b>'
+          +'<div style="font-size:13px;color:#5A6478;margin-top:2px">'+bNote
+          +' · 재조달 100만원/㎡ 기준 개략</div></div></div>');
+      }else if(bTot){
+        h.push('<div class="row"><div class="k">건물</div><div class="v">'+bNote+'</div></div>');
+      }else{
+        h.push('<div class="row"><div class="k">건물</div><div class="v">등재된 건물이 없습니다 (토지만)</div></div>');
+      }
+      h.push('<div class="row" style="margin-top:6px"><div class="k">근거</div><div class="v">'+note
         +' <span class="tag">신뢰도 '+gradeTxt+'</span></div></div>');
-      /* 건물은 합산하지 않는다(석봉님 확정) — 잔여법이 이미 건물값을 뺀 「땅값」이라 더하면 이중 계상. */
-      h.push('<div class="note" style="margin-top:8px"><b>땅값 기준입니다.</b> 건물이 있으면 그 값은 별도로, '
-        +'아래 <b>개별주택가격·건축물대장</b>에서 확인해 주세요. '
-        +'구간은 같은 동 거래의 가운데 절반(25~75%)이며 도로·형상·규제에 따라 이 밖일 수 있습니다. '
-        +'감정평가가 아닙니다.</div></div>');
+      h.push('<div class="note" style="margin-top:8px">토지는 같은 동 거래의 가운데 절반(25~75%) 구간이고, '
+        +'건물은 표준 원가(재조달 100만원/㎡ · 내용연수 45년)로 감가한 <b>개략값</b>입니다. '
+        +'용도·구조·마감에 따라 달라지니 상세는 아래 <b>개별주택가격 · 건축물대장</b>에서 확인해 주세요. '
+        +'확정이 아니라 참고 구간이며, 감정평가가 아닙니다.</div></div>');
     })();
 
     if(latest){
