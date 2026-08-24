@@ -167,9 +167,31 @@ function frow(ic,l,v){return v?'<div class="f"><span class="ic">'+ic+'</span><sp
 function frowH(ic,l,vHtml){return vHtml?'<div class="f"><span class="ic">'+ic+'</span><span class="fl">'+l+'</span><span class="fv">'+vHtml+'</span></div>':'';}
 function lrow(ic,l,v,wide){return v?'<div class="lr'+(wide?' wide':'')+'"><span class="ic">'+ic+'</span><div><b>'+l+'</b> '+v+'</div></div>':'';}
 
+/* 🔴 code 가 없거나 틀린 링크를 스스로 고친다(2026-08-24 석봉님 제보 「아크로리버파크·
+   래미안원베일리 상세가 안 뜬다」). 표준 딥링크는 전부 정상이었고, 죽는 것은 **code 가
+   빈 옛 링크**(초기 관심단지 저장분·2026-07-27 알림메일 계열)와 code 가 틀린 링크다.
+   전국 단지 인덱스(apt_index)에서 이름·동으로 code 를 찾아 한 번만 다시 연다(&r=1 가드). */
+function _fixCode(nm,dong,t,jb){
+  if(qs('r')){fail();return;}              /* 복구로 다시 왔는데 또 없으면 진짜 없는 단지 */
+  var s=document.createElement('script'); s.src='data/apt_index.js';
+  s.onload=function(){
+    var idx=(window.SB&&SB.aptIdx)||[], hit=null, i;
+    for(i=0;i<idx.length;i++){ var e=idx[i];
+      if(e[0]!==nm)continue;
+      if(dong && e[4]!==dong && String(e[4]).split(/\s+/).pop()!==dong)continue;
+      hit=e; break; }
+    if(!hit)for(i=0;i<idx.length;i++){ if(idx[i][0]===nm){hit=idx[i];break;} }
+    if(!hit){fail();return;}
+    location.replace('%EB%8B%A8%EC%A7%80%EC%83%81%EC%84%B8.html?code='+encodeURIComponent(hit[3])
+      +'&nm='+encodeURIComponent(nm)+'&dong='+encodeURIComponent(dong||hit[4]||'')
+      +(t?'&t='+encodeURIComponent(t):'')+(jb?'&jb='+encodeURIComponent(jb):'')+'&r=1');
+  };
+  s.onerror=fail; document.body.appendChild(s);
+}
 function boot(){
   var code=qs('code'),nm=qs('nm'),dong=qs('dong'),ptype=qs('t'),pjb=qs('jb');
-  if(!code||!nm){fail();return;}
+  if(!nm){fail();return;}
+  if(!code){_fixCode(nm,dong,ptype,pjb);return;}
   /* '지도에서 이 단지 보기'를 이 단지로 보낸다(2026-08-04).
      dong 을 함께 넘겨야 동명이단지로 새지 않는다(파크뷰 전국 5곳, 아시아선수촌 2곳). */
   (function(){
@@ -272,7 +294,7 @@ function go(code,nm,dong,t,jb){
   if(t)cand=narrow(cand,function(p){return p.t===t;});
   if(jb)cand=narrow(cand,function(p){return String(p.jibun||'')===String(jb);});
   var pt=cand[0]||null;
-  if(!pt){fail();return;}
+  if(!pt){_fixCode(nm,dong,t,jb);return;}   /* code 가 틀린 링크 — 인덱스로 되찾는다(&r=1 가드) */
   /* 🔴 '지도에서 이 단지 보기'는 이름이 아니라 **좌표**로 보낸다(2026-08-15).
      이름으로 보내던 종전 방식은 아파트에서만 통했다 — 단지 인덱스에 아파트만 있어서
      연립·단독·상가·토지는 지도가 못 찾았고(수영구는 738건 중 587건이 그랬다),
