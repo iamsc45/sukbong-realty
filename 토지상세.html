@@ -64,6 +64,18 @@ table.t2 td b,.kpi .n{font-variant-numeric:tabular-nums}
 .empty{color:var(--muted);font-size:13.5px;padding:10px 0}
 #state{margin:18px 0 0;color:var(--muted);font-size:14px}
 #state.err{color:#C24B37;white-space:pre-wrap}
+/* 🔴좁은 화면에서 표가 밀리지 않게(2026-08-24 석봉님 제보 「모바일에서 실거래 내용이 삐져나온다」).
+   기본 규칙이 `th{width:34%; white-space:nowrap}` 인데, 이건 **속성 표(지번·지목·면적)**를 위한 것이다.
+   실거래·매물 표는 머리글이 셋이라 34%×3 = 102% 가 되고 nowrap 이 겹치면 폭이 넘칠 수 있다.
+   ⚠️샌드박스 320·360·390·412px 에서는 재현되지 않았다 — 폰트·확대배율이 다른 실제 기기에서만
+     나는 종류라, 원인이 될 수 있는 두 규칙을 좁은 화면에서 푼다(고정폭 해제 + 줄바꿈 허용). */
+@media(max-width:460px){
+  table.t2{table-layout:auto;font-size:13px}
+  table.t2 th{width:auto;white-space:normal}
+  table.t2 td.n{white-space:normal;word-break:keep-all}
+  table.t2 th,table.t2 td{padding:8px 6px}
+  .kpi .n{font-size:16px;word-break:break-all}
+}
 </style>
 </head><body>
 <header class="site-header">
@@ -357,12 +369,17 @@ table.t2 td b,.kpi .n{font-variant-numeric:tabular-nums}
 
     /* ── 다음 걸음 */
     var mapQ=(B?(B[1].slice(0,2)+' '+B[2]+' '+B[3]):'');
+    /* 🔴「지도에서 주변 보기」가 **동 전체**로 가서 너무 넓었다(2026-08-24 석봉님 제보).
+       지역 검색(`?q=서울 성동구 홍익동`)이라 그 동을 통째로 잡는다. 이 필지가 어디인지
+       알면 그 자리로 보내야 한다 — 좌표는 우리가 이미 그리는 **필지 폴리곤**에 있다.
+       ⚠️좌표를 못 구하면 지금처럼 동 검색으로 둔다(없는 위치를 지어내지 않는다). */
+    if(jb) setTimeout(function(){ mapAtFromPoly(code, jb); }, 0);
     h.push('<div class="cta">'+
       '<a class="p" href="%ED%86%A0%EC%A7%80%EA%B2%80%EC%83%89.html">공시지가·행위제한까지 보기</a>'+
       /* 🔴`t=land` 필수(2026-08-23 석봉님 제보 「주변 보기 누르면 갑자기 아파트가 뜬다」) —
          딥링크(q)가 있으면 지도는 「보던 화면」을 복원하지 않으므로 상품이 기본값(아파트)으로
          떨어진다. 토지 상세에서 나갔으니 토지를 보여 줘야 한다. */
-      '<a class="l" href="map.html?t=land&q='+encodeURIComponent(mapQ)+'">지도에서 주변 보기</a>'+
+      '<a class="l" id="goMapNear" href="map.html?t=land&q='+encodeURIComponent(mapQ)+'">지도에서 주변 보기</a>'+
       '<a class="l" href="%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html">담보 대출 상담</a>'+
       '</div>');
     h.push('<div class="disc">이 화면은 우리가 모아 둔 자료로 만든 참고 정보입니다. '+
@@ -370,6 +387,29 @@ table.t2 td b,.kpi .n{font-variant-numeric:tabular-nums}
 
     $('out').innerHTML=h.join('');
     buildJump();
+  }
+
+  /* 필지 폴리곤에서 중심 좌표를 구해 「주변 보기」 링크를 그 자리로 바꾼다(2026-08-24).
+     `data/land_poly/<법정동코드10>.json` 은 지도가 쓰는 것과 같은 파일이다.
+     ⚠️`force-cache` 를 쓰지 말 것(2026-08-18 사고). 실패하면 조용히 원래 링크를 남긴다. */
+  function mapAtFromPoly(code10, jbun){
+    var a=document.getElementById('goMapNear'); if(!a) return;
+    fetch('data/land_poly/'+code10+'.json')
+      .then(function(r){ return r.ok?r.json():null; })
+      .then(function(j){
+        if(!j||!j.p) return;
+        for(var i=0;i<j.p.length;i++){
+          if(String(j.p[i][0])!==String(jbun)) continue;
+          var g=j.p[i][2]; if(!g||!g.length) return;
+          var la=0, lo=0;
+          for(var k=0;k<g.length;k++){ la+=g[k][1]; lo+=g[k][0]; }
+          a.href='map.html?t=land&at='+(la/g.length).toFixed(6)+','+(lo/g.length).toFixed(6)
+                 +'&code='+encodeURIComponent(String(code10).slice(0,5));
+          a.textContent='이 필지 자리에서 주변 보기 →';
+          return;
+        }
+      })
+      .catch(function(){});
   }
 
   /* 큰 제목을 버튼으로 만들어 누르면 그 자리로 내려간다(땅값 조회와 같은 방식).
