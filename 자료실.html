@@ -291,8 +291,17 @@ tr:last-child td{border-bottom:0}
     $('goXlsx').disabled = true; $('goCsv').disabled = true;
   }
 
-  /* 아파트가 아닌 버킷(원천이 단지명 자리에 종류 이름을 넣은 것) — 위 buildAsk 주석 참조 */
+  /* 아파트가 아닌 버킷(원천이 단지명 자리에 종류 이름을 넣은 것) — 위 buildAsk 주석 참조.
+     종류(`t`)가 붙은 뒤로는 보조 그물이다(옛 파일·종류 미상 행 대비). */
   var NOTAPT = { '단독':1, '다가구':1, '빌라':1, '연립':1, '일반원룸':1, '기타':1 };
+  /* 원천 종류 이름 → 우리 상품 칩(2026-08-24). 분양권·재건축은 결국 아파트다.
+     ⚠️빌딩·구분상가·토지는 이 수집기가 아예 안 받는다 — 계속 「준비 중」이다. */
+  var HOTYPE = { '아파트':'apt', '재건축':'apt', '아파트분양권':'apt',
+                 '오피스텔':'offi', '오피스텔분양권':'offi',
+                 '빌라':'villa', '연립':'villa', '일반원룸':'villa',
+                 '단독/다가구':'house', '단독':'house', '다가구':'house' };
+  var HO_HAVE = { apt:1, offi:1, villa:1, house:1 };      /* 지금 자료가 있는 종류 */
+  var curHoT = { apt: 1 };
 
   /* ── 호가 탭 필터 (2026-08-23) ──────────────────────────────
      자료가 단지별 집계 한 파일이라 실거래처럼 종류·기간이 넓지 않다.
@@ -301,12 +310,15 @@ tr:last-child td{border-bottom:0}
   var curHoU = { '매매': 1, '전세': 1, '월세': 1 };
   function hoChips() {
     var el = $('hoTypes'); if (!el) return;
+    /* 2026-08-24 — 원본에 있던 물건종류를 소급해 채워 넣어(누적 187만 행 중 99.1%)
+       아파트·오피스텔·연립·단독을 실제로 가를 수 있게 됐다. 나머지는 수집 대상이 아니라
+       계속 준비 중이다(수집기 RLET = APT·ABYG·JGC·OPST·OBYG·VL·DDDGG). */
     el.innerHTML = Object.keys(TYPE).map(function (k) {
-      var on = (k === 'apt');
+      var have = !!HO_HAVE[k], on = have && !!curHoT[k];
       return '<button type="button" class="chip' + (on ? ' on' : '') + '" data-k="' + k + '"'
-        + (on ? '' : ' disabled style="opacity:.45;cursor:default" title="준비 중입니다"')
+        + (have ? '' : ' disabled style="opacity:.45;cursor:default" title="준비 중입니다"')
         + '><span class="dot" style="background:' + TYPE[k][1] + '"></span>' + TYPE[k][0]
-        + (on ? '' : ' <span style="font-size:10px">준비 중</span>') + '</button>';
+        + (have ? '' : ' <span style="font-size:10px">준비 중</span>') + '</button>';
     }).join('');
     $('hoDeals').innerHTML = DEALS.map(function (d) {
       return '<button type="button" class="chip' + (curHoU[d] ? ' on' : '') + '" data-k="' + d + '">' + d + '</button>';
@@ -483,8 +495,9 @@ tr:last-child td{border-bottom:0}
            정확히 같을 때만 뺀다. 실제 아파트 인덱스(전국 6.5만 단지)에 이 이름과
            **정확히 같은 단지는 0개**임을 확인하고 넣었다(오피스텔·도시형생활주택은
            각각 6·3개 있어 제외 목록에서 뺐다 — 종류를 갈라 낼 때 함께 처리할 것). */
-      if (NOTAPT[p[0]]) return;
+      var ht = HOTYPE[(v.t || '').trim()] || (NOTAPT[p[0]] ? 'etc' : '');
       allTx.push({
+        ht: ht,
         sido: reg.sido, sgg: reg.sgg, dong: p[1] || '', nm: p[0] || '',
         mmMed: (v.mm || {}).med || '', mmPy: (v.mm || {}).py || '', mmN: (v.mm || {}).n || '',
         jeMed: (v.je || {}).med || '', jeN: (v.je || {}).n || '',
@@ -501,6 +514,7 @@ tr:last-child td{border-bottom:0}
       var dg = ($('hoDong') && $('hoDong').value) || '';
       return allTx.filter(function (x) {
         if (dg && x.dong !== dg) return false;
+        if (!curHoT[x.ht]) return false;          /* 고른 물건종류만(종류 미상은 안 나온다) */
         /* 고른 거래유형의 매물이 하나라도 있는 단지만 */
         return (curHoU['매매'] && x.mmN) || (curHoU['전세'] && x.jeN) || (curHoU['월세'] && x.woN);
       });
@@ -680,8 +694,8 @@ tr:last-child td{border-bottom:0}
       $('useNote').innerHTML = '<b>읽으실 때</b> · 호가는 <b>협상 전 부르는 값</b>이라 실제 체결가와 다릅니다. '
         + '실거래와 함께 보셔야 뜻이 있습니다.<br>'
         + '<b>개별 매물(동·향·층·매물번호)은 제공하지 않습니다.</b> 단지별 집계까지만 공개합니다.<br>'
-        + '<b>지금은 아파트 단지별 집계만 있습니다.</b> 다른 물건종류와 지난 시점 자료는 '
-        + '<b>계속 업데이트하고 있습니다.</b> 준비되는 대로 여기에 올라갑니다.';
+        + '<b>아파트·오피스텔·연립다세대·단독다가구</b>를 물건종류로 골라 보실 수 있습니다. '
+        + '빌딩·구분상가·토지 호가와 지난 시점 자료는 <b>계속 업데이트하고 있습니다.</b>';
     }
   }
 
@@ -743,6 +757,13 @@ tr:last-child td{border-bottom:0}
     toggle('deals', curU, b.dataset.k);
     /* 과거 모드에서는 거래유형이 곧 파일이다(전월세는 별도 파일) — 다시 받는다 */
     if (isHist()) { perUI(); notes(); load(); }
+  });
+  $('hoTypes').addEventListener('click', function (e) {
+    var b = e.target.closest('.chip'); if (!b || b.disabled) return;
+    var k = b.dataset.k;
+    if (curHoT[k]) delete curHoT[k]; else curHoT[k] = 1;
+    if (!Object.keys(curHoT).length) curHoT[k] = 1;   /* 하나는 남긴다 */
+    hoChips(); draw();
   });
   $('hoDeals').addEventListener('click', function (e) {
     var b = e.target.closest('.chip'); if (!b) return;
