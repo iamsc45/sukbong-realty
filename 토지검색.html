@@ -344,6 +344,19 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
       }
       h.push('<div class="row" style="margin-top:6px"><div class="k">근거</div><div class="v">'+note
         +' <span class="tag">신뢰도 '+gradeTxt+'</span></div></div>');
+      /* ── 검토 가격 대조 (2026-08-24 석봉님 지시 · 표현은 「위치만 관찰형」으로 확정)
+         🔴 「비싸다/싸다」·「적정/부적정」을 쓰지 않는다. 값이 분포 어디에 있는지만 알려 준다.
+            2026-08-17 석봉님 지시 — 「좋다고 좋은 것도, 나쁘다고 틀린 것도 아니다」를 함께 적는다.
+         계산은 담보 점수 v2 의 A(가격 적정성)와 같은 자다: 이 동 거래 분포의 백분위. */
+      h.push('<div style="margin-top:12px;padding-top:12px;border-top:1px solid #E3E8F0">'
+        +'<div style="font-size:13px;color:#5A6478;margin-bottom:6px">검토 중인 금액이 있으시면 넣어 보세요 (단위: 억원)</div>'
+        +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
+        +'<input id="chkPrice" type="number" step="0.1" min="0" placeholder="예) 12.5" '
+        +'style="flex:1 1 140px;min-width:120px;padding:10px 12px;font:inherit;border:1px solid #E3E8F0;border-radius:4px">'
+        +'<button type="button" id="chkGo" style="padding:10px 18px;border:0;border-radius:4px;'
+        +'background:#12264A;color:#fff;font:inherit;font-weight:700;cursor:pointer">위치 보기</button></div>'
+        +'<div id="chkOut"></div></div>');
+      window.__band={lo:lo,mid:mid,hi:hi,area:area,bVal:bVal,n:(b?(b[3]+b[4]):(d.estimate?d.estimate.n:0))};
       h.push('<div class="note" style="margin-top:8px">토지는 같은 동 거래의 가운데 절반(25~75%) 구간이고, '
         +'건물은 표준 원가(재조달 100만원/㎡ · 내용연수 45년)로 감가한 <b>개략값</b>입니다. '
         +'용도·구조·마감에 따라 달라지니 상세는 아래 <b>개별주택가격 · 건축물대장</b>에서 확인해 주세요. '
@@ -496,9 +509,53 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
       h.push('<h2>건축물대장</h2><div class="card"><div class="note">등재된 건물이 없습니다 (나대지이거나 미등재).</div></div>');
     }
     $('out').innerHTML=h.join('');
+    bindPriceCheck();
     /* fillDong 은 async 라 try/catch 로는 안 잡힌다. 실패해도 바로가기는 세운다. */
     try{ fillDong(info, ch).catch(function(){ buildJump(); }); }
     catch(_e){ buildJump(); }
+  }
+
+  /* 검토 금액 → 분포 위치 (2026-08-24). 담보 점수 v2 의 A 와 같은 자.
+     🔴 판정하지 않는다 — 위치와 그 뜻만 적는다. 「좋다/나쁘다가 아니다」를 함께 밝힌다. */
+  function bindPriceCheck(){
+    var btn=document.getElementById('chkGo'), inp=document.getElementById('chkPrice');
+    if(!btn||!inp)return;
+    function run(){
+      var B=window.__band; if(!B)return;
+      var eok=parseFloat(inp.value);
+      var out=document.getElementById('chkOut');
+      if(!(eok>0)){out.innerHTML='<div class="note">금액을 억 단위로 넣어 주세요. 예) 12.5</div>';return;}
+      var won=eok*1e8;
+      /* 건물 개략값을 뺀 «땅값»으로 견준다 — 구간이 땅값 분포이기 때문이다.
+         건물값이 총액보다 크면 뺄 수 없으니 그 사실을 밝히고 멈춘다. */
+      var landWon=won-(B.bVal||0);
+      if(landWon<=0){
+        out.innerHTML='<div class="note">넣으신 금액이 건물 개략값('+Math.round((B.bVal||0)/1e8*10)/10
+          +'억)보다 작아 땅값을 갈라내지 못했습니다. 건물 상태를 아래 건축물대장에서 확인해 주세요.</div>';
+        return;
+      }
+      var unit=landWon/B.area;                     /* 원/㎡ */
+      var pos, desc;
+      /* ⚠️ 우리가 가진 것은 25/50/75 세 점뿐이라 «정확한 백분위»를 말할 수 없다.
+         구간 대비 위치만 말한다(없는 정밀도를 지어내지 않는다). */
+      if(unit<B.lo){ pos='가운데 절반 구간보다 아래';
+        desc='같은 동 거래의 아래쪽 4분의 1 구간에 듭니다.'; }
+      else if(unit>B.hi){ pos='가운데 절반 구간보다 위';
+        desc='같은 동 거래의 위쪽 4분의 1 구간에 듭니다.'; }
+      else { pos='가운데 절반 구간 안';
+        desc='같은 동 거래의 절반이 이 범위 안에 있습니다.'; }
+      var rel=B.mid?Math.round(unit/B.mid*100):0;
+      out.innerHTML='<div class="card" style="margin:10px 0 0;background:#EEF3FB">'
+        +'<div class="row"><div class="k">넣으신 값</div><div class="v"><b>'+pos+'</b>'
+        +(rel?'<div style="font-size:13px;color:#5A6478;margin-top:2px">가운데값의 '+rel+'% 수준'
+          +(B.bVal?' · 건물 개략값을 뺀 땅값 기준':'')+' · 평당 '+wonPy(unit)+'</div>':'')
+        +'</div></div>'
+        +'<div class="note" style="margin-top:6px">'+desc
+        +' <b>구간 안이라고 좋은 것도, 밖이라고 틀린 것도 아닙니다.</b> 도로·형상·규제·임차 상황에 따라 '
+        +'같은 값도 뜻이 달라집니다. 사례 '+comma(B.n)+'건에서 본 위치일 뿐입니다.</div></div>';
+    }
+    btn.addEventListener('click',run);
+    inp.addEventListener('keydown',function(e){if(e.key==='Enter')run();});
   }
 
   /* ---------- 조회 ---------- */
