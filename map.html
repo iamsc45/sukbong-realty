@@ -1205,6 +1205,7 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
      없는 게 아니라 최근 화면에 없는 것이다 — 문구를 가르고 과거 거래(토지상세)로 잇는다. */
   function showAddrCard(lat,lng,label,opt){
     var rc=document.getElementById('rcard'); if(!rc)return;
+    showAddrCard._last=[lat,lng,label,opt];      /* 늦게 온 자료로 다시 그리기 위해 */
     /* 🔴검색으로 온 지번도 폴리곤 클릭과 같은 대접을 한다(2026-08-23 석봉님 지적 —
        같은 필지 16-7 인데 폴리곤을 누르면 「과거 거래 보기」가 있고 검색으로 오면 없었다).
        라벨 끝의 「동 지번」을 읽어 우리가 되짚은 필지(land_poly)에 있으면 opt 를 채운다.
@@ -1275,12 +1276,22 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
       +'border-radius:50%;cursor:pointer;z-index:2">×</button>'
       +'<div class="rc-h" style="background:#12264A"><div class="k">지번 주소</div>'
       +'<h2 style="font-size:17px">'+e(label)+'</h2>'
-      +'<div class="loc">'+(opt&&opt.jb
+      +'<div class="loc">'+(opt&&opt.jb&&landFactRows(opt)
+          ?'이 필지에 되짚은 거래·매물입니다'
+          :(opt&&opt.jb
           ?(opt.g==='L'
              /* L = 매물만 있는 필지(범례와 같은 말). 「과거 거래」라고 하면 거짓말이 된다. */
              ?'최근 실거래는 없고, 지금 나와 있는 매물이 있는 필지입니다'
              :'최근 지도 화면(계약일 창)에는 이 필지 거래가 없습니다')
-          :'이 지번으로 신고된 실거래는 없습니다')+'</div></div>'
+          :'이 지번으로 신고된 실거래는 없습니다'))+'</div></div>'
+      /* 🔴 그 필지의 거래·매물을 **직접 싣는다**(2026-08-24 석봉님 지적
+         「실거래된 필지면 다른 실거래처럼 내용이 있어야 하는데 없다」).
+         왜 지도 지점으로는 못 찾나 — 국토부가 토지·단독다가구는 **지번을 가려서**(`3**`)
+         주기 때문에 지점이 **필지 단위가 아니다.** 한 지점에 여러 필지의 거래가 묶이고
+         (실측: 홍익동 `1**` 지점에 거래 2건이 서로 다른 필지), 좌표도 동 단위 개략이라
+         그 필지 폴리곤에서 **187m** 떨어져 있었다. 아파트는 지번이 공개돼 지점=단지라
+         이런 일이 없다. 그래서 지점이 아니라 **필지 자료(land_dong)** 에서 바로 읽는다. */
+      +landFactRows(opt)
       +(rows?('<div class="rc-sec"><div class="rc-lab">주변 실거래</div>'+rows
           +'<div class="rc-note" style="padding:6px 0 0">반경 500m 이내 · 줄을 누르면 그 건물의 실거래와 호가가 열립니다.</div></div>')
         :'<div class="rc-sec"><div class="rc-lab">주변 실거래</div>'
@@ -1309,11 +1320,49 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
   /* opt = {jb,c10} — 필지에서 온 좌표 링크면 필지 카드로 열리게 넘긴다(2026-08-24).
      ⚠️이 함수가 900ms 뒤에 `showAddrCard` 를 부르므로, 밖에서 따로 부르면 **덮인다.**
        실제로 그렇게 만들었다가 카드 제목이 비고 옛 문구가 떴다. 반드시 여기로 넘길 것. */
+  /* 필지 자료에서 그 지번의 거래·매물을 뽑아 카드 한 칸으로 만든다(2026-08-24).
+     자료가 아직 없으면 받아 두고 빈 문자열을 돌려준다(도착하면 카드를 다시 그린다). */
+  function landFactRows(opt){
+    if(!opt||!opt.jb||!opt.c10) return '';
+    var D=(window._LANDD||{})[opt.c10];
+    if(D===undefined){ try{ landDongFetch(opt.c10); }catch(e){} return ''; }
+    if(!D) return '';
+    var jb=String(opt.jb), h='';
+    var ymT=function(y){y=String(y||'');return y.length===4?('20'+y.slice(0,2)+'.'+y.slice(2)):'';};
+    var ds=(D.d||[]).filter(function(x){return String(x[0])===jb;});
+    if(ds.length){
+      ds.sort(function(a,b){return String(b[1]).localeCompare(String(a[1]));});
+      h+='<div class="rc-sec"><div class="rc-lab">이 필지 실거래 '+ds.length+'건</div>'
+        +ds.slice(0,6).map(function(x){
+          var py=(+x[3]>0)?Math.round((+x[2])/(+x[3])*3.305785).toLocaleString()+'만/평':'';
+          return '<div class="rc-dl"><span style="color:#6b6355">'+ymT(x[1])
+            +' · '+(x[3]?(x[3]+'㎡('+PY(x[3])+')'):'')+(x[4]?' · '+x[4]:'')+'</span>'
+            +'<b>'+_eok(x[2])+(py?' <span style="color:#8a8071;font-weight:400">'+py+'</span>':'')+'</b></div>';
+        }).join('')
+        +'<div class="rc-note" style="padding:6px 0 0">지도 기간 필터와 무관하게 이 필지에 되짚은 거래입니다.</div></div>';
+    }
+    var ls=(D.l||[]).filter(function(x){return String(x[0])===jb;});
+    if(ls.length){
+      h+='<div class="rc-sec"><div class="rc-lab">지금 나와 있는 매물 '+ls.length+'건</div>'
+        +ls.slice(0,5).map(function(x){
+          var py=(+x[2]>0)?Math.round((+x[1])/(+x[2])*3.305785).toLocaleString()+'만/평':'';
+          return '<div class="rc-dl"><span style="color:#6b6355">'
+            +(x[2]?(x[2]+'㎡('+PY(x[2])+')'):'')+(x[4]?' · '+x[4]:'')+'</span>'
+            +'<b>'+_eok(x[1])+(py?' <span style="color:#8a8071;font-weight:400">'+py+'</span>':'')+'</b></div>';
+        }).join('')
+        +'<div class="rc-note" style="padding:6px 0 0">호가는 협상 전 가격입니다.</div></div>';
+    }
+    return h;
+  }
+
   function _addrMark(lat,lng,label,z,opt){
     if(window._addrMk){try{map.removeLayer(window._addrMk);}catch(e){}}
-    window._addrMk=L.circleMarker([lat,lng],{radius:9,color:'#c0392b',weight:3,fillColor:'#fff',fillOpacity:.9}).addTo(map).bindPopup(label);
+    window._addrMk=L.circleMarker([lat,lng],{radius:9,color:'#c0392b',weight:3,fillColor:'#fff',fillOpacity:.9}).addTo(map);
+    /* 필지에서 온 경우엔 말풍선을 띄우지 않는다 — 지번만 든 흰 상자가 지도를 가린다
+       (2026-08-24 석봉님 캡처). 필지 이름은 카드 머리에 이미 있다. */
+    if(!opt) window._addrMk.bindPopup(label);
     try{map.setView([lat,lng],z||17);}catch(e){}
-    setTimeout(function(){try{window._addrMk.openPopup();}catch(e){}},300);
+    if(!opt) setTimeout(function(){try{window._addrMk.openPopup();}catch(e){}},300);
     var st=document.getElementById('stat');if(st)st.textContent='주소: '+label;
     /* 🔴 카드도 함께 연다(2026-08-22 석봉님 제보 「지번 검색하면 점만 찍히고 카드가 안 뜬다」).
        그 지번에 우리 실거래가 있으면 openPt() 가 단지 카드를 열지만, **없으면 여기로 온다.**
@@ -1948,7 +1997,8 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
        필지로 온 링크는 그 필지가 주인공이다 — 못 찾으면 필지 카드를 연다. */
     var _jbq=null,_c10q=null;
     try{ var _PQ=new URLSearchParams(location.search);
-         _jbq=_PQ.get('jb'); _c10q=_PQ.get('c10'); }catch(e){}
+         _jbq=_PQ.get('jb'); _c10q=_PQ.get('c10');
+         if(_c10q) window._FORCE_C10=_c10q; }catch(e){}
     function pick(){
       var d=(code&&SB.d[code])||[],best=null,bd=1e9;
       /* ⚠️ 주상복합은 **같은 좌표에 아파트와 구분상가가 겹쳐** 있다(2026-08-15 실측:
@@ -2928,7 +2978,14 @@ function landDongFetch(c10){
     .then(function(r){ return r.ok?r.json():null; })
     .then(function(j){ window._LANDD[c10]=j||null;
       clearTimeout(landDongFetch._t);
-      landDongFetch._t=setTimeout(function(){try{renderLandPoly();}catch(e){}},200); })
+      landDongFetch._t=setTimeout(function(){
+        try{ renderLandPoly(); }catch(e){}
+        /* 필지 카드가 열려 있으면 다시 그린다 — 자료가 늦게 오면 첫 카드에 거래가 안 붙는다
+           (2026-08-24). 어느 필지 카드인지는 마지막 인자를 기억해 둔다. */
+        try{ var _rc=document.getElementById('rcard');
+             if(_rc && _rc.classList.contains('open') && showAddrCard._last)
+               showAddrCard.apply(null, showAddrCard._last); }catch(e){}
+      },200); })
     .catch(function(){ window._LANDD[c10]=null; });
 }
 function renderLandPoly(){
@@ -2959,6 +3016,12 @@ function renderLandPoly(){
     var c10=(landFill._code10||{})[pt.dong];
     if(c10) codes[c10]=1;
   });
+  /* 🔴필지 링크(`&c10=`)로 들어왔으면 **그 동은 무조건 그린다**(2026-08-24 석봉님 제보
+     「모바일에서 풍선이 없다」). 위 수집은 「화면 안 지점의 법정동」만 보는데, 모바일은
+     화면이 좁아 그 동의 지점이 화면 밖으로 밀리면 **폴리곤도 풍선도 통째로 사라진다**
+     (실측: 데스크톱 폴리곤 5·풍선 5 / 모바일 0·0). 화면 크기에 따라 있고 없고가
+     갈리면 안 된다. */
+  try{ if(window._FORCE_C10) codes[window._FORCE_C10]=1; }catch(e){}
   for(var c10 in codes){
     if(window._LANDP[c10]===undefined){ landPolyFetch(c10); continue; }
     var m=window._LANDP[c10]; if(!m) continue;
