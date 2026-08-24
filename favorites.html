@@ -188,7 +188,11 @@ h1.pg{font-size:clamp(32px,5vw,54px);letter-spacing:-0.04em;font-weight:800;marg
     }
     list.innerHTML=l.map(function(f,i){
       var id=(f.code||'')+'|'+f.nm;
-      var dt='단지상세.html?code='+encodeURIComponent(f.code||'')+'&nm='+encodeURIComponent(f.nm)+'&dong='+encodeURIComponent(f.dong||'');
+      /* 🔴 code 가 없는 옛 저장분이 있다(초기 관심단지). 빈 `code=` 를 실어 보내면
+         상세가 「단지를 찾지 못했습니다」로 떨어졌다(2026-08-24 석봉님 제보).
+         비면 아예 빼서 상세가 인덱스로 되찾게 한다(`_fixCode`). */
+      var dt='단지상세.html?'+(f.code?('code='+encodeURIComponent(f.code)+'&'):'')
+        +'nm='+encodeURIComponent(f.nm)+'&dong='+encodeURIComponent(f.dong||'');
       var x=(extra||{})[id]||{};
       var badge=x.newN?'<span style="margin-left:7px;font-size:10.5px;font-weight:800;color:#fff;background:#c0392b;border-radius:100px;padding:2px 8px;vertical-align:2px">신규 거래 +'+x.newN+'</span>':'';
       var latest=x.latest?(' · 최근 '+x.latest):'';
