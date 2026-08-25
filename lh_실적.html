@@ -281,8 +281,9 @@ tr:last-child td{border-bottom:0}
         return '<table><tr><th>구분</th><th style="text-align:right">호수</th><th style="text-align:right">비중</th></tr>'
           +parts.map(function(x){
             var pct=den>0?Math.round(x[1]/den*100):0;
+            /* 1호짜리가 「0%」로 찍히면 없는 것처럼 보인다(마곡동 760-1 의 4년 이상 1호가 그랬다) */
             return '<tr><td>'+e(x[0])+'</td><td class="n">'+x[1]+'호</td><td class="n">'
-              +(x[0]==='매입년도 미상'?'-':pct+'%')+'</td></tr>';}).join('')+'</table>';
+              +(x[0]==='매입년도 미상'?'-':(pct||'<1')+'%')+'</td></tr>';}).join('')+'</table>';
       })()
       /* ⚠️ 한 종류뿐이라 표를 안 그렸으면 「비중」을 설명하지 않는다 — 없는 것을 설명하는 꼴이다 */
       +'<div class="note">'
@@ -294,6 +295,56 @@ tr:last-child td{border-bottom:0}
         +ys.slice().reverse().map(function(y){
           return '<tr><td>'+e(y)+'년</td><td class="n">'+r.y[y]+'호</td></tr>';}).join('')
         +'</table>'):'')
+
+      /* ── 공급 유형 (2026-08-25 신설) ────────────────────────────────
+         석봉님 물음 「안 쓰고 있는 자료를 왜 안 쓰는 거야?」에 대한 답의 절반이다.
+         `t` 는 **전 자리 100% 채워져 있는데** 화면에 한 번도 안 나오고 있었다.
+         LH 가 그 자리를 무슨 유형으로 돌리는지(청년·신혼·든든전세·고령자…)는
+         매입약정을 검토하는 쪽에 「어떤 평형·구성을 지어야 하나」로 바로 이어진다.
+         ⚠️전국 집계는 기존주택 109,734 · 청년 27,978 · 신혼Ⅰ 23,516 … 8종이다(2026-08-25 실측).
+         ⚠️한 종류뿐이면 표를 만들지 않는다 — 매입 형태와 같은 원칙. */
+      +(function(){
+        var ts=Object.keys(r.t||{}).map(function(k){return [k,r.t[k]];})
+                .filter(function(x){return x[1];}).sort(function(a,b){return b[1]-a[1];});
+        if(!ts.length)return '';
+        var tot=ts.reduce(function(a,x){return a+x[1];},0);
+        if(ts.length===1)
+          return '<h2>공급 유형</h2><div class="note" style="margin:0">이 자리 '
+            +tot.toLocaleString()+'호는 <b>모두 '+e(ts[0][0])+'</b>으로 공급됩니다.</div>';
+        return '<h2>공급 유형</h2>'
+          +'<table><tr><th>유형</th><th style="text-align:right">호수</th>'
+          +'<th style="text-align:right">비중</th></tr>'
+          +ts.map(function(x){
+            return '<tr><td>'+e(x[0])+'</td><td class="n">'+x[1].toLocaleString()+'호</td>'
+              /* 1호짜리가 「0%」로 찍히면 없는 것처럼 보인다 — 반올림해서 0 이면 「<1%」로 */
+              +'<td class="n">'+(Math.round(x[1]/tot*100)||'<1')+'%</td></tr>';}).join('')
+          +'</table>';
+      })()
+
+      /* ── 건물 (2026-08-25 신설) ─────────────────────────────────────
+         층수·방 수는 99% 넘게 채워져 있고, 주차·승강기는 절반 아래다(실측 46.3% · 27.1%).
+         🔴**빈 것을 「0」이나 「없음」으로 적지 않는다** — 주차 0대인 자리는 자료상 한 곳도
+            없어서(전부 미기재), 없는 것을 「없음」으로 쓰면 사실이 아닌 말을 하게 된다.
+            값이 있을 때만 줄을 만든다. */
+      +(function(){
+        var L=[];
+        if(r.fl)L.push(dl('층수', e(r.fl)+'층'));
+        if(r.rm)L.push(dl('방 수', e(r.rm)+'개', '호당'));
+        /* ⚠️전용면적은 위 KPI 넷째 칸이 이미 크게 보여 준다 — 같은 화면에 두 번 적지 않는다.
+           (`ar` 이 없어 KPI 가 순위로 대체된 자리는 어차피 적을 값이 없다) */
+        /* ⚠️준공 대비 몇 해 만에 샀나는 **가장 최근 매입이 아니라 첫 매입**으로 잰다.
+           마곡동 760-1 이 실제 사례다 — 2022년에 241호를 사고 2025년에 1호를 더 샀는데,
+           최근값으로 재면 「매입까지 3년」이 되어 신축 매입(같은 해)을 늦은 매입처럼 만든다. */
+        var first=ys.length?ys[0]:'';
+        if(r.by)L.push(dl('준공', e(r.by)+'년',
+                          (first&&+first>+r.by)?('첫 매입까지 '+(+first-+r.by)+'년'):''));
+        if(r.pk)L.push(dl('주차', r.pk.toLocaleString()+'대'));
+        if(r.ev)L.push(dl('승강기', e(r.ev)+'대'));
+        if(L.length<2)return '';
+        return '<h2>건물</h2><div class="card">'+L.join('')+'</div>'
+          +'<div class="note">주차·승강기는 원본에 적힌 자리에만 나옵니다'
+          +'(전국 매입 자리의 46%·27%). <b>빈 것은 「없음」이 아니라 미기재</b>입니다.</div>';
+      })()
 
       +'<h2>이 법정동 전체</h2>'
       +'<div class="kpi">'
