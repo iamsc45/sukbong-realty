@@ -304,24 +304,44 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
          🔑 이중 계상이 아니다 — 토지 구간은 「건물값을 뺀 땅값」으로 만든 것이라(잔여법),
             여기에 건물값을 더하면 원래의 물건 전체로 돌아온다. 앞뒤가 맞물린다.
          ⚠️ 용도·구조별 단가 차이는 반영하지 못한다(그래서 「개략」이라고 밝힌다). */
-      var bTot=0,bYear=0,bNote='';
+      var bTot=0,bYear=0,bNote='',bStruct='';
       var _t=(d.building&&d.building.title)||[],_r=(d.building&&d.building.recap)||[];
       if(_r.length&&+_r[0].totArea)bTot=+_r[0].totArea;
       else _t.forEach(function(t){if(+t.totArea)bTot+=+t.totArea;});
       _t.forEach(function(t){var ap=String(t.useAprDay||'');
-        if(ap.length===8){var y=+ap.slice(0,4);if(!bYear||y>bYear)bYear=y;}});
+        if(ap.length===8){var y=+ap.slice(0,4);if(!bYear||y>bYear)bYear=y;}
+        if(!bStruct)bStruct=(t.etcStrct||'').trim()||t.strctCdNm||'';});
+      if(!bStruct&&_r.length)bStruct=(_r[0].strctCdNm||'');
       /* ⚠️ hp(개별주택가격)는 이 블록보다 «아래»에서 정의된다 — 직접 읽는다(호이스팅으로 undefined). */
       if(!bTot){
         var _hp=(d.houseprice||[]).slice().sort(function(a,b){
           return String(b.stdrYear||'').localeCompare(String(a.stdrYear||''));})[0];
         if(_hp&&+_hp.buldAllTotAr)bTot=+_hp.buldAllTotAr;
       }
-      var bVal=0;
+      /* 🔴 2026-08-25 석봉님 지적 후 전면 교체 — 그 전에는 전국·전 용도에 100만원/㎡ 하나를
+         썼다. 출처인 전포동 평가서를 다시 열어 보니 그 값은 사례마다 달랐고(100만·80만),
+         애초에 **「토지단가를 뽑으려고 총액에서 덜어낼 대략치」**였다. 건물 시세가 아니다.
+         이제 **행안부 건물신축가격기준액(2026년 64~86만원/㎡)** 을 구조별로 쓰고,
+         정액 감가에 **최종잔가율 하한 20%** 를 둔다. 45년을 넘긴 건물은 금액을 적지 않는다.
+         ⚠️구조·용도별 세부 지수는 고시 원문에만 있어 아직 3등급 잠정표다(`건물재조달_단가.py`). */
+      var LIFE=45, FLOOR=0.20;
+      var UNIT=function(s){s=(s||'').replace(/\s/g,'');
+        if(/철근콘크리트|철골철근|철골콘크리트|라멘|SRC|RC/.test(s))return 860000;
+        if(/철골|경량|스틸|PC|프리캐스트/.test(s))return 750000;
+        if(/조적|벽돌|블록|목|흙|석|슬레이트|컨테이너|천막/.test(s))return 640000;
+        return 750000;};
+      var bVal=0, bOld=false;
       if(bTot&&bYear){
-        var life=45,used=Math.max(new Date().getFullYear()-bYear,0);
-        var rem=Math.max(life-used,0)/life;
-        bVal=1000000*rem*bTot;
-        bNote='연면적 '+m2py(bTot)+' · '+bYear+'년 준공(잔존 '+Math.round(rem*100)+'%)';
+        var used=Math.max(new Date().getFullYear()-bYear,0);
+        if(used>LIFE){
+          bOld=true;
+          bNote='연면적 '+m2py(bTot)+' · '+bYear+'년 준공('+used+'년차)';
+        }else{
+          var rem=Math.max((LIFE-used)/LIFE, FLOOR), u=UNIT(bStruct);
+          bVal=u*rem*bTot;
+          bNote='연면적 '+m2py(bTot)+' · '+bYear+'년 준공(잔존 '+Math.round(rem*100)+'%)'
+                +(bStruct?' · '+esc(bStruct):'')+' · 재조달 '+Math.round(u/10000)+'만원/㎡';
+        }
       }else if(bTot){
         bNote='연면적 '+m2py(bTot)+' · 준공년도 미상이라 건물값을 매기지 않았습니다';
       }
@@ -335,8 +355,15 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
         +(mid?' · 가운데값 '+wonPy(mid):'')+' · 대지 '+m2py(area)+'</div></div></div>');
       if(bVal){
         h.push('<div class="row"><div class="k">건물</div><div class="v"><b>약 '+eok(bVal)+'</b>'
+          +'<div style="font-size:13px;color:#5A6478;margin-top:2px">'+bNote+'</div></div></div>');
+      }else if(bOld){
+        /* 45년 초과 — 숫자를 적지 않는다. 원가법으로는 감가가 끝났고, 실무에서도
+           이런 건물은 토지값 위주로 본다. 억지 금액을 적으면 오히려 오해를 만든다. */
+        h.push('<div class="row"><div class="k">건물</div><div class="v">'
+          +'<b>감가 완료 · 토지값 위주로 보는 구간</b>'
           +'<div style="font-size:13px;color:#5A6478;margin-top:2px">'+bNote
-          +' · 재조달 100만원/㎡ 기준 개략</div></div></div>');
+          +' · 원가법 기준 내용연수(45년)를 넘겨 금액을 적지 않습니다. '
+          +'임대가 나오는 건물이면 실제 가치는 이보다 큽니다.</div></div></div>');
       }else if(bTot){
         h.push('<div class="row"><div class="k">건물</div><div class="v">'+bNote+'</div></div>');
       }else{
@@ -358,8 +385,10 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
         +'<div id="chkOut"></div></div>');
       window.__band={lo:lo,mid:mid,hi:hi,area:area,bVal:bVal,n:(b?(b[3]+b[4]):(d.estimate?d.estimate.n:0))};
       h.push('<div class="note" style="margin-top:8px">토지는 같은 동 거래의 가운데 절반(25~75%) 구간이고, '
-        +'건물은 표준 원가(재조달 100만원/㎡ · 내용연수 45년)로 감가한 <b>개략값</b>입니다. '
-        +'용도·구조·마감에 따라 달라지니 상세는 아래 <b>개별주택가격 · 건축물대장</b>에서 확인해 주세요. '
+        +'건물은 <b>행정안전부 건물신축가격기준액</b>(2026년)을 구조별로 적용해 내용연수 45년으로 '
+        +'감가한 <b>개략값</b>입니다. 세금 산정용 기준이라 실제 신축 공사비보다 <b>보수적으로</b> 잡힙니다. '
+        +'오래된 건물일수록 원가법 특성상 건물 몫이 작게 나오니, 임대수익이 있는 물건은 실제 가치가 '
+        +'이보다 클 수 있습니다. 상세는 아래 <b>개별주택가격 · 건축물대장</b>에서 확인해 주세요. '
         +'확정이 아니라 참고 구간이며, 감정평가가 아닙니다.</div></div>');
     })();
 
@@ -545,14 +574,17 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
       else { pos='가운데 절반 구간 안';
         desc='같은 동 거래의 절반이 이 범위 안에 있습니다.'; }
       var rel=B.mid?Math.round(unit/B.mid*100):0;
+      /* 2026-08-25 석봉님 지시로 두 곳을 고쳤다.
+         ①「넣으신 값」 칸 제거 — 바로 위에 입력 상자가 있어 무엇을 넣었는지 이미 보인다.
+         ②「좋은 것도 틀린 것도 아니다」(2026-08-17 지시) → **근거를 밝히는 문장으로 교체.**
+            같은 뜻이되 우리 방법을 설명하는 쪽이 낫다는 판단. */
       out.innerHTML='<div class="card" style="margin:10px 0 0;background:#EEF3FB">'
-        +'<div class="row"><div class="k">넣으신 값</div><div class="v"><b>'+pos+'</b>'
-        +(rel?'<div style="font-size:13px;color:#5A6478;margin-top:2px">가운데값의 '+rel+'% 수준'
+        +'<div class="v big" style="font-size:19px;line-height:1.4">'+pos+'</div>'
+        +(rel?'<div style="font-size:13px;color:#5A6478;margin-top:3px">가운데값의 '+rel+'% 수준'
           +(B.bVal?' · 건물 개략값을 뺀 땅값 기준':'')+' · 평당 '+wonPy(unit)+'</div>':'')
-        +'</div></div>'
-        +'<div class="note" style="margin-top:6px">'+desc
-        +' <b>구간 안이라고 좋은 것도, 밖이라고 틀린 것도 아닙니다.</b> 도로·형상·규제·임차 상황에 따라 '
-        +'같은 값도 뜻이 달라집니다. 사례 '+comma(B.n)+'건에서 본 위치일 뿐입니다.</div></div>';
+        +'<div class="note" style="margin-top:8px">'+desc
+        +' 인근 시세 분석 결과에 저희 담보가치 평가 기준을 적용한 값입니다. '
+        +'도로·형상·규제·임차 상황에 따라 같은 값도 뜻이 달라집니다. 사례 '+comma(B.n)+'건 기준입니다.</div></div>';
     }
     btn.addEventListener('click',run);
     inp.addEventListener('keydown',function(e){if(e.key==='Enter')run();});
