@@ -138,7 +138,7 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
 <script defer src="assets/sb_tabbar.js?v=10"></script>
 <script defer src="assets/sb_feedback.js?v=4"></script>
 <script src="data/land_bjd.js?v=2"></script>
-<script src="data/land_band.js?v=2"></script>
+<script src="data/land_band.js?v=3"></script>
 <script>
 (function(){
   var FN='https://bwgoufxonqamglbqsife.supabase.co/functions/v1/land-lookup';
@@ -279,6 +279,23 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
         for(var _i=0;_i<AB.length;_i++){ if(area>=AB[_i][0]&&area<AB[_i][1]){bi=_i;break;} }
         if(bi>=0)bA=window.LANDBANDA[_c10][String(bi)]||null;
       }
+      /* 🔴 물건 «유형»이 면적보다 중요하다(2026-08-25 실측) — 같은 동에서도 주택과 상가는
+         다른 시장이라 평당 2.2배(신월동)·전국 4배까지 갈린다. 섞어 쓰면 주택 담보를 상가
+         단가로 재게 되어 **체계적으로 높게** 잡힌다(사후 검산 편향 +16% → 유형을 가르면 +3%).
+         우선순위: 유형 > 면적 > 동 전체. */
+      var TL={H:'단독·다가구',C:'상가·업무용',F:'공장·창고',L:'빈 땅'};
+      var _pu='', _bt=(d.building&&d.building.title)||[];
+      _bt.forEach(function(t){ if(!_pu)_pu=(t.mainPurpsCdNm||''); });
+      var _use=(ch&&ch.ladUseSittnNm)||'';
+      var kind='';
+      if(_pu||_use){
+        var s=_pu+' '+_use;
+        if(/공장|창고|물류/.test(s))kind='F';
+        else if(/주택|아파트|연립|다세대|주거/.test(s))kind='H';
+        else if(/근린|판매|업무|숙박|위락|사무|상업/.test(s))kind='C';
+      }
+      if(!kind&&!_bt.length)kind='L';                 /* 건물이 없으면 빈 땅 */
+      var bT=(kind&&window.LANDBANDT&&_c10&&window.LANDBANDT[_c10])?window.LANDBANDT[_c10][kind]:null;
       var lo,mid,hi,src,note,gradeTxt;
       if(b){
         lo=b[0];mid=b[1];hi=b[2];src='실거래';usedBand=true;
@@ -287,7 +304,11 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
         if(b[4])parts.push('건물 있는 필지에서 되짚은 땅값 '+comma(b[4])+'건');
         note=parts.join(' · ')+' (같은 동) · 오늘 시점으로 보정';
         gradeTxt=(b[5]===2?'높음 · 서로 다른 두 방법이 같은 구간':'보통 · 한 가지 방법');
-        if(bA){          /* 규모가 비슷한 사례로 좁혀 쓴다 */
+        if(bT){          /* ①같은 «유형»의 사례 — 가장 정확하다 */
+          lo=bT[0];mid=bT[1];hi=bT[2];
+          note='<b>'+TL[kind]+'</b> 같은 동 사례 '+comma(bT[3])+'건 · 오늘 시점으로 보정';
+          gradeTxt=(b[5]===2?'높음':'보통')+' · 같은 종류끼리';
+        }else if(bA){    /* ②유형 표본이 없으면 규모가 비슷한 사례로 */
           lo=bA[0];mid=bA[1];hi=bA[2];
           note='<b>'+ABL[bi]+'</b> 규모의 같은 동 사례 '+comma(bA[3])+'건 · 오늘 시점으로 보정';
           gradeTxt=(b[5]===2?'높음':'보통')+' · 규모까지 맞춤';
