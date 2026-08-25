@@ -313,6 +313,13 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
           note='<b>'+ABL[bi]+'</b> 규모의 같은 동 사례 '+comma(bA[3])+'건 · 오늘 시점으로 보정';
           gradeTxt=(b[5]===2?'높음':'보통')+' · 규모까지 맞춤';
         }
+        /* 🔴 빈 땅인데 빈 땅 사례가 없어 건물지 사례로 폴백된 경우(2026-08-25 사후검산 발견) —
+           건물지 단가가 나대지보다 높아 **위로 치우친다.** 숨기지 말고 경고를 단다.
+           (검산에서 이 조합은 채점 자체를 제외할 만큼 성질이 다르다) */
+        if(kind==='L'&&!bT){
+          gradeTxt='낮음 · 빈 땅 사례가 없어 건물 있는 필지 사례로 근사';
+          note+=' · <b>실제 나대지 시세는 이보다 낮을 수 있습니다</b>';
+        }
       }else if(d.estimate){
         lo=d.estimate.unit_lo;mid=0;hi=d.estimate.unit_hi;src='공시지가 배율';
         note=esc(d.estimate.scope)+' 실거래 '+comma(d.estimate.n)+'건 · 공시지가의 '+d.estimate.lo+'~'+d.estimate.hi+'배';
