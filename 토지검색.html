@@ -369,11 +369,14 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
          정액 감가에 **최종잔가율 하한 20%** 를 둔다. 45년을 넘긴 건물은 금액을 적지 않는다.
          ⚠️구조·용도별 세부 지수는 고시 원문에만 있어 아직 3등급 잠정표다(`건물재조달_단가.py`). */
       var LIFE=45, FLOOR=0.20;
+      /* ✅ 2026-08-25 고시 원문 확보(석봉님 다운로드) — 축이 구조가 아니라 «용도» 6종이었다.
+         행안부고시 제2025-82호 [별표] 그대로: 주거·상업·문화복지 86만 · 공공 85만 ·
+         공업 84만 · 농수산 64만 (원/㎡). 미상은 최빈값 86만. 원본은 _원본자료/ 보관. */
       var UNIT=function(s){s=(s||'').replace(/\s/g,'');
-        if(/철근콘크리트|철골철근|철골콘크리트|라멘|SRC|RC/.test(s))return 860000;
-        if(/철골|경량|스틸|PC|프리캐스트/.test(s))return 750000;
-        if(/조적|벽돌|블록|목|흙|석|슬레이트|컨테이너|천막/.test(s))return 640000;
-        return 750000;};
+        if(/공장|제조|창고|물류|위험물|자동차관련/.test(s))return 840000;
+        if(/동물|식물|축사|온실|버섯|양어|농수산/.test(s))return 640000;
+        if(/공공|교정|군사|방송통신|발전/.test(s))return 850000;
+        return 860000;};
       var bVal=0, bOld=false;
       if(bTot&&bYear){
         var used=Math.max(new Date().getFullYear()-bYear,0);
@@ -381,7 +384,7 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
           bOld=true;
           bNote='연면적 '+m2py(bTot)+' · '+bYear+'년 준공('+used+'년차)';
         }else{
-          var rem=Math.max((LIFE-used)/LIFE, FLOOR), u=UNIT(bStruct);
+          var rem=Math.max((LIFE-used)/LIFE, FLOOR), u=UNIT(_pu||_use);   /* 용도 기준(고시 축) */
           bVal=u*rem*bTot;
           bNote='연면적 '+m2py(bTot)+' · '+bYear+'년 준공(잔존 '+Math.round(rem*100)+'%)'
                 +(bStruct?' · '+esc(bStruct):'')+' · 재조달 '+Math.round(u/10000)+'만원/㎡';
@@ -438,7 +441,7 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
         +'<div id="chkOut"></div></div>');
       window.__band={lo:lo,mid:mid,hi:hi,area:area,bVal:bVal,n:(b?(b[3]+b[4]):(d.estimate?d.estimate.n:0))};
       h.push('<div class="note" style="margin-top:8px">토지는 같은 동 거래의 가운데 절반(25~75%) 구간이고, '
-        +'건물은 <b>행정안전부 건물신축가격기준액</b>(2026년)을 구조별로 적용해 내용연수 45년으로 '
+        +'건물은 <b>행정안전부 건물신축가격기준액</b>(2026년 고시 · 용도별)을 적용해 내용연수 45년으로 '
         +'감가한 <b>개략값</b>입니다. 세금 산정용 기준이라 실제 신축 공사비보다 <b>보수적으로</b> 잡힙니다. '
         +'오래된 건물일수록 원가법 특성상 건물 몫이 작게 나오니, 임대수익이 있는 물건은 실제 가치가 '
         +'이보다 클 수 있습니다. 상세는 아래 <b>개별주택가격 · 건축물대장</b>에서 확인해 주세요. '
