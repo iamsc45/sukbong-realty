@@ -321,7 +321,13 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
           note+=' · <b>실제 나대지 시세는 이보다 낮을 수 있습니다</b>';
         }
       }else if(d.estimate){
-        lo=d.estimate.unit_lo;mid=0;hi=d.estimate.unit_hi;src='공시지가 배율';
+        /* 🔴🔴 2026-08-26 긴급 수정 — 석봉님이 실무 중 겪은 사고.
+           서버의 참고 시세 구간(estimate)에는 중위값이 없어 `mid=0` 으로 뒀는데,
+           8/25 에 대표값을 «가운데값»으로 바꾸면서 그 0 이 그대로 곱해졌다.
+             중구 예장동 → 토지 «0.0억»(폭은 20~33억) · 합계가 건물값 8.4억으로 표시
+           즉 밴드가 있는 동(검증에 쓴 신월·마곡)에서는 멀쩡하고 **폴백 경로에서만** 터진다.
+           구간의 가운데를 중위 대신 쓴다(정확한 중위가 아니므로 문구도 「구간 가운데」로). */
+        lo=d.estimate.unit_lo;hi=d.estimate.unit_hi;mid=(lo+hi)/2;src='공시지가 배율';
         note=esc(d.estimate.scope)+' 실거래 '+comma(d.estimate.n)+'건 · 공시지가의 '+d.estimate.lo+'~'+d.estimate.hi+'배';
         gradeTxt=esc(d.estimate.grade);
       }
@@ -400,7 +406,8 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
       h.push('<div class="v big" style="font-size:32px;line-height:1.25;margin:4px 0 0">'
         +eok(midTot)+'</div>'
         +'<div style="font-size:13.5px;color:#5A6478;margin:2px 0 8px">'+wonAbs(midTot)
-        +(bVal?' (토지+건물)':' (토지)')+' · 같은 동 사례의 <b>가운데값</b> 기준</div>'
+        +(bVal?' (토지+건물)':' (토지)')
+        +' · '+(usedBand?'같은 동 사례의 <b>가운데값</b> 기준':'참고 구간의 <b>가운데</b> 기준')+'</div>'
         +'<div style="font-size:14px;color:#5A6478;padding:7px 0;border-top:1px solid #E3E8F0;'
         +'border-bottom:1px solid #E3E8F0;margin-bottom:10px">폭 '
         +eok(lo*area+bVal)+' ~ '+eok(hi*area+bVal)+' <span style="font-size:12.5px">(가운데 절반이 드는 범위'
