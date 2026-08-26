@@ -712,14 +712,23 @@ tr:last-child td{border-bottom:0}
   }
 
   /* ── 탭 ── */
+  /* 🔴 2026-08-26 동선점검에서 잡은 것 — 첫 화면에서 호가 전용 행 4개(물건종류·거래유형·
+     법정동·기간)가 실거래 탭과 함께 보였다. setTab() 이 이 숨김을 하는데 **초기 진입에는
+     한 번도 불리지 않아서**(var tab='tx' 로 값만 맞춰 놓았다) 탭을 한 번 눌러야 정리됐다.
+     그래서 숨김을 함수로 떼어 초기화에서도 부른다. 초기화에서 setTab() 을 그대로 부르면
+     load() 가 한 번 더 돌므로 화면 정리만 하는 이 함수를 쓴다. */
+  function applyOnly() {
+    document.querySelectorAll('[data-only]').forEach(function (el) {
+      el.style.display = (el.getAttribute('data-only') === tab) ? '' : 'none';
+    });
+  }
+
   function setTab(t) {
     tab = t;
     document.querySelectorAll('.tabs button').forEach(function (b) {
       b.classList.toggle('on', b.dataset.t === t);
     });
-    document.querySelectorAll('[data-only]').forEach(function (el) {
-      el.style.display = (el.getAttribute('data-only') === t) ? '' : 'none';
-    });
+    applyOnly();
     if (t === 'ho') hoChips();
     notes(); load();
   }
@@ -754,7 +763,7 @@ tr:last-child td{border-bottom:0}
       b.style.opacity = 1; b.style.pointerEvents = '';
     });
   }
-  fillPer(); fillSido(); chips(); perUI(); notes();
+  fillPer(); fillSido(); chips(); applyOnly(); perUI(); notes();
   $('sido').addEventListener('change', fillSgg);
   $('sgg').addEventListener('change', load);
   $('per').addEventListener('change', function () { perUI(); notes(); load(); });
