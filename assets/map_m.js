@@ -163,9 +163,14 @@
     else if(window.curMode==='lh'){st.lh=true;st.trade=!!window.lhShowTrade;paint();}
 
     /* ── 우측 보조 버튼 ─────────────────────────────────────── */
-    var TL=document.createElement('div'); TL.id='mtools';
+    var TL=document.createElement('div'); TL.id='mtools'; TL.className='fold';
+    /* 🔴 2026-08-26 석봉님 「지도가 너무 조잡하다」 — 390px 화면에서 좌 4개 + 우 4개가
+       가로 98px(전체의 25%)를 먹고 있었다. 우측 도구는 늘 쓰는 것이 아니라 **접어 둔다.**
+       기본은 「도구」 하나, 누르면 펼쳐지고 지도를 움직이면 다시 접힌다.
+       ⚠️좌측 상품(실거래·재개발·LH·노후)은 **핵심 동선이라 접지 않는다.** */
     TL.innerHTML=
-      '<button type="button" data-t="sat"><i class="ti ti-satellite" aria-hidden="true"></i>위성</button>'
+      '<button type="button" class="mt-more" data-t="more"><i class="ti ti-dots" aria-hidden="true"></i>도구</button>'
+     +'<button type="button" data-t="sat"><i class="ti ti-satellite" aria-hidden="true"></i>위성</button>'
      +'<button type="button" data-t="cad"><i class="ti ti-vector-triangle" aria-hidden="true"></i>지적도</button>'
      +'<button type="button" data-t="nm"><i class="ti ti-tag" aria-hidden="true"></i>단지명</button>'
      +'<button type="button" data-t="loc"><i class="ti ti-current-location" aria-hidden="true"></i>현위치</button>';
@@ -199,6 +204,7 @@
     TL.addEventListener('click',function(e){
       var b=e.target.closest('button'); if(!b)return;
       var t=b.dataset.t, T=window._SBTOOL;
+      if(t==='more'){ TL.classList.toggle('fold'); return; }
       if(t==='sat'||t==='cad'||t==='nm'){
         if(!T)return;
         b.classList.toggle('on', t==='sat'?T.sat():t==='cad'?T.cad():T.names());
@@ -208,6 +214,15 @@
         T.locate(function(){b.classList.remove('on');}); return; }
 
     });
+    /* 켜 둔 도구가 있으면 접혀 있어도 알 수 있게 「도구」에 표시를 남긴다 */
+    function markMore(){
+      var on=!!TL.querySelector('button[data-t]:not(.mt-more).on');
+      var m=TL.querySelector('.mt-more'); if(m)m.classList.toggle('on',on);
+    }
+    TL.addEventListener('click',function(){ setTimeout(markMore,0); });
+    /* 지도를 만지면 다시 접는다 — 펼친 채로 두면 원래 문제로 돌아간다 */
+    try{ map.on('movestart zoomstart click',function(){
+      if(!TL.classList.contains('fold')){ TL.classList.add('fold'); markMore(); } }); }catch(e){}
 
     /* ── 목록 시트 3단계(접힘 → 반 → 전체) ──────────────────── */
     var sh=document.getElementById('v2sheet');

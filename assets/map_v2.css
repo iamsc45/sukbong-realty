@@ -532,6 +532,13 @@ body.mmap #map .rfc.trade,body.mmap #map .rfc.lhtrade{display:none!important}
 #mtools button i{display:block;font-size:16px;margin-bottom:2px;opacity:.6}
 #mtools button.on{background:#12203A;color:#fff;border-color:transparent}
 #mtools button.on i{opacity:1}
+/* 🔴 우측 도구 접기(2026-08-26 석봉님 「지도가 조잡하다」).
+   390px 에서 좌 4개 + 우 4개가 가로 98px = 화면의 25% 를 먹고 있었다.
+   PC 는 자리가 넉넉하니 그대로 펼쳐 두고, **모바일에서만** 「도구」 하나로 접는다.
+   ⚠️좌측 상품(#mlayers)은 접지 않는다 — 상품 전환은 이 지도의 핵심 동선이다. */
+#mtools .mt-more{display:none}
+body.mmap #mtools .mt-more{display:block}
+body.mmap #mtools.fold button:not(.mt-more){display:none}
 
 /* 지도 우상단 줌 버튼이 보조 버튼과 겹치지 않게 아래로 */
 body.mmap .leaflet-top.leaflet-right{top:auto;bottom:96px}

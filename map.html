@@ -20,7 +20,7 @@
 <link rel="stylesheet" href="assets/site.css">
 <!-- 새 지도 디자인(2026-08-10 석봉님 확정): 네이버형 좌측 목록 + 흰 말풍선 마커.
      로직은 이 파일 그대로 두고 겉모습만 아래 두 파일이 얹는다. -->
-<link rel="stylesheet" href="assets/map_v2.css?v=16">
+<link rel="stylesheet" href="assets/map_v2.css?v=17">
 <style>
   html,body{height:100%}
   #wrap{display:flex;flex-direction:column;height:100%}
@@ -3106,8 +3106,15 @@ function landPolyTags(){
   var ymf=function(ym){ym=String(ym||'');return ym.length===4?(ym.slice(0,2)+'-'+ym.slice(2)):'';};
   var n=0;
   landTagLayer._need={};
+  /* 🔴 풍선이 서로 겹쳐 아무것도 안 읽히던 것을 막는다(2026-08-26 석봉님 「너무 조잡하다」).
+     용산 원효로에서 「584.9억」 위에 「48.1억」이 그대로 포개져 둘 다 못 읽었다.
+     ⚠️폴리곤 순서대로 놓으면 **아무 필지나 먼저 자리를 차지한다.** 후보를 모아
+       **금액이 큰 것부터** 놓고, 이미 놓인 풍선과 겹치면 그 필지는 풍선을 만들지 않는다
+       (폴리곤은 그대로 남아 있고 누르면 카드가 열리므로 정보가 사라지지는 않는다).
+     ⚠️화면 밖 폴리곤은 아예 후보에서 뺀다 — 그려 봐야 안 보이고 자리만 차지한다. */
+  var cand=[], placed=[], vb=null;
+  try{ vb=map.getBounds().pad(0.05); }catch(e){}
   landPolyLayer.eachLayer(function(pg){
-    if(n>=120) return;
     var jb=pg._jb, c10=pg._c10; if(!jb||!c10) return;
     if(paired[c10+'|'+jb]) return;
     /* 거래·매물 값은 land_dong 에 있다 — 폴리곤 동의 것이 아직 없으면 받아 온다 */
@@ -3116,23 +3123,39 @@ function landPolyTags(){
     if(D===undefined){ landTagLayer._need[c10]=1; return; }
     if(!D) return;
     var g=(window._LANDP[c10][jb]||[])[0]||'';
-    var html='';
+    var html='', sortv=0;              /* sortv = 겹칠 때 누가 남을지 정하는 값(금액) */
     if(g==='L'){
       var ls=(D.l||[]).filter(function(x){return x[0]===jb;});
       if(!ls.length) return;              /* 매물이 내려갔으면 풍선도 없다 */
       ls.sort(function(a,b){return (+b[1]||0)-(+a[1]||0);});
+      sortv=+ls[0][1]||0;
       html='<div class="lp-tag ho">'+_eok(ls[0][1])
         +'<span class="s">호가'+(ls.length>1?' 외 '+(ls.length-1)+'건':'')+'</span></div>';
     }else{
       var ds=(D.d||[]).filter(function(x){return x[0]===jb;});
       if(!ds.length) return;
       ds.sort(function(a,b){return String(b[1]).localeCompare(String(a[1]));});
+      sortv=+ds[0][2]||0;
       html='<div class="lp-tag">'+_eok(ds[0][2])
         +'<span class="s">'+ymf(ds[0][1])+' 계약'+(ds.length>1?' 외 '+(ds.length-1)+'건':'')+'</span></div>';
     }
     var c=pg.getBounds().getCenter();
-    L.marker(c,{icon:L.divIcon({className:'',html:html,iconSize:[0,0],iconAnchor:[24,12]})})
-      .on('click',function(){ try{ landPolyClick(jb,c10,{latlng:c}); }catch(e){} })
+    if(vb && !vb.contains(c)) return;          /* 화면 밖은 후보에서 뺀다 */
+    cand.push({c:c, html:html, jb:jb, c10:c10, v:sortv});
+  });
+  /* 금액이 큰 것부터 자리를 잡는다 — 겹치면 작은 쪽이 물러난다 */
+  cand.sort(function(a,b){ return (b.v||0)-(a.v||0); });
+  var HX=46, HY=17;                            /* 풍선 반폭·반높이(대략) */
+  cand.forEach(function(o){
+    if(n>=120) return;
+    var p; try{ p=map.latLngToContainerPoint(o.c); }catch(e){ return; }
+    for(var i=0;i<placed.length;i++){
+      if(Math.abs(p.x-placed[i].x)<HX*2 && Math.abs(p.y-placed[i].y)<HY*2) return;
+    }
+    placed.push(p);
+    L.marker(o.c,{icon:L.divIcon({className:'',html:o.html,iconSize:[0,0],iconAnchor:[24,12]})})
+      .on('click',(function(jb,c10,c){ return function(){
+        try{ landPolyClick(jb,c10,{latlng:c}); }catch(e){} }; })(o.jb,o.c10,o.c))
       .addTo(landTagLayer);
     n++;
   });
@@ -4026,7 +4049,7 @@ render();
 <script src="assets/map_v2_poi.js?v=2"></script>
 <script src="assets/map_v2_dong.js?v=2"></script>
 <script src="assets/map_old.js?v=2"></script>
-<script src="assets/map_m.js?v=9"></script>
+<script src="assets/map_m.js?v=10"></script>
 <script src="assets/map_bar.js?v=3"></script>
 <script src="assets/sb_tabbar.js?v=10"></script>
 <script defer src="assets/sb_feedback.js?v=4"></script>
