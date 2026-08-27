@@ -120,6 +120,7 @@
 <div class="src">자료: 국토교통부 실거래가(해제 건 제외) · 석봉 부동산 정보방 · 참고용, 법적효력 없음. 세대수·시공사·교통·학교 등 단지 정보는 순차 추가됩니다.</div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets/data_base.js?v=1"></script>
 <script src="assets/sb_auth.js?v=8"></script>
 <script src="data/jeongbi_seoul.js"></script>
 <!-- 상가 층별 임대 호가 집계(2026-08-09). 302KB라 상가·빌딩 화면에서만 쓰지만,
@@ -627,7 +628,10 @@ function render(pt,code){
     }
     if((window.LANDGONGSI||{})[code]){draw();return;}
     var sc=document.createElement('script');
-    sc.src='data/land_gongsi_'+code+'.js';
+    /* 🔴 자료가 어느 저장소에 있는지는 SBDATA() 가 정한다(2026-08-27 자료 저장소 분리).
+       옮기지 않은 자료는 그대로 'data/…' 를 돌려주므로 지금까지와 똑같이 동작한다.
+       ⚠️`data/` 를 직접 쓰지 말 것 — 옮긴 뒤에도 옛 주소를 봐서 화면이 빈다. */
+    sc.src=(window.SBDATA?SBDATA('data/land_gongsi_'+code+'.js'):'data/land_gongsi_'+code+'.js');
     sc.onload=draw; sc.onerror=function(){};
     document.body.appendChild(sc);
   }
