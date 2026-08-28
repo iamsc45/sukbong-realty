@@ -68,6 +68,10 @@ h1.pg{font-size:clamp(30px,5vw,52px);letter-spacing:-0.045em;font-weight:800;mar
 .ev{font-size:10.5px;font-weight:700;border-radius:5px;padding:2.5px 6px;color:#fff;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.35}
 .ev.apt{background:var(--acc-blue)}.ev.rem{background:var(--acc-teal)}.ev.off{background:var(--acc-violet)}
+/* 지난 일정은 흐리게. 이 달을 열면 대부분이 이미 끝난 건이라, 같은 세기로 칠하면
+   아직 남은 일정이 묻힌다(2026-08-28 첫 렌더에서 8월 177건 중 대부분이 마감분이었다). */
+.ev.past{opacity:.32}
+.cell:hover .ev.past{opacity:.6}
 .evmore{font-size:10.5px;color:var(--muted);font-weight:700;padding-left:2px}
 
 /* 선택일 상세 */
@@ -115,8 +119,9 @@ h1.pg{font-size:clamp(30px,5vw,52px);letter-spacing:-0.045em;font-weight:800;mar
   .dnum{font-size:12px;margin:0 0 4px;text-align:center}
   .cell.today .dnum{margin:0 auto 4px}
   .evs{flex-direction:row;justify-content:center;gap:3px;flex-wrap:wrap}
-  .ev{width:6px;height:6px;padding:0;border-radius:100px;font-size:0;color:transparent}
-  .evmore{font-size:9px;line-height:6px;padding:0}
+  .ev{width:7px;height:7px;padding:0;border-radius:100px;font-size:0;color:transparent}
+  .ev.past{opacity:.28}
+  .evmore{font-size:9.5px;line-height:7px;padding:0;font-weight:800}
   .ym{font-size:18px;min-width:0}
   .cnt{width:100%;margin:6px 0 0;text-align:left}
   .flab{min-width:100%;margin-bottom:2px}
@@ -228,6 +233,9 @@ function push(d,kind,cls,item,label){ if(d) EV.push({d:String(d).slice(0,10),k:k
   push(it.win    ,'win',cls,it,'당첨발표');
   push(it.cntr_s ,'ct' ,cls,it,'계약');
 });
+/* 달력 칸은 좁다. 라벨을 그대로 쓰면 알약을 라벨이 다 먹고 단지명이 두 글자만 남는다
+   (2026-08-28 첫 렌더에서 「특별공급 월계 중흥S-…」로 나왔다). 칸 안에서만 줄여 쓴다. */
+var SHORT={sps:'특공',r1:'1순위',r2:'2순위',rc:'접수',win:'발표',ct:'계약'};
 
 /* 지역 목록 */
 var areas={}; EV.forEach(function(e){ if(e.i.area) areas[e.i.area]=(areas[e.i.area]||0)+1; });
@@ -266,9 +274,11 @@ function draw(){
     if(s===picked) cell.className+=' sel';
     cell.setAttribute('data-d',s);
     var evs=evOn(s); if(d.getMonth()===m) mc+=evs.length;
+    var past = s < iso(today);
     var h='<b class="dnum">'+d.getDate()+'</b><div class="evs">';
     evs.slice(0,3).forEach(function(e){
-      h+='<span class="ev '+e.c+'" title="'+esc(e.i.nm)+' · '+e.l+'">'+esc(e.l)+' '+esc(cut(e.i.nm,7))+'</span>';
+      h+='<span class="ev '+e.c+(past?' past':'')+'" title="'+esc(e.i.nm)+' · '+e.l+'">'
+        +esc(SHORT[e.k]||e.l)+' '+esc(cut(e.i.nm,12))+'</span>';
     });
     if(evs.length>3) h+='<span class="evmore">+'+(evs.length-3)+'</span>';
     g.appendChild(cell); cell.innerHTML=h+'</div>';
@@ -326,7 +336,9 @@ function drawDay(){
 
 /* ── 다가오는 일정 ───────────────────────────────────────────── */
 function drawUp(){
-  var t=iso(today);
+  /* 오늘 것은 바로 위 상세에 이미 펼쳐져 있다. 여기에 또 넣으면 여덟 줄이 전부
+     오늘로 채워져 「다가오는」이 아니게 된다(2026-08-28 첫 렌더에서 8건 전부 오늘). */
+  var t=iso(new Date(today.getFullYear(),today.getMonth(),today.getDate()+1));
   var near=EV.filter(function(e){ return e.d>=t && keep(e); })
              .sort(function(a,b){ return a.d<b.d?-1:(a.d>b.d?1:0); }).slice(0,8);
   var box=document.getElementById('up');
