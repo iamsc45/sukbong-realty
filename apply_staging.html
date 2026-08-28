@@ -60,6 +60,48 @@ h1.pg{font-size:clamp(34px,5.5vw,60px);letter-spacing:-0.045em;font-weight:800;m
 .mapgo{display:inline-block;background:var(--text);color:#fff;border-radius:100px;padding:2.5px 12px;font-size:11px;font-weight:700;text-decoration:none;margin-left:8px;vertical-align:1px;white-space:nowrap;transition:opacity 120ms ease}
 .mapgo:hover{opacity:.75}
 /* 실거래지도 바로가기 (2026-08-03) */
+/* ── 요약 한 줄 + 「지금 넣을 수 있는 청약」 (2026-08-28 개편) ───────────── */
+.sumbar{display:flex;flex-wrap:wrap;gap:0 20px;align-items:baseline;
+  border-top:1.5px solid var(--text);border-bottom:1px solid var(--hair);
+  padding:11px 2px;margin:0 0 20px;font-size:13px}
+.sumbar b{font-weight:800;font-variant-numeric:tabular-nums;font-size:15px;letter-spacing:-0.02em}
+.sumbar .u{color:var(--muted);font-weight:600;margin-left:3px;font-size:12px}
+.sumbar .sp{color:var(--hair)}
+.sumbar .rt{margin-left:auto;color:var(--muted);font-size:11.5px}
+
+.nowbox{margin:0 0 22px}
+.nowbox h2{font-size:18px;font-weight:800;letter-spacing:-0.03em;margin:0 0 3px;
+  display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.nowbox h2 em{font-style:normal;font-size:12.5px;color:var(--muted);font-weight:600}
+.nowbox .rows{display:grid;grid-template-columns:minmax(0,1fr);gap:7px;margin-top:11px}
+.nrow{display:flex;align-items:center;gap:11px;min-width:0;background:var(--soft);
+  border:1px solid var(--hair);border-left:3px solid var(--acc-teal);border-radius:12px;
+  padding:12px 15px;text-decoration:none;transition:border-color 130ms ease,transform 130ms ease}
+.nrow:hover{border-color:var(--muted2);transform:translateX(2px)}
+.nrow.soon{border-left-color:var(--acc-blue)}
+.nrow .d{flex:none;width:52px;text-align:center;font-weight:800;font-size:12.5px;
+  font-variant-numeric:tabular-nums;letter-spacing:-0.02em}
+.nrow.now .d{color:var(--acc-teal)}
+.nrow.soon .d{color:var(--acc-blue)}
+.nrow .bd{flex:1;min-width:0}
+.nrow .nm{font-size:14.5px;font-weight:800;letter-spacing:-0.02em;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nrow .sub{font-size:11.5px;color:var(--muted);margin-top:2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nrow .pr{flex:none;text-align:right;font-variant-numeric:tabular-nums;font-size:13px;font-weight:800}
+.nrow .tg{flex:none;font-size:9.5px;font-weight:800;letter-spacing:.05em;border-radius:100px;
+  padding:3px 8px;color:#fff;white-space:nowrap}
+.tg.jp{background:var(--acc-teal)}.tg.ap{background:var(--acc-blue)}
+.nowbox .none{background:var(--soft);border:1px dashed var(--muted2);border-radius:12px;
+  padding:20px;text-align:center;color:var(--muted);font-size:13px}
+@media(max-width:720px){
+  .sumbar{gap:0 14px;font-size:12.5px;padding:10px 2px}
+  .sumbar .rt{width:100%;margin:5px 0 0;text-align:left}
+  .nrow{padding:11px 13px;gap:9px}
+  .nrow .d{width:44px;font-size:11.5px}
+  .nrow .nm{font-size:13.5px}
+  .nrow .pr{font-size:12px}
+}
 /* 배너 두 개를 한 줄로 (2026-08-28 석봉님 지시). 둘의 높이는 grid 가 맞춘다.
    768px 아래에서는 한 칸 폭이 190px 밖에 안 돼 글자가 다 깨지므로 세로로 되돌린다. */
 .ctas{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin:0 0 14px}
@@ -162,7 +204,13 @@ h1.pg{font-size:clamp(34px,5.5vw,60px);letter-spacing:-0.045em;font-weight:800;m
 <main class="wrap" style="margin:0 auto;padding:0 22px">
   <h1 class="pg">청약</h1>
   <p class="pgsub" id="basis">전국 아파트 분양 공고 · 자료: 한국부동산원 청약홈</p>
-  <div class="kpis" id="kpis"></div>
+  <!-- 🔴 2026-08-28 레이아웃 개편(석봉님 「첫 화면에 지금 넣을 수 있는 청약」).
+       전에는 KPI 네 칸이 174px 를 먹고 그중 「0 접수중」이 가장 크게 나와 첫인상이
+       「할 게 없구나」였다. 기준일은 바로 위 부제와 겹치고, 공급세대 합계는 행동과
+       이어지지 않는다. 정작 공고 목록은 1,515px 아래였다(390px 실측).
+       👉 숫자는 한 줄로 접고, 그 자리에 **실제로 지원할 수 있는 건**을 놓는다. -->
+  <div class="sumbar" id="sumbar"></div>
+  <section class="nowbox" id="nowbox"></section>
   <!-- 청약 달력 바로가기 (2026-08-28 시안). 지도 배너와 나란히 두면 둘 다 검정이라 묻히므로
        달력만 파랑으로 갈랐다. 숫자(이번 달 일정·다음 일정 D-N)는 자료에서 그때그때 채운다. -->
   <div class="ctas">
@@ -199,11 +247,14 @@ h1.pg{font-size:clamp(34px,5.5vw,60px);letter-spacing:-0.045em;font-weight:800;m
     <input id="apQ" type="search" placeholder="지역·단지 검색 (예: 화성, 검단, 자이)" autocomplete="off">
     <button type="submit">검색</button>
   </form>
+  <!-- 🔴 2026-08-28 — 기본 탭을 「진행중」으로 바꿨다.
+       전에는 「전체」가 기본이라 마감분까지 117건을 다 그렸고 목록 높이가 28,704px 였다
+       (모바일 문서 전체의 94%). 지금 넣을 수 있는 건 5건뿐인데 그걸 보려고 스크롤을
+       수십 번 하게 된다. 마감분은 경쟁률 참고용이라 탭으로 옮긴다. -->
   <div class="tabs" id="tabs">
-    <button class="tab on" data-f="all">전체</button>
-    <button class="tab" data-f="now">접수중</button>
-    <button class="tab" data-f="soon">접수예정</button>
+    <button class="tab on" data-f="open">진행중</button>
     <button class="tab" data-f="done">접수마감</button>
+    <button class="tab" data-f="all">전체</button>
   </div>
   <div class="rwrap"><div id="rtabs"></div></div>
   <div class="aps" id="list"><div class="empty">청약 데이터 연결 대기 중입니다.</div></div>
@@ -257,15 +308,76 @@ document.getElementById("basis").textContent="전국 아파트 분양 공고 "+i
   document.getElementById('ccSub').textContent=
     s.length ? s.join(' · ') : '특별공급·1순위·2순위·당첨발표·계약일을 달력 한 장에서 봅니다';
 })();
-/* KPI */
+/* ── 요약 한 줄 + 「지금 넣을 수 있는 청약」 (2026-08-28 개편) ──────────────
+   분양(SB.apply)과 줍줍(SB.applyRem)은 성격이 다른 자료라 아래 목록에서는 섞지 않는다.
+   다만 **여기서만** 합친다 — 사용자가 첫 화면에서 묻는 것은 「지금 뭘 넣을 수 있나」
+   하나이고, 그 답이 오늘은 줍줍 쪽에 있기 때문이다(분양 접수중 0 · 줍줍 접수중 1).
+   ⚠️섞은 자리에는 반드시 배지로 갈라 둔다(분양 / 줍줍). */
 var now=items.filter(function(x){return x.state==="now";}).length;
 var soon=items.filter(function(x){return x.state==="soon";}).length;
 var hh=items.reduce(function(a,x){return a+(+x.n||0);},0);
-document.getElementById("kpis").innerHTML=
- '<div class="kpi2"><div class="v">'+now+'</div><div class="l">접수중</div></div>'
-+'<div class="kpi2"><div class="v">'+soon+'</div><div class="l">접수예정</div></div>'
-+'<div class="kpi2"><div class="v">'+hh.toLocaleString()+'</div><div class="l">공급 세대 (최근 공고 합계)</div></div>'
-+'<div class="kpi2"><div class="v" style="font-size:clamp(15px,4.2vw,22px);white-space:nowrap">'+A.updated+'</div><div class="l">기준일</div></div>';
+(function(){
+  var R=(window.SB&&SB.applyRem)||{items:[]};
+  var td=A.updated;
+  function dday(s){
+    if(!s) return null;
+    return Math.round((new Date(s)-new Date(td))/86400000);
+  }
+  function eok(v){ if(v==null) return ''; var e=v/10000;
+    return (e>=10? Math.round(e*10)/10 : Math.round(e*100)/100)+'억'; }
+  var rows=[];
+  items.forEach(function(x){
+    if(x.state==='done') return;
+    rows.push({kind:'ap',nm:x.nm,area:x.area,s:x.s,e:x.e,lo:x.lo,hi:x.hi,
+               n:x.n,url:x.url,now:x.state==='now'});
+  });
+  (R.items||[]).forEach(function(x){
+    if(!x.open) return;
+    rows.push({kind:'jp',nm:x.nm,area:x.area,s:x.rcept_s,e:x.rcept_e,lo:x.amtLo,hi:x.amtHi,
+               n:x.hsh,url:x.url,now:x.status==='접수중',cat:x.cat});
+  });
+  rows.sort(function(a,b){
+    if(a.now!==b.now) return a.now? -1:1;        /* 접수중이 먼저 */
+    return (a.s||'')<(b.s||'')? -1:1;            /* 그 다음 임박한 순 */
+  });
+  var nowN=rows.filter(function(x){return x.now;}).length;
+  /* 요약 한 줄 — 숫자는 남기되 높이를 뺏지 않는다 */
+  document.getElementById('sumbar').innerHTML=
+     '<span><b>'+nowN+'</b><span class="u">건 접수중</span></span>'
+    +'<span class="sp">·</span>'
+    +'<span><b>'+rows.filter(function(x){return !x.now;}).length+'</b><span class="u">건 접수예정</span></span>'
+    +'<span class="sp">·</span>'
+    +'<span><b>'+items.length+'</b><span class="u">개 분양 공고</span></span>'
+    +'<span class="sp">·</span>'
+    +'<span><b>'+hh.toLocaleString()+'</b><span class="u">세대 공급</span></span>'
+    +'<span class="rt">기준일 '+A.updated+' · 매일 갱신</span>';
+  var TOP=6;
+  var box=document.getElementById('nowbox');
+  var head='<h2>지금 넣을 수 있는 청약'
+    +'<em>'+(nowN? '접수중 '+nowN+'건 · ':'')+'가까운 순'+'</em></h2>';
+  if(!rows.length){
+    box.innerHTML=head+'<div class="none">지금 접수 중이거나 예정된 공고가 없습니다. 아래 목록에서 지난 공고를 볼 수 있습니다.</div>';
+    return;
+  }
+  box.innerHTML=head+'<div class="rows">'+rows.slice(0,TOP).map(function(x){
+    var d=dday(x.s), lab;
+    if(x.now) lab='접수중';
+    else if(d===0) lab='오늘';
+    else if(d===1) lab='내일';
+    else lab='D-'+d;
+    var per=x.s? (x.s.slice(5).replace('-','/')+(x.e&&x.e!==x.s? '~'+x.e.slice(5).replace('-','/'):'')) : '';
+    var sub=[x.area, (x.kind==='jp'? (x.cat||'무순위') : '아파트 분양'),
+             (x.n? x.n.toLocaleString()+'세대':''), (per? per+' 접수':'')]
+            .filter(Boolean).join(' · ');
+    var pr=x.lo? (eok(x.lo)+(x.hi&&x.hi!==x.lo? '~'+eok(x.hi):'')) : '';
+    return '<a class="nrow '+(x.now?'now':'soon')+'" href="'+(x.url||'#')+'" target="_blank" rel="noopener">'
+      +'<span class="d">'+lab+'</span>'
+      +'<span class="tg '+(x.kind==='jp'?'jp':'ap')+'">'+(x.kind==='jp'?'줍줍':'분양')+'</span>'
+      +'<span class="bd"><span class="nm">'+x.nm+'</span><span class="sub">'+sub+'</span></span>'
+      +(pr? '<span class="pr">'+pr+'</span>':'')
+      +'</a>';
+  }).join('')+'</div>';
+})();
 var ST={now:["접수중","now"],soon:["접수예정","soon"],done:["접수마감","done"]};
 var curR="all",curF="all";
 var PRI=["서울","경기","인천"];
@@ -287,7 +399,9 @@ function norm(s){return (s||"").replace(/\s+/g,"");}
 function render(f){
   curF=f;
   var L=items.filter(function(x){
-    if(f!=="all"&&x.state!==f)return false;
+    /* open = 접수중 + 접수예정 (2026-08-28 신설 기본 탭) */
+    if(f==="open"){ if(x.state==="done")return false; }
+    else if(f!=="all"&&x.state!==f)return false;
     if(curR!=="all"&&x.area!==curR)return false;
     if(curQ&&norm((x.ad||"")+(x.nm||"")).indexOf(curQ)<0)return false;
     return true;
@@ -316,7 +430,16 @@ function render(f){
      +'</span></div>';
   }).join("");
 }
-render("all");
+/* 기본은 「진행중」 — 마감분 112건까지 그리면 목록이 28,704px 가 된다(2026-08-28).
+   ⚠️지도에서 `?q=` 로 넘어온 검색은 아래에서 「전체」로 되돌린다. 접수 끝난 공고를
+     찾으러 오는 동선이라 진행중만 보면 「없다」가 된다. */
+document.querySelectorAll('#tabs .tab').forEach(function(t){
+  var n = t.dataset.f==='open' ? items.filter(function(x){return x.state!=='done';}).length
+        : t.dataset.f==='done' ? items.filter(function(x){return x.state==='done';}).length
+        : items.length;
+  t.textContent = t.textContent + ' ' + n;
+});
+render("open");
 /* 지역·단지 검색 (입력 즉시 필터, 엔터 시 GA 수집) */
 var aq=document.getElementById("apQ"),af=document.getElementById("apSearch");
 if(aq){
