@@ -79,10 +79,20 @@ h1.pg{font-size:clamp(34px,5.5vw,60px);letter-spacing:-0.045em;font-weight:800;m
   padding:12px 15px;text-decoration:none;transition:border-color 130ms ease,transform 130ms ease}
 .nrow:hover{border-color:var(--muted2);transform:translateX(2px)}
 .nrow.soon{border-left-color:var(--acc-blue)}
-.nrow .d{flex:none;width:52px;text-align:center;font-weight:800;font-size:12.5px;
-  font-variant-numeric:tabular-nums;letter-spacing:-0.02em}
+.nrow .d{flex:none;width:56px;text-align:center;font-weight:800;font-size:12.5px;
+  font-variant-numeric:tabular-nums;letter-spacing:-0.02em;line-height:1.25}
+.nrow .d i{display:block;font-style:normal;font-size:10px;font-weight:700;
+  color:var(--muted);margin-top:2px;letter-spacing:0}
 .nrow.now .d{color:var(--acc-teal)}
 .nrow.soon .d{color:var(--acc-blue)}
+/* 일정 줄 — 특공·1순위·2순위·발표를 한 줄로. 사용자가 「언제 무엇을 넣나」를 묻는 자리다. */
+.nrow .sch{display:block;font-size:11px;color:var(--text2);margin-top:4px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nrow .sch b{font-weight:800;color:var(--text)}
+.nrow .sch .dot{color:var(--hair);margin:0 5px}
+/* 주변 시세 대비 — 우리 자료의 강점이라 가격 바로 아래 둔다 */
+.nrow .cmp{display:block;font-size:10.5px;font-weight:700;margin-top:3px;color:var(--muted)}
+.nrow .cmp.lo{color:var(--acc-teal)}
 .nrow .bd{flex:1;min-width:0}
 /* 🔴 `display:block` 이 빠지면 안 잘린다. `.nm`·`.sub` 는 span 이라 기본이 inline 이고,
    inline 요소에는 overflow·text-overflow 가 적용되지 않는다. 그래서 긴 단지명이
@@ -335,12 +345,14 @@ var hh=items.reduce(function(a,x){return a+(+x.n||0);},0);
   items.forEach(function(x){
     if(x.state==='done') return;
     rows.push({kind:'ap',nm:x.nm,area:x.area,s:x.s,e:x.e,lo:x.lo,hi:x.hi,
-               n:x.n,url:x.url,now:x.state==='now'});
+               n:x.n,url:x.url,now:x.state==='now',
+               sps:x.sps,r1:x.r1,r2:x.r2,win:x.win,esm:x.esm,mk:x.mk,mkn:x.mkn});
   });
   (R.items||[]).forEach(function(x){
     if(!x.open) return;
     rows.push({kind:'jp',nm:x.nm,area:x.area,s:x.rcept_s,e:x.rcept_e,lo:x.amtLo,hi:x.amtHi,
-               n:x.hsh,url:x.url,now:x.status==='접수중',cat:x.cat});
+               n:x.hsh,url:x.url,now:x.status==='접수중',cat:x.cat,
+               win:x.win,cntr:x.cntr_s});
   });
   rows.sort(function(a,b){
     if(a.now!==b.now) return a.now? -1:1;        /* 접수중이 먼저 */
@@ -366,22 +378,51 @@ var hh=items.reduce(function(a,x){return a+(+x.n||0);},0);
     box.innerHTML=head+'<div class="none">지금 접수 중이거나 예정된 공고가 없습니다. 아래 목록에서 지난 공고를 볼 수 있습니다.</div>';
     return;
   }
+  function md(s){ return s? (+s.slice(5,7))+'/'+(+s.slice(8,10)) : ''; }
   box.innerHTML=head+'<div class="rows">'+rows.slice(0,TOP).map(function(x){
     var d=dday(x.s), lab;
     if(x.now) lab='접수중';
     else if(d===0) lab='오늘';
     else if(d===1) lab='내일';
     else lab='D-'+d;
-    var per=x.s? (x.s.slice(5).replace('-','/')+(x.e&&x.e!==x.s? '~'+x.e.slice(5).replace('-','/'):'')) : '';
+    /* 🔴 D-N 이 「무엇의 D-N」인지 밝힌다(2026-08-28 석봉님 「특공인지 1순위인지 표시」).
+       s(접수시작)는 sps 가 있으면 특별공급 첫날, 없으면 1순위 첫날이다
+       (실측: sps 있는 95건 전부 s==sps · 없는 22건 전부 s==r1). */
+    var first = x.kind==='jp' ? '접수'
+              : (x.sps && x.sps===x.s) ? '특별공급' : '1순위';
+    /* 일정 줄 — 오늘 이후로 남은 것만 적는다. 지난 단계를 늘어놓으면 읽는 부담만 는다. */
+    var seq=[];
+    if(x.kind==='jp'){
+      if(x.s) seq.push(['접수', x.s, x.e]);
+      if(x.win) seq.push(['발표', x.win]);
+      if(x.cntr) seq.push(['계약', x.cntr]);
+    }else{
+      if(x.sps) seq.push(['특공', x.sps]);
+      if(x.r1)  seq.push(['1순위', x.r1]);
+      if(x.r2 && x.r2!==x.r1) seq.push(['2순위', x.r2]);
+      if(x.win) seq.push(['발표', x.win]);
+    }
+    var sch=seq.filter(function(q){ return q[1]>=td; })
+               .map(function(q){
+                 var v=md(q[1])+(q[2]&&q[2]!==q[1]? '~'+md(q[2]):'');
+                 return '<b>'+q[0]+'</b> '+v;
+               }).join('<span class="dot">·</span>');
     var sub=[x.area, (x.kind==='jp'? (x.cat||'무순위') : '아파트 분양'),
-             (x.n? x.n.toLocaleString()+'세대':''), (per? per+' 접수':'')]
-            .filter(Boolean).join(' · ');
+             (x.n? x.n.toLocaleString()+'세대':'')].filter(Boolean).join(' · ');
     var pr=x.lo? (eok(x.lo)+(x.hi&&x.hi!==x.lo? '~'+eok(x.hi):'')) : '';
+    /* 주변 시세 대비 — 전용 ㎡당 분양가(esm)와 같은 시군구 실거래 중위(mk) 비교.
+       ⚠️연식·입지 구분 없는 시군구 전체 중위라 신축은 통상 높게 나온다. 아래 각주에 이미 밝혀 뒀다. */
+    var cmp='';
+    if(x.kind==='ap' && x.esm && x.mk){
+      var g=Math.round((x.esm/x.mk-1)*100);
+      cmp='<span class="cmp'+(g<0?' lo':'')+'">주변 시세 '+(g>=0?'+':'')+g+'%</span>';
+    }
     return '<a class="nrow '+(x.now?'now':'soon')+'" href="'+(x.url||'#')+'" target="_blank" rel="noopener">'
-      +'<span class="d">'+lab+'</span>'
+      +'<span class="d">'+lab+'<i>'+first+'</i></span>'
       +'<span class="tg '+(x.kind==='jp'?'jp':'ap')+'">'+(x.kind==='jp'?'줍줍':'분양')+'</span>'
-      +'<span class="bd"><span class="nm">'+x.nm+'</span><span class="sub">'+sub+'</span></span>'
-      +(pr? '<span class="pr">'+pr+'</span>':'')
+      +'<span class="bd"><span class="nm">'+x.nm+'</span><span class="sub">'+sub+'</span>'
+        +(sch? '<span class="sch">'+sch+'</span>':'')+'</span>'
+      +(pr? '<span class="pr">'+pr+cmp+'</span>':'')
       +'</a>';
   }).join('')+'</div>';
 })();
