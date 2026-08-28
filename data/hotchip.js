@@ -1,1 +1,1 @@
-window.SB=window.SB||{};SB.chips={"updated":"2026-08-28","win":"2026-08-15~2026-08-28","items":[{"t":"안양 에버포레","n":9,"src":"log"},{"t":"짬실아파트","n":9,"src":"log"},{"t":"고양 창릉 청약","n":6,"src":"log"},{"t":"노원구","n":273,"src":"trade"},{"t":"강서구","n":156,"src":"trade"}],"note":"REST 집계 뷰"};
+window.SB=window.SB||{};SB.chips={"updated":"2026-08-29","win":"2026-08-16~2026-08-29","items":[{"t":"안양 에버포레","n":9,"src":"log"},{"t":"짬실아파트","n":9,"src":"log"},{"t":"고양 창릉 청약","n":6,"src":"log"},{"t":"노원구","n":274,"src":"trade"},{"t":"강서구","n":148,"src":"trade"}],"note":"REST 집계 뷰"};
