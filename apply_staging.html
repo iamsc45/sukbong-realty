@@ -84,9 +84,13 @@ h1.pg{font-size:clamp(34px,5.5vw,60px);letter-spacing:-0.045em;font-weight:800;m
 .nrow.now .d{color:var(--acc-teal)}
 .nrow.soon .d{color:var(--acc-blue)}
 .nrow .bd{flex:1;min-width:0}
-.nrow .nm{font-size:14.5px;font-weight:800;letter-spacing:-0.02em;
+/* 🔴 `display:block` 이 빠지면 안 잘린다. `.nm`·`.sub` 는 span 이라 기본이 inline 이고,
+   inline 요소에는 overflow·text-overflow 가 적용되지 않는다. 그래서 긴 단지명이
+   부모(126px)를 넘어 251px 로 뻗어 오른쪽 가격 위에 얹혔다(2026-08-28 390px 실측,
+   「검암역 푸르지오 프라베뉴 (B-1BL) 공공분양주택」이 116px 겹침). */
+.nrow .nm{display:block;font-size:14.5px;font-weight:800;letter-spacing:-0.02em;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.nrow .sub{font-size:11.5px;color:var(--muted);margin-top:2px;
+.nrow .sub{display:block;font-size:11.5px;color:var(--muted);margin-top:2px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nrow .pr{flex:none;text-align:right;font-variant-numeric:tabular-nums;font-size:13px;font-weight:800}
 .nrow .tg{flex:none;font-size:9.5px;font-weight:800;letter-spacing:.05em;border-radius:100px;
@@ -342,15 +346,16 @@ var hh=items.reduce(function(a,x){return a+(+x.n||0);},0);
   });
   var nowN=rows.filter(function(x){return x.now;}).length;
   /* 요약 한 줄 — 숫자는 남기되 높이를 뺏지 않는다 */
+  /* ⚠️항목을 넷 이상 넣으면 390px 에서 세 줄로 감긴다(실측 93px). 셋으로 줄인다.
+     공급세대 합계는 뺐다 — 사용자의 다음 행동과 이어지지 않는 숫자다.
+     기준일은 바로 위 부제에 이미 있으므로 여기서는 생략한다. */
   document.getElementById('sumbar').innerHTML=
      '<span><b>'+nowN+'</b><span class="u">건 접수중</span></span>'
     +'<span class="sp">·</span>'
     +'<span><b>'+rows.filter(function(x){return !x.now;}).length+'</b><span class="u">건 접수예정</span></span>'
     +'<span class="sp">·</span>'
     +'<span><b>'+items.length+'</b><span class="u">개 분양 공고</span></span>'
-    +'<span class="sp">·</span>'
-    +'<span><b>'+hh.toLocaleString()+'</b><span class="u">세대 공급</span></span>'
-    +'<span class="rt">기준일 '+A.updated+' · 매일 갱신</span>';
+    +'<span class="rt">매일 갱신</span>';
   var TOP=6;
   var box=document.getElementById('nowbox');
   var head='<h2>지금 넣을 수 있는 청약'
