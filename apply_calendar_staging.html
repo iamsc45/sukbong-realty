@@ -79,7 +79,7 @@ h1.pg{font-size:clamp(30px,5vw,52px);letter-spacing:-0.045em;font-weight:800;mar
 .dayhead{display:flex;align-items:baseline;gap:10px;margin:0 0 13px;flex-wrap:wrap}
 .dayhead h2{font-size:19px;font-weight:800;letter-spacing:-0.03em;margin:0}
 .dayhead .sm{font-size:12.5px;color:var(--muted)}
-.items{display:grid;gap:10px}
+.items{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
 .it{background:var(--soft);border:1px solid var(--hair);border-radius:14px;padding:15px 17px;
   display:flex;gap:13px;align-items:baseline;flex-wrap:wrap;transition:border-color 130ms ease}
 .it:hover{border-color:var(--muted2)}
@@ -101,8 +101,10 @@ h1.pg{font-size:clamp(30px,5vw,52px);letter-spacing:-0.045em;font-weight:800;mar
 /* 다가오는 일정 */
 .upnext{margin:34px 0 0}
 .upnext h2{font-size:17px;font-weight:800;letter-spacing:-0.03em;margin:0 0 12px}
-.uplist{display:grid;gap:7px}
-.up{display:flex;gap:11px;align-items:center;background:#fff;border:1px solid var(--hair);
+/* 🔴 grid 는 트랙 기본이 auto 라 칸이 내용만큼 넓어진다. minmax(0,1fr) 로 못 박지 않으면
+   안쪽 flex 항목에 min-width:0 을 줘도 소용이 없다(2026-08-28: .up .t 만 고쳤을 때 그대로 471px). */
+.uplist{display:grid;grid-template-columns:minmax(0,1fr);gap:7px}
+.up{display:flex;gap:11px;align-items:center;background:#fff;border:1px solid var(--hair);min-width:0;
   border-radius:11px;padding:10px 14px;font-size:13px;cursor:pointer;transition:border-color 120ms ease}
 .up:hover{border-color:var(--muted2)}
 .up .d{font-weight:800;font-variant-numeric:tabular-nums;min-width:62px;font-size:12.5px}
