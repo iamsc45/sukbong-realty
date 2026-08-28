@@ -85,11 +85,14 @@ h1.pg{font-size:clamp(34px,5.5vw,60px);letter-spacing:-0.045em;font-weight:800;m
   color:var(--muted);margin-top:2px;letter-spacing:0}
 .nrow.now .d{color:var(--acc-teal)}
 .nrow.soon .d{color:var(--acc-blue)}
-/* 일정 줄 — 특공·1순위·2순위·발표를 한 줄로. 사용자가 「언제 무엇을 넣나」를 묻는 자리다. */
-.nrow .sch{display:block;font-size:11px;color:var(--text2);margin-top:4px;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* 🔴 일정은 이름 아래가 아니라 **옆 칸**에 둔다(2026-08-28 석봉님 「줄을 바꾸지 말고 여백을 채워라」).
+   전에는 이름·부제·일정이 세로로 쌓여 줄 높이만 늘고 오른쪽은 비어 있었다.
+   가로로 펼치면 같은 정보가 한 줄에 들어가고 빈 자리가 없어진다.
+   ⚠️좁은 화면에서는 되돌린다 — 390px 에서 세 칸을 늘어놓으면 전부 잘린다. */
+.nrow .sch{flex:0 1 auto;font-size:11.5px;color:var(--text2);white-space:nowrap;
+  padding-left:16px;margin-left:auto;overflow:hidden;text-overflow:ellipsis}
 .nrow .sch b{font-weight:800;color:var(--text)}
-.nrow .sch .it + .it::before{content:'·';color:var(--muted2);margin:0 6px}
+.nrow .sch .it + .it::before{content:'·';color:var(--muted2);margin:0 7px}
 /* 주변 시세 대비 — 우리 자료의 강점이라 가격 바로 아래 둔다 */
 .nrow .cmp{display:block;font-size:10.5px;font-weight:700;margin-top:3px;color:var(--muted)}
 .nrow .cmp.lo{color:var(--acc-teal)}
@@ -102,7 +105,8 @@ h1.pg{font-size:clamp(34px,5.5vw,60px);letter-spacing:-0.045em;font-weight:800;m
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nrow .sub{display:block;font-size:11.5px;color:var(--muted);margin-top:2px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.nrow .pr{flex:none;text-align:right;font-variant-numeric:tabular-nums;font-size:13px;font-weight:800}
+.nrow .pr{flex:none;text-align:right;font-variant-numeric:tabular-nums;font-size:13px;font-weight:800;
+  padding-left:16px;min-width:112px}
 .nrow .tg{flex:none;font-size:9.5px;font-weight:800;letter-spacing:.05em;border-radius:100px;
   padding:3px 8px;color:#fff;white-space:nowrap}
 .tg.jp{background:var(--acc-teal)}.tg.ap{background:var(--acc-blue)}
@@ -117,10 +121,29 @@ h1.pg{font-size:clamp(34px,5.5vw,60px);letter-spacing:-0.045em;font-weight:800;m
   .nrow .nm{font-size:13.5px}
   /* 가격이 폭을 많이 먹으면 단지명이 그만큼 잘린다. 좁은 화면에서는 가격을 조인다. */
   .nrow .pr{font-size:11.5px;max-width:98px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  /* 일정은 네 단계를 다 적으면 390px 에서 「특공 8/31 · 1순위 9/1 · 2…」로 잘린다.
-     잘린 꼬리는 읽히지도 않으므로 **가까운 두 단계만** 남긴다. 나머지는 눌러서 본다. */
-  .nrow .sch .it:nth-child(n+3){display:none}
+  /* 좁은 화면에서는 세 칸을 못 늘어놓는다. 일정을 이름 아래 줄로 되돌린다. */
+  .nrow{flex-wrap:wrap}
+  .nrow .bd{flex:1 1 auto}
+  .nrow .sch{flex:1 0 100%;margin:5px 0 0;padding-left:0;order:9;font-size:11px}
+  /* 일정 네 단계를 다 적으면 390px 에서 「특공 8/31 · 1순위 9/1 · 2…」로 잘린다.
+     잘린 꼬리는 읽히지도 않으므로 **가까운 세 단계만** 남긴다. 나머지는 눌러서 본다. */
+  .nrow .sch .it:nth-child(n+4){display:none}
+  .nrow .pr{min-width:0}
 }
+/* 무순위 섹션 — 절반 높이 + 안쪽 스크롤 (2026-08-28) */
+.remwrap{position:relative}
+.remwrap #remBox{max-height:340px;overflow-y:auto;overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;padding-right:4px}
+/* 스크롤 막대를 얇게. 안 보이면 스크롤할 수 있다는 걸 모른다 */
+.remwrap #remBox::-webkit-scrollbar{width:5px}
+.remwrap #remBox::-webkit-scrollbar-thumb{background:#C9D2E0;border-radius:100px}
+.remwrap #remBox::-webkit-scrollbar-track{background:transparent}
+/* 아래가 잘려 있다는 신호. 끝까지 내리면 사라진다(JS 가 .end 를 붙인다) */
+.remwrap::after{content:'';position:absolute;left:0;right:5px;bottom:0;height:34px;
+  background:linear-gradient(to bottom,rgba(255,255,255,0),#fff);
+  pointer-events:none;transition:opacity 160ms ease}
+.remwrap.end::after{opacity:0}
+@media(max-width:720px){ .remwrap #remBox{max-height:300px} }
 /* 배너 두 개를 한 줄로 (2026-08-28 석봉님 지시). 둘의 높이는 grid 가 맞춘다.
    768px 아래에서는 한 칸 폭이 190px 밖에 안 돼 글자가 다 깨지므로 세로로 되돌린다. */
 .ctas{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin:0 0 14px}
@@ -259,7 +282,14 @@ h1.pg{font-size:clamp(34px,5.5vw,60px);letter-spacing:-0.045em;font-weight:800;m
       <span style="font-size:12px;font-weight:800;color:#1B3F7A;background:#EEF3FB;border-radius:5px;padding:2px 7px">무순위 · 줍줍</span>
     </div>
     <p class="pgsub" id="remCap" style="margin:6px 0 10px"></p>
-    <div id="remBox"><div class="empty">불러오는 중…</div></div>
+    <!-- 🔴 2026-08-28 석봉님 「무순위청약은 절반으로 줄이고 스크롤로 확인하게」.
+         전에는 이 섹션이 736px(모바일)를 차지해 아래 분양 목록까지 한참 내려야 했다.
+         칸 높이를 절반으로 묶고 안에서 스크롤한다 — 위치와 비중은 그대로 두면서
+         페이지 길이만 줄이는 방법이다(8/22 「비중 있게 배치」 지시와 어긋나지 않는다).
+         ⚠️스크롤이 있다는 것을 알려야 한다. 아래쪽에 흰 그라데이션을 깔아 「더 있다」를 보인다. -->
+    <div class="remwrap">
+      <div id="remBox"><div class="empty">불러오는 중…</div></div>
+    </div>
   </section>
 
   <form class="ap-search" id="apSearch">
@@ -423,8 +453,8 @@ var hh=items.reduce(function(a,x){return a+(+x.n||0);},0);
     return '<a class="nrow '+(x.now?'now':'soon')+'" href="'+(x.url||'#')+'" target="_blank" rel="noopener">'
       +'<span class="d">'+lab+'<i>'+first+'</i></span>'
       +'<span class="tg '+(x.kind==='jp'?'jp':'ap')+'">'+(x.kind==='jp'?'줍줍':'분양')+'</span>'
-      +'<span class="bd"><span class="nm">'+x.nm+'</span><span class="sub">'+sub+'</span>'
-        +(sch? '<span class="sch">'+sch+'</span>':'')+'</span>'
+      +'<span class="bd"><span class="nm">'+x.nm+'</span><span class="sub">'+sub+'</span></span>'
+      +(sch? '<span class="sch">'+sch+'</span>':'')
       +(pr? '<span class="pr">'+pr+cmp+'</span>':'')
       +'</a>';
   }).join('')+'</div>';
@@ -591,14 +621,22 @@ document.querySelectorAll("#tabs .tab").forEach(function(t){
       box.innerHTML='<div class="empty">'+(RQ?'무순위·잔여세대 공고에는 없습니다.':'지금 지원 가능한 무순위 공고가 없습니다.')+'</div>';
       return;
     }
-    /* 🔴 모바일에서 8건을 다 펴면 **아래 본 목록이 스크롤 세 번 밑으로 밀린다**(2026-08-22 실측).
-       처음엔 4건만 보이고 나머지는 눌러서 편다. 데스크톱은 자리가 있어 그대로 다 편다. */
-    var CAP=(window.matchMedia&&window.matchMedia('(max-width:720px)').matches)?4:show.length;
-    box.innerHTML=rows(show.slice(0,CAP))
-      +(show.length>CAP?('<button type="button" id="remMore" style="width:100%;margin-top:9px;'
-        +'border:1px solid #E3E8F0;background:#fff;color:#1B3F7A;font:inherit;font-size:12.5px;'
-        +'font-weight:800;border-radius:10px;padding:9px 0;cursor:pointer">'
-        +(show.length-CAP)+'건 더 보기</button>'):'');
+    /* 🔴 2026-08-28 — 「4건만 펴고 더 보기 버튼」에서 **전부 펴고 안쪽 스크롤**로 바꿨다
+       (석봉님 「절반으로 줄이고 스크롤로 확인하게」). 버튼을 누르면 섹션이 통째로 길어져
+       아래 본 목록이 다시 밀리는데, 스크롤은 칸 높이를 그대로 두면서 전부 볼 수 있다.
+       ⚠️「몇 건 중 몇 건이 보인다」를 캡션이 말해 주므로 건수 안내는 따로 두지 않는다. */
+    box.innerHTML=rows(show);
+    (function(){
+      var wrap=box.parentNode;
+      if(!wrap||!wrap.classList||!wrap.classList.contains('remwrap')) return;
+      function mark(){
+        var atEnd = box.scrollTop + box.clientHeight >= box.scrollHeight - 4;
+        var noScroll = box.scrollHeight <= box.clientHeight + 2;
+        wrap.classList.toggle('end', atEnd || noScroll);
+      }
+      box.addEventListener('scroll', mark, {passive:true});
+      setTimeout(mark, 0);
+    })();
     var mb=document.getElementById('remMore');
     if(mb)mb.onclick=function(){box.innerHTML=rows(show);hint(hit.length);};
     hint(hit.length);
