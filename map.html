@@ -20,7 +20,7 @@
 <link rel="stylesheet" href="assets/site.css">
 <!-- 새 지도 디자인(2026-08-10 석봉님 확정): 네이버형 좌측 목록 + 흰 말풍선 마커.
      로직은 이 파일 그대로 두고 겉모습만 아래 두 파일이 얹는다. -->
-<link rel="stylesheet" href="assets/map_v2.css?v=17">
+<link rel="stylesheet" href="assets/map_v2.css?v=18">
 <style>
   html,body{height:100%}
   #wrap{display:flex;flex-direction:column;height:100%}
@@ -874,6 +874,10 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
        +(fA!=='all'?1:0)+(fY!=='all'?1:0)+(fF!=='all'?1:0);
     }
     bt.textContent='필터'+(n?' '+n:'')+(pn.classList.contains('open')?' ▴':' ▾');
+    /* 모바일 필터 버튼 색을 상태에 맞춰 바꾸려고 클래스를 남긴다(2026-08-28).
+       숫자만으로는 좁은 화면에서 걸렸는지 안 걸렸는지 잘 안 읽힌다. */
+    bt.classList.toggle('act',!!n);
+    bt.classList.toggle('open',pn.classList.contains('open'));
   }
   window._fmark=mark;   /* 모드를 바꿀 때 버튼 숫자를 다시 계산하려고 밖에 연다 */
   function grp(el,items,get,set){
