@@ -60,8 +60,120 @@ h1.pg{font-size:clamp(34px,5.5vw,60px);letter-spacing:-0.045em;font-weight:800;m
 .mapgo{display:inline-block;background:var(--text);color:#fff;border-radius:100px;padding:2.5px 12px;font-size:11px;font-weight:700;text-decoration:none;margin-left:8px;vertical-align:1px;white-space:nowrap;transition:opacity 120ms ease}
 .mapgo:hover{opacity:.75}
 /* 실거래지도 바로가기 (2026-08-03) */
+/* ── 요약 한 줄 + 「지금 넣을 수 있는 청약」 (2026-08-28 개편) ───────────── */
+.sumbar{display:flex;flex-wrap:wrap;gap:0 20px;align-items:baseline;
+  border-top:1.5px solid var(--text);border-bottom:1px solid var(--hair);
+  padding:11px 2px;margin:0 0 20px;font-size:13px}
+.sumbar b{font-weight:800;font-variant-numeric:tabular-nums;font-size:15px;letter-spacing:-0.02em}
+.sumbar .u{color:var(--muted);font-weight:600;margin-left:3px;font-size:12px}
+.sumbar .sp{color:var(--hair)}
+.sumbar .rt{margin-left:auto;color:var(--muted);font-size:11.5px}
+
+.nowbox{margin:0 0 22px}
+.nowbox h2{font-size:18px;font-weight:800;letter-spacing:-0.03em;margin:0 0 3px;
+  display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.nowbox h2 em{font-style:normal;font-size:12.5px;color:var(--muted);font-weight:600}
+.nowbox .rows{display:grid;grid-template-columns:minmax(0,1fr);gap:7px;margin-top:11px}
+.nrow{display:flex;align-items:center;gap:11px;min-width:0;background:var(--soft);
+  border:1px solid var(--hair);border-left:3px solid var(--acc-teal);border-radius:12px;
+  padding:12px 15px;text-decoration:none;transition:border-color 130ms ease,transform 130ms ease}
+.nrow:hover{border-color:var(--muted2);transform:translateX(2px)}
+.nrow.soon{border-left-color:var(--acc-blue)}
+.nrow .d{flex:none;width:56px;text-align:center;font-weight:800;font-size:12.5px;
+  font-variant-numeric:tabular-nums;letter-spacing:-0.02em;line-height:1.25}
+.nrow .d i{display:block;font-style:normal;font-size:10px;font-weight:700;
+  color:var(--muted);margin-top:2px;letter-spacing:0}
+.nrow.now .d{color:var(--acc-teal)}
+.nrow.soon .d{color:var(--acc-blue)}
+/* 🔴 일정은 이름 아래가 아니라 **옆 칸**에 둔다(2026-08-28 석봉님 「줄을 바꾸지 말고 여백을 채워라」).
+   전에는 이름·부제·일정이 세로로 쌓여 줄 높이만 늘고 오른쪽은 비어 있었다.
+   가로로 펼치면 같은 정보가 한 줄에 들어가고 빈 자리가 없어진다.
+   ⚠️좁은 화면에서는 되돌린다 — 390px 에서 세 칸을 늘어놓으면 전부 잘린다. */
+.nrow .sch{flex:0 1 auto;font-size:11.5px;color:var(--text2);white-space:nowrap;
+  padding-left:16px;margin-left:auto;overflow:hidden;text-overflow:ellipsis}
+.nrow .sch b{font-weight:800;color:var(--text)}
+.nrow .sch .it + .it::before{content:'·';color:var(--muted2);margin:0 7px}
+/* 주변 시세 대비 — 우리 자료의 강점이라 가격 바로 아래 둔다 */
+.nrow .cmp{display:block;font-size:10.5px;font-weight:700;margin-top:3px;color:var(--muted)}
+.nrow .cmp.lo{color:var(--acc-teal)}
+.nrow .bd{flex:1;min-width:0}
+/* 🔴 `display:block` 이 빠지면 안 잘린다. `.nm`·`.sub` 는 span 이라 기본이 inline 이고,
+   inline 요소에는 overflow·text-overflow 가 적용되지 않는다. 그래서 긴 단지명이
+   부모(126px)를 넘어 251px 로 뻗어 오른쪽 가격 위에 얹혔다(2026-08-28 390px 실측,
+   「검암역 푸르지오 프라베뉴 (B-1BL) 공공분양주택」이 116px 겹침). */
+.nrow .nm{display:block;font-size:14.5px;font-weight:800;letter-spacing:-0.02em;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nrow .sub{display:block;font-size:11.5px;color:var(--muted);margin-top:2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nrow .pr{flex:none;text-align:right;font-variant-numeric:tabular-nums;font-size:13px;font-weight:800;
+  padding-left:16px;min-width:112px}
+.nrow .tg{flex:none;font-size:9.5px;font-weight:800;letter-spacing:.05em;border-radius:100px;
+  padding:3px 8px;color:#fff;white-space:nowrap}
+.tg.jp{background:var(--acc-teal)}.tg.ap{background:var(--acc-blue)}
+.nowbox .none{background:var(--soft);border:1px dashed var(--muted2);border-radius:12px;
+  padding:20px;text-align:center;color:var(--muted);font-size:13px}
+@media(max-width:720px){
+  .sumbar{gap:0 14px;font-size:12.5px;padding:10px 2px}
+  /* 「매일 갱신」은 바로 위 부제에 이미 있다. 여기서 한 줄을 더 쓰면 요약바가 두 줄이 된다. */
+  .sumbar .rt{display:none}
+  .nrow{padding:11px 13px;gap:9px}
+  .nrow .d{width:44px;font-size:11.5px}
+  .nrow .nm{font-size:13.5px}
+  /* 가격이 폭을 많이 먹으면 단지명이 그만큼 잘린다. 좁은 화면에서는 가격을 조인다. */
+  .nrow .pr{font-size:11.5px;max-width:98px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  /* 좁은 화면에서는 세 칸을 못 늘어놓는다. 일정만 다음 줄로 내린다.
+     🔴`.bd` 는 `flex:1 1 0` 이어야 한다. `auto` 로 두면 기준 폭이 **내용 크기**라
+     긴 단지명이 한 줄을 통째로 밀어내고 배지·가격이 제각기 감긴다(2026-08-28 실측:
+     줄 높이가 125·183·145px 로 들쭉날쭉해지고 가격이 가운데로 떨어졌다). */
+  .nrow{flex-wrap:wrap;align-items:center}
+  .nrow .bd{flex:1 1 0;min-width:0}
+  .nrow .sch{flex:0 0 100%;margin:6px 0 0;padding-left:0;order:9;font-size:11px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* 일정 네 단계를 다 적으면 390px 에서 「특공 8/31 · 1순위 9/1 · 2…」로 잘린다.
+     잘린 꼬리는 읽히지도 않으므로 **가까운 세 단계만** 남긴다. 나머지는 눌러서 본다. */
+  .nrow .sch .it:nth-child(n+4){display:none}
+  .nrow .pr{min-width:0;padding-left:8px}
+}
+/* 무순위 섹션 — 절반 높이 + 안쪽 스크롤 (2026-08-28) */
+.remwrap{position:relative}
+.remwrap #remBox{max-height:340px;overflow-y:auto;overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;padding-right:4px}
+/* 스크롤 막대를 얇게. 안 보이면 스크롤할 수 있다는 걸 모른다 */
+.remwrap #remBox::-webkit-scrollbar{width:5px}
+.remwrap #remBox::-webkit-scrollbar-thumb{background:#C9D2E0;border-radius:100px}
+.remwrap #remBox::-webkit-scrollbar-track{background:transparent}
+/* 아래가 잘려 있다는 신호. 끝까지 내리면 사라진다(JS 가 .end 를 붙인다) */
+.remwrap::after{content:'';position:absolute;left:0;right:5px;bottom:0;height:34px;
+  background:linear-gradient(to bottom,rgba(255,255,255,0),#fff);
+  pointer-events:none;transition:opacity 160ms ease}
+.remwrap.end::after{opacity:0}
+@media(max-width:720px){ .remwrap #remBox{max-height:300px} }
+/* 배너 두 개를 한 줄로 (2026-08-28 석봉님 지시). 둘의 높이는 grid 가 맞춘다.
+   768px 아래에서는 한 칸 폭이 190px 밖에 안 돼 글자가 다 깨지므로 세로로 되돌린다. */
+.ctas{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin:0 0 14px}
+@media (max-width:860px){ .ctas{grid-template-columns:minmax(0,1fr)} }
+/* 청약 달력 배너 (2026-08-28 시안) */
+.calcta{display:flex;align-items:center;gap:15px;background:var(--acc-blue);color:#fff;border-radius:16px;
+  padding:15px 20px;margin:0;text-decoration:none;transition:transform 140ms ease,box-shadow 140ms ease;
+  box-shadow:0 2px 0 rgba(37,84,224,.22)}
+.calcta:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(37,84,224,.28)}
+.calcta .cc-d{flex:none;width:48px;height:52px;border-radius:10px;background:#fff;color:var(--acc-blue);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.calcta .cc-d b{font-size:10px;font-weight:800;letter-spacing:.06em;opacity:.7;margin-bottom:3px}
+.calcta .cc-d i{font-size:22px;font-weight:800;font-style:normal;font-variant-numeric:tabular-nums;letter-spacing:-0.03em}
+.calcta .cc-t{flex:1;min-width:0}
+.calcta .cc-t b{display:block;font-size:16px;letter-spacing:-0.02em}
+.calcta .cc-t small{display:block;font-size:12px;opacity:.82;margin-top:3px;line-height:1.55;word-break:keep-all}
+.calcta .cc-a{font-size:18px;flex:none;opacity:.85}
+@media (max-width:720px){
+  .calcta{padding:12px 14px;gap:12px;border-radius:14px}
+  .calcta .cc-d{width:42px;height:46px}
+  .calcta .cc-d i{font-size:19px}
+  .calcta .cc-t b{font-size:14.5px}
+  .calcta .cc-t small{font-size:11.5px}
+}
 .mapcta{display:flex;align-items:center;gap:14px;background:var(--text);color:#fff;border-radius:16px;
-  padding:16px 20px;margin:0 0 14px;text-decoration:none;transition:opacity 140ms ease}
+  padding:16px 20px;margin:0;text-decoration:none;transition:opacity 140ms ease}
 .mapcta:hover{opacity:.88}
 .mapcta .mc-i{font-size:22px;line-height:1;flex:none}
 .mapcta .mc-t{flex:1;min-width:0}
@@ -137,15 +249,33 @@ h1.pg{font-size:clamp(34px,5.5vw,60px);letter-spacing:-0.045em;font-weight:800;m
 <main class="wrap" style="margin:0 auto;padding:0 22px">
   <h1 class="pg">청약</h1>
   <p class="pgsub" id="basis">전국 아파트 분양 공고 · 자료: 한국부동산원 청약홈</p>
-  <div class="kpis" id="kpis"></div>
-  <!-- 실거래지도 바로가기 (2026-08-03 추가). 개별 공고의 '주변 실거래지도'는 그 단지 주소로 가는
-       링크라, 지도 자체로 들어가는 입구가 이 페이지에 없었다. -->
-  <a class="mapcta" href="map.html">
-    <span class="mc-i" aria-hidden="true">🗺</span>
-    <span class="mc-t"><b>실거래지도 열기</b>
-      <small>분양가가 주변 시세와 얼마나 차이 나는지 지도에서 바로 확인하세요 · 전국 실거래가 · 전국 순차 업데이트 중</small></span>
-    <span class="mc-a" aria-hidden="true">→</span>
-  </a>
+  <!-- 🔴 2026-08-28 레이아웃 개편(석봉님 「첫 화면에 지금 넣을 수 있는 청약」).
+       전에는 KPI 네 칸이 174px 를 먹고 그중 「0 접수중」이 가장 크게 나와 첫인상이
+       「할 게 없구나」였다. 기준일은 바로 위 부제와 겹치고, 공급세대 합계는 행동과
+       이어지지 않는다. 정작 공고 목록은 1,515px 아래였다(390px 실측).
+       👉 숫자는 한 줄로 접고, 그 자리에 **실제로 지원할 수 있는 건**을 놓는다. -->
+  <div class="sumbar" id="sumbar"></div>
+  <section class="nowbox" id="nowbox"></section>
+  <!-- 청약 달력 바로가기 (2026-08-28 시안). 지도 배너와 나란히 두면 둘 다 검정이라 묻히므로
+       달력만 파랑으로 갈랐다. 숫자(이번 달 일정·다음 일정 D-N)는 자료에서 그때그때 채운다. -->
+  <div class="ctas">
+    <a class="calcta" href="apply_calendar.html">
+      <span class="cc-d"><b id="ccM"></b><i id="ccD"></i></span>
+      <span class="cc-t"><b>청약 달력 열기</b>
+        <small id="ccSub">특별공급·1순위·2순위·당첨발표·계약일을 달력 한 장에서 봅니다</small></span>
+      <span class="cc-a" aria-hidden="true">→</span>
+    </a>
+    <!-- 실거래지도 바로가기 (2026-08-03 추가). 개별 공고의 '주변 실거래지도'는 그 단지 주소로 가는
+         링크라, 지도 자체로 들어가는 입구가 이 페이지에 없었다.
+         2026-08-28: 달력 배너와 한 줄로 앉히면서 서브카피를 줄였다. 두 칸 폭에서 세 줄이 되면
+         옆 칸과 높이가 어긋난다. 「전국 실거래가·전국 순차 업데이트 중」은 표기 규칙이라 남긴다. -->
+    <a class="mapcta" href="map.html">
+      <span class="mc-i" aria-hidden="true">🗺</span>
+      <span class="mc-t"><b>실거래지도 열기</b>
+        <small>분양가와 주변 시세 차이를 지도에서 확인 · 전국 실거래가 · 전국 순차 업데이트 중</small></span>
+      <span class="mc-a" aria-hidden="true">→</span>
+    </a>
+  </div>
   <!-- 무순위·잔여세대(「줍줍」) — 청약통장 없이 지원 가능한 공고 (2026-08-22 석봉님 지시).
        자료는 2026-08-22부터 매일 09:10 에 모으고 있었는데 화면이 없어 아무도 못 보던 것이다.
        ⚠️ 아래 본 목록(SB.apply)은 아파트 분양 공고이고, 이건 **다른 자료**다. 섞지 않는다. -->
@@ -155,18 +285,28 @@ h1.pg{font-size:clamp(34px,5.5vw,60px);letter-spacing:-0.045em;font-weight:800;m
       <span style="font-size:12px;font-weight:800;color:#1B3F7A;background:#EEF3FB;border-radius:5px;padding:2px 7px">무순위 · 줍줍</span>
     </div>
     <p class="pgsub" id="remCap" style="margin:6px 0 10px"></p>
-    <div id="remBox"><div class="empty">불러오는 중…</div></div>
+    <!-- 🔴 2026-08-28 석봉님 「무순위청약은 절반으로 줄이고 스크롤로 확인하게」.
+         전에는 이 섹션이 736px(모바일)를 차지해 아래 분양 목록까지 한참 내려야 했다.
+         칸 높이를 절반으로 묶고 안에서 스크롤한다 — 위치와 비중은 그대로 두면서
+         페이지 길이만 줄이는 방법이다(8/22 「비중 있게 배치」 지시와 어긋나지 않는다).
+         ⚠️스크롤이 있다는 것을 알려야 한다. 아래쪽에 흰 그라데이션을 깔아 「더 있다」를 보인다. -->
+    <div class="remwrap">
+      <div id="remBox"><div class="empty">불러오는 중…</div></div>
+    </div>
   </section>
 
   <form class="ap-search" id="apSearch">
     <input id="apQ" type="search" placeholder="지역·단지 검색 (예: 화성, 검단, 자이)" autocomplete="off">
     <button type="submit">검색</button>
   </form>
+  <!-- 🔴 2026-08-28 — 기본 탭을 「진행중」으로 바꿨다.
+       전에는 「전체」가 기본이라 마감분까지 117건을 다 그렸고 목록 높이가 28,704px 였다
+       (모바일 문서 전체의 94%). 지금 넣을 수 있는 건 5건뿐인데 그걸 보려고 스크롤을
+       수십 번 하게 된다. 마감분은 경쟁률 참고용이라 탭으로 옮긴다. -->
   <div class="tabs" id="tabs">
-    <button class="tab on" data-f="all">전체</button>
-    <button class="tab" data-f="now">접수중</button>
-    <button class="tab" data-f="soon">접수예정</button>
+    <button class="tab on" data-f="open">진행중</button>
     <button class="tab" data-f="done">접수마감</button>
+    <button class="tab" data-f="all">전체</button>
   </div>
   <div class="rwrap"><div id="rtabs"></div></div>
   <div class="aps" id="list"><div class="empty">청약 데이터 연결 대기 중입니다.</div></div>
@@ -194,15 +334,134 @@ function stateOf(x){
 }
 var items=A.items.map(function(x){x.state=stateOf(x);return x;});
 document.getElementById("basis").textContent="전국 아파트 분양 공고 "+items.length+"건 · 기준일 "+A.updated+" · 매일 갱신";
-/* KPI */
+/* 청약 달력 배너 (2026-08-28 시안) — 이번 달 일정 수와 다음 일정까지 남은 날을 채운다.
+   배너에 숫자가 없으면 그냥 메뉴처럼 보여서 안 눌린다. */
+(function(){
+  var R=(window.SB&&SB.applyRem)||{items:[]}, ds=[];
+  (A.items||[]).forEach(function(x){ ['sps','r1','r2','win'].forEach(function(k){ if(x[k]) ds.push([x[k],x.nm]); }); });
+  (R.items||[]).forEach(function(x){ ['rcept_s','win','cntr_s'].forEach(function(k){ if(x[k]) ds.push([x[k],x.nm]); }); });
+  var t=new Date(); t.setHours(0,0,0,0);
+  var ym=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0');
+  var mCnt=ds.filter(function(p){ return String(p[0]).slice(0,7)===ym; }).length;
+  var td=A.updated;
+  var tCnt=ds.filter(function(p){ return p[0]===td; }).length;
+  /* 「다음 일정 오늘」이라고 쓰면 말이 안 된다. 오늘 것이 있으면 오늘 건수를 앞세우고,
+     그 다음 일정은 내일 이후에서 고른다(2026-08-28 첫 렌더에서 걸렸다). */
+  var fut=ds.filter(function(p){ return p[0]>td; }).sort(function(a,b){ return a[0]<b[0]?-1:1; });
+  document.getElementById('ccM').textContent=(t.getMonth()+1)+'월';
+  document.getElementById('ccD').textContent=t.getDate();
+  var s=[];
+  if(tCnt) s.push('오늘 일정 '+tCnt+'건');
+  else if(mCnt) s.push('이번 달 일정 '+mCnt+'건');
+  if(fut.length){
+    var left=Math.round((new Date(fut[0][0])-new Date(td))/86400000);
+    s.push('다음 '+(left===1?'내일':'D-'+left)+' '+fut[0][1]);
+  }
+  document.getElementById('ccSub').textContent=
+    s.length ? s.join(' · ') : '특별공급·1순위·2순위·당첨발표·계약일을 달력 한 장에서 봅니다';
+})();
+/* ── 요약 한 줄 + 「지금 넣을 수 있는 청약」 (2026-08-28 개편) ──────────────
+   분양(SB.apply)과 줍줍(SB.applyRem)은 성격이 다른 자료라 아래 목록에서는 섞지 않는다.
+   다만 **여기서만** 합친다 — 사용자가 첫 화면에서 묻는 것은 「지금 뭘 넣을 수 있나」
+   하나이고, 그 답이 오늘은 줍줍 쪽에 있기 때문이다(분양 접수중 0 · 줍줍 접수중 1).
+   ⚠️섞은 자리에는 반드시 배지로 갈라 둔다(분양 / 줍줍). */
 var now=items.filter(function(x){return x.state==="now";}).length;
 var soon=items.filter(function(x){return x.state==="soon";}).length;
 var hh=items.reduce(function(a,x){return a+(+x.n||0);},0);
-document.getElementById("kpis").innerHTML=
- '<div class="kpi2"><div class="v">'+now+'</div><div class="l">접수중</div></div>'
-+'<div class="kpi2"><div class="v">'+soon+'</div><div class="l">접수예정</div></div>'
-+'<div class="kpi2"><div class="v">'+hh.toLocaleString()+'</div><div class="l">공급 세대 (최근 공고 합계)</div></div>'
-+'<div class="kpi2"><div class="v" style="font-size:clamp(15px,4.2vw,22px);white-space:nowrap">'+A.updated+'</div><div class="l">기준일</div></div>';
+(function(){
+  var R=(window.SB&&SB.applyRem)||{items:[]};
+  var td=A.updated;
+  function dday(s){
+    if(!s) return null;
+    return Math.round((new Date(s)-new Date(td))/86400000);
+  }
+  function eok(v){ if(v==null) return ''; var e=v/10000;
+    return (e>=10? Math.round(e*10)/10 : Math.round(e*100)/100)+'억'; }
+  var rows=[];
+  items.forEach(function(x){
+    if(x.state==='done') return;
+    rows.push({kind:'ap',nm:x.nm,area:x.area,s:x.s,e:x.e,lo:x.lo,hi:x.hi,
+               n:x.n,url:x.url,now:x.state==='now',
+               sps:x.sps,r1:x.r1,r2:x.r2,win:x.win,esm:x.esm,mk:x.mk,mkn:x.mkn});
+  });
+  (R.items||[]).forEach(function(x){
+    if(!x.open) return;
+    rows.push({kind:'jp',nm:x.nm,area:x.area,s:x.rcept_s,e:x.rcept_e,lo:x.amtLo,hi:x.amtHi,
+               n:x.hsh,url:x.url,now:x.status==='접수중',cat:x.cat,
+               win:x.win,cntr:x.cntr_s});
+  });
+  rows.sort(function(a,b){
+    if(a.now!==b.now) return a.now? -1:1;        /* 접수중이 먼저 */
+    return (a.s||'')<(b.s||'')? -1:1;            /* 그 다음 임박한 순 */
+  });
+  var nowN=rows.filter(function(x){return x.now;}).length;
+  /* 요약 한 줄 — 숫자는 남기되 높이를 뺏지 않는다 */
+  /* ⚠️항목을 넷 이상 넣으면 390px 에서 세 줄로 감긴다(실측 93px). 셋으로 줄인다.
+     공급세대 합계는 뺐다 — 사용자의 다음 행동과 이어지지 않는 숫자다.
+     기준일은 바로 위 부제에 이미 있으므로 여기서는 생략한다. */
+  document.getElementById('sumbar').innerHTML=
+     '<span><b>'+nowN+'</b><span class="u">건 접수중</span></span>'
+    +'<span class="sp">·</span>'
+    +'<span><b>'+rows.filter(function(x){return !x.now;}).length+'</b><span class="u">건 접수예정</span></span>'
+    +'<span class="sp">·</span>'
+    +'<span><b>'+items.length+'</b><span class="u">개 분양 공고</span></span>'
+    +'<span class="rt">매일 갱신</span>';
+  var TOP=6;
+  var box=document.getElementById('nowbox');
+  var head='<h2>지금 넣을 수 있는 청약'
+    +'<em>'+(nowN? '접수중 '+nowN+'건 · ':'')+'가까운 순'+'</em></h2>';
+  if(!rows.length){
+    box.innerHTML=head+'<div class="none">지금 접수 중이거나 예정된 공고가 없습니다. 아래 목록에서 지난 공고를 볼 수 있습니다.</div>';
+    return;
+  }
+  function md(s){ return s? (+s.slice(5,7))+'/'+(+s.slice(8,10)) : ''; }
+  box.innerHTML=head+'<div class="rows">'+rows.slice(0,TOP).map(function(x){
+    var d=dday(x.s), lab;
+    if(x.now) lab='접수중';
+    else if(d===0) lab='오늘';
+    else if(d===1) lab='내일';
+    else lab='D-'+d;
+    /* 🔴 D-N 이 「무엇의 D-N」인지 밝힌다(2026-08-28 석봉님 「특공인지 1순위인지 표시」).
+       s(접수시작)는 sps 가 있으면 특별공급 첫날, 없으면 1순위 첫날이다
+       (실측: sps 있는 95건 전부 s==sps · 없는 22건 전부 s==r1). */
+    var first = x.kind==='jp' ? '접수'
+              : (x.sps && x.sps===x.s) ? '특별공급' : '1순위';
+    /* 일정 줄 — 오늘 이후로 남은 것만 적는다. 지난 단계를 늘어놓으면 읽는 부담만 는다. */
+    var seq=[];
+    if(x.kind==='jp'){
+      if(x.s) seq.push(['접수', x.s, x.e]);
+      if(x.win) seq.push(['발표', x.win]);
+      if(x.cntr) seq.push(['계약', x.cntr]);
+    }else{
+      if(x.sps) seq.push(['특공', x.sps]);
+      if(x.r1)  seq.push(['1순위', x.r1]);
+      if(x.r2 && x.r2!==x.r1) seq.push(['2순위', x.r2]);
+      if(x.win) seq.push(['발표', x.win]);
+    }
+    var sch=seq.filter(function(q){ return q[1]>=td; })
+               .map(function(q){
+                 var v=md(q[1])+(q[2]&&q[2]!==q[1]? '~'+md(q[2]):'');
+                 return '<span class="it"><b>'+q[0]+'</b> '+v+'</span>';
+               }).join('');
+    var sub=[x.area, (x.kind==='jp'? (x.cat||'무순위') : '아파트 분양'),
+             (x.n? x.n.toLocaleString()+'세대':'')].filter(Boolean).join(' · ');
+    var pr=x.lo? (eok(x.lo)+(x.hi&&x.hi!==x.lo? '~'+eok(x.hi):'')) : '';
+    /* 주변 시세 대비 — 전용 ㎡당 분양가(esm)와 같은 시군구 실거래 중위(mk) 비교.
+       ⚠️연식·입지 구분 없는 시군구 전체 중위라 신축은 통상 높게 나온다. 아래 각주에 이미 밝혀 뒀다. */
+    var cmp='';
+    if(x.kind==='ap' && x.esm && x.mk){
+      var g=Math.round((x.esm/x.mk-1)*100);
+      cmp='<span class="cmp'+(g<0?' lo':'')+'">주변 시세 '+(g>=0?'+':'')+g+'%</span>';
+    }
+    return '<a class="nrow '+(x.now?'now':'soon')+'" href="'+(x.url||'#')+'" target="_blank" rel="noopener">'
+      +'<span class="d">'+lab+'<i>'+first+'</i></span>'
+      +'<span class="tg '+(x.kind==='jp'?'jp':'ap')+'">'+(x.kind==='jp'?'줍줍':'분양')+'</span>'
+      +'<span class="bd"><span class="nm">'+x.nm+'</span><span class="sub">'+sub+'</span></span>'
+      +(sch? '<span class="sch">'+sch+'</span>':'')
+      +(pr? '<span class="pr">'+pr+cmp+'</span>':'')
+      +'</a>';
+  }).join('')+'</div>';
+})();
 var ST={now:["접수중","now"],soon:["접수예정","soon"],done:["접수마감","done"]};
 var curR="all",curF="all";
 var PRI=["서울","경기","인천"];
@@ -224,7 +483,9 @@ function norm(s){return (s||"").replace(/\s+/g,"");}
 function render(f){
   curF=f;
   var L=items.filter(function(x){
-    if(f!=="all"&&x.state!==f)return false;
+    /* open = 접수중 + 접수예정 (2026-08-28 신설 기본 탭) */
+    if(f==="open"){ if(x.state==="done")return false; }
+    else if(f!=="all"&&x.state!==f)return false;
     if(curR!=="all"&&x.area!==curR)return false;
     if(curQ&&norm((x.ad||"")+(x.nm||"")).indexOf(curQ)<0)return false;
     return true;
@@ -253,7 +514,16 @@ function render(f){
      +'</span></div>';
   }).join("");
 }
-render("all");
+/* 기본은 「진행중」 — 마감분 112건까지 그리면 목록이 28,704px 가 된다(2026-08-28).
+   ⚠️지도에서 `?q=` 로 넘어온 검색은 아래에서 「전체」로 되돌린다. 접수 끝난 공고를
+     찾으러 오는 동선이라 진행중만 보면 「없다」가 된다. */
+document.querySelectorAll('#tabs .tab').forEach(function(t){
+  var n = t.dataset.f==='open' ? items.filter(function(x){return x.state!=='done';}).length
+        : t.dataset.f==='done' ? items.filter(function(x){return x.state==='done';}).length
+        : items.length;
+  t.textContent = t.textContent + ' ' + n;
+});
+render("open");
 /* 지역·단지 검색 (입력 즉시 필터, 엔터 시 GA 수집) */
 var aq=document.getElementById("apQ"),af=document.getElementById("apSearch");
 if(aq){
@@ -354,14 +624,22 @@ document.querySelectorAll("#tabs .tab").forEach(function(t){
       box.innerHTML='<div class="empty">'+(RQ?'무순위·잔여세대 공고에는 없습니다.':'지금 지원 가능한 무순위 공고가 없습니다.')+'</div>';
       return;
     }
-    /* 🔴 모바일에서 8건을 다 펴면 **아래 본 목록이 스크롤 세 번 밑으로 밀린다**(2026-08-22 실측).
-       처음엔 4건만 보이고 나머지는 눌러서 편다. 데스크톱은 자리가 있어 그대로 다 편다. */
-    var CAP=(window.matchMedia&&window.matchMedia('(max-width:720px)').matches)?4:show.length;
-    box.innerHTML=rows(show.slice(0,CAP))
-      +(show.length>CAP?('<button type="button" id="remMore" style="width:100%;margin-top:9px;'
-        +'border:1px solid #E3E8F0;background:#fff;color:#1B3F7A;font:inherit;font-size:12.5px;'
-        +'font-weight:800;border-radius:10px;padding:9px 0;cursor:pointer">'
-        +(show.length-CAP)+'건 더 보기</button>'):'');
+    /* 🔴 2026-08-28 — 「4건만 펴고 더 보기 버튼」에서 **전부 펴고 안쪽 스크롤**로 바꿨다
+       (석봉님 「절반으로 줄이고 스크롤로 확인하게」). 버튼을 누르면 섹션이 통째로 길어져
+       아래 본 목록이 다시 밀리는데, 스크롤은 칸 높이를 그대로 두면서 전부 볼 수 있다.
+       ⚠️「몇 건 중 몇 건이 보인다」를 캡션이 말해 주므로 건수 안내는 따로 두지 않는다. */
+    box.innerHTML=rows(show);
+    (function(){
+      var wrap=box.parentNode;
+      if(!wrap||!wrap.classList||!wrap.classList.contains('remwrap')) return;
+      function mark(){
+        var atEnd = box.scrollTop + box.clientHeight >= box.scrollHeight - 4;
+        var noScroll = box.scrollHeight <= box.clientHeight + 2;
+        wrap.classList.toggle('end', atEnd || noScroll);
+      }
+      box.addEventListener('scroll', mark, {passive:true});
+      setTimeout(mark, 0);
+    })();
     var mb=document.getElementById('remMore');
     if(mb)mb.onclick=function(){box.innerHTML=rows(show);hint(hit.length);};
     hint(hit.length);
@@ -436,5 +714,5 @@ document.querySelectorAll("#tabs .tab").forEach(function(t){
   <script src="assets/sb_auth.js?v=8"></script>
 <script src="assets/sb_tabbar.js?v=10"></script>
 <script defer src="assets/sb_feedback.js?v=4"></script>
-<script defer src="assets/sb_nav.js?v=2"></script>
+<script defer src="assets/sb_nav.js?v=3"></script>
 </body></html>

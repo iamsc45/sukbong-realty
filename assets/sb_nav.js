@@ -30,6 +30,10 @@
   var GROUP = [
     ['데이터', [
       ['apply.html', '청약'],
+      /* 청약 달력 (2026-08-28 신설). `apply.html` 보다 **뒤에** 둔다 —
+         위 항목은 href 조각으로 찾으므로 `apply_calendar.html` 이 먼저 오면
+         `apply.html` 조각에 걸려 둘이 같은 항목으로 잡힌다. */
+      ['apply_calendar.html', '청약 달력'],
       ['auction.html', '경매·공매'],
       ['%EC%A7%80%ED%91%9C', '금리·지표'],      /* 지표.html */
       ['lh_%EC%A7%84%EB%8B%A8', 'LH매입'],      /* lh_진단.html */

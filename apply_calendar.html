@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Y7P41Z09PV"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-Y7P41Z09PV');</script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- 홈 화면 앱(PWA) — 데이터관리/스크립트/앱메타_주입.py 가 넣습니다 -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#F2F2EF">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="석봉부동산">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="icon" href="/icons/favicon-32.png" sizes="32x32">
+<script>if('serviceWorker' in navigator){addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}</script>
+<title>청약 달력 · 석봉 부동산 정보방</title>
+<meta name="description" content="전국 아파트 청약과 무순위(줍줍) 일정을 달력 하나로 봅니다.">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<meta property="og:title" content="청약 달력 · 석봉 부동산 정보방">
+<meta property="og:description" content="전국 아파트 분양과 무순위(줍줍) 청약 일정을 달력 한 장에서 봅니다.">
+<meta property="og:image" content="https://xn--2q1br1nnrasc92a76myvau64b.com/assets/og_default.png">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+.wrap{max-width:1100px}
+h1.pg{font-size:clamp(30px,5vw,52px);letter-spacing:-0.045em;font-weight:800;margin:44px 0 6px}
+.pgsub{color:var(--muted);font-size:13.5px;margin:0 0 22px;line-height:1.7}
+
+/* 시안 표시 */
+
+/* 월 이동 */
+.calhead{display:flex;align-items:center;gap:10px;margin:0 0 16px;flex-wrap:wrap}
+.mv{width:38px;height:38px;border:1px solid var(--hair);background:var(--soft);border-radius:11px;
+  font-size:17px;line-height:1;cursor:pointer;color:var(--text);transition:border-color 120ms ease}
+.mv:hover{border-color:var(--muted2)}
+.ym{font-size:21px;font-weight:800;letter-spacing:-0.03em;min-width:150px}
+.today-btn{border:1px solid var(--text);background:transparent;border-radius:100px;padding:6px 15px;
+  font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;color:var(--text)}
+.today-btn:hover{background:var(--text);color:#fff}
+.cnt{margin-left:auto;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* 필터 */
+.fbox{background:var(--soft);border:1px solid var(--hair);border-radius:14px;padding:14px 16px;margin:0 0 18px}
+.frow{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.frow + .frow{margin-top:11px;padding-top:11px;border-top:1px solid var(--hair)}
+.flab{font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--muted);min-width:56px}
+.chip{border:1px solid var(--hair);background:#fff;border-radius:100px;padding:6px 14px;font:inherit;
+  font-size:12.5px;font-weight:700;cursor:pointer;color:var(--muted);display:inline-flex;align-items:center;
+  gap:6px;transition:all 120ms ease}
+.chip:hover{border-color:var(--muted2);color:var(--text)}
+.chip.on{background:var(--text);color:#fff;border-color:var(--text)}
+.chip i{width:8px;height:8px;border-radius:2px;display:inline-block;background:currentColor;opacity:.85}
+.chip.on i{opacity:1}
+.fsel{border:1px solid var(--hair);background:#fff;border-radius:100px;padding:6px 13px;font:inherit;
+  font-size:12.5px;font-weight:700;color:var(--text);cursor:pointer}
+
+/* 범례 */
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:0 0 14px}
+.legend b{display:inline-flex;align-items:center;gap:6px;font-weight:600}
+.legend i{width:9px;height:9px;border-radius:3px}
+.k-apt{background:var(--acc-blue)}.k-rem{background:var(--acc-teal)}.k-off{background:var(--acc-violet)}
+
+/* 달력 */
+.cal{border:1px solid var(--hair);border-radius:16px;overflow:hidden;background:#fff}
+.dow{display:grid;grid-template-columns:repeat(7,1fr);background:var(--gray);border-bottom:1px solid var(--hair)}
+.dow span{text-align:center;font-size:11.5px;font-weight:800;letter-spacing:.05em;color:var(--muted);padding:9px 0}
+.dow span:first-child{color:#C24B37}.dow span:last-child{color:var(--acc-blue)}
+.grid{display:grid;grid-template-columns:repeat(7,1fr)}
+.cell{min-height:104px;border-right:1px solid var(--hair);border-bottom:1px solid var(--hair);
+  padding:7px 7px 8px;cursor:pointer;position:relative;background:#fff;transition:background 110ms ease}
+.cell:nth-child(7n){border-right:0}
+.cell:hover{background:var(--soft)}
+.cell.off{background:#FCFCFB}
+.cell.off .dnum{color:var(--muted2)}
+.cell.sel{background:#F0F4FF;box-shadow:inset 0 0 0 2px var(--acc-blue)}
+.dnum{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;display:block;margin:0 0 5px}
+.cell.sun .dnum{color:#C24B37}.cell.sat .dnum{color:var(--acc-blue)}
+.cell.today .dnum{background:var(--text);color:#fff;border-radius:100px;width:23px;height:23px;
+  display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+.evs{display:flex;flex-direction:column;gap:3px}
+.ev{font-size:10.5px;font-weight:700;border-radius:5px;padding:2.5px 6px;color:#fff;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.35}
+.ev.apt{background:var(--acc-blue)}.ev.rem{background:var(--acc-teal)}.ev.off{background:var(--acc-violet)}
+/* 지난 일정은 흐리게. 이 달을 열면 대부분이 이미 끝난 건이라, 같은 세기로 칠하면
+   아직 남은 일정이 묻힌다(2026-08-28 첫 렌더에서 8월 177건 중 대부분이 마감분이었다). */
+.ev.past{opacity:.32}
+.cell:hover .ev.past{opacity:.6}
+.evmore{font-size:10.5px;color:var(--muted);font-weight:700;padding-left:2px}
+
+/* 선택일 상세 */
+.daybox{margin:26px 0 0}
+.dayhead{display:flex;align-items:baseline;gap:10px;margin:0 0 13px;flex-wrap:wrap}
+.dayhead h2{font-size:19px;font-weight:800;letter-spacing:-0.03em;margin:0}
+.dayhead .sm{font-size:12.5px;color:var(--muted)}
+.items{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.it{background:var(--soft);border:1px solid var(--hair);border-radius:14px;padding:15px 17px;
+  display:flex;gap:13px;align-items:baseline;flex-wrap:wrap;transition:border-color 130ms ease}
+.it:hover{border-color:var(--muted2)}
+.it .tag{font-size:10px;letter-spacing:.06em;font-weight:800;border-radius:100px;padding:4px 11px;
+  color:#fff;white-space:nowrap}
+.tag.apt{background:var(--acc-blue)}.tag.rem{background:var(--acc-teal)}.tag.off{background:var(--acc-violet)}
+.it .nm{font-size:15.5px;font-weight:800;letter-spacing:-0.02em;text-decoration:none}
+.it .nm:hover{text-decoration:underline}
+.it .meta{width:100%;font-size:12.5px;color:var(--muted);line-height:1.75}
+.it .pr{margin-left:auto;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.it .pr b{font-size:15px;color:var(--acc-blue)}
+.it .pr small{display:block;font-size:11px;color:var(--muted)}
+.golink{display:inline-block;background:var(--text);color:#fff;border-radius:100px;padding:2.5px 11px;
+  font-size:10.5px;font-weight:700;text-decoration:none;margin-left:6px;vertical-align:1px}
+.golink:hover{opacity:.8}
+.empty{background:var(--soft);border:1px dashed var(--muted2);border-radius:14px;padding:34px;
+  text-align:center;color:var(--muted);font-size:13.5px}
+
+/* 다가오는 일정 */
+.upnext{margin:34px 0 0}
+.upnext h2{font-size:17px;font-weight:800;letter-spacing:-0.03em;margin:0 0 12px}
+/* 🔴 grid 는 트랙 기본이 auto 라 칸이 내용만큼 넓어진다. minmax(0,1fr) 로 못 박지 않으면
+   안쪽 flex 항목에 min-width:0 을 줘도 소용이 없다(2026-08-28: .up .t 만 고쳤을 때 그대로 471px). */
+.uplist{display:grid;grid-template-columns:minmax(0,1fr);gap:7px}
+.up{display:flex;gap:11px;align-items:center;background:#fff;border:1px solid var(--hair);min-width:0;
+  border-radius:11px;padding:10px 14px;font-size:13px;cursor:pointer;transition:border-color 120ms ease}
+.up:hover{border-color:var(--muted2)}
+.up .d{font-weight:800;font-variant-numeric:tabular-nums;min-width:62px;font-size:12.5px}
+.up .dd{font-size:10.5px;font-weight:800;letter-spacing:.05em;border-radius:100px;padding:3px 9px;
+  color:#fff;white-space:nowrap}
+/* 🔴 min-width:0 이 없으면 flex 항목이 안 줄어든다. 긴 단지명 하나가 줄을 449px 로
+   밀어 모바일에서 가로 스크롤이 생겼다(2026-08-28 390px 실측 sw 471). */
+.up .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.up .left{margin-left:auto;font-size:11.5px;color:var(--muted);white-space:nowrap}
+
+.notice2{font-size:11.5px;color:var(--muted);margin:34px 0 60px;line-height:1.85}
+
+@media(max-width:760px){
+  h1.pg{margin:30px 0 5px}
+  .cell{min-height:66px;padding:5px 3px 6px}
+  .dnum{font-size:12px;margin:0 0 4px;text-align:center}
+  .cell.today .dnum{margin:0 auto 4px}
+  .evs{flex-direction:row;justify-content:center;gap:3px;flex-wrap:wrap}
+  .ev{width:7px;height:7px;padding:0;border-radius:100px;font-size:0;color:transparent}
+  .ev.past{opacity:.28}
+  .evmore{font-size:9.5px;line-height:7px;padding:0;font-weight:800}
+  .ym{font-size:18px;min-width:0}
+  .cnt{width:100%;margin:6px 0 0;text-align:left}
+  .flab{min-width:100%;margin-bottom:2px}
+  .it .pr{margin-left:0;text-align:left;width:100%}
+}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html">석봉 부동산 정보방</a>
+  <nav>
+    <a href="index.html">홈</a>
+    <a href="map.html">실거래지도</a>
+    <a href="apply.html" class="on">청약</a>
+    <a href="auction.html">경매·공매</a><a href="%EC%A7%80%ED%91%9C.html">금리·지표</a><a href="lh_%EC%A7%84%EB%8B%A8.html">LH매입</a><a href="%ED%86%A0%EC%A7%80%EA%B2%80%EC%83%89.html">땅값</a><a href="%EC%9D%B4%EC%9A%A9%EC%95%88%EB%82%B4.html">이용안내</a>
+    <a href="%EA%B8%80.html">리포트</a>
+    <a href="favorites.html">★ 관심단지</a>
+    <a href="https://blog.naver.com/seokbongnews" target="_blank" rel="noopener">블로그</a>
+    <a href="channels.html">채널</a>
+    <a href="%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html">대출 문의</a>
+  
+    <span id="sbAuthBtn"></span>
+  </nav>
+</header>
+
+<main class="wrap" style="margin:0 auto;padding:0 22px">
+  <h1 class="pg">청약 달력</h1>
+  <p class="pgsub" id="sub">불러오는 중입니다.</p>
+
+  <div class="calhead">
+    <button class="mv" id="prev" aria-label="이전 달">‹</button>
+    <div class="ym" id="ym"></div>
+    <button class="mv" id="next" aria-label="다음 달">›</button>
+    <button class="today-btn" id="tbtn">오늘</button>
+    <div class="cnt" id="mcnt"></div>
+  </div>
+
+  <div class="fbox">
+    <div class="frow">
+      <span class="flab">일정</span>
+      <button class="chip on" data-k="sps">특별공급</button>
+      <button class="chip on" data-k="r1">1순위</button>
+      <button class="chip on" data-k="r2">2순위</button>
+      <button class="chip on" data-k="rc">접수(줍줍·오피스텔)</button>
+      <button class="chip on" data-k="win">당첨발표</button>
+      <button class="chip on" data-k="ct">계약</button>
+    </div>
+    <div class="frow">
+      <span class="flab">지역</span>
+      <select class="fsel" id="area"><option value="">전국</option></select>
+      <span class="flab" style="min-width:auto;margin-left:8px">종류</span>
+      <button class="chip on" data-c="apt"><i></i>아파트 분양</button>
+      <button class="chip on" data-c="rem"><i></i>무순위·줍줍</button>
+      <button class="chip on" data-c="off"><i></i>오피스텔·도시형</button>
+    </div>
+  </div>
+
+  <div class="legend">
+    <b><i class="k-apt"></i>아파트 분양</b>
+    <b><i class="k-rem"></i>무순위·줍줍 (통장 없이 지원)</b>
+    <b><i class="k-off"></i>오피스텔·도시형 (통장 없이 지원)</b>
+  </div>
+
+  <div class="cal">
+    <div class="dow"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <section class="daybox">
+    <div class="dayhead"><h2 id="dtitle"></h2><span class="sm" id="dsub"></span></div>
+    <div class="items" id="items"></div>
+  </section>
+
+  <section class="upnext">
+    <h2>다가오는 일정</h2>
+    <div class="uplist" id="up"></div>
+  </section>
+
+  <p class="notice2" id="notice"></p>
+</main>
+
+<footer class="site-footer">
+  <span>📈 <a href="https://telegram.me/seokbongnews">텔레그램 채널</a></span> ·
+  <span><a href="https://blog.naver.com/seokbongnews">네이버 블로그</a></span>
+  <div class="fine">원자료: 한국부동산원 청약홈 · 편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 무단 전재·재배포 금지</div>
+</footer>
+
+<script src="data/apply.js"></script>
+<script src="data/apply_rem.js"></script>
+<script>
+(function(){
+'use strict';
+var A=(window.SB&&SB.apply)||{items:[]}, R=(window.SB&&SB.applyRem)||{items:[]};
+var UPD=A.updated||R.updated||'';
+
+/* ── 일정 펼치기 ────────────────────────────────────────────────
+   한 공고가 날짜를 여러 개 가진다(특공·1순위·2순위·발표·계약).
+   달력은 「날짜 하나 = 줄 하나」라서, 공고를 날짜 단위로 풀어 둔다.
+   s(접수시작)는 sps 또는 r1 과 항상 같은 값이라 따로 찍지 않는다
+   (2026-08-28 실측: sps 있는 95건 전부 s==sps, 없는 22건 전부 s==r1). */
+var EV=[];
+function push(d,kind,cls,item,label){ if(d) EV.push({d:String(d).slice(0,10),k:kind,c:cls,i:item,l:label}); }
+
+(A.items||[]).forEach(function(it){
+  push(it.sps,'sps','apt',it,'특별공급');
+  push(it.r1 ,'r1' ,'apt',it,'1순위');
+  push(it.r2 ,'r2' ,'apt',it,'2순위');
+  push(it.win,'win','apt',it,'당첨발표');
+});
+(R.items||[]).forEach(function(it){
+  var cls = (it.cat==='오피스텔') ? 'off' : 'rem';
+  push(it.rcept_s,'rc' ,cls,it,'접수');
+  push(it.win    ,'win',cls,it,'당첨발표');
+  push(it.cntr_s ,'ct' ,cls,it,'계약');
+});
+/* 달력 칸은 좁다. 라벨을 그대로 쓰면 알약을 라벨이 다 먹고 단지명이 두 글자만 남는다
+   (2026-08-28 첫 렌더에서 「특별공급 월계 중흥S-…」로 나왔다). 칸 안에서만 줄여 쓴다. */
+var SHORT={sps:'특공',r1:'1순위',r2:'2순위',rc:'접수',win:'발표',ct:'계약'};
+
+/* 지역 목록 */
+var areas={}; EV.forEach(function(e){ if(e.i.area) areas[e.i.area]=(areas[e.i.area]||0)+1; });
+var sel=document.getElementById('area');
+Object.keys(areas).sort(function(a,b){return areas[b]-areas[a];}).forEach(function(a){
+  var o=document.createElement('option'); o.value=a; o.textContent=a+' ('+areas[a]+')'; sel.appendChild(o);
+});
+
+/* 상태 */
+var KIND={sps:1,r1:1,r2:1,rc:1,win:1,ct:1}, CAT={apt:1,rem:1,off:1}, AREA='';
+var today=new Date(); today.setHours(0,0,0,0);
+var cur=new Date(today.getFullYear(),today.getMonth(),1);
+var picked=iso(today);
+
+function iso(d){ var m=d.getMonth()+1,x=d.getDate();
+  return d.getFullYear()+'-'+(m<10?'0':'')+m+'-'+(x<10?'0':'')+x; }
+function fromIso(s){ var p=s.split('-'); return new Date(+p[0],+p[1]-1,+p[2]); }
+function keep(e){ return KIND[e.k] && CAT[e.c] && (!AREA || e.i.area===AREA); }
+function evOn(d){ return EV.filter(function(e){ return e.d===d && keep(e); }); }
+function won(v){ if(v==null) return ''; var e=v/10000;
+  return e>=10 ? (Math.round(e*10)/10)+'억' : (Math.round(e*100)/100)+'억'; }
+function py(m){ return m ? (Math.round(m/3.305785*10)/10)+'평' : ''; }
+
+/* ── 달력 그리기 ─────────────────────────────────────────────── */
+function draw(){
+  var y=cur.getFullYear(), m=cur.getMonth();
+  document.getElementById('ym').textContent=y+'년 '+(m+1)+'월';
+  var first=new Date(y,m,1), start=new Date(y,m,1-first.getDay());
+  var g=document.getElementById('grid'); g.innerHTML=''; var mc=0;
+  for(var n=0;n<42;n++){
+    var d=new Date(start.getFullYear(),start.getMonth(),start.getDate()+n), s=iso(d);
+    var cell=document.createElement('div'); cell.className='cell';
+    if(d.getMonth()!==m) cell.className+=' off';
+    if(d.getDay()===0) cell.className+=' sun'; if(d.getDay()===6) cell.className+=' sat';
+    if(s===iso(today)) cell.className+=' today';
+    if(s===picked) cell.className+=' sel';
+    cell.setAttribute('data-d',s);
+    var evs=evOn(s); if(d.getMonth()===m) mc+=evs.length;
+    var past = s < iso(today);
+    var h='<b class="dnum">'+d.getDate()+'</b><div class="evs">';
+    evs.slice(0,3).forEach(function(e){
+      h+='<span class="ev '+e.c+(past?' past':'')+'" title="'+esc(e.i.nm)+' · '+e.l+'">'
+        +esc(SHORT[e.k]||e.l)+' '+esc(cut(e.i.nm,12))+'</span>';
+    });
+    if(evs.length>3) h+='<span class="evmore">+'+(evs.length-3)+'</span>';
+    g.appendChild(cell); cell.innerHTML=h+'</div>';
+    if(n>=34 && new Date(start.getFullYear(),start.getMonth(),start.getDate()+n+1).getMonth()!==m) break;
+  }
+  document.getElementById('mcnt').textContent='이 달 일정 '+mc+'건';
+}
+function cut(s,n){ s=String(s||''); return s.length>n ? s.slice(0,n)+'…' : s; }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+/* ── 선택한 날 상세 ──────────────────────────────────────────── */
+function drawDay(){
+  var evs=evOn(picked), d=fromIso(picked);
+  var W=['일','월','화','수','목','금','토'][d.getDay()];
+  document.getElementById('dtitle').textContent=(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+W+')';
+  document.getElementById('dsub').textContent= evs.length ? evs.length+'건' : '';
+  var box=document.getElementById('items');
+  if(!evs.length){ box.innerHTML='<div class="empty">이 날은 해당하는 일정이 없습니다. 다른 날짜를 눌러 보세요.</div>'; return; }
+  var ord={sps:0,r1:1,r2:2,rc:3,win:4,ct:5};
+  evs.sort(function(a,b){ return (ord[a.k]-ord[b.k]) || (a.i.nm>b.i.nm?1:-1); });
+  box.innerHTML=evs.map(function(e){
+    var it=e.i, isApt=(e.c==='apt'), h='';
+    h+='<div class="it">';
+    h+='<span class="tag '+e.c+'">'+esc(e.l)+'</span>';
+    h+='<a class="nm" href="'+esc(it.url||'#')+'" target="_blank" rel="noopener">'+esc(it.nm)+' ↗</a>';
+    if(isApt && it.lo){
+      h+='<div class="pr"><b>'+won(it.lo)+(it.hi&&it.hi!==it.lo?' ~ '+won(it.hi):'')+'</b>'
+        +(it.sqm?'<small>'+it.sqm.toLocaleString()+'만/㎡ (공급면적 기준)</small>':'')+'</div>';
+    } else if(!isApt && it.amtLo){
+      h+='<div class="pr"><b>'+won(it.amtLo)+(it.amtHi&&it.amtHi!==it.amtLo?' ~ '+won(it.amtHi):'')+'</b>'
+        +(it.ppLo?'<small>평당 '+it.ppLo.toLocaleString()+(it.ppHi&&it.ppHi!==it.ppLo?'~'+it.ppHi.toLocaleString():'')+'만 (전용)</small>':'')+'</div>';
+    }
+    var meta=[];
+    meta.push(esc(it.area||''));
+    if(isApt){
+      if(it.n) meta.push(it.n.toLocaleString()+'세대');
+      meta.push('접수 '+esc(it.s)+' ~ '+esc(it.e));
+      if(it.win) meta.push('발표 '+esc(it.win));
+    }else{
+      meta.push(esc(it.cat||''));
+      if(it.hsh) meta.push(it.hsh.toLocaleString()+'세대');
+      if(it.exLo) meta.push('전용 '+it.exLo+'㎡('+py(it.exLo)+')'+(it.exHi&&it.exHi!==it.exLo?' ~ '+it.exHi+'㎡('+py(it.exHi)+')':''));
+      meta.push('접수 '+esc(it.rcept_s)+(it.rcept_e&&it.rcept_e!==it.rcept_s?' ~ '+esc(it.rcept_e):''));
+      if(it.win) meta.push('발표 '+esc(it.win));
+    }
+    var addr=it.ad||it.addr||'';
+    var q=addr.replace(/^(서울특별시|경기도|인천광역시|부산광역시|대구광역시|광주광역시|대전광역시|울산광역시|세종특별자치시)\s*/,'');
+    h+='<div class="meta">'+meta.join(' · ')+'<br>'+esc(addr)
+      +'<a class="golink" href="map.html?q='+encodeURIComponent(it.nm)+'">지도에서 보기</a></div>';
+    h+='</div>';
+    return h;
+  }).join('');
+}
+
+/* ── 다가오는 일정 ───────────────────────────────────────────── */
+function drawUp(){
+  /* 오늘 것은 바로 위 상세에 이미 펼쳐져 있다. 여기에 또 넣으면 여덟 줄이 전부
+     오늘로 채워져 「다가오는」이 아니게 된다(2026-08-28 첫 렌더에서 8건 전부 오늘). */
+  var t=iso(new Date(today.getFullYear(),today.getMonth(),today.getDate()+1));
+  var near=EV.filter(function(e){ return e.d>=t && keep(e); })
+             .sort(function(a,b){ return a.d<b.d?-1:(a.d>b.d?1:0); }).slice(0,8);
+  var box=document.getElementById('up');
+  if(!near.length){ box.innerHTML='<div class="empty">앞으로 예정된 일정이 없습니다.</div>'; return; }
+  box.innerHTML=near.map(function(e){
+    var d=fromIso(e.d), left=Math.round((d-today)/86400000);
+    var lt = left===0 ? '오늘' : (left===1?'내일':'D-'+left);
+    return '<div class="up" data-go="'+e.d+'">'
+      +'<span class="d">'+(d.getMonth()+1)+'/'+d.getDate()+'</span>'
+      +'<span class="dd '+ (e.c==='apt'?'tag apt':(e.c==='rem'?'tag rem':'tag off')) +'">'+esc(e.l)+'</span>'
+      +'<span class="t">'+esc(e.i.nm)+'</span>'
+      +'<span class="left">'+lt+'</span></div>';
+  }).join('');
+}
+
+/* ── 이벤트 ─────────────────────────────────────────────────── */
+document.getElementById('grid').addEventListener('click',function(ev){
+  var c=ev.target.closest('.cell'); if(!c) return;
+  picked=c.getAttribute('data-d'); draw(); drawDay();
+  document.querySelector('.daybox').scrollIntoView({behavior:'smooth',block:'start'});
+});
+document.getElementById('up').addEventListener('click',function(ev){
+  var u=ev.target.closest('.up'); if(!u) return;
+  picked=u.getAttribute('data-go'); var d=fromIso(picked);
+  cur=new Date(d.getFullYear(),d.getMonth(),1);
+  draw(); drawDay();
+  document.querySelector('.cal').scrollIntoView({behavior:'smooth',block:'start'});
+});
+document.getElementById('prev').onclick=function(){ cur=new Date(cur.getFullYear(),cur.getMonth()-1,1); draw(); };
+document.getElementById('next').onclick=function(){ cur=new Date(cur.getFullYear(),cur.getMonth()+1,1); draw(); };
+document.getElementById('tbtn').onclick=function(){
+  cur=new Date(today.getFullYear(),today.getMonth(),1); picked=iso(today); draw(); drawDay(); };
+document.querySelectorAll('.chip').forEach(function(b){
+  b.onclick=function(){
+    b.classList.toggle('on');
+    var k=b.getAttribute('data-k'), c=b.getAttribute('data-c');
+    if(k) KIND[k]=b.classList.contains('on')?1:0;
+    if(c) CAT[c]=b.classList.contains('on')?1:0;
+    draw(); drawDay(); drawUp();
+  };
+});
+sel.onchange=function(){ AREA=sel.value; draw(); drawDay(); drawUp(); };
+
+/* ── 첫 그림 ────────────────────────────────────────────────── */
+document.getElementById('sub').innerHTML=
+  '아파트 분양 '+(A.items||[]).length+'건과 통장 없이 지원 가능한 청약 '+(R.items||[]).length+'건의 일정을 한 화면에 모았습니다.'
+  +'<br>특별공급·1순위·2순위·당첨발표·계약일을 모두 찍었습니다. 위 칩으로 보고 싶은 일정만 남길 수 있습니다.'
+  +' 날짜를 누르면 그 날 일정이 아래에 펼쳐집니다. · 기준일 '+esc(UPD)+' · 매일 갱신';
+document.getElementById('notice').innerHTML=
+  '※ 자료: 한국부동산원 청약홈 (매일 갱신) · 기준일 '+esc(UPD)+'. '
+  +'분양가는 주택형별 최고 공급금액 기준이며 ㎡당 단가는 공급면적 기준 중위 근사치, 무순위·오피스텔의 평당가는 전용면적 기준입니다. '
+  +'특별공급일이 따로 없는 공고는 접수 시작일이 곧 1순위 접수일입니다. '
+  +'무순위·잔여세대는 청약통장이 없어도 지원할 수 있는 대신 거주지·재당첨 제한 등 조건이 공고마다 다릅니다. '
+  +'정확한 자격과 일정은 각 공고문(청약홈)을 반드시 확인하세요. 본 정보는 투자 권유가 아닙니다.';
+draw(); drawDay(); drawUp();
+})();
+</script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/sb_auth.js?v=8"></script>
+<script src="assets/sb_tabbar.js?v=10"></script>
+<script defer src="assets/sb_feedback.js?v=4"></script>
+<script defer src="assets/sb_nav.js?v=3"></script>
+</body></html>
