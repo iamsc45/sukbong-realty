@@ -3557,7 +3557,13 @@ function showAptCard(pt, txs){
       sc.onerror=function(){window.APTASK=window.APTASK||{};window.APTASK[code]={};};document.body.appendChild(sc);}
   }
   var _ab=(code&&window.APTALIAS&&window.APTALIAS[code])||null;
-  var _al=_ab?(_ab[pt.name+'|'+(pt.dong||'')]||_ab[pt.name]||null):null;
+  /* 🔴 2026-08-28 — **종류까지 박은 별칭을 가장 먼저 찾는다**(`이름|동|종류`).
+     같은 이름·같은 동에 아파트 지점과 오피스텔 지점이 함께 있으면, 전에는 둘이 별칭
+     하나를 나눠 써서 오피스텔 카드에 아파트 호가가 붙었다(용산KCC웰츠타워 문배동 11-10:
+     아파트 84㎡ 평당 7,026 / 오피스텔 33~39㎡ 평당 3,377 인데 둘 다 7,281 을 봤다).
+     ⚠️아파트 지점 키는 `이름|동` 그대로다 — 종류 키는 오피스텔·연립다세대에만 있다. */
+  var _al=_ab?(_ab[pt.name+'|'+(pt.dong||'')+'|'+(pt.t||'')]
+               ||_ab[pt.name+'|'+(pt.dong||'')]||_ab[pt.name]||null):null;
   /* 호가 키는 '단지명|법정동'이다(2026-07-30). 전에는 단지명뿐이라 같은 구의
      동명이단지 호가가 섞였다(압구정 현대1차에 개포동 호가 36억이 붙어 실거래
      66억보다 낮게 나온 사고). 별칭이 없을 때도 반드시 법정동을 붙여 찾는다. */

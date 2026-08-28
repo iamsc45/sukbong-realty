@@ -343,7 +343,11 @@ function band(a){return a<=60?'60㎡(18.1평) 이하':a<=85?'60~85㎡(18.1~25.7�
 /* 단지정보 키 매칭: 표기 차이(아파트 접미·공백·괄호) 흡수 (2026-07-27) */
 function nkey(n){return String(n||'').replace(/[\s\-_()·]/g,'').replace(/(아파트|APT|apt)$/,'');}
 var _CURDONG='';
-function aliasOf(code,name,f){var B=(window.APTALIAS&&window.APTALIAS[code])||null;if(!B)return null;var A=B[name+'|'+(_CURDONG||'')]||B[name]||null;return A?A[f]:null;}
+/* 🔴 2026-08-28 — 종류까지 박은 별칭(`이름|동|종류`)을 가장 먼저 본다. 같은 이름·같은 동에
+   아파트 지점과 오피스텔 지점이 함께 있으면 전에는 별칭 하나를 나눠 써서 오피스텔 화면에
+   아파트 호가가 붙었다(용산KCC웰츠타워). 종류 키는 오피스텔·연립다세대에만 있다. */
+function aliasOf(code,name,f,t){var B=(window.APTALIAS&&window.APTALIAS[code])||null;if(!B)return null;
+  var A=(t?B[name+'|'+(_CURDONG||'')+'|'+t]:null)||B[name+'|'+(_CURDONG||'')]||B[name]||null;return A?A[f]:null;}
 function findInfo(code,name){
   var box=(window.APTINFO&&window.APTINFO[code])||null; if(!box)return null;
   /* 🔴 같은 구에 같은 이름 단지가 있으면 **법정동까지 맞는 것을 가장 먼저** 쓴다(2026-08-27).
@@ -372,7 +376,7 @@ function findInfo(code,name){
    ⚠️그 상품 값이 없으면 **합산값 그대로** 쓴다(없는 것을 지어내지 않는다). */
 function findAsk(code,name,ptype){
   var box=(window.APTASK&&window.APTASK[code])||null; if(!box)return null;
-  var ak=aliasOf(code,name,'a');
+  var ak=aliasOf(code,name,'a',ptype);   /* ptype = apt·offi·villa (종류 키 우선, 2026-08-28) */
   var A=(ak&&box[ak])||box[name+'|'+(_CURDONG||'')]||null;
   if(A&&A.ts&&ptype&&A.ts[ptype]){
     var sub=A.ts[ptype];
