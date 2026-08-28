@@ -232,16 +232,22 @@ document.getElementById("basis").textContent="전국 아파트 분양 공고 "+i
   var t=new Date(); t.setHours(0,0,0,0);
   var ym=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0');
   var mCnt=ds.filter(function(p){ return String(p[0]).slice(0,7)===ym; }).length;
-  var fut=ds.filter(function(p){ return p[0]>=A.updated; }).sort(function(a,b){ return a[0]<b[0]?-1:1; });
+  var td=A.updated;
+  var tCnt=ds.filter(function(p){ return p[0]===td; }).length;
+  /* 「다음 일정 오늘」이라고 쓰면 말이 안 된다. 오늘 것이 있으면 오늘 건수를 앞세우고,
+     그 다음 일정은 내일 이후에서 고른다(2026-08-28 첫 렌더에서 걸렸다). */
+  var fut=ds.filter(function(p){ return p[0]>td; }).sort(function(a,b){ return a[0]<b[0]?-1:1; });
   document.getElementById('ccM').textContent=(t.getMonth()+1)+'월';
   document.getElementById('ccD').textContent=t.getDate();
-  var s='특별공급·1순위·2순위·당첨발표·계약일을 달력 한 장에서 봅니다';
-  if(mCnt) s='이번 달 일정 '+mCnt+'건';
+  var s=[];
+  if(tCnt) s.push('오늘 일정 '+tCnt+'건');
+  else if(mCnt) s.push('이번 달 일정 '+mCnt+'건');
   if(fut.length){
-    var left=Math.round((new Date(fut[0][0])-t)/86400000);
-    s+=' · 다음 일정 '+(left<=0?'오늘':(left===1?'내일':'D-'+left))+' '+fut[0][1];
+    var left=Math.round((new Date(fut[0][0])-new Date(td))/86400000);
+    s.push('다음 '+(left===1?'내일':'D-'+left)+' '+fut[0][1]);
   }
-  document.getElementById('ccSub').textContent=s;
+  document.getElementById('ccSub').textContent=
+    s.length ? s.join(' · ') : '특별공급·1순위·2순위·당첨발표·계약일을 달력 한 장에서 봅니다';
 })();
 /* KPI */
 var now=items.filter(function(x){return x.state==="now";}).length;
