@@ -64,9 +64,17 @@ h1.pg{font-size:clamp(30px,5vw,52px);letter-spacing:-0.045em;font-weight:800;mar
 .dow{display:grid;grid-template-columns:repeat(7,1fr);background:var(--gray);border-bottom:1px solid var(--hair)}
 .dow span{text-align:center;font-size:11.5px;font-weight:800;letter-spacing:.05em;color:var(--muted);padding:9px 0}
 .dow span:first-child{color:#C24B37}.dow span:last-child{color:var(--acc-blue)}
-.grid{display:grid;grid-template-columns:repeat(7,1fr)}
-.cell{min-height:104px;border-right:1px solid var(--hair);border-bottom:1px solid var(--hair);
+/* 🔴 2026-08-29 — `repeat(7,1fr)` 은 트랙 최소 폭이 **auto** 라 칸 안의 내용이 칸을 넓힌다.
+   알약이 `white-space:nowrap` 이라 긴 단지명이 든 요일이 옆을 밀어냈고, 7칸 합이 1,106px 이
+   되면서 담을 곳(1,054px)을 52px 넘겨 **토요일 칸이 잘렸다**(석봉님 제보, 1280·1024 실측.
+   첫 줄 칸 폭이 152·157·159·159·164·165·151 로 들쭉날쭉이었다).
+   ⚠️모바일은 알약이 점이라 안 걸린다 — 그래서 390px 점검만으로는 못 잡는다.
+   ⚠️`document.scrollWidth` 로도 못 잡는다. `.cal` 이 overflow 를 잘라 문서는 안 넘치기 때문이다.
+      **grid 의 scrollWidth 와 clientWidth 를 비교**해야 보인다. */
+.grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+.cell{min-height:104px;min-width:0;border-right:1px solid var(--hair);border-bottom:1px solid var(--hair);
   padding:7px 7px 8px;cursor:pointer;position:relative;background:#fff;transition:background 110ms ease}
+.cell .evs{min-width:0}
 .cell:nth-child(7n){border-right:0}
 .cell:hover{background:var(--soft)}
 .cell.off{background:#FCFCFB}
@@ -414,6 +422,20 @@ document.getElementById('notice').innerHTML=
   +'무순위·잔여세대는 청약통장이 없어도 지원할 수 있는 대신 거주지·재당첨 제한 등 조건이 공고마다 다릅니다. '
   +'정확한 자격과 일정은 각 공고문(청약홈)을 반드시 확인하세요. 본 정보는 투자 권유가 아닙니다.';
 draw(); drawDay(); drawUp();
+
+/* 🔴 2026-08-29 — 열자마자 **오늘이 화면 밖**이었다(PC 오늘 칸 top 1,006px / 화면 900px).
+   달 초에 열면 보이지만 월말이면 스크롤해야 나온다 — 달력을 여는 이유가 「오늘 뭐 있나」인데
+   그게 안 보이면 앞뒤가 바뀐다. 오늘 칸이 화면 밖일 때만 부드럽게 옮긴다.
+   ⚠️무조건 스크롤하면 페이지를 열자마자 화면이 움직여 놀란다. **밖일 때만** 한다.
+   ⚠️`block:'center'` 로 가운데에 둔다 — 'start' 로 하면 오늘 칸이 상단 바에 가린다. */
+setTimeout(function(){
+  var t=document.querySelector('.cell.today');
+  if(!t) return;
+  var r=t.getBoundingClientRect();
+  if(r.top>=0 && r.bottom<=window.innerHeight) return;   /* 이미 보인다 */
+  try{ t.scrollIntoView({behavior:'smooth',block:'center'}); }
+  catch(e){ t.scrollIntoView(); }
+},450);
 })();
 </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
