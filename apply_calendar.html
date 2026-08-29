@@ -353,10 +353,16 @@ function drawDay(){
       meta.push('접수 '+esc(it.rcept_s)+(it.rcept_e&&it.rcept_e!==it.rcept_s?' ~ '+esc(it.rcept_e):''));
       if(it.win) meta.push('발표 '+esc(it.win));
     }
+    /* 🔴 2026-08-29 석봉님 제보 — 여기서 **단지명**(`it.nm`)을 지도에 넘기고 있었다.
+       분양 공고는 아직 실거래가 없으니 이름으로는 못 찾고 「실거래 신고 기록이 없습니다」만 떴다.
+       청약 페이지의 「주변 실거래지도」는 처음부터 **주소**로 넘긴다 — 같은 방식으로 맞춘다.
+       ⚠️`q` 라는 변수를 만들어 두고 정작 안 쓰고 있었다(주소를 다듬어 놓고 이름을 보냈다).
+       ⚠️상품 종류도 맞춘다. 줍줍에는 오피스텔이 섞여 있어 `t=apt` 로 고정하면 마커가 안 뜬다. */
     var addr=it.ad||it.addr||'';
-    var q=addr.replace(/^(서울특별시|경기도|인천광역시|부산광역시|대구광역시|광주광역시|대전광역시|울산광역시|세종특별자치시)\s*/,'');
+    var prod=(e.c==='off') ? 'offi' : 'apt';   /* e.c = apt · rem(무순위) · off(오피스텔) */
     h+='<div class="meta">'+meta.join(' · ')+'<br>'+esc(addr)
-      +'<a class="golink" href="map.html?q='+encodeURIComponent(it.nm)+'">지도에서 보기</a></div>';
+      +(addr? '<a class="golink" href="map.html?q='+encodeURIComponent(addr)
+              +'&t='+prod+'&u='+encodeURIComponent('매매')+'">주변 실거래 보기</a>':'')+'</div>';
     h+='</div>';
     return h;
   }).join('');
