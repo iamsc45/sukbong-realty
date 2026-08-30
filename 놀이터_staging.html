@@ -6,94 +6,127 @@
 <meta name="robots" content="noindex,nofollow">
 <title>[시안] 놀이터 · 석봉 부동산 정보방</title>
 <meta property="og:title" content="이 집, 얼마일까요?">
-<meta property="og:description" content="실거래가 맞히기. 5문제로 내 시세 감각을 확인해 보세요.">
+<meta property="og:description" content="실거래가 맞히기. 다섯 문제로 내 시세 감각을 확인해 보세요.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="석봉 부동산 정보방">
 <style>
 :root{
   --navy:#12264A; --navy2:#1B3F7A; --gray:#5A6478; --gray2:#7A8698;
   --red:#B23A48; --green:#1E7A5A; --tint:#EEF3FB; --hair:#E3E8F0; --bar:#C6D3E6;
-  --paper:#fff;
+  --paper:#fff; --gold:#A8802C;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0}
 body{
-  background:var(--tint); color:var(--navy);
+  background:linear-gradient(180deg,#E7EEF9 0%,var(--tint) 240px,var(--tint) 100%);
+  color:var(--navy); min-height:100vh;
   font:16px/1.6 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
-  padding:0 0 40px;
+  padding:0 0 48px;
 }
 .wrap{max-width:520px;margin:0 auto;padding:0 16px}
 
-/* 머리 */
-header{background:var(--navy);color:#fff;padding:14px 0 13px;margin-bottom:18px}
+header{background:var(--navy);color:#fff;padding:14px 0 13px}
 header .wrap{display:flex;align-items:center;gap:8px}
 header b{font-size:15px;letter-spacing:-.2px}
-.badge{font-size:11px;background:rgba(255,255,255,.18);padding:2px 7px;border-radius:10px;letter-spacing:.3px}
 header a{color:#fff;text-decoration:none}
+.badge{font-size:11px;background:rgba(255,255,255,.18);padding:2px 7px;border-radius:10px;letter-spacing:.3px}
 
-/* 카드 공통 */
-.card{background:var(--paper);border:1px solid var(--hair);border-radius:14px;padding:20px 18px;margin-bottom:14px}
+.card{background:var(--paper);border:1px solid var(--hair);border-radius:16px;padding:20px 18px;
+  margin-bottom:14px;box-shadow:0 1px 3px rgba(18,38,74,.05)}
 
-/* 진행 */
-.top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
-.top h1{font-size:19px;margin:0;letter-spacing:-.4px}
-.step{font-size:13px;color:var(--gray2);font-variant-numeric:tabular-nums}
-.pbar{height:4px;background:var(--hair);border-radius:2px;overflow:hidden;margin-bottom:16px}
-.pbar i{display:block;height:100%;background:var(--navy2);transition:width .3s}
+/* ── 시작 화면 ── */
+.hero{text-align:center;padding:30px 18px 26px}
+.hero .eyebrow{font-size:12px;letter-spacing:2px;color:var(--gold);font-weight:700}
+.hero h1{font-size:27px;margin:9px 0 12px;letter-spacing:-.9px;line-height:1.25}
+.hero p{margin:0 0 6px;color:var(--gray);font-size:15px}
+.hero .sub{font-size:13px;color:var(--gray2);margin-top:12px;line-height:1.7}
+.rulebox{display:flex;gap:8px;margin:20px 0 22px}
+.rulebox div{flex:1 1 0;min-width:0;background:var(--tint);border-radius:11px;padding:12px 6px}
+.rulebox b{display:block;font-size:19px;letter-spacing:-.5px;color:var(--navy2)}
+.rulebox span{font-size:11px;color:var(--gray)}
 
-/* 문제 */
+/* ── 진행 점 ── */
+.dots{display:flex;justify-content:center;gap:7px;margin:0 0 16px}
+.dots i{width:8px;height:8px;border-radius:50%;background:var(--bar);transition:all .35s}
+.dots i.on{background:var(--navy2);transform:scale(1.45)}
+.dots i.done{background:var(--navy2)}
+
+/* ── 문제 ── */
+.qhead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:15px}
+.qhead h2{font-size:17px;margin:0;letter-spacing:-.4px}
+.qno{font-size:12px;color:var(--gray2);font-variant-numeric:tabular-nums;letter-spacing:.5px}
+.q{animation:slide .32s ease both}
+@keyframes slide{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 .q .loc{font-size:13px;color:var(--gray);margin-bottom:3px}
-.q .apt{font-size:22px;font-weight:700;letter-spacing:-.5px;line-height:1.3;margin-bottom:12px}
+.q .apt{font-size:21px;font-weight:700;letter-spacing:-.5px;line-height:1.3;margin-bottom:13px;word-break:keep-all}
 .spec{display:flex;flex-wrap:wrap;gap:6px}
 .spec span{background:var(--tint);color:var(--navy2);font-size:13px;padding:5px 10px;border-radius:8px;white-space:nowrap}
 
-/* 슬라이더 */
-.pick{margin-top:22px}
-.val{text-align:center;font-size:28px;font-weight:700;letter-spacing:-.8px;font-variant-numeric:tabular-nums;margin-bottom:2px}
-.valsub{text-align:center;font-size:12px;color:var(--gray2);margin-bottom:14px}
+.pick{margin-top:24px}
+.val{text-align:center;font-size:31px;font-weight:700;letter-spacing:-1px;
+  font-variant-numeric:tabular-nums;line-height:1.2;transition:transform .12s}
+.val.bump{transform:scale(1.045)}
+.valsub{text-align:center;font-size:12px;color:var(--gray2);margin:2px 0 16px}
 input[type=range]{width:100%;-webkit-appearance:none;background:transparent;margin:0}
 input[type=range]::-webkit-slider-runnable-track{height:6px;background:var(--bar);border-radius:3px}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;border-radius:50%;
-  background:var(--navy2);border:3px solid #fff;box-shadow:0 1px 5px rgba(18,38,74,.35);margin-top:-12px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:32px;height:32px;border-radius:50%;
+  background:var(--navy2);border:3px solid #fff;box-shadow:0 2px 7px rgba(18,38,74,.4);margin-top:-13px}
 input[type=range]::-moz-range-track{height:6px;background:var(--bar);border-radius:3px}
-input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:var(--navy2);border:3px solid #fff}
-.ends{display:flex;justify-content:space-between;font-size:11px;color:var(--gray2);margin-top:7px}
+input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;background:var(--navy2);border:3px solid #fff}
+.ends{display:flex;justify-content:space-between;font-size:11px;color:var(--gray2);margin-top:8px}
 
-/* 버튼 */
-.btn{display:block;width:100%;border:0;border-radius:11px;padding:15px;font-size:16px;font-weight:700;
-  cursor:pointer;font-family:inherit;letter-spacing:-.2px}
+/* 내가 찍은 답 미니 기록 */
+.trail{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;min-height:26px}
+.trail span{font-size:11px;background:#fff;border:1px solid var(--hair);color:var(--gray);
+  padding:3px 8px;border-radius:14px;animation:pop .3s ease both}
+@keyframes pop{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
+
+.btn{display:block;width:100%;border:0;border-radius:12px;padding:15px;font-size:16px;font-weight:700;
+  cursor:pointer;font-family:inherit;letter-spacing:-.2px;transition:transform .1s}
+.btn:active{transform:scale(.985)}
 .btn.p{background:var(--navy);color:#fff}
+.btn.g{background:var(--gold);color:#fff}
 .btn.l{background:#fff;color:var(--navy2);border:1.5px solid var(--bar)}
 .btn+.btn{margin-top:9px}
 
-/* 정답 */
-.ansbox{text-align:center;padding:4px 0 2px}
-.ansbox .lab{font-size:12px;color:var(--gray2);letter-spacing:.3px}
-.ansbox .big{font-size:30px;font-weight:700;letter-spacing:-.8px;margin:3px 0 8px;font-variant-numeric:tabular-nums}
-.grade{display:inline-block;font-size:14px;font-weight:700;padding:6px 14px;border-radius:20px}
-.diff{font-size:13px;color:var(--gray);margin-top:8px}
+/* ── 채점 대기 ── */
+.reveal{text-align:center;padding:34px 18px}
+.reveal h2{font-size:21px;margin:0 0 8px;letter-spacing:-.6px}
+.reveal p{color:var(--gray);font-size:14px;margin:0 0 22px}
 
-/* 해설 */
-.exp{background:var(--tint);border-radius:11px;padding:14px 15px;margin-top:16px}
-.exp h3{margin:0 0 9px;font-size:13px;color:var(--navy2);letter-spacing:-.2px}
-.exp dl{margin:0;display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr);gap:5px 12px;font-size:14px}
-.exp dt{color:var(--gray);white-space:nowrap}
-.exp dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
-.exp .go{display:block;margin-top:12px;text-align:center;background:#fff;border:1.5px solid var(--bar);
-  border-radius:9px;padding:11px;color:var(--navy2);text-decoration:none;font-weight:700;font-size:14px}
+/* ── 결과 ── */
+.score{text-align:center;padding:6px 0 2px}
+.score .lab{font-size:12px;color:var(--gray2);letter-spacing:.5px}
+.score .big{font-size:52px;font-weight:700;letter-spacing:-2px;line-height:1.1;margin:2px 0 6px;
+  font-variant-numeric:tabular-nums}
+.score .big small{font-size:22px;color:var(--gray2);font-weight:600;letter-spacing:-.5px}
+.grade{display:inline-block;font-size:14px;font-weight:700;padding:7px 16px;border-radius:20px}
+.score .avg{font-size:13px;color:var(--gray);margin-top:10px}
 
-/* 결과 */
-.res{text-align:center}
-.res .ttl{font-size:14px;color:var(--gray2)}
-.res .score{font-size:44px;font-weight:700;letter-spacing:-1.5px;margin:6px 0 4px;font-variant-numeric:tabular-nums}
-.list{margin-top:18px;border-top:1px solid var(--hair)}
-.list div{display:flex;justify-content:space-between;align-items:center;gap:10px;
-  padding:11px 2px;border-bottom:1px solid var(--hair);font-size:14px}
-.list .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--gray)}
-.list .er{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
-.best{font-size:13px;color:var(--gray2);margin-top:12px}
+.item{border:1px solid var(--hair);border-radius:13px;padding:14px 15px;margin-top:10px;
+  background:#fff;animation:slide .4s ease both;cursor:pointer}
+.item.ok{border-color:#BFE0D2;background:#F4FBF8}
+.item .r1{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.item .nm{font-weight:700;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.3px}
+.mark{flex:0 0 auto;width:25px;height:25px;border-radius:50%;display:grid;place-items:center;
+  font-size:13px;font-weight:700;color:#fff}
+.mark.o{background:var(--green)} .mark.x{background:var(--bar);color:var(--gray)}
+.item .r2{display:flex;justify-content:space-between;font-size:13px;margin-top:9px;
+  font-variant-numeric:tabular-nums;gap:8px}
+.item .r2 b{font-size:15px;letter-spacing:-.3px}
+.item .mine{color:var(--gray)}
+.item .er{font-size:12px;margin-top:6px;color:var(--gray2)}
+.det{display:none;margin-top:12px;padding-top:12px;border-top:1px dashed var(--hair)}
+.det.open{display:block;animation:slide .28s ease both}
+.det dl{margin:0;display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr);gap:5px 12px;font-size:13px}
+.det dt{color:var(--gray);white-space:nowrap}
+.det dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.det .go{display:block;margin-top:11px;text-align:center;background:var(--tint);border-radius:9px;
+  padding:10px;color:var(--navy2);text-decoration:none;font-weight:700;font-size:13px}
+.tapme{font-size:11px;color:var(--gray2);text-align:center;margin-top:12px}
 
-.foot{font-size:11px;color:var(--gray2);line-height:1.7;padding:6px 2px 0}
+.best{font-size:13px;color:var(--gray2);text-align:center;margin-top:14px}
+.foot{font-size:11px;color:var(--gray2);line-height:1.7;padding:8px 2px 0}
 .hide{display:none}
 </style>
 </head>
@@ -107,90 +140,89 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
 <div class="wrap">
 
   <!-- 시작 -->
-  <section id="intro" class="card">
-    <div class="top"><h1>이 집, 얼마일까요?</h1></div>
-    <p style="margin:0 0 4px;color:var(--gray);font-size:15px">
-      실제로 거래된 아파트 다섯 곳을 보여드립니다.<br>얼마에 팔렸을지 맞혀 보세요.
-    </p>
-    <p style="margin:14px 0 18px;font-size:13px;color:var(--gray2)">
-      국토교통부에 신고된 진짜 거래입니다. 정답을 맞히면 그 단지의 최근 시세도 같이 보여드립니다.
-    </p>
-    <button class="btn p" id="start">시작하기</button>
-    <div class="best" id="bestIntro"></div>
+  <section id="intro">
+    <div class="card hero">
+      <div class="eyebrow">실거래가 맞히기</div>
+      <h1>이 집, 얼마일까요?</h1>
+      <p>국토교통부에 신고된 진짜 거래 다섯 건입니다.</p>
+      <div class="rulebox">
+        <div><b>5</b><span>문제</span></div>
+        <div><b>10%</b><span>안에 들면 정답</span></div>
+        <div><b>3분</b><span>이면 끝납니다</span></div>
+      </div>
+      <button class="btn p" id="start">시작하기</button>
+      <div class="sub">정답은 다섯 문제를 다 푼 뒤에 한꺼번에 공개됩니다.</div>
+      <div class="best" id="bestIntro"></div>
+    </div>
   </section>
 
   <!-- 문제 -->
   <section id="play" class="hide">
     <div class="card">
-      <div class="top">
-        <h1>이 집, 얼마일까요?</h1>
-        <span class="step"><b id="cur">1</b> / <span id="tot">5</span></span>
+      <div class="dots" id="dots"></div>
+      <div class="qhead">
+        <h2>얼마에 팔렸을까요?</h2>
+        <span class="qno"><b id="cur">1</b> / <span id="tot">5</span></span>
       </div>
-      <div class="pbar"><i id="pb" style="width:0"></i></div>
-
-      <div class="q">
+      <div class="q" id="qbox">
         <div class="loc" id="loc"></div>
         <div class="apt" id="apt"></div>
         <div class="spec" id="spec"></div>
       </div>
-
-      <div class="pick" id="pick">
+      <div class="pick">
         <div class="val" id="val"></div>
-        <div class="valsub">내 답</div>
+        <div class="valsub">내가 생각한 가격</div>
         <input type="range" id="rng">
         <div class="ends"><span id="lo"></span><span id="hi"></span></div>
       </div>
     </div>
+    <button class="btn p" id="submit">이 가격으로 확정</button>
+    <div class="trail" id="trail"></div>
+  </section>
 
-    <div id="beforeAns"><button class="btn p" id="submit">정답 보기</button></div>
-
-    <!-- 정답 -->
-    <div id="afterAns" class="hide">
-      <div class="card">
-        <div class="ansbox">
-          <div class="lab">실제 거래가</div>
-          <div class="big" id="ansBig"></div>
-          <span class="grade" id="grade"></span>
-          <div class="diff" id="diff"></div>
-        </div>
-        <div class="exp">
-          <h3 id="expTtl"></h3>
-          <dl id="expDl"></dl>
-          <a class="go" id="goMap" href="#" target="_blank" rel="noopener">이 단지 지도에서 보기</a>
-        </div>
-      </div>
-      <button class="btn p" id="next">다음 문제</button>
+  <!-- 채점 대기 -->
+  <section id="wait" class="hide">
+    <div class="card reveal">
+      <h2>다섯 문제를 다 푸셨습니다</h2>
+      <p>이제 실제 거래가와 맞춰 보겠습니다.</p>
+      <button class="btn g" id="reveal">결과 확인하기</button>
     </div>
   </section>
 
   <!-- 결과 -->
   <section id="result" class="hide">
-    <div class="card res">
-      <div class="ttl">다섯 문제 평균 오차</div>
-      <div class="score" id="avg"></div>
-      <span class="grade" id="finalGrade"></span>
-      <div class="list" id="list"></div>
-      <div class="best" id="bestRes"></div>
+    <div class="card">
+      <div class="score">
+        <div class="lab">다섯 문제 중</div>
+        <div class="big"><span id="hit">0</span><small> 개 정답</small></div>
+        <span class="grade" id="finalGrade"></span>
+        <div class="avg" id="avgLine"></div>
+      </div>
     </div>
-    <button class="btn p" id="share">결과 공유하기</button>
-    <button class="btn l" id="again">다시 하기</button>
-    <a class="btn l" href="map.html" style="text-align:center;text-decoration:none;line-height:1.4;display:block;margin-top:9px">
-      전국 실거래가 지도에서 보기
-    </a>
+    <div id="list"></div>
+    <div class="tapme">항목을 누르면 그 단지의 최근 시세가 나옵니다</div>
+    <div class="best" id="bestRes"></div>
+    <div style="margin-top:16px">
+      <button class="btn p" id="share">결과 공유하기</button>
+      <button class="btn l" id="again">다시 하기</button>
+      <a class="btn l" href="map.html" style="text-align:center;text-decoration:none;display:block;margin-top:9px">
+        전국 실거래가 지도에서 보기
+      </a>
+    </div>
   </section>
 
   <div class="foot" id="foot"></div>
 </div>
 
-<script src="data/quiz_price.js?v=2"></script>
+<script src="data/quiz_price.js?v=3"></script>
 <script>
 (function(){
   "use strict";
   var D = window.QUIZ_PRICE || {items:[]};
   var POOL = D.items || [];
-  var N = 5;                     // 한 세트 문제 수 (2026-08-30 석봉님 확정)
+  var N = 5;          // 한 세트 문제 수 (2026-08-30 석봉님 확정)
+  var HIT = 10;       // 오차 10% 안에 들면 정답 (2026-08-30 석봉님 확정)
   var set = [], idx = 0, log = [];
-
   var $ = function(id){ return document.getElementById(id); };
 
   /* 만원 단위를 사람이 읽는 말로. 35300 → 3억 5,300만원 */
@@ -200,33 +232,35 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
     if(eok) return eok+"억원";
     return man.toLocaleString()+"만원";
   }
-  function pick(n){
-    var a = POOL.slice(), out = [];
-    for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
-    for(var k=0;k<n && k<a.length;k++) out.push(a[k]);
-    return out;
+  function shuffle(a){
+    for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i];a[i]=a[j];a[j]=t; }
+    return a;
   }
-  /* 오차율에 따른 등급. 색은 브랜드 팔레트만 쓴다 */
-  function grade(err){
-    if(err<=3)  return {t:"신의 눈",   bg:"#1E7A5A", fg:"#fff"};
-    if(err<=7)  return {t:"고수",      bg:"#1B3F7A", fg:"#fff"};
-    if(err<=15) return {t:"감이 좋네요", bg:"#EEF3FB", fg:"#1B3F7A"};
-    if(err<=30) return {t:"아쉽네요",   bg:"#EEF3FB", fg:"#5A6478"};
+  /* 맞힌 개수로 등급을 준다. 색은 브랜드 팔레트만 쓴다 */
+  function grade(hit){
+    if(hit===5) return {t:"신의 눈",     bg:"#1E7A5A", fg:"#fff"};
+    if(hit===4) return {t:"고수",        bg:"#1B3F7A", fg:"#fff"};
+    if(hit===3) return {t:"감이 좋네요",  bg:"#EEF3FB", fg:"#1B3F7A"};
+    if(hit===2) return {t:"조금 아쉽네요", bg:"#EEF3FB", fg:"#5A6478"};
     return {t:"다시 도전", bg:"#EEF3FB", fg:"#B23A48"};
   }
-
   function show(which){
-    ["intro","play","result"].forEach(function(k){
+    ["intro","play","wait","result"].forEach(function(k){
       $(k).classList.toggle("hide", k!==which);
     });
     window.scrollTo(0,0);
   }
+  function drawDots(){
+    $("dots").innerHTML = set.map(function(_,i){
+      return "<i class='"+(i<idx?"done":(i===idx?"on":""))+"'></i>";
+    }).join("");
+  }
 
   function render(){
     var q = set[idx];
+    drawDots();
     $("cur").textContent = idx+1;
     $("tot").textContent = set.length;
-    $("pb").style.width = (idx/set.length*100)+"%";
     $("loc").textContent = q.sgg+" "+q.dong;
     $("apt").textContent = q.apt;
     $("spec").innerHTML =
@@ -242,86 +276,116 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
     $("hi").textContent = money(q.hi);
     $("val").textContent = money(+r.value);
 
-    $("beforeAns").classList.remove("hide");
-    $("afterAns").classList.add("hide");
-    $("pick").style.opacity = 1;
-    r.disabled = false;
+    /* 문제 카드가 새로 들어오는 느낌을 준다 */
+    var box = $("qbox");
+    box.style.animation = "none"; void box.offsetWidth; box.style.animation = "";
   }
 
   $("rng").addEventListener("input", function(){
     $("val").textContent = money(+this.value);
+    var v = $("val"); v.classList.add("bump");
+    setTimeout(function(){ v.classList.remove("bump"); }, 120);
   });
 
   function submit(){
     var q = set[idx], my = +$("rng").value;
-    var err = Math.abs(my - q.ans) / q.ans * 100;
-    var g = grade(err);
-    log.push({q:q, my:my, err:err});
+    log.push({q:q, my:my, err: Math.abs(my - q.ans)/q.ans*100});
+    /* 내가 찍은 답을 아래에 쌓아 보여 준다. 정답은 아직 말하지 않는다 */
+    var s = document.createElement("span");
+    s.textContent = (idx+1)+"번 "+money(my);
+    $("trail").appendChild(s);
+    idx++;
+    if(idx >= set.length){ setTimeout(function(){ show("wait"); }, 260); }
+    else { render(); window.scrollTo({top:0, behavior:"smooth"}); }
+  }
+  $("submit").addEventListener("click", submit);
 
-    $("rng").disabled = true;
-    $("pick").style.opacity = .55;
-    $("ansBig").textContent = money(q.ans);
-    var gd = $("grade");
-    gd.textContent = g.t; gd.style.background = g.bg; gd.style.color = g.fg;
-    $("diff").textContent =
-      "내 답 "+money(my)+" · 오차 "+err.toFixed(1)+"%";
-
-    $("expTtl").textContent = "이 단지는 (전용 "+q.m2+"㎡ 기준)";
-    $("expDl").innerHTML =
-      "<dt>최근 거래</dt><dd>"+q.n+"건</dd>"+
-      "<dt>중위 가격</dt><dd>"+money(q.med)+"</dd>"+
-      "<dt>평당가(전용)</dt><dd>"+q.ppy.toLocaleString()+"만원</dd>";
-    $("goMap").href = "map.html?q="+encodeURIComponent(q.q);
-
-    $("beforeAns").classList.add("hide");
-    $("afterAns").classList.remove("hide");
-    $("pb").style.width = ((idx+1)/set.length*100)+"%";
-    $("afterAns").scrollIntoView({behavior:"smooth", block:"nearest"});
+  /* 숫자가 올라가는 효과. 정답 공개의 재미는 여기서 난다 */
+  function countUp(el, to){
+    var t0 = null, dur = 620;
+    function step(ts){
+      if(!t0) t0 = ts;
+      var p = Math.min((ts-t0)/dur, 1);
+      var e = 1 - Math.pow(1-p, 3);
+      el.textContent = money(Math.round(to*e/100)*100);
+      if(p < 1) requestAnimationFrame(step); else el.textContent = money(to);
+    }
+    requestAnimationFrame(step);
   }
 
-  function finish(){
-    var sum = 0;
-    log.forEach(function(x){ sum += x.err; });
-    var avg = sum/log.length;
-    var g = grade(avg);
-    $("avg").textContent = avg.toFixed(1)+"%";
+  function renderResult(){
+    var hit = 0, sum = 0;
+    log.forEach(function(x){ sum += x.err; if(x.err <= HIT) hit++; });
+    var avg = sum/log.length, g = grade(hit);
+
+    var h = $("hit"); h.textContent = "0";
+    var n = 0, tick = setInterval(function(){
+      n++; h.textContent = n;
+      if(n >= hit) clearInterval(tick);
+    }, 170);
+    if(hit === 0) h.textContent = "0";
+
     var fg = $("finalGrade");
     fg.textContent = g.t; fg.style.background = g.bg; fg.style.color = g.fg;
-    $("list").innerHTML = log.map(function(x){
-      var c = x.err<=7 ? "var(--green)" : (x.err<=15 ? "var(--navy2)" : "var(--red)");
-      return "<div><span class='nm'>"+x.q.apt+"</span>"+
-             "<span class='er' style='color:"+c+"'>"+x.err.toFixed(1)+"%</span></div>";
-    }).join("");
+    $("avgLine").textContent = "평균 오차 "+avg.toFixed(1)+"%";
+
+    $("list").innerHTML = "";
+    log.forEach(function(x, i){
+      var ok = x.err <= HIT;
+      var near = !ok && x.err <= 15;
+      var d = document.createElement("div");
+      d.className = "item"+(ok ? " ok" : "");
+      d.style.animationDelay = (0.12*i + 0.25)+"s";
+      d.innerHTML =
+        "<div class='r1'><span class='nm'>"+x.q.apt+"</span>"+
+          "<span class='mark "+(ok?"o":"x")+"'>"+(ok?"○":"✕")+"</span></div>"+
+        "<div class='r2'><span class='mine'>내 답 "+money(x.my)+"</span>"+
+          "<b class='ansv'>"+money(x.q.ans)+"</b></div>"+
+        "<div class='er'>"+x.q.sgg+" · 오차 "+x.err.toFixed(1)+"%"+
+          (ok ? " · 정답입니다" : (near ? " · 아깝습니다" : ""))+"</div>"+
+        "<div class='det'><dl>"+
+          "<dt>최근 거래</dt><dd>"+x.q.n+"건</dd>"+
+          "<dt>중위 가격</dt><dd>"+money(x.q.med)+"</dd>"+
+          "<dt>평당가(전용)</dt><dd>"+x.q.ppy.toLocaleString()+"만원</dd>"+
+          "</dl><a class='go' href='map.html?q="+encodeURIComponent(x.q.q)+
+          "' target='_blank' rel='noopener'>이 단지 지도에서 보기</a></div>";
+      d.addEventListener("click", function(e){
+        if(e.target.closest("a")) return;
+        d.querySelector(".det").classList.toggle("open");
+      });
+      $("list").appendChild(d);
+      /* 실제 거래가만 카운트업으로 올린다 */
+      setTimeout(function(){ countUp(d.querySelector(".ansv"), x.q.ans); }, 120*i + 300);
+    });
 
     /* 최고 기록은 이 브라우저에만 남는다. 서버로 보내지 않는다 */
-    var best = null;
+    var prev = null;
     try{
-      var raw = localStorage.getItem("sb_quiz_best");
-      best = raw ? parseFloat(raw) : null;
-      if(best===null || avg < best){ localStorage.setItem("sb_quiz_best", avg.toFixed(1)); best = avg; }
+      var raw = localStorage.getItem("sb_quiz_hit");
+      prev = raw === null ? null : parseInt(raw, 10);
+      if(prev === null || hit > prev){ localStorage.setItem("sb_quiz_hit", String(hit)); }
     }catch(e){}
-    $("bestRes").textContent = best!==null ? ("내 최고 기록 평균 오차 "+(+best).toFixed(1)+"%") : "";
+    $("bestRes").textContent =
+      (prev !== null && hit > prev) ? "최고 기록을 새로 세웠습니다 (지난 최고 "+prev+"개)"
+      : (prev !== null ? "내 최고 기록 "+Math.max(prev,hit)+"개" : "");
     show("result");
   }
+  $("reveal").addEventListener("click", renderResult);
 
+  function begin(){
+    set = shuffle(POOL.slice()).slice(0, N);
+    idx = 0; log = []; $("trail").innerHTML = "";
+    render(); show("play");
+  }
   $("start").addEventListener("click", function(){
     if(!POOL.length){ alert("문제를 불러오지 못했습니다."); return; }
-    set = pick(N); idx = 0; log = [];
-    render(); show("play");
+    begin();
   });
-  $("submit").addEventListener("click", submit);
-  $("next").addEventListener("click", function(){
-    idx++;
-    if(idx >= set.length) finish(); else render();
-  });
-  $("again").addEventListener("click", function(){
-    set = pick(N); idx = 0; log = [];
-    render(); show("play");
-  });
+  $("again").addEventListener("click", begin);
+
   $("share").addEventListener("click", function(){
-    var sum = 0; log.forEach(function(x){ sum += x.err; });
-    var txt = "실거래가 맞히기 평균 오차 "+(sum/log.length).toFixed(1)+"%가 나왔습니다.\n"+
-              "당신도 해보세요.\n"+location.href;
+    var hit = log.filter(function(x){ return x.err <= HIT; }).length;
+    var txt = "실거래가 맞히기 다섯 문제 중 "+hit+"개를 맞혔습니다.\n당신도 해보세요.\n"+location.href;
     if(navigator.share){ navigator.share({text:txt}).catch(function(){}); }
     else if(navigator.clipboard){
       navigator.clipboard.writeText(txt).then(function(){ alert("결과를 복사했습니다. 붙여넣어 공유해 보세요."); });
@@ -329,13 +393,12 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
   });
 
   try{
-    var b = localStorage.getItem("sb_quiz_best");
-    if(b) $("bestIntro").textContent = "내 최고 기록 평균 오차 "+(+b).toFixed(1)+"%";
+    var b = localStorage.getItem("sb_quiz_hit");
+    if(b !== null) $("bestIntro").textContent = "내 최고 기록 "+b+"개";
   }catch(e){}
 
   $("foot").innerHTML =
-    "원자료 국토교통부 실거래가 공개시스템 · 아파트 매매 신고분 "+
-    "(자료 기준일 "+(D.updated||"")+")<br>"+
+    "원자료 국토교통부 실거래가 공개시스템 · 아파트 매매 신고분 (자료 기준일 "+(D.updated||"")+")<br>"+
     "취소된 거래와 직거래는 문제에서 제외했습니다. 면적은 전용면적, 단가는 평당(전용) 기준입니다.<br>"+
     "실제 시세는 층·향·수리 상태에 따라 달라집니다. 참고용입니다.";
 })();
