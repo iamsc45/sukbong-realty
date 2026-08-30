@@ -6,9 +6,14 @@
 <meta name="robots" content="noindex,nofollow">
 <title>[시안] 놀이터 · 석봉 부동산 정보방</title>
 <meta property="og:title" content="이 집, 얼마일까요?">
-<meta property="og:description" content="실거래가 맞히기. 다섯 문제로 내 시세 감각을 확인해 보세요.">
+<meta property="og:description" content="국토교통부에 신고된 진짜 거래 다섯 건. 오차 10% 안에 들면 정답입니다.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="석봉 부동산 정보방">
+<meta property="og:url" content="https://xn--2q1br1nnrasc92a76myvau64b.com/%EB%86%80%EC%9D%B4%ED%84%B0_staging.html">
+<meta property="og:image" content="https://xn--2q1br1nnrasc92a76myvau64b.com/assets/og_quiz.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <style>
 :root{
   --navy:#12264A; --navy2:#1B3F7A; --gray:#5A6478; --gray2:#7A8698;
@@ -135,10 +140,12 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
 .mark{flex:0 0 auto;width:25px;height:25px;border-radius:50%;display:grid;place-items:center;
   font-size:13px;font-weight:700;color:#fff}
 .mark.o{background:var(--green)} .mark.x{background:var(--bar);color:var(--gray)}
-.item .r2{display:flex;justify-content:space-between;font-size:13px;margin-top:9px;
-  font-variant-numeric:tabular-nums;gap:8px}
+.item .r2{display:flex;justify-content:space-between;align-items:flex-end;font-size:13px;
+  margin-top:9px;font-variant-numeric:tabular-nums;gap:8px}
 .item .r2 b{font-size:15px;letter-spacing:-.3px}
 .item .mine{color:var(--gray)}
+.item .answ{text-align:right;min-width:0}
+.item .when{display:block;font-size:11px;color:var(--gray2);font-weight:400;margin-top:2px}
 .item .er{font-size:12px;margin-top:6px;color:var(--gray2)}
 .det{display:none;margin-top:12px;padding-top:12px;border-top:1px dashed var(--hair)}
 .det.open{display:block;animation:slide .28s ease both}
@@ -243,7 +250,7 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
   <div class="foot" id="foot"></div>
 </div>
 
-<script src="data/quiz_price.js?v=3"></script>
+<script src="data/quiz_price.js?v=4"></script>
 <script>
 (function(){
   "use strict";
@@ -270,6 +277,14 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
     if(eok && rest) return eok+"억 "+rest.toLocaleString()+"만원";
     if(eok) return eok+"억원";
     return man.toLocaleString()+"만원";
+  }
+  /* 실거래 일자. 정답을 공개할 때 「언제 거래된 것인가」를 함께 밝힌다
+     (2026-08-31 석봉님 지시). 옛 자료에는 ymd 가 없으므로 ym 으로 물러선다. */
+  function ymd(q){
+    var p = (q.ymd || q.ym || "").split("-");
+    if(p.length >= 3) return p[0]+"년 "+(+p[1])+"월 "+(+p[2])+"일";
+    if(p.length === 2) return p[0]+"년 "+(+p[1])+"월";
+    return "";
   }
   function shuffle(a){
     for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i];a[i]=a[j];a[j]=t; }
@@ -451,7 +466,8 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
         "<div class='r1'><span class='nm'>"+x.q.apt+"</span>"+
           "<span class='mark "+(ok?"o":"x")+"'>"+(ok?"○":"✕")+"</span></div>"+
         "<div class='r2'><span class='mine'>내 답 "+money(x.my)+"</span>"+
-          "<b class='ansv'>"+money(x.q.ans)+"</b></div>"+
+          "<span class='answ'><b class='ansv'>"+money(x.q.ans)+"</b>"+
+          "<span class='when'>"+ymd(x.q)+" 거래</span></span></div>"+
         "<div class='er'>"+x.q.sgg+" · 오차 "+x.err.toFixed(1)+"%"+
           (ok ? " · 정답입니다" : (near ? " · 아깝습니다" : ""))+
           " · "+(x.auto ? "시간 종료" : x.sec.toFixed(1)+"초")+"</div>"+
