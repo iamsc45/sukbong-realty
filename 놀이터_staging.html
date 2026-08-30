@@ -115,6 +115,9 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
 .score .big{font-size:52px;font-weight:700;letter-spacing:-2px;line-height:1.1;margin:2px 0 6px;
   font-variant-numeric:tabular-nums}
 .score .big small{font-size:22px;color:var(--gray2);font-weight:600;letter-spacing:-.5px}
+/* 숫자는 처음부터 정확하고, 살짝 커졌다 제자리로 온다. opacity 는 건드리지 않는다 */
+.score .big span.pop{display:inline-block;animation:popnum .42s ease}
+@keyframes popnum{0%{transform:scale(.72)}60%{transform:scale(1.08)}100%{transform:none}}
 .grade{display:inline-block;font-size:14px;font-weight:700;padding:7px 16px;border-radius:20px}
 .score .avg{font-size:13px;color:var(--gray);margin-top:10px}
 
@@ -402,21 +405,15 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
        2026-08-30 라이브에서 실제로 났다 — DOM 에는 5개가 있는데 화면은 비어 있었다. */
     show("result");
 
-    /* 🔴 맞힌 개수를 0부터 세어 올린다.
-       예전 코드는 hit 가 0 일 때도 인터벌을 걸어, 170ms 뒤 n=1 을 찍고 나서야
-       `1 >= 0` 으로 멈췄다. **다 틀렸는데 「1개 정답」이 나왔다**
-       (2026-08-31 석봉님이 폰에서 잡으셨다. 내 시험은 hit=1 만 밟아 못 봤다).
-       세는 효과보다 「맞는 숫자가 보이는 것」이 먼저다 — 끝 시각에 한 번 더 못 박는다. */
+    /* 🔴 맞힌 개수는 세어 올리지 않고 **처음부터 정확한 값**을 보여 준다.
+       이유 둘 — ①0 일 때 인터벌이 한 번 돌아 「1개 정답」이 나갔다
+       (2026-08-31 석봉님이 폰에서 잡으셨다. 내 시험은 hit=1 만 밟아 못 봤다)
+       ②고친 뒤에도 탭이 백그라운드면 setInterval 이 1초로 늘어나 **세는 도중 값**이 보였다
+       (5개인데 3으로 나옴). 이벤트로 캡처 인증을 받는다면 그 캡처가 분쟁거리가 된다.
+       점수는 사실이지 연출이 아니다. 재미는 등급 배지·항목 순차 공개·금액 카운트업이 맡는다. */
     var h = $("hit");
-    h.textContent = "0";
-    if(hit > 0){
-      var n = 0, tick = setInterval(function(){
-        n++;
-        if(n >= hit){ n = hit; clearInterval(tick); }
-        h.textContent = n;
-      }, 170);
-      setTimeout(function(){ h.textContent = hit; }, 170*hit + 400);
-    }
+    h.textContent = hit;
+    h.classList.remove("pop"); void h.offsetWidth; h.classList.add("pop");
 
     var fg = $("finalGrade");
     fg.textContent = g.t; fg.style.background = g.bg; fg.style.color = g.fg;
