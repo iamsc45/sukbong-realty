@@ -465,6 +465,38 @@ var hh=items.reduce(function(a,x){return a+(+x.n||0);},0);
 var ST={now:["접수중","now"],soon:["접수예정","soon"],done:["접수마감","done"]};
 var curR="all",curF="all";
 var PRI=["서울","경기","인천"];
+/* 청약 주소 → 지도 검색어. 동까지만 남기고, 동이 없으면 시·군·구로 떨어뜨린다.
+   (리·읍은 지도가 아직 못 찾으므로 굳이 넘기지 않는다 — 「향산리」 미지원 확인됨)
+   ⚠️함정: 「공공주택지구」·「첨단3지구」·「도시개발구역」이 전부 '구'로 끝나서
+     시군구로 오인된다. NOT 목록으로 막는다(이걸 빼면 인천 검암 건이
+     '인천검암역세권 공공주택지구'로 검색돼 지도가 엉뚱한 데로 간다).
+   ⚠️두 글자 구(북구·중구·서구)를 놓치지 않게 {1,6}으로 둔다 — {2,7}로 짰다가
+     「북구 월출동」이 「월출동」만 남았다.
+   🔴시군구는 **하나만** 붙인다(slice(-1)). 라이브 실측 결과다 —
+       「수정구 신흥동」   마커 38 · 경고 없음   ✔
+       「성남시 수정구 신흥동」 마커 38 · **"성남시" 는 이 지역 실거래 목록에 없습니다**
+       「용인시 처인구」   마커  7 · 같은 경고    /  「처인구」 마커 7 · 경고 없음 ✔
+     구가 있는 시(성남·용인·부천…)는 우리 자료에 「성남_수정구」로만 있고 「성남시」 단독으로는
+     없다. 토큰을 셋 넘기면 지도가 앞 조각을 지역명으로 찾다 실패해 **엉뚱한 경고**를 띄운다.
+     마커는 떠서 검사로는 안 걸리고, 화면에만 이상한 문구가 남는다.
+   같은 함수가 apply_calendar.html 에도 있다. 한쪽만 고치지 말 것. */
+function applyAreaQ(ad){
+  var t=String(ad||'').replace(/[(),]/g,' ').split(/\s+/).filter(Boolean);
+  var SIDO=/(특별시|광역시|특별자치시|특별자치도|자치도)$|^(강원|경기|충청[남북]|전라[남북]|경상[남북]|제주)도$/;
+  var DONG=/^[가-힣]{1,7}\d*[동가]$/, SGG=/^[가-힣]{1,6}[시군구]$/;
+  var NOT=/(지구|특구|단지|공단|신도시|택지|블록|구역|산단)/;
+  var sgg=[],di=-1,i;
+  for(i=0;i<t.length;i++){
+    if(SGG.test(t[i])&&!NOT.test(t[i])&&!SIDO.test(t[i])) sgg.push(i);
+    if(di<0&&DONG.test(t[i])&&t[i]!=='일원'&&t[i]!=='일대') di=i;
+  }
+  var pick=[];
+  if(di>=0){
+    for(i=0;i<sgg.length;i++){ if(sgg[i]<di) pick.push(sgg[i]); }
+    pick=pick.slice(-1); pick.push(di);   /* 🔴 -2 는 안 된다 (아래 주석) */
+  } else { pick=sgg.slice(-1); }
+  return pick.map(function(k){return t[k];}).join(' ');
+}
 var rt=document.getElementById("rtabs");
 /* 🔴 2026-08-29 석봉님 제보 「청약 일정 필터링이 안 된다」.
    지역 칩 건수를 **전체 117건 기준으로 한 번만** 만들어 두고 탭이 바뀌어도 그대로 뒀다.
@@ -520,8 +552,16 @@ function render(f){
     var pr=x.hi?('<b>'+(x.lo&&x.lo!==x.hi?eok(x.lo)+' ~ ':'')+eok(x.hi)+'</b>'+(x.sqm?'<small>'+x.sqm.toLocaleString()+'만/㎡ (공급면적 기준)</small>':'')):'<small>분양가 공고 확인</small>';
     /* q는 주소만 넘긴다(2026-08-02) — 단지명을 붙이면 "...번지 일원(설명)" 뒤에 이름이 또 붙어
        주소 파싱이 아예 안 되고 시군구 전체화면으로 빠졌다. 분양예정 단지라 실거래 인덱스에도
-       없으므로 주소 지오코딩(주변 실거래지도)만으로 충분하다. */
-    var mapLink=(PRI.indexOf(x.area)>=0&&x.ad)?' <a class="mapgo" href="map.html?q='+encodeURIComponent(x.ad)+'&t=apt&u=%EB%A7%A4%EB%A7%A4">주변 실거래지도 ↗</a>':'';
+       없으므로 주소 지오코딩(주변 실거래지도)만으로 충분하다.
+       🔴2026-08-30 개정 — **주소를 통째로 보내면 안 된다.** 지도 검색은 「단지 → 주소(지번)
+       → 재개발 → 지역」 순인데, 청약 주소에는 지번이 붙어 있어 지번 검색으로 빠진다.
+       그런데 청약은 아직 짓지도 않은 땅이라 그 지번에 실거래가 있을 리 없다. 결과가 셋이었다 —
+         성남복정2 「신흥동 81-8」  → 「이 지번으로 신고된 실거래는 없습니다」(빈 화면)
+         브라운스톤 월곡 「하월곡동 70-4번지 일원」 → 그 자리 남의 집 「동신주택」이 열림
+         양주회천 「덕정동 일원 … A-26블록」 → 뒷말까지 검색어가 되어 목록 0건
+       사용자가 보고 싶은 건 **그 동네 시세**다. 그래서 동까지만 잘라 보낸다(applyAreaQ). */
+    var mapLink=(PRI.indexOf(x.area)>=0&&x.ad&&applyAreaQ(x.ad))
+      ?' <a class="mapgo" href="map.html?q='+encodeURIComponent(applyAreaQ(x.ad))+'&t=apt&u=%EB%A7%A4%EB%A7%A4">주변 실거래지도 ↗</a>':'';
     return '<div class="ap rv on"><span class="st '+st[1]+'">'+st[0]+'</span>'
      +'<span class="nm">'+(x.url?'<a href="'+x.url+'" target="_blank" rel="noopener" style="text-decoration:none;color:inherit">'+x.nm+' ↗</a>':x.nm)+'</span>'
      +'<span class="pr">'+pr+'</span>'

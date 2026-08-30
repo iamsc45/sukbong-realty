@@ -315,6 +315,25 @@ function draw(){
   document.getElementById('mcnt').textContent='이 달 일정 '+mc+'건';
 }
 function cut(s,n){ s=String(s||''); return s.length>n ? s.slice(0,n)+'…' : s; }
+/* 청약 주소 → 지도 검색어. apply.html 과 같은 함수다 — **한쪽만 고치지 말 것.**
+   동까지만 남기고, 동이 없으면 시·군·구로. 「공공주택지구」가 '구'로 끝나는 함정 주의. */
+function applyAreaQ(ad){
+  var t=String(ad||'').replace(/[(),]/g,' ').split(/\s+/).filter(Boolean);
+  var SIDO=/(특별시|광역시|특별자치시|특별자치도|자치도)$|^(강원|경기|충청[남북]|전라[남북]|경상[남북]|제주)도$/;
+  var DONG=/^[가-힣]{1,7}\d*[동가]$/, SGG=/^[가-힣]{1,6}[시군구]$/;
+  var NOT=/(지구|특구|단지|공단|신도시|택지|블록|구역|산단)/;
+  var sgg=[],di=-1,i;
+  for(i=0;i<t.length;i++){
+    if(SGG.test(t[i])&&!NOT.test(t[i])&&!SIDO.test(t[i])) sgg.push(i);
+    if(di<0&&DONG.test(t[i])&&t[i]!=='일원'&&t[i]!=='일대') di=i;
+  }
+  var pick=[];
+  if(di>=0){
+    for(i=0;i<sgg.length;i++){ if(sgg[i]<di) pick.push(sgg[i]); }
+    pick=pick.slice(-1); pick.push(di);   /* 🔴 -2 는 안 된다 (아래 주석) */
+  } else { pick=sgg.slice(-1); }
+  return pick.map(function(k){return t[k];}).join(' ');
+}
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){
   return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
 
@@ -360,8 +379,12 @@ function drawDay(){
        ⚠️상품 종류도 맞춘다. 줍줍에는 오피스텔이 섞여 있어 `t=apt` 로 고정하면 마커가 안 뜬다. */
     var addr=it.ad||it.addr||'';
     var prod=(e.c==='off') ? 'offi' : 'apt';   /* e.c = apt · rem(무순위) · off(오피스텔) */
+    /* 🔴2026-08-30 — 주소를 통째로 넘기면 지번 검색으로 빠진다. 청약은 아직 안 지은 땅이라
+       그 지번에 실거래가 없어 빈 화면이 뜨거나 그 자리 남의 집이 열린다.
+       동까지만 잘라 보낸다(자세한 배경은 apply.html 의 applyAreaQ 주석). */
+    var mq=applyAreaQ(addr);
     h+='<div class="meta">'+meta.join(' · ')+'<br>'+esc(addr)
-      +(addr? '<a class="golink" href="map.html?q='+encodeURIComponent(addr)
+      +(mq? '<a class="golink" href="map.html?q='+encodeURIComponent(mq)
               +'&t='+prod+'&u='+encodeURIComponent('매매')+'">주변 실거래 보기</a>':'')+'</div>';
     h+='</div>';
     return h;
