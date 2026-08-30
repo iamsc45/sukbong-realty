@@ -182,7 +182,7 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
   <div class="foot" id="foot"></div>
 </div>
 
-<script src="data/quiz_price.js?v=1"></script>
+<script src="data/quiz_price.js?v=2"></script>
 <script>
 (function(){
   "use strict";
@@ -233,7 +233,7 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
       "<span>전용 "+q.m2+"㎡ ("+q.py+"평)</span>"+
       "<span>"+q.fl+"층</span>"+
       "<span>"+q.yr+"년 준공</span>"+
-      "<span>"+q.ym.replace("-","년 ")+"월 계약</span>";
+      "<span>"+q.ym.split("-")[0]+"년 "+(+q.ym.split("-")[1])+"월 계약</span>";
 
     var r = $("rng");
     r.min = q.lo; r.max = q.hi; r.step = q.st;
