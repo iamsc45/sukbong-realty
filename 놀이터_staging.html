@@ -45,6 +45,17 @@ header a{color:#fff;text-decoration:none}
 .rulebox b{display:block;font-size:19px;letter-spacing:-.5px;color:var(--navy2)}
 .rulebox span{font-size:11px;color:var(--gray)}
 
+/* ── 타이머 ──
+   ⚠️ 남은 시간은 CSS transition 이 아니라 JS 가 Date.now() 로 재서 width 를 직접 준다.
+   탭이 백그라운드면 transition·setInterval 이 늦어지는데, 경과를 시계로 재면 어긋나지 않는다. */
+.timer{margin:0 0 14px}
+.tbar{height:5px;background:var(--hair);border-radius:3px;overflow:hidden}
+.tbar i{display:block;height:100%;width:100%;background:var(--navy2);border-radius:3px}
+.tbar.warn i{background:var(--red)}
+.tnum{display:flex;justify-content:space-between;font-size:11px;color:var(--gray2);margin-top:5px}
+.tnum b{font-variant-numeric:tabular-nums;color:var(--navy2)}
+.tnum.warn b{color:var(--red)}
+
 /* ── 진행 점 ── */
 .dots{display:flex;justify-content:center;gap:7px;margin:0 0 16px}
 .dots i{width:8px;height:8px;border-radius:50%;background:var(--bar);transition:all .35s}
@@ -158,10 +169,11 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
       <div class="rulebox">
         <div><b>5</b><span>문제</span></div>
         <div><b>10%</b><span>안에 들면 정답</span></div>
-        <div><b>3분</b><span>이면 끝납니다</span></div>
+        <div><b>20초</b><span>문제당 제한</span></div>
       </div>
       <button class="btn p" id="start">시작하기</button>
-      <div class="sub">정답은 다섯 문제를 다 푼 뒤에 한꺼번에 공개됩니다.</div>
+      <div class="sub">정답은 다섯 문제를 다 푼 뒤에 한꺼번에 공개됩니다.<br>
+        시간이 끝나면 그때 맞춰 둔 가격으로 자동 제출됩니다.</div>
       <div class="best" id="bestIntro"></div>
     </div>
   </section>
@@ -170,6 +182,10 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
   <section id="play" class="hide">
     <div class="card">
       <div class="dots" id="dots"></div>
+      <div class="timer">
+        <div class="tbar" id="tbar"><i id="tfill"></i></div>
+        <div class="tnum" id="tnum"><span>남은 시간</span><b id="tsec">20초</b></div>
+      </div>
       <div class="qhead">
         <h2>얼마에 팔렸을까요?</h2>
         <span class="qno"><b id="cur">1</b> / <span id="tot">5</span></span>
@@ -232,8 +248,18 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
   var POOL = D.items || [];
   var N = 5;          // 한 세트 문제 수 (2026-08-30 석봉님 확정)
   var HIT = 10;       // 오차 10% 안에 들면 정답 (2026-08-30 석봉님 확정)
+  var SEC = 20;       // 문제당 제한 시간. 검색할 틈을 주지 않는 길이 (2026-08-30 석봉님 지시)
   var set = [], idx = 0, log = [];
+  var tStart = 0, tRaf = 0, away = 0, awayAt = 0;   // 타이머·이탈 기록
   var $ = function(id){ return document.getElementById(id); };
+
+  /* 다른 화면에 다녀온 시간을 잰다.
+     검색을 막을 수는 없지만 「자리를 비웠다」는 사실은 남길 수 있다.
+     나중에 이벤트를 열 때 참고 자료가 된다. */
+  document.addEventListener("visibilitychange", function(){
+    if(document.hidden){ awayAt = Date.now(); }
+    else if(awayAt){ away += Date.now() - awayAt; awayAt = 0; }
+  });
 
   /* 만원 단위를 사람이 읽는 말로. 35300 → 3억 5,300만원 */
   function money(man){
@@ -289,7 +315,35 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
     /* 문제 카드가 새로 들어오는 느낌을 준다 */
     var box = $("qbox");
     box.style.animation = "none"; void box.offsetWidth; box.style.animation = "";
+
+    startTimer();
   }
+
+  /* 남은 시간은 Date.now() 로 잰다.
+     setInterval 은 탭이 백그라운드면 느려지지만 시계는 정확하므로 표시가 어긋나지 않는다. */
+  function startTimer(){
+    stopTimer();
+    tStart = Date.now();
+    var fill = $("tfill"), bar = $("tbar"), num = $("tnum"), sec = $("tsec");
+    fill.style.width = "100%";
+    bar.classList.remove("warn"); num.classList.remove("warn");
+    sec.textContent = SEC + "초";
+
+    tRaf = setInterval(function(){
+      var left = SEC - (Date.now() - tStart)/1000;
+      if(left <= 0){
+        stopTimer();
+        fill.style.width = "0%";
+        sec.textContent = "시간 종료";
+        submit(true);
+        return;
+      }
+      fill.style.width = (left/SEC*100).toFixed(1)+"%";
+      sec.textContent = Math.ceil(left)+"초";
+      if(left <= 5){ bar.classList.add("warn"); num.classList.add("warn"); }
+    }, 100);
+  }
+  function stopTimer(){ if(tRaf){ clearInterval(tRaf); tRaf = 0; } }
 
   $("rng").addEventListener("input", function(){
     $("val").textContent = money(+this.value);
@@ -297,18 +351,21 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
     setTimeout(function(){ v.classList.remove("bump"); }, 120);
   });
 
-  function submit(){
+  function submit(auto){
+    if(idx >= set.length) return;      // 시간 종료와 클릭이 겹쳐도 두 번 들어가지 않게
+    stopTimer();
     var q = set[idx], my = +$("rng").value;
-    log.push({q:q, my:my, err: Math.abs(my - q.ans)/q.ans*100});
+    var spent = Math.min((Date.now() - tStart)/1000, SEC);
+    log.push({q:q, my:my, err: Math.abs(my - q.ans)/q.ans*100, sec:spent, auto:!!auto});
     /* 내가 찍은 답을 아래에 쌓아 보여 준다. 정답은 아직 말하지 않는다 */
     var s = document.createElement("span");
-    s.textContent = (idx+1)+"번 "+money(my);
+    s.textContent = (idx+1)+"번 "+money(my)+(auto ? " (시간 종료)" : "");
     $("trail").appendChild(s);
     idx++;
     if(idx >= set.length){ setTimeout(function(){ show("wait"); }, 260); }
     else { render(); window.scrollTo({top:0, behavior:"smooth"}); }
   }
-  $("submit").addEventListener("click", submit);
+  $("submit").addEventListener("click", function(){ submit(false); });
 
   /* 숫자가 올라가는 효과. 정답 공개의 재미는 여기서 난다.
      🔴 다만 효과보다 「올바른 값이 보이는 것」이 먼저다.
@@ -354,7 +411,11 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
 
     var fg = $("finalGrade");
     fg.textContent = g.t; fg.style.background = g.bg; fg.style.color = g.fg;
-    $("avgLine").textContent = "평균 오차 "+avg.toFixed(1)+"%";
+    var spent = 0, autos = 0;
+    log.forEach(function(x){ spent += x.sec; if(x.auto) autos++; });
+    $("avgLine").innerHTML = "평균 오차 "+avg.toFixed(1)+"% · 걸린 시간 "+Math.round(spent)+"초"+
+      (autos ? "<br>시간이 끝나 자동 제출된 문제 "+autos+"개" : "")+
+      (away > 3000 ? "<br>푸는 동안 다른 화면에 "+Math.round(away/1000)+"초 다녀오셨습니다" : "");
 
     $("list").innerHTML = "";
     log.forEach(function(x, i){
@@ -384,7 +445,8 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
         "<div class='r2'><span class='mine'>내 답 "+money(x.my)+"</span>"+
           "<b class='ansv'>"+money(x.q.ans)+"</b></div>"+
         "<div class='er'>"+x.q.sgg+" · 오차 "+x.err.toFixed(1)+"%"+
-          (ok ? " · 정답입니다" : (near ? " · 아깝습니다" : ""))+"</div>"+
+          (ok ? " · 정답입니다" : (near ? " · 아깝습니다" : ""))+
+          " · "+(x.auto ? "시간 종료" : x.sec.toFixed(1)+"초")+"</div>"+
         "<div class='det'><dl>"+
           "<dt>최근 거래</dt><dd>"+x.q.n+"건</dd>"+
           "<dt>중위 가격</dt><dd>"+money(x.q.med)+"</dd>"+
@@ -402,9 +464,10 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
   $("reveal").addEventListener("click", renderResult);
 
   function begin(){
+    stopTimer();
     set = shuffle(POOL.slice()).slice(0, N);
-    idx = 0; log = []; $("trail").innerHTML = "";
-    render(); show("play");
+    idx = 0; log = []; away = 0; awayAt = 0; $("trail").innerHTML = "";
+    show("play"); render();
   }
   $("start").addEventListener("click", function(){
     if(!POOL.length){ alert("문제를 불러오지 못했습니다."); return; }
