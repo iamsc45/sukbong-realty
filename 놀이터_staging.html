@@ -423,10 +423,11 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
       (autos ? "<br>시간이 끝나 자동 제출된 문제 "+autos+"개" : "")+
       (away > 3000 ? "<br>푸는 동안 다른 화면에 "+Math.round(away/1000)+"초 다녀오셨습니다" : "");
 
+    /* 🔴 항목은 setTimeout 으로 하나씩 붙이지 않는다. 전부 즉시 붙이고 **움직임만** 늦춘다.
+       백그라운드 탭에서는 setTimeout 이 1초 이상으로 늘어져 목록이 통째로 비어 보였다
+       (2026-08-31 확인). 애니메이션은 transform 만 쓰므로 delay 중에도 글자는 보인다. */
     $("list").innerHTML = "";
-    log.forEach(function(x, i){
-      setTimeout(function(){ addItem(x, i); }, 130*i + 200);
-    });
+    log.forEach(function(x, i){ addItem(x, i); });
 
     /* 최고 기록은 이 브라우저에만 남는다. 서버로 보내지 않는다 */
     var prev = null;
@@ -445,6 +446,7 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
       var near = !ok && x.err <= 15;
       var d = document.createElement("div");
       d.className = "item"+(ok ? " ok" : "");
+      d.style.animationDelay = (0.07*i)+"s";
       d.innerHTML =
         "<div class='r1'><span class='nm'>"+x.q.apt+"</span>"+
           "<span class='mark "+(ok?"o":"x")+"'>"+(ok?"○":"✕")+"</span></div>"+
