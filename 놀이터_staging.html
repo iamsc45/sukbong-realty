@@ -103,8 +103,14 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
 .grade{display:inline-block;font-size:14px;font-weight:700;padding:7px 16px;border-radius:20px}
 .score .avg{font-size:13px;color:var(--gray);margin-top:10px}
 
+/* 🔴 항목은 기본으로 보인다. 애니메이션은 장식일 뿐이다.
+   delay + animation-fill-mode:both 로 「나중에 나타나게」 하면, 탭이 백그라운드일 때
+   애니메이션 시계가 멈춰 opacity 0 인 채로 굳는다(2026-08-30 확인).
+   카톡에서 링크를 열고 다른 앱에 다녀오는 동선이 흔하므로 콘텐츠를 여기에 기대게 두지 않는다.
+   순서대로 나타나는 효과는 JS 가 하나씩 붙여 만든다. */
 .item{border:1px solid var(--hair);border-radius:13px;padding:14px 15px;margin-top:10px;
-  background:#fff;animation:slide .4s ease both;cursor:pointer}
+  background:#fff;animation:slide .38s ease;cursor:pointer}
+@media (prefers-reduced-motion:reduce){ .item,.q,.det.open{animation:none} }
 .item.ok{border-color:#BFE0D2;background:#F4FBF8}
 .item .r1{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .item .nm{font-weight:700;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.3px}
@@ -337,11 +343,26 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
 
     $("list").innerHTML = "";
     log.forEach(function(x, i){
+      setTimeout(function(){ addItem(x, i); }, 130*i + 200);
+    });
+
+    /* 최고 기록은 이 브라우저에만 남는다. 서버로 보내지 않는다 */
+    var prev = null;
+    try{
+      var raw = localStorage.getItem("sb_quiz_hit");
+      prev = raw === null ? null : parseInt(raw, 10);
+      if(prev === null || hit > prev){ localStorage.setItem("sb_quiz_hit", String(hit)); }
+    }catch(e){}
+    $("bestRes").textContent =
+      (prev !== null && hit > prev) ? "최고 기록을 새로 세웠습니다 (지난 최고 "+prev+"개)"
+      : (prev !== null ? "내 최고 기록 "+Math.max(prev,hit)+"개" : "");
+  }
+
+  function addItem(x, i){
       var ok = x.err <= HIT;
       var near = !ok && x.err <= 15;
       var d = document.createElement("div");
       d.className = "item"+(ok ? " ok" : "");
-      d.style.animationDelay = (0.12*i + 0.25)+"s";
       d.innerHTML =
         "<div class='r1'><span class='nm'>"+x.q.apt+"</span>"+
           "<span class='mark "+(ok?"o":"x")+"'>"+(ok?"○":"✕")+"</span></div>"+
@@ -360,20 +381,8 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
         d.querySelector(".det").classList.toggle("open");
       });
       $("list").appendChild(d);
-      /* 실제 거래가만 카운트업으로 올린다 */
-      setTimeout(function(){ countUp(d.querySelector(".ansv"), x.q.ans); }, 120*i + 300);
-    });
-
-    /* 최고 기록은 이 브라우저에만 남는다. 서버로 보내지 않는다 */
-    var prev = null;
-    try{
-      var raw = localStorage.getItem("sb_quiz_hit");
-      prev = raw === null ? null : parseInt(raw, 10);
-      if(prev === null || hit > prev){ localStorage.setItem("sb_quiz_hit", String(hit)); }
-    }catch(e){}
-    $("bestRes").textContent =
-      (prev !== null && hit > prev) ? "최고 기록을 새로 세웠습니다 (지난 최고 "+prev+"개)"
-      : (prev !== null ? "내 최고 기록 "+Math.max(prev,hit)+"개" : "");
+      /* 실제 거래가는 숫자가 올라가는 효과로 보여 준다 */
+      countUp(d.querySelector(".ansv"), x.q.ans);
   }
   $("reveal").addEventListener("click", renderResult);
 
