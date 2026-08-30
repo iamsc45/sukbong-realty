@@ -318,6 +318,12 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
     log.forEach(function(x){ sum += x.err; if(x.err <= HIT) hit++; });
     var avg = sum/log.length, g = grade(hit);
 
+    /* 🔴 화면을 먼저 켜고 나서 항목을 붙인다.
+       display:none 인 채로 append 하면 CSS 애니메이션이 시작되지 않고,
+       animation-fill-mode:both 탓에 opacity 0 에 그대로 멈춘다.
+       2026-08-30 라이브에서 실제로 났다 — DOM 에는 5개가 있는데 화면은 비어 있었다. */
+    show("result");
+
     var h = $("hit"); h.textContent = "0";
     var n = 0, tick = setInterval(function(){
       n++; h.textContent = n;
@@ -368,7 +374,6 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
     $("bestRes").textContent =
       (prev !== null && hit > prev) ? "최고 기록을 새로 세웠습니다 (지난 최고 "+prev+"개)"
       : (prev !== null ? "내 최고 기록 "+Math.max(prev,hit)+"개" : "");
-    show("result");
   }
   $("reveal").addEventListener("click", renderResult);
 
