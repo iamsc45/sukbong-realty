@@ -169,6 +169,19 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .gitem .gs{display:block;font-size:13.5px;color:var(--text2);margin-top:6px;line-height:1.6;word-break:keep-all}
 .gitem .gm{display:block;font-size:12px;color:var(--muted);margin-top:8px}
 .gitem .gm b{color:var(--gold);font-weight:700}
+/* 세금 피하기 — 게임 화면은 군더더기를 다 뺀다. 점수와 판 두 개만 남긴다 */
+.thud{display:flex;align-items:flex-end;justify-content:space-between;margin:4px 0 12px}
+.thud .ts .k{display:block;font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.02em}
+.thud .ts b{display:block;font-size:30px;font-weight:800;letter-spacing:-.04em;line-height:1.15}
+.tsh{font-size:12.5px;font-weight:800;color:#fff;background:var(--gold);
+     border-radius:999px;padding:5px 11px;letter-spacing:-.01em}
+.tstage{display:flex;justify-content:center}
+.tstage canvas{border:1px solid var(--hair);border-radius:14px;background:var(--canvas);
+     touch-action:none;display:block}   /* touch-action 을 빼면 게임 중에 페이지가 스크롤된다 */
+.ttip{border-left:2.5px solid var(--text);padding:2px 0 2px 14px;margin:16px 0 18px;
+     font-size:15px;line-height:1.72;color:var(--text2);word-break:keep-all}
+.tbest{text-align:center;font-size:13.5px;color:var(--muted);font-weight:600;margin-bottom:16px}
+.tbest.rec{color:var(--gold);font-weight:800}
 .gempty{border:1px dashed var(--hair);border-radius:14px;padding:26px 18px;text-align:center;
   color:var(--muted2);font-size:13.5px;line-height:1.7}
 
@@ -254,6 +267,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     <div class="tabs">
       <button id="tabQuiz" class="on">퀴즈<span class="cnt">1</span></button>
       <button id="tabBal">밸런스<span class="cnt">1</span></button>
+      <button id="tabTax">액션<span class="cnt">1</span></button>
     </div>
 
     <div class="glist" id="listQuiz">
@@ -278,6 +292,18 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
         </span>
       </button>
       <div class="gempty">새로운 밸런스 게임을 준비하고 있습니다.</div>
+    </div>
+
+    <div class="glist hide" id="listTax">
+      <button class="gitem" id="goTax">
+        <span class="th"><img src="assets/th_tax.png?v=1" alt=""></span>
+        <span class="tx">
+          <span class="gt">세금 피하기</span>
+          <span class="gs">취득세도 양도세도 위에서 떨어집니다. 집 한 채를 지켜 보세요.</span>
+          <span class="gm">한 손으로 · <b>얼마나 버티나</b></span>
+        </span>
+      </button>
+      <div class="gempty">새로운 액션 게임을 준비하고 있습니다.</div>
     </div>
   </section>
 
@@ -423,6 +449,38 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     <div style="text-align:center"><a href="#" class="backlink toHub">다른 놀이 해보기</a></div>
   </section>
 
+  <!-- ── 세금 피하기 (액션) ───────────────────────────────── -->
+  <section id="tIntro" class="scr hide">
+    <div class="eyebrow">액 션</div>
+    <h1 class="q">세금 피하기</h1>
+    <p class="lead">위에서 취득세가, 양도세가, 재산세가 떨어집니다.<br>집 한 채를 지키며 얼마나 버티는지 보세요.</p>
+    <div class="rules">
+      손가락을 좌우로 움직여 피합니다 · <b>비과세</b>·<b>장기보유</b>를 먹으면 잠깐 무적<br>
+      1초가 한 달입니다. 오래 버틸수록 오래 가진 셈입니다.
+    </div>
+    <button class="btn full" id="tStart">시작하기</button>
+    <div style="text-align:center"><a href="#" class="backlink toHub">다른 놀이 해보기</a></div>
+  </section>
+
+  <section id="tPlay" class="scr hide">
+    <div class="thud">
+      <div class="ts"><span class="k">보유 기간</span><b id="tScore">0개월</b></div>
+      <span class="tsh hide" id="tShield">무적</span>
+    </div>
+    <div class="tstage"><canvas id="tCv"></canvas></div>
+  </section>
+
+  <section id="tEnd" class="scr hide">
+    <div class="eyebrow">결과</div>
+    <h1 class="q" id="tRes">0개월</h1>
+    <p class="lead" id="tHit"></p>
+    <div class="ttip" id="tTip"></div>
+    <div class="tbest" id="tBest"></div>
+    <button class="btn full" id="tShare">결과 공유하기</button>
+    <button class="btn full line" id="tAgain">다시 하기</button>
+    <div style="text-align:center"><a href="#" class="backlink toHub">다른 놀이 해보기</a></div>
+  </section>
+
   <div class="foot" id="foot"></div>
 </div>
 
@@ -432,6 +490,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 <script src="data/quiz_price.js?v=4"></script>
 <script src="data/polls.js?v=2"></script>
 <script src="assets/game_balance.js?v=1"></script>
+<script src="assets/game_tax.js?v=1"></script>
 <script>
 (function(){
   "use strict";
@@ -648,15 +707,18 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   }catch(e){}
 
   /* ── 허브: 탭으로 장르를 고르고 목록에서 게임을 고른다 (2026-08-31 석봉님) ── */
-  var BAL = null;
+  var BAL = null, TAX = null;
+  /* 탭이 셋이 되면서 if 를 늘리지 않고 표로 돌린다. 넷째가 붙어도 한 줄만 는다. */
+  var TABS = [["tabQuiz","listQuiz"],["tabBal","listBal"],["tabTax","listTax"]];
   function tab(which){
-    $("tabQuiz").classList.toggle("on", which === "quiz");
-    $("tabBal").classList.toggle("on", which === "bal");
-    $("listQuiz").classList.toggle("hide", which !== "quiz");
-    $("listBal").classList.toggle("hide", which !== "bal");
+    TABS.forEach(function(p){
+      $(p[0]).classList.toggle("on", p[0] === which);
+      $(p[1]).classList.toggle("hide", p[0] !== which);
+    });
   }
-  $("tabQuiz").addEventListener("click", function(){ tab("quiz"); });
-  $("tabBal").addEventListener("click", function(){ tab("bal"); });
+  TABS.forEach(function(p){
+    $(p[0]).addEventListener("click", function(){ tab(p[0]); });
+  });
 
   /* 시작 화면의 랭킹 미리보기 — 남들 기록을 보고 나서 시작하게 한다 */
   function loadPeek(){
@@ -684,6 +746,14 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   var backs = document.querySelectorAll(".toHub");
   for(var i=0;i<backs.length;i++){
     backs[i].addEventListener("click", function(e){ e.preventDefault(); stopTimer(); show("hub"); });
+  }
+  $("goTax").addEventListener("click", function(){ show("tIntro"); });
+  if(window.TaxGame){
+    TAX = window.TaxGame.init({ show: show });
+    if(TAX){
+      $("tStart").addEventListener("click", function(){ TAX.start(); });
+      window.__tax = TAX;                 // 검증용(숨은 탭에서는 화면으로 확인이 안 된다)
+    }
   }
   if(window.BalanceGame){
     BAL = window.BalanceGame.init({ show: show });
