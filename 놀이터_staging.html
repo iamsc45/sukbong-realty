@@ -190,6 +190,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   <div class="foot" id="foot"></div>
 </div>
 
+<script src="assets/sb_share.js?v=1"></script>
 <script src="data/quiz_price.js?v=4"></script>
 <script>
 (function(){
@@ -374,13 +375,27 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   $("again").addEventListener("click", begin);
   $("reveal").addEventListener("click", renderResult);
 
+  /* 결과 공유 — 카카오톡이 되면 카카오톡으로, 안 되면 시스템 공유·복사로 물러선다.
+     카카오 JavaScript 키가 `assets/sb_share.js` 에 채워지면 그때부터 카카오톡 창이 뜬다. */
+  var SITE = "https://xn--2q1br1nnrasc92a76myvau64b.com/";
   $("share").addEventListener("click", function(){
+    var btn = this;
     var hit = log.filter(function(x){ return x.err <= HIT; }).length;
-    var txt = "실거래가 맞히기 다섯 문제 중 "+hit+"개를 맞혔습니다.\n당신도 해보세요.\n"+location.href;
-    if(navigator.share){ navigator.share({text:txt}).catch(function(){}); }
-    else if(navigator.clipboard){
-      navigator.clipboard.writeText(txt).then(function(){ alert("결과를 복사했습니다."); });
-    }
+    var url = SITE + encodeURIComponent("놀이터_staging.html");
+    var o = {
+      title: "실거래가 맞히기 " + hit + " / 5",
+      desc: "국토교통부에 신고된 진짜 거래 다섯 건입니다. 당신은 몇 개나 맞히시겠어요?",
+      image: SITE + "assets/og_quiz.png",
+      url: url,
+      btn: "나도 해보기",
+      text: "실거래가 맞히기 다섯 문제 중 " + hit + "개를 맞혔습니다.\n당신도 해보세요.\n" + url
+    };
+    btn.disabled = true;
+    SBShare.any(o).then(function(how){
+      btn.disabled = false;
+      if(how === "clipboard") alert("결과를 복사했습니다. 붙여넣어 공유해 보세요.");
+      else if(!how) alert("공유를 지원하지 않는 환경입니다. 주소를 복사해 보내 주세요.");
+    });
   });
 
   try{
