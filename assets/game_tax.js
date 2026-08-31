@@ -419,6 +419,9 @@ window.TaxGame = (function(){
         dt = dt || 0.016; fit(); reset();
         var n = Math.round(sec / dt), alive = true;
         for(var i = 0; i < n && alive; i++){ aimX = bot ? botAim() : px; alive = step(dt); }
+        /* 죽었으면 진짜 게임과 같은 경로로 끝낸다 — 결과 화면 문구까지 확인해야
+           "화면에 뜬 것"을 봤다고 할 수 있다(라이브 확인 규칙). */
+        if(!alive) over();
         return { alive: alive, elapsed: +elapsed.toFixed(1), held: held(elapsed),
                  blocks: blocks.length, killedBy: killedBy && killedBy.t, speed: Math.round(speed()) };
       },
