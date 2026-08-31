@@ -9,7 +9,7 @@
 <meta property="og:description" content="부동산 밸런스 게임. 고르고 나면 실제 거래가 어땠는지 보여드립니다.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="석봉 부동산 정보방">
-<meta property="og:image" content="https://xn--2q1br1nnrasc92a76myvau64b.com/assets/og_quiz.png">
+<meta property="og:image" content="https://xn--2q1br1nnrasc92a76myvau64b.com/assets/og_balance.png">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
 <link rel="stylesheet" href="assets/site.css">
@@ -43,7 +43,10 @@ h1.b{font-size:clamp(28px,6.5vw,40px);font-weight:800;letter-spacing:-.04em;marg
 .pick .s{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6;word-break:keep-all}
 .vs{text-align:center;font-size:11px;color:var(--muted2);font-weight:700;letter-spacing:.1em;margin:12px 0}
 
-/* 결과 */
+/* 결과 — 다섯 개를 한꺼번에 보여 준다 */
+.card{border-top:1px solid var(--hair);padding:24px 0 6px}
+.card .cq{font-size:11px;letter-spacing:.1em;color:var(--muted);font-weight:700;margin-bottom:6px}
+.card .ct{font-size:18px;font-weight:800;letter-spacing:-.03em;margin-bottom:16px;word-break:keep-all}
 .bars{margin-top:4px}
 .bar{margin-bottom:16px}
 .bar .lb{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;margin-bottom:6px}
@@ -101,41 +104,32 @@ h1.b{font-size:clamp(28px,6.5vw,40px);font-weight:800;letter-spacing:-.04em;marg
     <div class="qn"><span id="qi">1</span> / <span id="qn">5</span></div>
     <div class="qt" id="qt"></div>
 
-    <div id="beforeVote">
-      <div class="picks">
-        <button class="pick" id="pickA"><span class="t"></span><span class="s"></span></button>
-        <button class="pick" id="pickB"><span class="t"></span><span class="s"></span></button>
-      </div>
-      <div class="vs">둘 중 하나</div>
+    <div class="picks">
+      <button class="pick" id="pickA"><span class="t"></span><span class="s"></span></button>
+      <button class="pick" id="pickB"><span class="t"></span><span class="s"></span></button>
     </div>
+    <div class="vs">둘 중 하나</div>
 
-    <div id="afterVote" class="hide">
-      <div class="bars">
-        <div class="bar" id="barA"><div class="lb"><b></b><span class="pc"></span></div><div class="tr"><i></i></div></div>
-        <div class="bar" id="barB"><div class="lb"><b></b><span class="pc"></span></div><div class="tr"><i></i></div></div>
-      </div>
-      <div class="tot" id="tot"></div>
-      <div class="fact">
-        <div class="h">그런데 실제로는</div>
-        <p id="fact"></p>
-        <p id="more"></p>
-        <a id="flink" href="#" target="_blank" rel="noopener"></a>
-      </div>
-      <button class="btn full" id="next">다음 질문</button>
+  </section>
+
+  <section id="wait" class="hide">
+    <div class="done" style="text-align:center">
+      <h2>다섯 개 다 고르셨습니다</h2>
+      <p>다른 분들은 어떻게 골랐는지,<br>그리고 실제 거래는 어땠는지 보여드리겠습니다.</p>
+      <button class="btn full" id="reveal">결과 보기</button>
     </div>
   </section>
 
   <section id="end" class="hide">
-    <div class="done">
-      <h2>다섯 질문이 끝났습니다</h2>
-      <p>같은 질문에 다른 사람들은 어떻게 답했는지 보셨습니다.<br>
-         숫자로 보면 생각이 조금 달라지기도 합니다.</p>
-      <button class="btn full" id="share">결과 공유하기</button>
-      <button class="btn full line" id="again">다시 보기</button>
-      <a class="btn full line" href="%EB%86%80%EC%9D%B4%ED%84%B0_staging.html" style="text-decoration:none">
-        실거래가 맞히기도 해보기
-      </a>
-    </div>
+    <div class="eyebrow" style="margin-top:34px">결과</div>
+    <h1 class="b" id="endTitle">당신의 선택</h1>
+    <p class="lead" id="endLead"></p>
+    <div id="cards"></div>
+    <button class="btn full" id="share">결과 공유하기</button>
+    <button class="btn full line" id="again">다시 하기</button>
+    <a class="btn full line" href="%EB%86%80%EC%9D%B4%ED%84%B0_staging.html" style="text-decoration:none">
+      실거래가 맞히기도 해보기
+    </a>
   </section>
 
   <div class="foot" id="foot"></div>
@@ -167,13 +161,18 @@ h1.b{font-size:clamp(28px,6.5vw,40px);font-weight:800;letter-spacing:-.04em;marg
     return fetch(SB_URL + "/rest/v1/" + path, opt);
   }
   function show(which){
-    ["intro","play","end"].forEach(function(k){ $(k).classList.toggle("hide", k!==which); });
+    ["intro","play","wait","end"].forEach(function(k){ $(k).classList.toggle("hide", k!==which); });
     window.scrollTo(0,0);
   }
   function drawSteps(){
     $("steps").innerHTML = P.map(function(_,i){
       return "<i class='"+(i<idx?"done":"")+"'></i>";
     }).join("");
+  }
+  function esc(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c];
+    });
   }
 
   function render(){
@@ -186,72 +185,88 @@ h1.b{font-size:clamp(28px,6.5vw,40px);font-weight:800;letter-spacing:-.04em;marg
     $("pickA").querySelector(".s").textContent = q.a.s;
     $("pickB").querySelector(".t").textContent = q.b.t;
     $("pickB").querySelector(".s").textContent = q.b.s;
-    $("beforeVote").classList.remove("hide");
-    $("afterVote").classList.add("hide");
   }
 
-  /* 한 번 고르면 못 바꾼다. 그래야 결과를 믿을 수 있다 */
+  /* 🔑 고르면 바로 다음 질문으로 넘어간다. 결과는 다섯 개를 다 고른 뒤 한꺼번에.
+     (2026-08-31 석봉님 — 질문마다 결과를 끼워 넣으면 흐름이 끊긴다)
+     표는 고르는 즉시 보내되 응답을 기다리지 않는다. 서버가 느려도 게임은 안 멈춘다. */
   function vote(choice){
     var q = P[idx];
-    picked.push(choice);
-    /* 표를 먼저 보내고, 집계를 받아 그린다.
-       실패해도 화면은 진행한다 — 서버가 잠깐 안 되더라도 게임은 끝까지 돌아야 한다 */
+    picked.push({ slug: q.slug, choice: choice });
     sbFetch("poll_votes", { method: "POST",
-      body: JSON.stringify({ slug: q.slug, choice: choice, cid: cid() }) })
-      .catch(function(){})
-      .then(function(){ return sbFetch("poll_result?slug=eq." + encodeURIComponent(q.slug)); })
-      .then(function(r){ return r && r.ok ? r.json() : null; })
-      .then(function(rows){
-        var a = 0, b = 0;
-        if(rows && rows.length){ a = +rows[0].a_cnt || 0; b = +rows[0].b_cnt || 0; }
-        /* 내 표가 아직 집계에 안 잡혔으면(중복 투표로 막혔거나 지연) 최소한 내 것은 보탠다 */
-        if(a + b === 0){ if(choice === "a") a = 1; else b = 1; }
-        paint(q, a, b, choice);
-      })
-      .catch(function(){ paint(q, choice==="a"?1:0, choice==="b"?1:0, choice); });
+      body: JSON.stringify({ slug: q.slug, choice: choice, cid: cid() }) }).catch(function(){});
+    idx++;
+    if(idx >= P.length){ drawSteps(); show("wait"); }
+    else { render(); window.scrollTo({top:0, behavior:"smooth"}); }
   }
-
-  function paint(q, a, b, mine){
-    var tot = a + b, pa = tot ? Math.round(a/tot*100) : 0, pb = tot ? 100 - pa : 0;
-    var A = $("barA"), B = $("barB");
-    A.className = "bar" + (mine==="a" ? " mine" : "");
-    B.className = "bar" + (mine==="b" ? " mine" : "");
-    A.querySelector("b").textContent = q.a.t;
-    B.querySelector("b").textContent = q.b.t;
-    A.querySelector(".pc").textContent = pa + "%";
-    B.querySelector(".pc").textContent = pb + "%";
-    A.querySelector("i").style.width = pa + "%";
-    B.querySelector("i").style.width = pb + "%";
-    $("tot").textContent = tot.toLocaleString() + "명이 골랐습니다";
-    $("fact").innerHTML = q.fact;
-    $("more").innerHTML = q.more;
-    var l = $("flink");
-    if(q.link){ l.href = q.link.u; l.textContent = q.link.t; l.style.display = ""; }
-    else l.style.display = "none";
-    $("next").textContent = (idx === P.length-1) ? "결과 보기" : "다음 질문";
-    $("beforeVote").classList.add("hide");
-    $("afterVote").classList.remove("hide");
-  }
-
   $("pickA").addEventListener("click", function(){ vote("a"); });
   $("pickB").addEventListener("click", function(){ vote("b"); });
-  $("next").addEventListener("click", function(){
-    idx++;
-    if(idx >= P.length){ drawSteps(); show("end"); }
-    else { render(); window.scrollTo({top:0, behavior:"smooth"}); }
-  });
+
+  /* 다섯 개 집계를 한 번에 받아 결과를 그린다 */
+  function reveal(){
+    show("end");
+    var slugs = picked.map(function(x){ return x.slug; });
+    $("cards").innerHTML = "";
+    sbFetch("poll_result?slug=in.(" + slugs.map(encodeURIComponent).join(",") + ")")
+      .then(function(r){ return r.ok ? r.json() : []; })
+      .catch(function(){ return []; })
+      .then(function(rows){
+        var by = {};
+        (rows || []).forEach(function(x){ by[x.slug] = x; });
+        var html = "";
+        picked.forEach(function(p, i){
+          var q = P[i], r = by[p.slug] || {};
+          var a = +r.a_cnt || 0, b = +r.b_cnt || 0;
+          /* 내 표가 아직 집계에 안 잡혔으면 최소한 내 것은 보탠다 */
+          if(a + b === 0){ if(p.choice === "a") a = 1; else b = 1; }
+          var tot = a + b, pa = Math.round(a/tot*100), pb = 100 - pa;
+          html +=
+            "<div class='card'>" +
+              "<div class='cq'>질문 " + (i+1) + "</div>" +
+              "<div class='ct'>" + esc(q.q) + "</div>" +
+              "<div class='bars'>" +
+                bar(q.a.t, pa, p.choice === "a") +
+                bar(q.b.t, pb, p.choice === "b") +
+              "</div>" +
+              "<div class='tot'>" + tot.toLocaleString() + "명이 골랐습니다</div>" +
+              "<div class='fact'><div class='h'>그런데 실제로는</div>" +
+                "<p>" + q.fact + "</p><p>" + q.more + "</p>" +
+                (q.link ? "<a href='" + q.link.u + "' target='_blank' rel='noopener'>" +
+                          esc(q.link.t) + "</a>" : "") +
+              "</div>" +
+            "</div>";
+        });
+        $("cards").innerHTML = html;
+        var mine = picked.filter(function(p, i){
+          var r = by[p.slug]; if(!r) return false;
+          var a = +r.a_cnt || 0, b = +r.b_cnt || 0;
+          return (p.choice === "a") ? a >= b : b > a;
+        }).length;
+        $("endLead").textContent = "다섯 질문 가운데 " + mine + "개에서 다수와 같은 쪽을 고르셨습니다.";
+      });
+  }
+  function bar(label, pct, mine){
+    return "<div class='bar" + (mine ? " mine" : "") + "'>" +
+      "<div class='lb'><b>" + esc(label) + "</b><span class='pc'>" + pct + "%</span></div>" +
+      "<div class='tr'><i style='width:" + pct + "%'></i></div></div>";
+  }
+  $("reveal").addEventListener("click", reveal);
+
+  function begin(){
+    idx = 0; picked = []; render(); show("play");
+  }
   $("start").addEventListener("click", function(){
     if(!P.length){ alert("질문을 불러오지 못했습니다."); return; }
-    idx = 0; picked = []; render(); show("play");
+    begin();
   });
-  $("again").addEventListener("click", function(){ idx = 0; picked = []; render(); show("play"); });
+  $("again").addEventListener("click", begin);
 
   $("share").addEventListener("click", function(){
     var url = "https://xn--2q1br1nnrasc92a76myvau64b.com/" + encodeURIComponent("밸런스_staging.html");
     SBShare.any({
       title: "부동산 밸런스 게임",
       desc: "정답이 없는 질문 다섯 개. 고르고 나면 실제 거래가 어땠는지 보여드립니다.",
-      image: "https://xn--2q1br1nnrasc92a76myvau64b.com/assets/og_quiz.png",
+      image: "https://xn--2q1br1nnrasc92a76myvau64b.com/assets/og_balance.png",
       url: url, btn: "나도 골라보기",
       text: "부동산 밸런스 게임, 당신의 선택은?\n" + url
     }).then(function(how){
