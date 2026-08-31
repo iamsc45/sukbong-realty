@@ -56,8 +56,10 @@ window.TaxGame = (function(){
     if(!cv) return;
     var box = cv.parentNode;
     W = Math.max(280, Math.min(520, box.clientWidth || 360));
-    var room = (window.innerHeight || 700) - 210;    // 상단 헤더·하단 안내 자리
-    H = Math.max(380, Math.min(600, room));
+    /* ⚠️ 폰은 주소창이 있어 실제로 보이는 높이가 innerHeight 보다 100px 남짓 작다.
+       그 몫까지 빼 두지 않으면 게임판 아래가 잘려 스크롤해야 보인다. */
+    var room = (window.innerHeight || 700) - 250;
+    H = Math.max(360, Math.min(540, room));
     DPR = Math.min(2, window.devicePixelRatio || 1);
     cv.style.width = W + "px";
     cv.style.height = H + "px";
@@ -241,6 +243,29 @@ window.TaxGame = (function(){
     raf = requestAnimationFrame(loop);
   }
 
+  /* 회피 봇 — 난이도를 재기 위한 것이지 게임에 쓰이지 않는다.
+     화면을 24칸으로 나눠 "1.1초 안에 위험해지지 않는 칸" 중 지금 자리에서 가장 가까운 곳을 고른다.
+     사람이 완벽하게 피했을 때 몇 초를 버티는지가 곧 난이도다. */
+  function botAim(){
+    var N = 24, bestX = px, bestCost = 1e9;
+    for(var i = 0; i < N; i++){
+      var x = (W - PW) * (i / (N - 1)) + PW/2;
+      var lx = x - PW/2, rx = x + PW/2, risk = 0, lure = 0;
+      for(var j = 0; j < blocks.length; j++){
+        var b = blocks[j];
+        var t = (H - GROUND - PH - (b.y + b.h)) / b.vy;      // 내 높이까지 남은 시간
+        if(t < -0.3 || t > 1.1) continue;
+        if(b.x < rx && b.x + b.w > lx){
+          if(b.kind === "tax") risk += (1.2 - Math.max(0, t)) * 100;
+          else lure += 30;
+        }
+      }
+      var cost = risk - lure + Math.abs(x - px) * 0.25;
+      if(cost < bestCost){ bestCost = cost; bestX = x; }
+    }
+    return bestX;
+  }
+
   function best(v){
     try{
       var b = +(localStorage.getItem("tax_best") || 0);
@@ -313,11 +338,13 @@ window.TaxGame = (function(){
       }).then(function(how){ if(how === "clipboard") alert("주소를 복사했습니다."); });
     });
     return { start: begin, stop: stop,
-      /* 검증용 — rAF 없이 로직만 돌린다(숨은 탭에서는 화면으로 확인할 수 없다) */
-      _sim: function(sec, dt){
+      /* 검증용 — rAF 없이 로직만 돌린다(숨은 탭에서는 화면으로 확인할 수 없다).
+         bot=true 면 "잘 피하는 사람"을 흉내 내 실제 난이도를 잰다.
+         가만히 서 있는 결과만 보면 3초에 죽어서 난이도를 알 수 없다. */
+      _sim: function(sec, dt, bot){
         dt = dt || 0.016; fit(); reset();
         var n = Math.round(sec / dt), alive = true;
-        for(var i = 0; i < n && alive; i++){ aimX = px; alive = step(dt); }
+        for(var i = 0; i < n && alive; i++){ aimX = bot ? botAim() : px; alive = step(dt); }
         return { alive: alive, elapsed: +elapsed.toFixed(1), held: held(elapsed),
                  blocks: blocks.length, killedBy: killedBy && killedBy.t, speed: Math.round(speed()) };
       },
