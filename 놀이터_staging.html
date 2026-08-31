@@ -37,16 +37,26 @@ button.btn{font-size:15px}
 .btn.line{background:transparent;color:var(--text);border:1px solid var(--text)}
 .btn+.btn{margin-top:9px}
 
-/* ── 문제 ── */
-.meter{display:flex;align-items:center;gap:12px;margin:30px 0 6px}
-.steps{display:flex;gap:5px}
+/* ── 문제 ──
+   ⚠️ 남은 시간은 눈에 확 띄어야 한다(2026-08-31 석봉님 "쫓기는 기분이 들도록").
+      숫자를 크게 키우고 5초 아래에서 붉게 바꾸며 맥박을 준다.
+      🔴맥박은 transform 으로만 준다 — opacity 를 건드리면 탭이 백그라운드일 때
+      시계가 멈춰 **숫자가 통째로 안 보인다**(같은 날 결과 화면에서 겪었다). */
+.meter{display:flex;align-items:flex-end;gap:12px;margin:30px 0 8px}
+.steps{display:flex;gap:5px;padding-bottom:9px}
 .steps i{width:22px;height:2px;background:var(--hair);transition:background 200ms}
 .steps i.done{background:var(--text)}
 .steps i.on{background:var(--text)}
-.left{margin-left:auto;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
-.left b{color:var(--text);font-weight:700}
-.left.warn b{color:var(--down)}
-.tline{height:2px;background:var(--hair);margin-bottom:26px}
+.left{margin-left:auto;text-align:right;line-height:1}
+.left .cap{display:block;font-size:10.5px;letter-spacing:.1em;color:var(--muted2);
+  font-weight:700;margin-bottom:3px}
+.left b{display:inline-block;font-size:38px;font-weight:800;letter-spacing:-.04em;
+  color:var(--text);font-variant-numeric:tabular-nums}
+.left .u{font-size:15px;font-weight:700;color:var(--muted);margin-left:1px}
+.left.warn b,.left.warn .u{color:var(--down)}
+.left.warn b{animation:tick .55s ease-in-out infinite}
+@keyframes tick{0%{transform:scale(1)}45%{transform:scale(1.22)}100%{transform:scale(1)}}
+.tline{height:4px;background:var(--hair);border-radius:2px;margin-bottom:26px;overflow:hidden}
 .tline i{display:block;height:100%;width:100%;background:var(--text)}
 .tline.warn i{background:var(--down)}
 
@@ -173,7 +183,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   <section id="play" class="hide">
     <div class="meter">
       <div class="steps" id="steps"></div>
-      <span class="left" id="left">남은 시간 <b id="tsec">20</b>초</span>
+      <span class="left" id="left"><span class="cap">남은 시간</span><b id="tsec">20</b><span class="u">초</span></span>
     </div>
     <div class="tline" id="tline"><i id="tfill"></i></div>
 
