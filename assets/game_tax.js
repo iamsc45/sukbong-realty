@@ -423,7 +423,10 @@ window.TaxGame = (function(){
                  blocks: blocks.length, killedBy: killedBy && killedBy.t, speed: Math.round(speed()) };
       },
       _paint: function(){ draw(); hud(); },      // 시뮬레이션 뒤 그 장면을 그려 눈으로 본다
-      _state: function(){ return { running: running, W: W, H: H, px: Math.round(px) }; } };
+      /* aim 을 함께 내보낸다 — 판 밖을 눌렀을 때 목표가 잡히는지는
+         px 로는 확인이 안 된다(px 는 프레임이 돌아야 따라간다). */
+      _state: function(){ return { running: running, W: W, H: H,
+        px: Math.round(px), aim: aimX == null ? null : Math.round(aimX) }; } };
   }
 
   return { init: init };
