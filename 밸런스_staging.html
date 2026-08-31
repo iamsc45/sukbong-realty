@@ -44,9 +44,9 @@ h1.b{font-size:clamp(28px,6.5vw,40px);font-weight:800;letter-spacing:-.04em;marg
 .vs{text-align:center;font-size:11px;color:var(--muted2);font-weight:700;letter-spacing:.1em;margin:12px 0}
 
 /* 결과 — 다섯 개를 한꺼번에 보여 준다 */
-.card{border-top:1px solid var(--hair);padding:24px 0 6px}
-.card .cq{font-size:11px;letter-spacing:.1em;color:var(--muted);font-weight:700;margin-bottom:6px}
-.card .ct{font-size:18px;font-weight:800;letter-spacing:-.03em;margin-bottom:16px;word-break:keep-all}
+.qres{border-top:1px solid var(--hair);padding:24px 0 6px}
+.qres .cq{font-size:11px;letter-spacing:.1em;color:var(--muted);font-weight:700;margin-bottom:6px}
+.qres .ct{font-size:18px;font-weight:800;letter-spacing:-.03em;margin-bottom:16px;word-break:keep-all}
 .bars{margin-top:4px}
 .bar{margin-bottom:16px}
 .bar .lb{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;margin-bottom:6px}
@@ -221,7 +221,7 @@ h1.b{font-size:clamp(28px,6.5vw,40px);font-weight:800;letter-spacing:-.04em;marg
           if(a + b === 0){ if(p.choice === "a") a = 1; else b = 1; }
           var tot = a + b, pa = Math.round(a/tot*100), pb = 100 - pa;
           html +=
-            "<div class='card'>" +
+            "<div class='qres'>" +
               "<div class='cq'>질문 " + (i+1) + "</div>" +
               "<div class='ct'>" + esc(q.q) + "</div>" +
               "<div class='bars'>" +
