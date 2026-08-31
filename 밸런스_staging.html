@@ -93,8 +93,8 @@ h1.b{font-size:clamp(28px,6.5vw,40px);font-weight:800;letter-spacing:-.04em;marg
     <h1 class="b">당신의 선택은?</h1>
     <p class="lead">정답이 없는 질문 다섯 개입니다.<br>고르고 나면 다른 분들의 선택과 <b>실제 거래가 어땠는지</b>를 보여드립니다.</p>
     <div class="rules">
-      다섯 문제 · 한 번 고르면 바꿀 수 없습니다<br>
-      수치는 국토교통부 실거래 신고분에서 뽑았습니다.
+      <b>스무 개</b> 가운데 <b>다섯 개</b>가 나옵니다 · 한 번 고르면 바꿀 수 없습니다<br>
+      다시 하면 다른 질문이 나옵니다. 수치는 국토교통부 실거래 신고분에서 뽑았습니다.
     </div>
     <button class="btn full" id="start">시작하기</button>
   </section>
@@ -136,11 +136,17 @@ h1.b{font-size:clamp(28px,6.5vw,40px);font-weight:800;letter-spacing:-.04em;marg
 </div>
 
 <script src="assets/sb_share.js?v=2"></script>
-<script src="data/polls.js?v=1"></script>
+<script src="data/polls.js?v=2"></script>
 <script>
 (function(){
   "use strict";
-  var P = (window.POLLS && window.POLLS.items) || [];
+  var ALL = (window.POLLS && window.POLLS.items) || [];
+  var PICK = (window.POLLS && window.POLLS.pick) || 5;
+  var P = [];                    // 이번 판에 낼 문제. 시작할 때 무작위로 뽑는다
+  function shuffle(a){
+    for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i];a[i]=a[j];a[j]=t; }
+    return a;
+  }
   var SB_URL = "https://bwgoufxonqamglbqsife.supabase.co";
   var SB_KEY = "sb_publishable_kYd1gCyqCR2Qy8Ix6KE6og_FfJUImfR";
   var idx = 0, picked = [];
@@ -252,11 +258,13 @@ h1.b{font-size:clamp(28px,6.5vw,40px);font-weight:800;letter-spacing:-.04em;marg
   }
   $("reveal").addEventListener("click", reveal);
 
+  /* 스무 개 가운데 다섯 개를 무작위로 뽑는다. 다시 하면 다른 질문이 나온다 */
   function begin(){
+    P = shuffle(ALL.slice()).slice(0, PICK);
     idx = 0; picked = []; render(); show("play");
   }
   $("start").addEventListener("click", function(){
-    if(!P.length){ alert("질문을 불러오지 못했습니다."); return; }
+    if(!ALL.length){ alert("질문을 불러오지 못했습니다."); return; }
     begin();
   });
   $("again").addEventListener("click", begin);
