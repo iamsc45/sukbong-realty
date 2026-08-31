@@ -274,6 +274,15 @@ body.lh #lhbar{display:flex}
 .rc-cta:hover{transform:translateY(-1px);box-shadow:0 3px 0 rgba(0,0,0,.28),0 7px 14px rgba(0,0,0,.22)}
 .rc-cta:active{transform:translateY(2px);box-shadow:0 0 0 rgba(0,0,0,.28)}
 .rc-note{font-size:11px;color:#8a8071;padding:2px 16px 16px;line-height:1.45}
+/* 도면 링크(2026-08-31). 이미지를 담지 않고 정비몽땅 원본으로 보낸다 — rcDocSec 주석 참조.
+   터치 목표 34px 이상으로 잡는다(모바일 390px 기준). */
+.rc-docs{display:flex;flex-wrap:wrap;gap:6px}
+.rc-doc{display:inline-block;font-size:11.5px;font-weight:700;color:#12264A;background:#f6f2ea;
+        border:1px solid #ded8cc;border-radius:6px;padding:7px 10px;text-decoration:none;
+        line-height:1.2;transition:background 150ms ease,border-color 150ms ease}
+.rc-doc:hover,.rc-doc:focus-visible{background:#efe8dc;border-color:#c9c0ae;outline:none}
+.rc-doc:focus-visible{border-color:#8a4b1e}
+.rc-doc span{color:#8a8071;font-weight:400}
 </style><meta name="description" content="지도를 확대하면 건물별 실거래 가격이 보입니다. 매매·전세·월세, ㎡당 단가, 계약월 필터까지.">
 <meta property="og:title" content="실거래지도 · 석봉 부동산 정보방">
 <meta property="og:description" content="지도를 확대하면 건물별 실거래 가격이 보입니다. 매매·전세·월세, ㎡당 단가, 계약월 필터까지.">
@@ -2449,6 +2458,32 @@ function rcDetailSec(p){
   return '<div class="rc-sec"><div class="rc-lab">정비계획</div>'
     +'<div style="font-size:12.5px;color:#8a8071;line-height:1.5">정비계획 확정 전입니다. 용적률·세대수 등 세부 계획은 사업시행계획 확정·고시 시점에 채워집니다.</div></div>';
 }
+/* 도면 링크 섹션 — 2026-08-31 신설.
+   정비몽땅 조합 카페에는 조감도·배치도·위치도·단위세대평면도가 올라와 있는데(표본 12곳 중 9곳),
+   우리는 그동안 그 존재조차 안 알려 주고 있었다. 석봉님 지적으로 붙인다.
+   🔑 **이미지를 우리 서버에 받아 두지 않고 링크만 건다.**
+      원본이 장당 평균 5MB(최대 17MB)라 전량이면 8.6GB 인데, 저장소가 이미 861MB/1GB(84%)다.
+      600px 로 줄여도 3종이면 110MB 라 90% 선을 넘는다. 링크는 0MB 다.
+      ⚠️ 조감도·평면도는 조합·설계사 저작물이라 우리 서버 저장은 별도 판단이 필요하다.
+   ⚠️ 링크는 Referer 없이도 열리는 것을 실측 확인했다(2026-08-31, 5종 전부 HTTP 200).
+   ⚠️ cid 가 없는 구역(전체의 11.5%)은 카페가 없는 것이라 섹션을 통째로 내지 않는다. */
+var JB_DOC = [['sceImage','조감도'],['posImage','배치도'],['locImage','위치도']];
+function rcDocSec(p){
+  var DD=window.REDEVDETAIL||{};var d=DD[p.biz]||DD[p.nm];
+  var cid=d&&d.cid;
+  if(!cid) return '';
+  var base='https://cleanup.seoul.go.kr/cafe/mastr-cleanup-bsnsSumry/execute.do?cafeId='
+           +encodeURIComponent(cid)+'&stepSeCode=102&div=';
+  var lks=JB_DOC.map(function(x){
+    return '<a class="rc-doc" href="'+base+x[0]+'" target="_blank" rel="noopener">'+x[1]+' <span>↗</span></a>';
+  }).join('');
+  lks+='<a class="rc-doc" href="https://cleanup.seoul.go.kr/service/opendata/cafeOthbc/vscrCafe.do?cafeId='
+       +encodeURIComponent(cid)+'&othbcIemSn=205" target="_blank" rel="noopener">단위세대 평면도 <span>↗</span></a>';
+  return '<div class="rc-sec"><div class="rc-lab">도면 · 정비몽땅</div>'
+    +'<div class="rc-docs">'+lks+'</div>'
+    +'<div class="rc-note" style="padding:7px 0 0">서울시 정비몽땅 조합 카페에서 새 창으로 열립니다. '
+    +'조합이 올리지 않은 도면은 빈 화면일 수 있습니다.</div></div>';
+}
 /* 어떤 지점 주변의 최근 매매 실거래를 뽑는다.
    🔴2026-08-11 개편 — 전에는 **지도에 그려진 가격 말풍선 목록(window._PTS)**을 긁어 만들었다.
      그런데 재개발 화면은 말풍선을 안 띄우는 게 기본(redevShowTrade=false)이라 긁을 게 없어
@@ -2546,6 +2581,7 @@ function showRcard(p){
       +'<div class="rc-kv"><span>대지평당가</span><span class="v" style="color:#b06a2e;font-weight:600">수집 후</span></div>'
       +'</div></div>'
     +rcDetailSec(p)
+    +rcDocSec(p)
     +rcNearTx(p)
     +'<a class="rc-cta" href="구역상세.html?nm='+encodeURIComponent(p.biz||p.nm)+'" style="background:#7a3b12">구역 상세 · 정비계획 전체 보기 →</a>'
     +'<a class="rc-cta" href="재개발_기초상식.html" style="background:#3a4658">재개발·재건축 기초상식 →</a>'
