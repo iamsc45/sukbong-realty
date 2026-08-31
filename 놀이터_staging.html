@@ -117,8 +117,10 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   color:#fff;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer}
 .nickrow button:disabled{opacity:.4}
 .nicknote{font-size:11.5px;color:var(--muted2);line-height:1.7}
-.mystat{font-size:14px;font-weight:700;margin-bottom:14px}
+.mystat{font-size:14px;font-weight:700;margin-bottom:10px}
 .mystat em{font-style:normal;color:var(--muted);font-weight:400;font-size:12.5px}
+/* 평소엔 눈에 안 띄게. 오타를 쳤거나 마음이 바뀐 사람만 찾으면 된다 */
+.renlink{font-size:11.5px;color:var(--muted2);text-decoration:underline;text-underline-offset:2px}
 
 .board{margin-top:6px}
 .board .h{display:grid;grid-template-columns:34px minmax(0,1fr) 44px 62px 52px;gap:8px;
@@ -232,6 +234,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 
       <div id="rankStep3" class="hide">
         <div class="mystat" id="rankDone"></div>
+        <a href="#" id="renameGo" class="renlink">이름 바꾸기</a>
       </div>
     </div>
 
@@ -522,12 +525,29 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     nk.focus();
   }
 
+  /* 🔑 이름은 **첫 등록 때 한 번만** 정한다(2026-08-31 석봉님).
+     두 번째부터는 묻지 않고 바로 올린다 — 재도전마다 이름을 다시 받으면 손이 가고,
+     랭킹에서 같은 사람이 계속 다른 이름으로 보여 누가 누군지 알 수 없다.
+     바꾸고 싶은 사람은 결과 화면의 「이름 바꾸기」로. */
+  function afterLogin(s){
+    var uid = null;
+    try{ if(window.SBAuth && SBAuth.uid) uid = SBAuth.uid() || null; }catch(e){}
+    if(!uid){ showNickStep(s); return; }
+    sbFetch("rpc/quiz_rank_mynick", { method: "POST", body: JSON.stringify({ p_uid: uid }) })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(d){
+        if(d && d.nick) submitScore(s, d.nick, uid);   // 이미 이름이 있다 → 바로 등록
+        else showNickStep(s);                          // 첫 등록 → 이름을 받는다
+      })
+      .catch(function(){ showNickStep(s); });
+  }
+
   $("rankGo").addEventListener("click", function(){
     var s = scoreOf();
     try{ if(window.SBAuth) SBAuth.setAct(ACT, s); }catch(e){}   // 로그인 왕복 대비
-    if(window.SBAuth && SBAuth.isIn()){ showNickStep(s); return; }
+    if(window.SBAuth && SBAuth.isIn()){ afterLogin(s); return; }
     if(window.SBAuth && SBAuth.gate){
-      SBAuth.gate(null, function(){ showNickStep(s); }, {
+      SBAuth.gate(null, function(){ afterLogin(s); }, {
         title: "랭킹은 회원 기능입니다",
         desc: "카카오로 3초면 됩니다.<br>주간 랭킹에 이름을 올리고 다음에 또 도전해 보세요.",
         agree: "(필수) 개인정보 수집·이용 동의 · 카카오 계정 식별자·닉네임을 회원 식별과 랭킹 서비스 제공 목적으로 수집·이용합니다."
@@ -544,14 +564,18 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     var uid = null;
     try{ if(window.SBAuth && SBAuth.uid) uid = SBAuth.uid() || null; }catch(e){}
     if(!uid){ alert("로그인 정보를 불러오지 못했습니다. 새로고침 후 다시 시도해 주세요."); return; }
+    submitScore(pending, nk, uid, this);
+  });
 
-    var btn = this; btn.disabled = true; btn.textContent = "등록 중";
+  function submitScore(s, nk, uid, btn){
+    pending = s;
+    if(btn){ btn.disabled = true; btn.textContent = "등록 중"; }
     /* 🔑 한 사람 한 줄. 등록은 서버 함수가 맡는다 —
        검증·최고기록 판정·순위 계산이 한 곳에 모여 있어야 어긋나지 않는다.
        (2026-08-31 석봉님 지적 — 닉네임만 바꾸면 계속 등록돼 혼자 랭킹을 도배할 수 있었다) */
     sbFetch("rpc/quiz_rank_submit", { method: "POST", body: JSON.stringify({
-        p_nick: nk, p_uid: uid, p_hit: pending.hit, p_err: pending.avg_err,
-        p_secs: pending.secs, p_autos: pending.autos, p_away: pending.away_ms, p_cid: cid()
+        p_nick: nk, p_uid: uid, p_hit: s.hit, p_err: s.avg_err,
+        p_secs: s.secs, p_autos: s.autos, p_away: s.away_ms, p_cid: cid()
       })})
       .then(function(r){
         return r.json().then(function(d){
@@ -566,14 +590,36 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
         $("rankDesc").textContent = d.improved
           ? "한 분당 한 줄이 올라갑니다. 주간 랭킹은 최근 7일 기록으로 매주 새로 열립니다."
           : "지난 기록이 더 좋아 그대로 두었습니다. 한 분당 한 줄이 올라갑니다.";
-        $("rankDone").innerHTML = "<b>" + esc(nk) + "</b> · 현재 <b>" + d.rank + "위</b> " +
+        myNick = d.nick || nk;
+        $("rankDone").innerHTML = "<b>" + esc(myNick) + "</b> · 현재 <b>" + d.rank + "위</b> " +
           "<em>최고 " + d.hit + " / 5 · 평균 오차 " + (+d.avg_err).toFixed(1) + "%</em>";
-        loadBoard(nk);
+        loadBoard(myNick);
       })
       .catch(function(e){
-        btn.disabled = false; btn.textContent = "등록";
+        if(btn){ btn.disabled = false; btn.textContent = "등록"; }
         alert(String(e.message || "등록하지 못했습니다. 잠시 후 다시 시도해 주세요."));
       });
+  }
+
+  /* 이름 바꾸기 — 기록은 그대로 두고 이름만 고친다 */
+  var myNick = "";
+  $("renameGo").addEventListener("click", function(e){
+    e.preventDefault();
+    var uid = null;
+    try{ if(window.SBAuth && SBAuth.uid) uid = SBAuth.uid() || null; }catch(e2){}
+    if(!uid){ alert("로그인 정보를 불러오지 못했습니다."); return; }
+    var nk = prompt("랭킹에 보일 이름을 적어 주세요 (2~12자)", myNick || "");
+    if(nk === null) return;
+    nk = nk.trim();
+    if(nk.length < 2 || nk.length > 12){ alert("이름은 2자에서 12자까지 쓸 수 있습니다."); return; }
+    sbFetch("rpc/quiz_rank_rename", { method: "POST", body: JSON.stringify({ p_uid: uid, p_nick: nk }) })
+      .then(function(r){ return r.json().then(function(d){ if(!r.ok) throw new Error(d.message||"바꾸지 못했습니다"); return d; }); })
+      .then(function(){
+        myNick = nk;
+        $("rankDone").innerHTML = $("rankDone").innerHTML.replace(/^<b>[^<]*<\/b>/, "<b>" + esc(nk) + "</b>");
+        loadBoard(nk);
+      })
+      .catch(function(err){ alert(String(err.message)); });
   });
 
   function loadBoard(mine){
