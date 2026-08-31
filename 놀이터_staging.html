@@ -541,16 +541,24 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     var nk = ($("nick").value || "").trim();
     if(nk.length < 2 || nk.length > 12){ alert("이름은 2자에서 12자까지 쓸 수 있습니다."); return; }
     if(!pending) return;
+    var uid = null;
+    try{ if(window.SBAuth && SBAuth.uid) uid = SBAuth.uid() || null; }catch(e){}
+    if(!uid){ alert("로그인 정보를 불러오지 못했습니다. 새로고침 후 다시 시도해 주세요."); return; }
+
     var btn = this; btn.disabled = true; btn.textContent = "등록 중";
-    var row = Object.assign({ nick: nk, cid: cid() }, pending);
-    try{ if(window.SBAuth && SBAuth.uid) row.uid = SBAuth.uid() || null; }catch(e){}
-    sbFetch("quiz_rank", { method: "POST", body: JSON.stringify(row) })
+    var row = Object.assign({ nick: nk, cid: cid(), uid: uid }, pending);
+    /* 🔑 한 사람 한 줄. `uid` 유니크 + 서버 트리거가 **더 좋은 기록일 때만** 갈아 끼운다.
+       (2026-08-31 석봉님 지적 — 닉네임만 바꾸면 계속 등록돼 혼자 랭킹을 도배할 수 있었다) */
+    sbFetch("quiz_rank?on_conflict=uid",
+      { method: "POST", headers: { Prefer: "resolution=merge-duplicates" },
+        body: JSON.stringify(row) })
       .then(function(r){
         if(!r.ok) throw new Error("등록 실패 " + r.status);
         $("rankStep2").classList.add("hide");
         $("rankStep3").classList.remove("hide");
         $("rankTitle").textContent = "랭킹에 올렸습니다";
-        $("rankDesc").textContent = "주간 랭킹은 최근 7일 기록으로 매주 새로 열립니다.";
+        $("rankDesc").textContent = "한 분당 한 줄이 올라갑니다. 다시 도전해서 더 좋은 기록이 나오면 그때 갱신됩니다. " +
+          "주간 랭킹은 최근 7일 기록으로 매주 새로 열립니다.";
         $("rankDone").innerHTML = "<b>" + nk + "</b> · " + pending.hit + " / 5 " +
           "<em>평균 오차 " + pending.avg_err.toFixed(1) + "%</em>";
         loadBoard(nk);
