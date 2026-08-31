@@ -36,10 +36,39 @@ window.TaxGame = (function(){
   ];
   /* 먹으면 잠깐 무적. 진짜 있는 제도의 이름만 빌린다(수치는 안 쓴다). */
   var ITEMS = [
-    { t: "비과세",   d: 4 },
-    { t: "장기보유", d: 4 },
-    { t: "1주택",    d: 5 }
+    { t: "비과세",   d: 4, say: "비과세! 지금은 아무도 못 건드립니다" },
+    { t: "장기보유", d: 4, say: "버틴 보람이 있습니다" },
+    { t: "1주택",    d: 5, say: "딱 한 채라 마음이 편합니다" }
   ];
+
+  /* ── 웃자고 넣은 것들 ─────────────────────────────────────
+     오래 버티는 게 전부인 게임이라 중간에 아무 일도 안 일어나면 지겹다.
+     🔴 여기 문구는 **연출일 뿐 판정에 관여하지 않는다.** 안 떠도 게임은 똑같이 돈다
+        (표시 연출에 사실을 실어 보내다 여러 번 데였다). 세법 수치는 한 줄도 안 쓴다. */
+  var MILE = [
+    { m: 12,  t: "1년. 이웃들이 인사하기 시작합니다" },
+    { m: 24,  t: "2년. 슬슬 팔라는 전화가 옵니다" },
+    { m: 36,  t: "3년. 이제 이 동네 사람입니다" },
+    { m: 60,  t: "5년. 관리사무소가 이름을 외웁니다" },
+    { m: 84,  t: "7년. 엘리베이터에서 다들 아는 척합니다" },
+    { m: 120, t: "10년. 부녀회장 자리를 권유받습니다" },
+    { m: 180, t: "15년. 재건축 얘기가 돌기 시작합니다" },
+    { m: 240, t: "20년. 이제 집이 아니라 가족입니다" },
+    { m: 360, t: "30년. 여기 사시는 게 곧 역사입니다" }
+  ];
+  /* 결과 화면 첫 줄. 짧게 죽어도 웃으면서 다시 누르게 만드는 자리다. */
+  var RANKS = [
+    { m: 6,    t: "등기도 치기 전에 끝났습니다" },
+    { m: 12,   t: "이사 짐도 안 풀었는데요" },
+    { m: 24,   t: "이제 좀 살 만했는데 말입니다" },
+    { m: 36,   t: "정 붙일 때쯤 일이 났습니다" },
+    { m: 60,   t: "그래도 몇 해는 버티셨습니다" },
+    { m: 120,  t: "꽤 오래 지키셨습니다" },
+    { m: 240,  t: "이 정도면 이 동네 토박이입니다" },
+    { m: 9999, t: "전설로 남으실 분입니다" }
+  ];
+  var toast = null, mileIdx = 0;
+  function say(t, sec){ toast = { t: t, left: sec || 1.9, all: sec || 1.9 }; }
 
   var cv, ctx, DPR = 1, W = 360, H = 520;
   var show = null, raf = 0, running = false, lastT = 0;
@@ -87,6 +116,8 @@ window.TaxGame = (function(){
        "시작하자마자 죽었다"는 억울함이 없다. */
     elapsed = 0; blocks = []; shield = 0; spawnT = 1.4; itemT = 7;
     killedBy = null; vx = 0; aimX = null; px = W / 2;
+    toast = null; mileIdx = 0;
+    say("집을 지키세요", 1.6);
   }
 
   function spawn(){
@@ -104,13 +135,24 @@ window.TaxGame = (function(){
   /* 난이도 — 시간이 지날수록 빨라진다. 상한을 두지 않으면 20초 뒤에 아무도 못 피한다. */
   /* 잘 피하는 봇으로 재 보고 정한 값이다(2026-08-31 실측).
      처음 값(170·1.05)은 봇 중앙값이 25초라 사람은 10초를 못 넘겼다.
-     첫 판이 10초면 "어 뭐야" 하고 닫는다. 20~30초는 버텨야 다시 누른다. */
-  function speed(){ return Math.min(520, 150 + elapsed * 7); }
-  function gap(){ return Math.max(0.38, 1.25 - elapsed * 0.019); }
+     첫 판이 10초면 "어 뭐야" 하고 닫는다.
+
+     🔴 2026-08-31 석봉님이 직접 해보고: "3년까지는 조금 지루하고 4년부터 괜찮다."
+        그래서 **시간축을 4/3배로 당겼다** — 예전 4년(48초) 자리의 빡셈이 3년(36초)에 온다.
+        곡선 모양은 그대로 두고 눈금만 좁힌 것이라 뒤가 무너지지 않는다.
+        고칠 때는 이 값 하나만 만진다. */
+  var PACE = 4 / 3;
+  function speed(){ return Math.min(520, 150 + elapsed * 7 * PACE); }
+  function gap(){ return Math.max(0.38, 1.25 - elapsed * 0.019 * PACE); }
 
   function step(dt){
     elapsed += dt;
     if(shield > 0) shield = Math.max(0, shield - dt);
+    if(toast){ toast.left -= dt; if(toast.left <= 0) toast = null; }
+    /* 눈금을 하나 넘을 때마다 한마디. 초반이 심심한 것을 이걸로 메운다 */
+    while(mileIdx < MILE.length && elapsed >= MILE[mileIdx].m){
+      say(MILE[mileIdx].t, 2.2); mileIdx++;
+    }
 
     /* 플레이어 이동 — 손가락 x 를 부드럽게 따라간다.
        그냥 순간이동시키면 조작감이 뻣뻣하고, 너무 느리면 답답하다. */
@@ -139,8 +181,10 @@ window.TaxGame = (function(){
       if(b.x < hx + hw && b.x + b.w > hx && b.y < hy + hh && b.y + b.h > hy){
         if(b.kind === "item"){
           shield = Math.max(shield, b.o.d);
+          say(b.o.say, 1.7);
           blocks.splice(i, 1);
         } else if(shield > 0){
+          say(b.o.t + " 튕겨냈습니다", 1.1);
           blocks.splice(i, 1);             // 무적이면 튕겨 낸다
         } else {
           killedBy = b.o;
@@ -215,10 +259,25 @@ window.TaxGame = (function(){
 
     drawHouse(px, H - GROUND);
 
+    /* 한마디 — 화면 위쪽에 잠깐 떴다 사라진다.
+       ⚠️ 블록이 지나다니는 자리라 반투명 상자를 깔아야 글자가 읽힌다. */
+    if(toast){
+      var a = Math.min(1, toast.left / 0.45);          // 끝날 때만 흐려진다
+      ctx.font = "700 14.5px Pretendard, -apple-system, sans-serif";
+      var tw = ctx.measureText(toast.t).width + 30, ty = H * 0.30;
+      ctx.save();
+      ctx.globalAlpha = a;
+      ctx.fillStyle = INK;
+      roundRect(W/2 - tw/2, ty - 17, tw, 34, 17); ctx.fill();
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillText(toast.t, W/2, ty + 0.5);
+      ctx.restore();
+    }
+
     /* 아래 안내 한 줄 */
     ctx.font = "600 12px Pretendard, -apple-system, sans-serif";
     ctx.fillStyle = MUTED;
-    ctx.fillText("손가락을 좌우로 움직이세요", W/2, H - 22);
+    ctx.fillText("화면 아무 데나 손가락을 대고 움직이세요", W/2, H - 22);
   }
 
   /* ── 점수 표기 ────────────────────────────────────────────
@@ -284,8 +343,10 @@ window.TaxGame = (function(){
     cancelAnimationFrame(raf);
     var sec = elapsed, prev = best(null), rec = sec > prev;
     best(sec);
+    var m = Math.floor(sec), grade = RANKS[RANKS.length - 1];
+    for(var i = 0; i < RANKS.length; i++){ if(m < RANKS[i].m){ grade = RANKS[i]; break; } }
     $("tRes").textContent = held(sec);
-    $("tHit").textContent = killedBy ? "결국 " + killedBy.t + "에 맞았습니다." : "";
+    $("tHit").textContent = (killedBy ? "결국 " + killedBy.t + "에 맞았습니다. " : "") + grade.t;
     $("tTip").textContent = killedBy ? killedBy.tip : "";
     $("tBest").textContent = rec ? "최고 기록입니다" : "최고 기록 " + held(prev);
     $("tBest").classList.toggle("rec", rec);
@@ -305,15 +366,23 @@ window.TaxGame = (function(){
      터치·마우스는 "손가락 있는 자리로 집이 온다". 좌우 버튼보다 이 편이 빠르고
      한 손으로 된다. 키보드는 데스크톱용 보조. */
   function bindInput(){
+    /* 🔴 2026-08-31 석봉님: "아예 처음부터 다른 곳을 눌러도 집이 움직이게."
+       판 안에서만 받으면 손가락을 판 위에 정확히 올려야 시작된다.
+       그래서 **문서 전체**에서 받고, 게임 중일 때만 가로 위치를 판 좌표로 바꾼다.
+       판 밖의 x 는 양 끝으로 붙는다(왼쪽 여백을 누르면 집이 왼쪽 끝으로). */
     function at(e){
+      if(!running) return;
       var r = cv.getBoundingClientRect();
       var cx = (e.touches && e.touches[0] ? e.touches[0].clientX : e.clientX);
+      if(cx == null) return;
       aimX = Math.max(0, Math.min(W, cx - r.left));
+      /* 게임 중에는 페이지가 따라 움직이면 안 된다. 게임이 아닐 때는 손대지 않는다 */
+      if(e.cancelable) e.preventDefault();
     }
-    cv.addEventListener("touchstart", function(e){ at(e); e.preventDefault(); }, { passive: false });
-    cv.addEventListener("touchmove",  function(e){ at(e); e.preventDefault(); }, { passive: false });
-    cv.addEventListener("mousemove", at);
-    cv.addEventListener("mousedown", at);
+    document.addEventListener("touchstart", at, { passive: false });
+    document.addEventListener("touchmove",  at, { passive: false });
+    document.addEventListener("mousemove", at);
+    document.addEventListener("mousedown", at);
     document.addEventListener("keydown", function(e){
       if(!running) return;
       if(e.key === "ArrowLeft"){ aimX = null; vx = -1; }
