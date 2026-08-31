@@ -14,238 +14,177 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<link rel="stylesheet" href="assets/site.css">
 <style>
-:root{
-  --navy:#12264A; --navy2:#1B3F7A; --gray:#5A6478; --gray2:#7A8698;
-  --red:#B23A48; --green:#1E7A5A; --tint:#EEF3FB; --hair:#E3E8F0; --bar:#C6D3E6;
-  --paper:#fff; --gold:#A8802C;
-}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;padding:0}
-body{
-  background:linear-gradient(180deg,#E7EEF9 0%,var(--tint) 240px,var(--tint) 100%);
-  color:var(--navy); min-height:100vh;
-  font:16px/1.6 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
-  padding:0 0 48px;
-}
-.wrap{max-width:520px;margin:0 auto;padding:0 16px}
+/* ── 놀이터 · 가격 맞히기 (2026-08-31 개편) ────────────────────────
+   설계 원칙: **사이트와 같은 B&W 에디토리얼**로 되돌린다.
+   전 판은 네이비 배경 + 파란 칩 + 초록 카드라 사이트에서 혼자 튀었다
+   (석봉님 "너무 촌스러워"). 색은 잉크 + 회색 + 강조 하나로 줄이고,
+   상자 대신 괘선으로 나눈다. 위계는 크기와 굵기로만 만든다. */
+.q-wrap{max-width:560px;margin:0 auto;padding:0 20px 72px}
 
-header{background:var(--navy);color:#fff;padding:14px 0 13px}
-header .wrap{display:flex;align-items:center;gap:8px}
-header b{font-size:15px;letter-spacing:-.2px}
-header a{color:#fff;text-decoration:none}
-.badge{font-size:11px;background:rgba(255,255,255,.18);padding:2px 7px;border-radius:10px;letter-spacing:.3px}
+.eyebrow{font-size:11px;letter-spacing:.14em;color:var(--muted);font-weight:700;margin:38px 0 10px}
+h1.q{font-size:clamp(30px,7vw,44px);font-weight:800;letter-spacing:-.04em;margin:0 0 12px;line-height:1.15}
+.lead{color:var(--muted);font-size:14.5px;line-height:1.8;margin:0 0 22px;word-break:keep-all}
+.rules{font-size:12.5px;color:var(--text2);border-top:1px solid var(--hair);
+  border-bottom:1px solid var(--hair);padding:13px 0;margin:0 0 26px;line-height:1.9}
+.rules b{font-weight:700}
+.mine-best{font-size:12.5px;color:var(--muted);margin-top:16px}
 
-.card{background:var(--paper);border:1px solid var(--hair);border-radius:16px;padding:20px 18px;
-  margin-bottom:14px;box-shadow:0 1px 3px rgba(18,38,74,.05)}
-
-/* ── 시작 화면 ── */
-.hero{text-align:center;padding:30px 18px 26px}
-.hero .eyebrow{font-size:12px;letter-spacing:2px;color:var(--gold);font-weight:700}
-.hero h1{font-size:27px;margin:9px 0 12px;letter-spacing:-.9px;line-height:1.25}
-.hero p{margin:0 0 6px;color:var(--gray);font-size:15px}
-.hero .sub{font-size:13px;color:var(--gray2);margin-top:12px;line-height:1.7}
-.rulebox{display:flex;gap:8px;margin:20px 0 22px}
-.rulebox div{flex:1 1 0;min-width:0;background:var(--tint);border-radius:11px;padding:12px 6px}
-.rulebox b{display:block;font-size:19px;letter-spacing:-.5px;color:var(--navy2)}
-.rulebox span{font-size:11px;color:var(--gray)}
-
-/* ── 타이머 ──
-   ⚠️ 남은 시간은 CSS transition 이 아니라 JS 가 Date.now() 로 재서 width 를 직접 준다.
-   탭이 백그라운드면 transition·setInterval 이 늦어지는데, 경과를 시계로 재면 어긋나지 않는다. */
-.timer{margin:0 0 14px}
-.tbar{height:5px;background:var(--hair);border-radius:3px;overflow:hidden}
-.tbar i{display:block;height:100%;width:100%;background:var(--navy2);border-radius:3px}
-.tbar.warn i{background:var(--red)}
-.tnum{display:flex;justify-content:space-between;font-size:11px;color:var(--gray2);margin-top:5px}
-.tnum b{font-variant-numeric:tabular-nums;color:var(--navy2)}
-.tnum.warn b{color:var(--red)}
-
-/* ── 진행 점 ── */
-.dots{display:flex;justify-content:center;gap:7px;margin:0 0 16px}
-.dots i{width:8px;height:8px;border-radius:50%;background:var(--bar);transition:all .35s}
-.dots i.on{background:var(--navy2);transform:scale(1.45)}
-.dots i.done{background:var(--navy2)}
-
-/* ── 문제 ── */
-.qhead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:15px}
-.qhead h2{font-size:17px;margin:0;letter-spacing:-.4px}
-.qno{font-size:12px;color:var(--gray2);font-variant-numeric:tabular-nums;letter-spacing:.5px}
-.q{animation:slide .32s ease}
-/* 🔴 keyframes 에서 opacity 를 건드리지 않는다.
-   탭이 백그라운드면 애니메이션 시계가 멈춰 currentTime 0(= from)이 그대로 그려진다.
-   from 에 opacity:0 이 있으면 **콘텐츠가 통째로 안 보인다**(2026-08-30 라이브에서 확인).
-   fill-mode 를 빼도 마찬가지다. 움직임은 transform 으로만 준다. */
-@keyframes slide{from{transform:translateY(9px)}to{transform:none}}
-.q .loc{font-size:13px;color:var(--gray);margin-bottom:3px}
-.q .apt{font-size:21px;font-weight:700;letter-spacing:-.5px;line-height:1.3;margin-bottom:13px;word-break:keep-all}
-.spec{display:flex;flex-wrap:wrap;gap:6px}
-.spec span{background:var(--tint);color:var(--navy2);font-size:13px;padding:5px 10px;border-radius:8px;white-space:nowrap}
-
-.pick{margin-top:24px}
-.val{text-align:center;font-size:31px;font-weight:700;letter-spacing:-1px;
-  font-variant-numeric:tabular-nums;line-height:1.2;transition:transform .12s}
-.val.bump{transform:scale(1.045)}
-.valsub{text-align:center;font-size:12px;color:var(--gray2);margin:2px 0 16px}
-input[type=range]{width:100%;-webkit-appearance:none;background:transparent;margin:0}
-input[type=range]::-webkit-slider-runnable-track{height:6px;background:var(--bar);border-radius:3px}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:32px;height:32px;border-radius:50%;
-  background:var(--navy2);border:3px solid #fff;box-shadow:0 2px 7px rgba(18,38,74,.4);margin-top:-13px}
-input[type=range]::-moz-range-track{height:6px;background:var(--bar);border-radius:3px}
-input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;background:var(--navy2);border:3px solid #fff}
-.ends{display:flex;justify-content:space-between;font-size:11px;color:var(--gray2);margin-top:8px}
-
-/* 내가 찍은 답 미니 기록 */
-.trail{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;min-height:26px}
-.trail span{font-size:11px;background:#fff;border:1px solid var(--hair);color:var(--gray);
-  padding:3px 8px;border-radius:14px;animation:pop .3s ease}
-@keyframes pop{from{transform:scale(.85)}to{transform:none}}
-
-.btn{display:block;width:100%;border:0;border-radius:12px;padding:15px;font-size:16px;font-weight:700;
-  cursor:pointer;font-family:inherit;letter-spacing:-.2px;transition:transform .1s}
-.btn:active{transform:scale(.985)}
-.btn.p{background:var(--navy);color:#fff}
-.btn.g{background:var(--gold);color:#fff}
-.btn.l{background:#fff;color:var(--navy2);border:1.5px solid var(--bar)}
+.btn.full{display:block;width:100%;text-align:center;border:0;font-family:inherit;cursor:pointer}
+button.btn{font-size:15px}
+.btn.line{background:transparent;color:var(--text);border:1px solid var(--text)}
 .btn+.btn{margin-top:9px}
 
+/* ── 문제 ── */
+.meter{display:flex;align-items:center;gap:12px;margin:30px 0 6px}
+.steps{display:flex;gap:5px}
+.steps i{width:22px;height:2px;background:var(--hair);transition:background 200ms}
+.steps i.done{background:var(--text)}
+.steps i.on{background:var(--text)}
+.left{margin-left:auto;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.left b{color:var(--text);font-weight:700}
+.left.warn b{color:var(--down)}
+.tline{height:2px;background:var(--hair);margin-bottom:26px}
+.tline i{display:block;height:100%;width:100%;background:var(--text)}
+.tline.warn i{background:var(--down)}
+
+.place{font-size:12.5px;color:var(--muted);margin-bottom:4px}
+.apt{font-size:26px;font-weight:800;letter-spacing:-.035em;line-height:1.25;margin:0 0 10px;word-break:keep-all}
+.spec{font-size:13px;color:var(--text2);line-height:1.8;margin-bottom:34px}
+
+.guess{text-align:center}
+.guess .v{font-size:clamp(34px,9vw,46px);font-weight:800;letter-spacing:-.045em;
+  font-variant-numeric:tabular-nums;line-height:1.1}
+.guess .l{font-size:12px;color:var(--muted);margin:6px 0 20px}
+input[type=range]{width:100%;-webkit-appearance:none;background:transparent;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--hair)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;
+  background:var(--text);margin-top:-12px;cursor:pointer}
+input[type=range]::-moz-range-track{height:2px;background:var(--hair)}
+input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:var(--text);border:0}
+.ends{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted2);margin:9px 0 30px}
+.trail{font-size:12px;color:var(--muted);line-height:1.9;margin-top:18px}
+
 /* ── 채점 대기 ── */
-.reveal{text-align:center;padding:34px 18px}
-.reveal h2{font-size:21px;margin:0 0 8px;letter-spacing:-.6px}
-.reveal p{color:var(--gray);font-size:14px;margin:0 0 22px}
+.mid{text-align:center;padding:60px 0 20px}
+.mid h2{font-size:22px;font-weight:800;letter-spacing:-.03em;margin:0 0 8px}
+.mid p{color:var(--muted);font-size:14px;margin:0 0 26px}
 
 /* ── 결과 ── */
-.score{text-align:center;padding:6px 0 2px}
-.score .lab{font-size:12px;color:var(--gray2);letter-spacing:.5px}
-.score .big{font-size:52px;font-weight:700;letter-spacing:-2px;line-height:1.1;margin:2px 0 6px;
-  font-variant-numeric:tabular-nums}
-.score .big small{font-size:22px;color:var(--gray2);font-weight:600;letter-spacing:-.5px}
-/* 숫자는 처음부터 정확하고, 살짝 커졌다 제자리로 온다. opacity 는 건드리지 않는다 */
-.score .big span.pop{display:inline-block;animation:popnum .42s ease}
-@keyframes popnum{0%{transform:scale(.72)}60%{transform:scale(1.08)}100%{transform:none}}
-.grade{display:inline-block;font-size:14px;font-weight:700;padding:7px 16px;border-radius:20px}
-.score .avg{font-size:13px;color:var(--gray);margin-top:10px}
+.score{border-bottom:1px solid var(--hair);padding:34px 0 26px;margin-bottom:4px}
+.score .l{font-size:11px;letter-spacing:.14em;color:var(--muted);font-weight:700}
+.score .n{font-size:66px;font-weight:800;letter-spacing:-.05em;line-height:1;margin:10px 0 0;
+  font-variant-numeric:tabular-nums;display:inline-block}
+.score .n em{font-style:normal;font-size:26px;color:var(--muted2);font-weight:700;letter-spacing:-.02em}
+.score .tag{font-size:13.5px;font-weight:700;margin-top:12px}
+.score .meta{font-size:12.5px;color:var(--muted);line-height:1.8;margin-top:8px}
 
-/* 🔴 항목은 기본으로 보인다. 애니메이션은 장식일 뿐이다.
-   delay + animation-fill-mode:both 로 「나중에 나타나게」 하면, 탭이 백그라운드일 때
-   애니메이션 시계가 멈춰 opacity 0 인 채로 굳는다(2026-08-30 확인).
-   카톡에서 링크를 열고 다른 앱에 다녀오는 동선이 흔하므로 콘텐츠를 여기에 기대게 두지 않는다.
-   순서대로 나타나는 효과는 JS 가 하나씩 붙여 만든다. */
-.item{border:1px solid var(--hair);border-radius:13px;padding:14px 15px;margin-top:10px;
-  background:#fff;animation:slide .38s ease;cursor:pointer}
-@media (prefers-reduced-motion:reduce){ .item,.q,.det.open{animation:none} }
-.item.ok{border-color:#BFE0D2;background:#F4FBF8}
-.item .r1{display:flex;justify-content:space-between;align-items:center;gap:10px}
-.item .nm{font-weight:700;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.3px}
-.mark{flex:0 0 auto;width:25px;height:25px;border-radius:50%;display:grid;place-items:center;
-  font-size:13px;font-weight:700;color:#fff}
-.mark.o{background:var(--green)} .mark.x{background:var(--bar);color:var(--gray)}
-.item .r2{display:flex;justify-content:space-between;align-items:flex-start;font-size:13px;
-  margin-top:9px;font-variant-numeric:tabular-nums;gap:8px}
-.item .r2 .mine{padding-top:2px}
-.item .r2 b{font-size:15px;letter-spacing:-.3px}
-.item .mine{color:var(--gray)}
-.item .answ{text-align:right;min-width:0}
-.item .when{display:block;font-size:11px;color:var(--gray2);font-weight:400;margin-top:2px}
-.item .er{font-size:12px;margin-top:6px;color:var(--gray2)}
-.det{display:none;margin-top:12px;padding-top:12px;border-top:1px dashed var(--hair)}
-.det.open{display:block;animation:slide .28s ease both}
-.det dl{margin:0;display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr);gap:5px 12px;font-size:13px}
-.det dt{color:var(--gray);white-space:nowrap}
-.det dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
-.det .go{display:block;margin-top:11px;text-align:center;background:var(--tint);border-radius:9px;
-  padding:10px;color:var(--navy2);text-decoration:none;font-weight:700;font-size:13px}
-.tapme{font-size:11px;color:var(--gray2);text-align:center;margin-top:12px}
+/* 항목 — 상자 대신 왼쪽 괘선 하나로 정답을 표시한다 */
+.row{border-bottom:1px solid var(--hair);padding:17px 0 17px 15px;
+  border-left:2px solid transparent;cursor:pointer;animation:rise .3s ease}
+.row.hit{border-left-color:var(--up)}
+@keyframes rise{from{transform:translateY(6px)}to{transform:none}}
+.row .a{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.row .nm{font-size:15.5px;font-weight:700;letter-spacing:-.02em;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.row .ans{font-size:17px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.row .b{display:flex;justify-content:space-between;gap:10px;margin-top:5px;font-size:12.5px;color:var(--muted)}
+.row .b .when{white-space:nowrap}
+.row .c{font-size:12px;color:var(--muted2);margin-top:7px}
+.row .c .ok{color:var(--up);font-weight:700}
+.row .c .no{color:var(--muted)}
+.det{display:none;margin-top:13px;padding-top:13px;border-top:1px dashed var(--hair)}
+.det.open{display:block}
+.det dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:12.5px}
+.det dt{color:var(--muted)}
+.det dd{margin:0;text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.det a{display:inline-block;margin-top:11px;font-size:12.5px;font-weight:700;color:var(--text);
+  border-bottom:1px solid var(--text);text-decoration:none;padding-bottom:1px}
+.tap{font-size:11.5px;color:var(--muted2);margin:14px 0 30px}
 
-.best{font-size:13px;color:var(--gray2);text-align:center;margin-top:14px}
-.foot{font-size:11px;color:var(--gray2);line-height:1.7;padding:8px 2px 0}
+.foot{font-size:11px;color:var(--muted2);line-height:1.8;margin-top:38px;
+  border-top:1px solid var(--hair);padding-top:14px}
 .hide{display:none}
 </style>
 </head>
 <body>
 
-<header><div class="wrap">
-  <a href="index.html"><b>석봉 부동산 정보방</b></a>
-  <span class="badge">시안</span>
-</div></header>
+<header class="site-header">
+  <a class="brand" href="index.html">석봉 부동산 정보방</a>
+  <nav>
+    <a href="index.html">홈</a>
+    <a href="map.html">실거래지도</a>
+    <a href="apply.html">청약</a>
+    <a href="auction.html">경매·공매</a>
+    <a href="%EC%A7%80%ED%91%9C.html">금리·지표</a>
+    <a href="%EA%B8%80.html">리포트</a>
+  </nav>
+</header>
 
-<div class="wrap">
+<div class="q-wrap">
 
   <!-- 시작 -->
   <section id="intro">
-    <div class="card hero">
-      <div class="eyebrow">실거래가 맞히기</div>
-      <h1>이 집, 얼마일까요?</h1>
-      <p>국토교통부에 신고된 진짜 거래 다섯 건입니다.</p>
-      <div class="rulebox">
-        <div><b>5</b><span>문제</span></div>
-        <div><b>10%</b><span>안에 들면 정답</span></div>
-        <div><b>20초</b><span>문제당 제한</span></div>
-      </div>
-      <button class="btn p" id="start">시작하기</button>
-      <div class="sub">정답은 다섯 문제를 다 푼 뒤에 한꺼번에 공개됩니다.<br>
-        시간이 끝나면 그때 맞춰 둔 가격으로 자동 제출됩니다.</div>
-      <div class="best" id="bestIntro"></div>
+    <div class="eyebrow">실거래가 맞히기</div>
+    <h1 class="q">이 집, 얼마일까요?</h1>
+    <p class="lead">국토교통부에 신고된 진짜 거래 다섯 건입니다.<br>얼마에 팔렸을지 맞혀 보세요.</p>
+    <div class="rules">
+      다섯 문제 · 오차 <b>10%</b> 안에 들면 정답 · 문제당 <b>20초</b><br>
+      정답은 다 푼 뒤에 한꺼번에 공개됩니다.
     </div>
+    <button class="btn full" id="start">시작하기</button>
+    <div class="mine-best" id="bestIntro"></div>
   </section>
 
   <!-- 문제 -->
   <section id="play" class="hide">
-    <div class="card">
-      <div class="dots" id="dots"></div>
-      <div class="timer">
-        <div class="tbar" id="tbar"><i id="tfill"></i></div>
-        <div class="tnum" id="tnum"><span>남은 시간</span><b id="tsec">20초</b></div>
-      </div>
-      <div class="qhead">
-        <h2>얼마에 팔렸을까요?</h2>
-        <span class="qno"><b id="cur">1</b> / <span id="tot">5</span></span>
-      </div>
-      <div class="q" id="qbox">
-        <div class="loc" id="loc"></div>
-        <div class="apt" id="apt"></div>
-        <div class="spec" id="spec"></div>
-      </div>
-      <div class="pick">
-        <div class="val" id="val"></div>
-        <div class="valsub">내가 생각한 가격</div>
-        <input type="range" id="rng">
-        <div class="ends"><span id="lo"></span><span id="hi"></span></div>
-      </div>
+    <div class="meter">
+      <div class="steps" id="steps"></div>
+      <span class="left" id="left">남은 시간 <b id="tsec">20</b>초</span>
     </div>
-    <button class="btn p" id="submit">이 가격으로 확정</button>
+    <div class="tline" id="tline"><i id="tfill"></i></div>
+
+    <div id="qbox">
+      <div class="place" id="place"></div>
+      <div class="apt" id="apt"></div>
+      <div class="spec" id="spec"></div>
+    </div>
+
+    <div class="guess">
+      <div class="v" id="val"></div>
+      <div class="l">내가 생각한 가격</div>
+      <input type="range" id="rng">
+      <div class="ends"><span id="lo"></span><span id="hi"></span></div>
+    </div>
+
+    <button class="btn full" id="submit">이 가격으로 확정</button>
     <div class="trail" id="trail"></div>
   </section>
 
   <!-- 채점 대기 -->
   <section id="wait" class="hide">
-    <div class="card reveal">
+    <div class="mid">
       <h2>다섯 문제를 다 푸셨습니다</h2>
       <p>이제 실제 거래가와 맞춰 보겠습니다.</p>
-      <button class="btn g" id="reveal">결과 확인하기</button>
+      <button class="btn full" id="reveal">결과 확인하기</button>
     </div>
   </section>
 
   <!-- 결과 -->
   <section id="result" class="hide">
-    <div class="card">
-      <div class="score">
-        <div class="lab">다섯 문제 중</div>
-        <div class="big"><span id="hit">0</span><small> 개 정답</small></div>
-        <span class="grade" id="finalGrade"></span>
-        <div class="avg" id="avgLine"></div>
-      </div>
+    <div class="score">
+      <div class="l">결과</div>
+      <div class="n"><span id="hit">0</span><em> / 5</em></div>
+      <div class="tag" id="tag"></div>
+      <div class="meta" id="meta"></div>
     </div>
     <div id="list"></div>
-    <div class="tapme">항목을 누르면 그 단지의 최근 시세가 나옵니다</div>
-    <div class="best" id="bestRes"></div>
-    <div style="margin-top:16px">
-      <button class="btn p" id="share">결과 공유하기</button>
-      <button class="btn l" id="again">다시 하기</button>
-      <a class="btn l" href="map.html" style="text-align:center;text-decoration:none;display:block;margin-top:9px">
-        전국 실거래가 지도에서 보기
-      </a>
-    </div>
+    <div class="tap">항목을 누르면 그 단지의 최근 시세가 나옵니다</div>
+    <button class="btn full" id="share">결과 공유하기</button>
+    <button class="btn full line" id="again">다시 하기</button>
+    <a class="btn full line" href="map.html" style="text-decoration:none">전국 실거래가 지도에서 보기</a>
   </section>
 
   <div class="foot" id="foot"></div>
@@ -259,28 +198,23 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
   var POOL = D.items || [];
   var N = 5;          // 한 세트 문제 수 (2026-08-30 석봉님 확정)
   var HIT = 10;       // 오차 10% 안에 들면 정답 (2026-08-30 석봉님 확정)
-  var SEC = 20;       // 문제당 제한 시간. 검색할 틈을 주지 않는 길이 (2026-08-30 석봉님 지시)
+  var SEC = 20;       // 문제당 제한 시간 (2026-08-30 석봉님 지시)
   var set = [], idx = 0, log = [];
-  var tStart = 0, tRaf = 0, away = 0, awayAt = 0;   // 타이머·이탈 기록
+  var tStart = 0, tick = 0, away = 0, awayAt = 0;
   var $ = function(id){ return document.getElementById(id); };
 
-  /* 다른 화면에 다녀온 시간을 잰다.
-     검색을 막을 수는 없지만 「자리를 비웠다」는 사실은 남길 수 있다.
-     나중에 이벤트를 열 때 참고 자료가 된다. */
+  /* 다른 화면에 다녀온 시간을 잰다. 검색을 막을 수는 없지만 사실은 남는다 */
   document.addEventListener("visibilitychange", function(){
     if(document.hidden){ awayAt = Date.now(); }
     else if(awayAt){ away += Date.now() - awayAt; awayAt = 0; }
   });
 
-  /* 만원 단위를 사람이 읽는 말로. 35300 → 3억 5,300만원 */
   function money(man){
     var eok = Math.floor(man/10000), rest = man%10000;
     if(eok && rest) return eok+"억 "+rest.toLocaleString()+"만원";
     if(eok) return eok+"억원";
     return man.toLocaleString()+"만원";
   }
-  /* 실거래 일자. 정답을 공개할 때 「언제 거래된 것인가」를 함께 밝힌다
-     (2026-08-31 석봉님 지시). 옛 자료에는 ymd 가 없으므로 ym 으로 물러선다. */
   function ymd(q){
     var p = (q.ymd || q.ym || "").split("-");
     if(p.length >= 3) return p[0]+"년 "+(+p[1])+"월 "+(+p[2])+"일";
@@ -291,13 +225,8 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
     for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i];a[i]=a[j];a[j]=t; }
     return a;
   }
-  /* 맞힌 개수로 등급을 준다. 색은 브랜드 팔레트만 쓴다 */
   function grade(hit){
-    if(hit===5) return {t:"신의 눈",     bg:"#1E7A5A", fg:"#fff"};
-    if(hit===4) return {t:"고수",        bg:"#1B3F7A", fg:"#fff"};
-    if(hit===3) return {t:"감이 좋네요",  bg:"#EEF3FB", fg:"#1B3F7A"};
-    if(hit===2) return {t:"조금 아쉽네요", bg:"#EEF3FB", fg:"#5A6478"};
-    return {t:"다시 도전", bg:"#EEF3FB", fg:"#B23A48"};
+    return ["다시 도전","다시 도전","조금 아쉽습니다","감이 좋으시네요","고수시네요","신의 눈"][hit];
   }
   function show(which){
     ["intro","play","wait","result"].forEach(function(k){
@@ -305,24 +234,20 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
     });
     window.scrollTo(0,0);
   }
-  function drawDots(){
-    $("dots").innerHTML = set.map(function(_,i){
+  function drawSteps(){
+    $("steps").innerHTML = set.map(function(_,i){
       return "<i class='"+(i<idx?"done":(i===idx?"on":""))+"'></i>";
     }).join("");
   }
 
   function render(){
     var q = set[idx];
-    drawDots();
-    $("cur").textContent = idx+1;
-    $("tot").textContent = set.length;
-    $("loc").textContent = q.sgg+" "+q.dong;
+    drawSteps();
+    $("place").textContent = q.sgg+" "+q.dong;
     $("apt").textContent = q.apt;
-    $("spec").innerHTML =
-      "<span>전용 "+q.m2+"㎡ ("+q.py+"평)</span>"+
-      "<span>"+q.fl+"층</span>"+
-      "<span>"+q.yr+"년 준공</span>"+
-      "<span>"+q.ym.split("-")[0]+"년 "+(+q.ym.split("-")[1])+"월 계약</span>";
+    $("spec").textContent =
+      "전용 "+q.m2+"㎡("+q.py+"평) · "+q.fl+"층 · "+q.yr+"년 준공 · "+
+      q.ym.split("-")[0]+"년 "+(+q.ym.split("-")[1])+"월 계약";
 
     var r = $("rng");
     r.min = q.lo; r.max = q.hi; r.step = q.st;
@@ -331,167 +256,115 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
     $("hi").textContent = money(q.hi);
     $("val").textContent = money(+r.value);
 
-    /* 문제 카드가 새로 들어오는 느낌을 준다 */
     var box = $("qbox");
-    box.style.animation = "none"; void box.offsetWidth; box.style.animation = "";
-
+    box.style.animation = "none"; void box.offsetWidth; box.style.animation = "rise .3s ease";
     startTimer();
   }
 
-  /* 남은 시간은 Date.now() 로 잰다.
-     setInterval 은 탭이 백그라운드면 느려지지만 시계는 정확하므로 표시가 어긋나지 않는다. */
+  /* 남은 시간은 Date.now() 로 잰다. 탭이 백그라운드여도 시계는 정확하다 */
   function startTimer(){
     stopTimer();
     tStart = Date.now();
-    var fill = $("tfill"), bar = $("tbar"), num = $("tnum"), sec = $("tsec");
+    var fill = $("tfill"), line = $("tline"), left = $("left"), sec = $("tsec");
     fill.style.width = "100%";
-    bar.classList.remove("warn"); num.classList.remove("warn");
-    sec.textContent = SEC + "초";
-
-    tRaf = setInterval(function(){
-      var left = SEC - (Date.now() - tStart)/1000;
-      if(left <= 0){
-        stopTimer();
-        fill.style.width = "0%";
-        sec.textContent = "시간 종료";
-        submit(true);
-        return;
+    line.classList.remove("warn"); left.classList.remove("warn");
+    sec.textContent = SEC;
+    tick = setInterval(function(){
+      var rem = SEC - (Date.now() - tStart)/1000;
+      if(rem <= 0){
+        stopTimer(); fill.style.width = "0%"; sec.textContent = 0;
+        submit(true); return;
       }
-      fill.style.width = (left/SEC*100).toFixed(1)+"%";
-      sec.textContent = Math.ceil(left)+"초";
-      if(left <= 5){ bar.classList.add("warn"); num.classList.add("warn"); }
+      fill.style.width = (rem/SEC*100).toFixed(1)+"%";
+      sec.textContent = Math.ceil(rem);
+      if(rem <= 5){ line.classList.add("warn"); left.classList.add("warn"); }
     }, 100);
   }
-  function stopTimer(){ if(tRaf){ clearInterval(tRaf); tRaf = 0; } }
+  function stopTimer(){ if(tick){ clearInterval(tick); tick = 0; } }
 
   $("rng").addEventListener("input", function(){
     $("val").textContent = money(+this.value);
-    var v = $("val"); v.classList.add("bump");
-    setTimeout(function(){ v.classList.remove("bump"); }, 120);
   });
 
   function submit(auto){
-    if(idx >= set.length) return;      // 시간 종료와 클릭이 겹쳐도 두 번 들어가지 않게
+    if(idx >= set.length) return;
     stopTimer();
     var q = set[idx], my = +$("rng").value;
     var spent = Math.min((Date.now() - tStart)/1000, SEC);
     log.push({q:q, my:my, err: Math.abs(my - q.ans)/q.ans*100, sec:spent, auto:!!auto});
-    /* 내가 찍은 답을 아래에 쌓아 보여 준다. 정답은 아직 말하지 않는다 */
-    var s = document.createElement("span");
-    s.textContent = (idx+1)+"번 "+money(my)+(auto ? " (시간 종료)" : "");
-    $("trail").appendChild(s);
+    $("trail").textContent = log.map(function(x, i){
+      return (i+1)+"번 "+money(x.my)+(x.auto ? " (시간 종료)" : "");
+    }).join("   ");
     idx++;
-    if(idx >= set.length){ setTimeout(function(){ show("wait"); }, 260); }
+    if(idx >= set.length){ setTimeout(function(){ show("wait"); }, 220); }
     else { render(); window.scrollTo({top:0, behavior:"smooth"}); }
   }
   $("submit").addEventListener("click", function(){ submit(false); });
 
-  /* 숫자가 올라가는 효과. 정답 공개의 재미는 여기서 난다.
-     🔴 다만 효과보다 「올바른 값이 보이는 것」이 먼저다.
-     requestAnimationFrame 은 탭이 백그라운드면 멈춘다. 첫 프레임만 실행되고 멈추면
-     **중간값이 정답인 것처럼 화면에 굳는다**(2026-08-30 실제로 났다. 실제 2억 3,500만원인데
-     화면에 13억이 남고 오차 23.8% 와 앞뒤가 안 맞았다).
-     그래서 ①최종값을 먼저 넣고 ②숨김·모션최소 설정이면 효과를 건너뛰고
-     ③끝날 시각에 최종값을 한 번 더 못 박는다. */
-  var REDUCE = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  function countUp(el, to){
-    el.textContent = money(to);
-    if(document.hidden || REDUCE) return;
-    var t0 = null, dur = 620;
-    function step(ts){
-      if(!t0) t0 = ts;
-      var p = Math.min((ts-t0)/dur, 1);
-      var e = 1 - Math.pow(1-p, 3);
-      el.textContent = money(Math.round(to*e/100)*100);
-      if(p < 1) requestAnimationFrame(step); else el.textContent = money(to);
-    }
-    el.textContent = money(0);
-    requestAnimationFrame(step);
-    setTimeout(function(){ el.textContent = money(to); }, dur + 300);
-  }
-
   function renderResult(){
-    var hit = 0, sum = 0;
-    log.forEach(function(x){ sum += x.err; if(x.err <= HIT) hit++; });
-    var avg = sum/log.length, g = grade(hit);
+    var hit = 0, sum = 0, spent = 0, autos = 0;
+    log.forEach(function(x){
+      sum += x.err; spent += x.sec;
+      if(x.err <= HIT) hit++;
+      if(x.auto) autos++;
+    });
+    var avg = sum/log.length;
 
-    /* 🔴 화면을 먼저 켜고 나서 항목을 붙인다.
-       display:none 인 채로 append 하면 CSS 애니메이션이 시작되지 않고,
-       animation-fill-mode:both 탓에 opacity 0 에 그대로 멈춘다.
-       2026-08-30 라이브에서 실제로 났다 — DOM 에는 5개가 있는데 화면은 비어 있었다. */
     show("result");
 
-    /* 🔴 맞힌 개수는 세어 올리지 않고 **처음부터 정확한 값**을 보여 준다.
-       이유 둘 — ①0 일 때 인터벌이 한 번 돌아 「1개 정답」이 나갔다
-       (2026-08-31 석봉님이 폰에서 잡으셨다. 내 시험은 hit=1 만 밟아 못 봤다)
-       ②고친 뒤에도 탭이 백그라운드면 setInterval 이 1초로 늘어나 **세는 도중 값**이 보였다
-       (5개인데 3으로 나옴). 이벤트로 캡처 인증을 받는다면 그 캡처가 분쟁거리가 된다.
-       점수는 사실이지 연출이 아니다. 재미는 등급 배지·항목 순차 공개·금액 카운트업이 맡는다. */
-    var h = $("hit");
-    h.textContent = hit;
-    h.classList.remove("pop"); void h.offsetWidth; h.classList.add("pop");
-
-    var fg = $("finalGrade");
-    fg.textContent = g.t; fg.style.background = g.bg; fg.style.color = g.fg;
-    var spent = 0, autos = 0;
-    log.forEach(function(x){ spent += x.sec; if(x.auto) autos++; });
-    $("avgLine").innerHTML = "평균 오차 "+avg.toFixed(1)+"% · 걸린 시간 "+Math.round(spent)+"초"+
+    /* 🔴 점수는 세어 올리지 않는다. 처음부터 정확한 값을 쓴다.
+       세는 연출이 0 에서 1 을 찍거나 도중 값에 멈춰 틀린 점수가 보인 적이 있다(2026-08-31). */
+    $("hit").textContent = hit;
+    $("tag").textContent = grade(hit);
+    $("meta").innerHTML = "평균 오차 "+avg.toFixed(1)+"% · 걸린 시간 "+Math.round(spent)+"초"+
       (autos ? "<br>시간이 끝나 자동 제출된 문제 "+autos+"개" : "")+
       (away > 3000 ? "<br>푸는 동안 다른 화면에 "+Math.round(away/1000)+"초 다녀오셨습니다" : "");
 
-    /* 🔴 항목은 setTimeout 으로 하나씩 붙이지 않는다. 전부 즉시 붙이고 **움직임만** 늦춘다.
-       백그라운드 탭에서는 setTimeout 이 1초 이상으로 늘어져 목록이 통째로 비어 보였다
-       (2026-08-31 확인). 애니메이션은 transform 만 쓰므로 delay 중에도 글자는 보인다. */
+    /* 항목은 전부 즉시 붙이고 움직임만 늦춘다(백그라운드에서 setTimeout 이 늘어진다) */
     $("list").innerHTML = "";
-    log.forEach(function(x, i){ addItem(x, i); });
+    log.forEach(function(x, i){ addRow(x, i); });
 
-    /* 최고 기록은 이 브라우저에만 남는다. 서버로 보내지 않는다 */
     var prev = null;
     try{
       var raw = localStorage.getItem("sb_quiz_hit");
       prev = raw === null ? null : parseInt(raw, 10);
       if(prev === null || hit > prev){ localStorage.setItem("sb_quiz_hit", String(hit)); }
     }catch(e){}
-    $("bestRes").textContent =
-      (prev !== null && hit > prev) ? "최고 기록을 새로 세웠습니다 (지난 최고 "+prev+"개)"
-      : (prev !== null ? "내 최고 기록 "+Math.max(prev,hit)+"개" : "");
+    $("foot").innerHTML = footText() +
+      (prev !== null && hit > prev ? "<br><b>최고 기록을 새로 세웠습니다.</b>" : "");
   }
 
-  function addItem(x, i){
-      var ok = x.err <= HIT;
-      var near = !ok && x.err <= 15;
-      var d = document.createElement("div");
-      d.className = "item"+(ok ? " ok" : "");
-      d.style.animationDelay = (0.07*i)+"s";
-      d.innerHTML =
-        "<div class='r1'><span class='nm'>"+x.q.apt+"</span>"+
-          "<span class='mark "+(ok?"o":"x")+"'>"+(ok?"○":"✕")+"</span></div>"+
-        "<div class='r2'><span class='mine'>내 답 "+money(x.my)+"</span>"+
-          "<span class='answ'><b class='ansv'>"+money(x.q.ans)+"</b>"+
-          "<span class='when'>"+ymd(x.q)+" 거래</span></span></div>"+
-        "<div class='er'>"+x.q.sgg+" · 오차 "+x.err.toFixed(1)+"%"+
-          (ok ? " · 정답입니다" : (near ? " · 아깝습니다" : ""))+
-          " · "+(x.auto ? "시간 종료" : x.sec.toFixed(1)+"초")+"</div>"+
-        "<div class='det'><dl>"+
-          "<dt>최근 거래</dt><dd>"+x.q.n+"건</dd>"+
-          "<dt>중위 가격</dt><dd>"+money(x.q.med)+"</dd>"+
-          "<dt>평당가(전용)</dt><dd>"+x.q.ppy.toLocaleString()+"만원</dd>"+
-          "</dl><a class='go' href='map.html?q="+encodeURIComponent(x.q.q)+
-          "' target='_blank' rel='noopener'>이 단지 지도에서 보기</a></div>";
-      d.addEventListener("click", function(e){
-        if(e.target.closest("a")) return;
-        d.querySelector(".det").classList.toggle("open");
-      });
-      $("list").appendChild(d);
-      /* 실제 거래가는 숫자가 올라가는 효과로 보여 준다 */
-      countUp(d.querySelector(".ansv"), x.q.ans);
+  function addRow(x, i){
+    var ok = x.err <= HIT;
+    var near = !ok && x.err <= 15;
+    var d = document.createElement("div");
+    d.className = "row"+(ok ? " hit" : "");
+    d.style.animationDelay = (0.05*i)+"s";
+    d.innerHTML =
+      "<div class='a'><span class='nm'>"+x.q.apt+"</span>"+
+        "<span class='ans'>"+money(x.q.ans)+"</span></div>"+
+      "<div class='b'><span>내 답 "+money(x.my)+"</span>"+
+        "<span class='when'>"+ymd(x.q)+" 거래</span></div>"+
+      "<div class='c'>"+x.q.sgg+" · 오차 "+x.err.toFixed(1)+"% · "+
+        (ok ? "<span class='ok'>정답</span>" : "<span class='no'>"+(near?"아깝습니다":"오답")+"</span>")+
+        " · "+(x.auto ? "시간 종료" : x.sec.toFixed(1)+"초")+"</div>"+
+      "<div class='det'><dl>"+
+        "<dt>최근 거래</dt><dd>"+x.q.n+"건</dd>"+
+        "<dt>중위 가격</dt><dd>"+money(x.q.med)+"</dd>"+
+        "<dt>평당가(전용)</dt><dd>"+x.q.ppy.toLocaleString()+"만원</dd>"+
+        "</dl><a href='map.html?q="+encodeURIComponent(x.q.q)+
+        "' target='_blank' rel='noopener'>이 단지 지도에서 보기</a></div>";
+    d.addEventListener("click", function(e){
+      if(e.target.closest("a")) return;
+      d.querySelector(".det").classList.toggle("open");
+    });
+    $("list").appendChild(d);
   }
-  $("reveal").addEventListener("click", renderResult);
 
   function begin(){
     stopTimer();
     set = shuffle(POOL.slice()).slice(0, N);
-    idx = 0; log = []; away = 0; awayAt = 0; $("trail").innerHTML = "";
+    idx = 0; log = []; away = 0; awayAt = 0; $("trail").textContent = "";
     show("play"); render();
   }
   $("start").addEventListener("click", function(){
@@ -499,13 +372,14 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
     begin();
   });
   $("again").addEventListener("click", begin);
+  $("reveal").addEventListener("click", renderResult);
 
   $("share").addEventListener("click", function(){
     var hit = log.filter(function(x){ return x.err <= HIT; }).length;
     var txt = "실거래가 맞히기 다섯 문제 중 "+hit+"개를 맞혔습니다.\n당신도 해보세요.\n"+location.href;
     if(navigator.share){ navigator.share({text:txt}).catch(function(){}); }
     else if(navigator.clipboard){
-      navigator.clipboard.writeText(txt).then(function(){ alert("결과를 복사했습니다. 붙여넣어 공유해 보세요."); });
+      navigator.clipboard.writeText(txt).then(function(){ alert("결과를 복사했습니다."); });
     }
   });
 
@@ -514,10 +388,12 @@ input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;bac
     if(b !== null) $("bestIntro").textContent = "내 최고 기록 "+b+"개";
   }catch(e){}
 
-  $("foot").innerHTML =
-    "원자료 국토교통부 실거래가 공개시스템 · 아파트 매매 신고분 (자료 기준일 "+(D.updated||"")+")<br>"+
-    "취소된 거래와 직거래는 문제에서 제외했습니다. 면적은 전용면적, 단가는 평당(전용) 기준입니다.<br>"+
-    "실제 시세는 층·향·수리 상태에 따라 달라집니다. 참고용입니다.";
+  function footText(){
+    return "원자료 국토교통부 실거래가 공개시스템 · 아파트 매매 신고분 (자료 기준일 "+(D.updated||"")+")<br>"+
+      "취소된 거래와 직거래는 문제에서 제외했습니다. 면적은 전용면적, 단가는 평당(전용) 기준입니다.<br>"+
+      "실제 시세는 층·향·수리 상태에 따라 달라집니다. 참고용입니다.";
+  }
+  $("foot").innerHTML = footText();
 })();
 </script>
 </body>
