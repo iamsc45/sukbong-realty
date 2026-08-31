@@ -100,8 +100,11 @@ window.TaxGame = (function(){
       w: o.w, h: o.h, vy: speed() * 0.72 });
   }
   /* 난이도 — 시간이 지날수록 빨라진다. 상한을 두지 않으면 20초 뒤에 아무도 못 피한다. */
-  function speed(){ return Math.min(560, 170 + elapsed * 9); }
-  function gap(){ return Math.max(0.34, 1.05 - elapsed * 0.022); }
+  /* 잘 피하는 봇으로 재 보고 정한 값이다(2026-08-31 실측).
+     처음 값(170·1.05)은 봇 중앙값이 25초라 사람은 10초를 못 넘겼다.
+     첫 판이 10초면 "어 뭐야" 하고 닫는다. 20~30초는 버텨야 다시 누른다. */
+  function speed(){ return Math.min(520, 150 + elapsed * 7); }
+  function gap(){ return Math.max(0.38, 1.25 - elapsed * 0.019); }
 
   function step(dt){
     elapsed += dt;
@@ -348,6 +351,7 @@ window.TaxGame = (function(){
         return { alive: alive, elapsed: +elapsed.toFixed(1), held: held(elapsed),
                  blocks: blocks.length, killedBy: killedBy && killedBy.t, speed: Math.round(speed()) };
       },
+      _paint: function(){ draw(); hud(); },      // 시뮬레이션 뒤 그 장면을 그려 눈으로 본다
       _state: function(){ return { running: running, W: W, H: H, px: Math.round(px) }; } };
   }
 
