@@ -83,7 +83,9 @@ window.TaxGame = (function(){
 
   /* ── 게임 상태 ───────────────────────────────────────────── */
   function reset(){
-    elapsed = 0; blocks = []; shield = 0; spawnT = 0.6; itemT = 7;
+    /* 시작하고 1.4초는 아무것도 안 떨어뜨린다. 손가락을 올려놓을 짬을 줘야
+       "시작하자마자 죽었다"는 억울함이 없다. */
+    elapsed = 0; blocks = []; shield = 0; spawnT = 1.4; itemT = 7;
     killedBy = null; vx = 0; aimX = null; px = W / 2;
   }
 

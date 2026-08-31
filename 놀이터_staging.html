@@ -490,7 +490,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 <script src="data/quiz_price.js?v=4"></script>
 <script src="data/polls.js?v=2"></script>
 <script src="assets/game_balance.js?v=1"></script>
-<script src="assets/game_tax.js?v=3"></script>
+<script src="assets/game_tax.js?v=4"></script>
 <script>
 (function(){
   "use strict";
@@ -534,6 +534,10 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   function show(which){
     var all = document.querySelectorAll(".scr");
     for(var i=0;i<all.length;i++) all[i].classList.toggle("hide", all[i].id !== which);
+    /* 게임판이 떠 있는 동안에는 각주를 접는다.
+       실거래 출처 문구는 퀴즈 것이라 액션 게임 화면에서는 말이 안 맞고,
+       판 아래로 페이지가 길어지면 손가락을 움직일 때 화면이 밀린다. */
+    $("foot").classList.toggle("hide", which === "tPlay");
     window.scrollTo(0,0);
   }
   function drawSteps(){
