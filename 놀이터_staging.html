@@ -145,6 +145,52 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .board .num{text-align:right}
 .board .empty{font-size:13px;color:var(--muted);padding:18px 0;text-align:center}
 
+/* ── 허브 (게임 고르기) ── */
+.hub-l{color:var(--muted);font-size:14.5px;line-height:1.8;margin:0 0 24px}
+.gcard{display:block;width:100%;text-align:left;border:1px solid var(--hair);background:var(--soft);
+  border-radius:16px;padding:22px 20px;margin-bottom:12px;cursor:pointer;font-family:inherit;
+  color:var(--text);text-decoration:none;transition:border-color 150ms ease}
+.gcard:hover{border-color:var(--text)}
+.gcard .gt{font-size:21px;font-weight:800;letter-spacing:-.035em;line-height:1.3}
+.gcard .gs{font-size:13px;color:var(--muted);margin-top:7px;line-height:1.6}
+.gcard .gm{font-size:11.5px;color:var(--muted2);margin-top:10px;letter-spacing:.02em}
+.backlink{display:inline-block;font-size:12.5px;color:var(--muted);text-decoration:none;
+  border-bottom:1px solid var(--hair);padding-bottom:1px;margin-top:20px}
+
+/* ── 밸런스 게임 ── */
+.qn{font-size:11px;letter-spacing:.12em;color:var(--muted);font-weight:700;margin-bottom:8px}
+.qt{font-size:24px;font-weight:800;letter-spacing:-.035em;line-height:1.3;margin:0 0 24px;word-break:keep-all}
+.picks{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.pick{border:1px solid var(--hair);background:var(--soft);border-radius:14px;padding:22px 14px;
+  text-align:center;cursor:pointer;font-family:inherit;color:var(--text);
+  transition:border-color 150ms ease}
+.pick:hover{border-color:var(--text)}
+.pick .t{display:block;font-size:19px;font-weight:800;letter-spacing:-.03em;line-height:1.3;word-break:keep-all}
+.pick .s{display:block;font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6;word-break:keep-all}
+.vs{text-align:center;font-size:11px;color:var(--muted2);font-weight:700;letter-spacing:.1em;margin:12px 0 0}
+.bsteps{display:flex;gap:5px;margin:30px 0 22px}
+.bsteps i{flex:1 1 0;height:2px;background:var(--hair)}
+.bsteps i.done{background:var(--text)}
+.qres{border-top:1px solid var(--hair);padding:24px 0 6px}
+.qres .cq{font-size:11px;letter-spacing:.1em;color:var(--muted);font-weight:700;margin-bottom:6px}
+.qres .ct{font-size:18px;font-weight:800;letter-spacing:-.03em;margin-bottom:16px;word-break:keep-all}
+.bars{margin-top:4px}
+.bar{margin-bottom:16px}
+.bar .lb{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;margin-bottom:6px}
+.bar .lb b{font-size:15px;font-weight:800;letter-spacing:-.02em}
+.bar .lb .pc{font-variant-numeric:tabular-nums;font-weight:800;font-size:17px}
+.bar .tr{height:8px;background:var(--gray);border-radius:4px;overflow:hidden}
+.bar .tr i{display:block;height:100%;background:var(--muted2);border-radius:4px;transition:width 400ms ease}
+.bar.mine .tr i{background:var(--text)}
+.bar.mine .lb b:after{content:" 내 선택";font-size:11px;color:var(--muted);font-weight:400;letter-spacing:0}
+.tot{font-size:12px;color:var(--muted2);margin:-4px 0 20px}
+.fact{border-left:2px solid var(--text);padding:2px 0 2px 14px;margin:22px 0}
+.fact .h{font-size:11px;letter-spacing:.12em;color:var(--muted);font-weight:700;margin-bottom:8px}
+.fact p{margin:0 0 8px;font-size:14px;line-height:1.85;word-break:keep-all}
+.fact p:last-of-type{margin-bottom:0}
+.fact a{display:inline-block;margin-top:12px;font-size:12.5px;font-weight:700;color:var(--text);
+  border-bottom:1px solid var(--text);text-decoration:none;padding-bottom:1px}
+
 .foot{font-size:11px;color:var(--muted2);line-height:1.8;margin-top:38px;
   border-top:1px solid var(--hair);padding-top:14px}
 .hide{display:none}
@@ -166,8 +212,27 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 
 <div class="q-wrap">
 
+  <!-- 허브 — 여기서 게임을 고른다 -->
+  <section id="hub" class="scr">
+    <div class="eyebrow">석봉 놀이터</div>
+    <h1 class="q">뭐 하고 놀까요?</h1>
+    <p class="hub-l">둘 다 우리가 매일 받는 <b>진짜 실거래 자료</b>로 만듭니다.</p>
+
+    <button class="gcard" id="goQuiz">
+      <span class="gt">이 집, 얼마일까요?</span>
+      <span class="gs">국토교통부에 신고된 진짜 거래 다섯 건. 얼마에 팔렸을지 맞혀 보세요.</span>
+      <span class="gm">5문제 · 문제당 20초 · 랭킹 있음</span>
+    </button>
+
+    <button class="gcard" id="goBalance">
+      <span class="gt">당신의 선택은?</span>
+      <span class="gs">정답이 없는 질문. 고르고 나면 다른 분들의 선택과 실제 거래를 보여드립니다.</span>
+      <span class="gm" id="balCount">스무 개 가운데 다섯 개 · 다시 하면 다른 질문</span>
+    </button>
+  </section>
+
   <!-- 시작 -->
-  <section id="intro">
+  <section id="intro" class="scr hide">
     <div class="eyebrow">실거래가 맞히기</div>
     <h1 class="q">이 집, 얼마일까요?</h1>
     <p class="lead">국토교통부에 신고된 진짜 거래 다섯 건입니다.<br>얼마에 팔렸을지 맞혀 보세요.</p>
@@ -180,7 +245,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   </section>
 
   <!-- 문제 -->
-  <section id="play" class="hide">
+  <section id="play" class="scr hide">
     <div class="meter">
       <div class="steps" id="steps"></div>
       <span class="left" id="left"><span class="cap">남은 시간</span><b id="tsec">20</b><span class="u">초</span></span>
@@ -205,7 +270,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   </section>
 
   <!-- 채점 대기 -->
-  <section id="wait" class="hide">
+  <section id="wait" class="scr hide">
     <div class="mid">
       <h2>다섯 문제를 다 푸셨습니다</h2>
       <p>이제 실제 거래가와 맞춰 보겠습니다.</p>
@@ -214,7 +279,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   </section>
 
   <!-- 결과 -->
-  <section id="result" class="hide">
+  <section id="result" class="scr hide">
     <div class="score">
       <div class="l">결과</div>
       <div class="n"><span id="hit">0</span><em> / 5</em></div>
@@ -255,6 +320,49 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     <button class="btn full line" id="share">결과 공유하기</button>
     <button class="btn full line" id="again">다시 하기</button>
     <a class="btn full line" href="map.html" style="text-decoration:none">전국 실거래가 지도에서 보기</a>
+    <div style="text-align:center"><a href="#" class="backlink toHub">다른 놀이 해보기</a></div>
+  </section>
+
+  <!-- ══ 밸런스 게임 (로직은 assets/game_balance.js) ══ -->
+  <section id="bIntro" class="scr hide">
+    <div class="eyebrow">부동산 밸런스 게임</div>
+    <h1 class="q">당신의 선택은?</h1>
+    <p class="lead">정답이 없는 질문 다섯 개입니다.<br>고르고 나면 다른 분들의 선택과 <b>실제 거래가 어땠는지</b>를 보여드립니다.</p>
+    <div class="rules">
+      <b>스무 개</b> 가운데 <b>다섯 개</b>가 나옵니다 · 한 번 고르면 바꿀 수 없습니다<br>
+      다시 하면 다른 질문이 나옵니다. 수치는 국토교통부 실거래 신고분에서 뽑았습니다.
+    </div>
+    <button class="btn full" id="bStart">시작하기</button>
+    <div style="text-align:center"><a href="#" class="backlink toHub">다른 놀이 해보기</a></div>
+  </section>
+
+  <section id="bPlay" class="scr hide">
+    <div class="bsteps" id="bSteps"></div>
+    <div class="qn"><span id="bQi">1</span> / <span id="bQn">5</span></div>
+    <div class="qt" id="bQt"></div>
+    <div class="picks">
+      <button class="pick" id="bPickA"><span class="t"></span><span class="s"></span></button>
+      <button class="pick" id="bPickB"><span class="t"></span><span class="s"></span></button>
+    </div>
+    <div class="vs">둘 중 하나</div>
+  </section>
+
+  <section id="bWait" class="scr hide">
+    <div class="mid">
+      <h2>다섯 개 다 고르셨습니다</h2>
+      <p>다른 분들은 어떻게 골랐는지,<br>그리고 실제 거래는 어땠는지 보여드리겠습니다.</p>
+      <button class="btn full" id="bReveal">결과 보기</button>
+    </div>
+  </section>
+
+  <section id="bEnd" class="scr hide">
+    <div class="eyebrow">결과</div>
+    <h1 class="q">당신의 선택</h1>
+    <p class="lead" id="bEndLead"></p>
+    <div id="bCards"></div>
+    <button class="btn full" id="bShare">결과 공유하기</button>
+    <button class="btn full line" id="bAgain">다시 하기</button>
+    <div style="text-align:center"><a href="#" class="backlink toHub">다른 놀이 해보기</a></div>
   </section>
 
   <div class="foot" id="foot"></div>
@@ -264,6 +372,8 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 <script src="assets/sb_auth.js?v=8"></script>
 <script src="assets/sb_share.js?v=2"></script>
 <script src="data/quiz_price.js?v=4"></script>
+<script src="data/polls.js?v=2"></script>
+<script src="assets/game_balance.js?v=1"></script>
 <script>
 (function(){
   "use strict";
@@ -301,10 +411,12 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   function grade(hit){
     return ["다시 도전","다시 도전","조금 아쉽습니다","감이 좋으시네요","고수시네요","신의 눈"][hit];
   }
+  /* 화면 전환 — 게임이 둘이라 섹션을 통째로 관리한다.
+     `.scr` 을 단 섹션 가운데 하나만 남기고 나머지를 숨긴다.
+     밸런스 모듈도 이 함수를 받아 쓴다(로직은 나뉘어 있어도 화면 관리는 한 곳). */
   function show(which){
-    ["intro","play","wait","result"].forEach(function(k){
-      $(k).classList.toggle("hide", k!==which);
-    });
+    var all = document.querySelectorAll(".scr");
+    for(var i=0;i<all.length;i++) all[i].classList.toggle("hide", all[i].id !== which);
     window.scrollTo(0,0);
   }
   function drawSteps(){
@@ -476,6 +588,24 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     var b = localStorage.getItem("sb_quiz_hit");
     if(b !== null) $("bestIntro").textContent = "내 최고 기록 "+b+"개";
   }catch(e){}
+
+  /* ── 허브: 두 놀이를 한 페이지에서 고른다 (2026-08-31 석봉님) ── */
+  var BAL = null;
+  $("goQuiz").addEventListener("click", function(){ show("intro"); });
+  $("goBalance").addEventListener("click", function(){
+    if(!BAL){ alert("질문을 불러오지 못했습니다."); return; }
+    BAL.start();
+  });
+  var backs = document.querySelectorAll(".toHub");
+  for(var i=0;i<backs.length;i++){
+    backs[i].addEventListener("click", function(e){ e.preventDefault(); stopTimer(); show("hub"); });
+  }
+  if(window.BalanceGame){
+    BAL = window.BalanceGame.init({ show: show });
+    $("bStart").addEventListener("click", function(){ BAL.start(); });
+    if(BAL.count) $("balCount").textContent =
+      BAL.count + "개 가운데 다섯 개 · 다시 하면 다른 질문";
+  }
 
   /* ───────────────────────── 랭킹 ─────────────────────────
      동선: 퀴즈는 로그인 없이 → 결과 뒤에 「올리시겠어요?」 → 카카오 로그인 → 닉네임 → 등록.
