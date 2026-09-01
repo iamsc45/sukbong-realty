@@ -506,7 +506,17 @@ var layer=L.layerGroup().addTo(map);
 function go(lat,lng,z){try{map.flyTo([lat,lng],z,{duration:.6});}catch(e){try{map.setView([lat,lng],z,{animate:false});}catch(e2){}}}
 var loading={}, loaded={};
 
-function fmtEok(man){var e=man/10000;return (e>=10?e.toFixed(1):e.toFixed(2)).replace(/\.?0+$/,'')+'억';}
+/* 🔴 억 표기 규칙 — **네 곳이 같아야 한다**(2026-09-01 통일):
+     `map.html` 의 fmtEok · _eok · eok2, `단지상세.html` 의 eok, `토지상세.html` 의 eok.
+   그전에는 규칙이 서로 달라 **같은 매물이 화면마다 다른 금액으로 보였다** —
+   시흥 153-1 이 토지상세에선 314.2억, 지도 카드에선 314억(2천만원이 표기에서 사라졌다).
+   담보 실무에서 2천만원은 작지 않으므로 **자르지 않는 쪽**으로 맞췄다.
+     1억 미만 → 만원 (8,500만)      ← 소액 토지에서 '0억'으로 뭉개지던 것(2026-08-09)
+     1억 이상 → 0.1억, 소수가 0이면 생략 (3.5억 · 25억 · 314.2억)
+   ⚠️한 곳만 고치지 말 것. `python3 데이터관리/스크립트/억표기_대조.py` 가 넷을 대조한다. */
+function fmtEok(man){if(!man)return '';var v=man/10000;
+  if(v<1)return Math.round(man).toLocaleString()+'만';
+  return (''+v.toFixed(1)).replace(/\.0$/,'')+'억';}
 function PY(m){m=+m;if(!m)return '';var p=m/3.305785;return (p<100?p.toFixed(1):Math.round(p).toLocaleString())+'평';}
 /* 관심단지 (이 기기 브라우저에 저장) */
 function favList(){try{return JSON.parse(localStorage.getItem('sb_fav')||'[]');}catch(e){return [];}}
@@ -702,6 +712,49 @@ function render(){
     setFcount('화면 내 조건 일치 '+nTx.toLocaleString()+'건');
     return;
   }
+  /* 🔴 개략 좌표 마커 묶기 (2026-09-01) — 모바일에서 금액 풍선이 서로 포개져 못 읽혔다.
+     실측(390px · 용산 원효로1가 · 토지): **마커 10개 중 겹침 쌍 9개, 전부 개략 좌표**.
+     원인은 디자인이 아니라 **좌표**다. 국토부가 토지·단독다가구 지번을 가려서(`pt.ax`)
+     서로 다른 거래가 동 대표점 근처에 몰려 찍히는데, 가격표가 가로로 길어 포개진다.
+     ⚠️「마커가 사라졌다」가 되지 않게 조건을 좁게 뒀다:
+       ① 개략 좌표(`ax`)만 묶는다 — 정확 좌표 마커는 손대지 않는다
+       ② 같은 동끼리만 묶는다 — 라벨에 동 이름을 정직하게 쓸 수 있어야 한다
+       ③ 화면에서 실제로 겹칠 만큼 가까울 때만(가로 150·세로 34px, 가격표 크기)
+       ④ **Z_NAME(16) 이상에서는 아예 안 묶는다** — 확대하면 반드시 풀린다.
+          이게 「사라진 게 아니라 겹쳐 있었다」를 사용자가 스스로 확인하는 길이다.
+     개략 좌표는 애초에 정확한 위치가 아니므로 묶어도 잃는 정보가 없다.
+     오히려 낱개로 흩뿌리면 「이 자리가 맞다」는 오해를 준다. */
+  var _apxGroups=[];
+  if(z<Z_NAME && map && map.latLngToContainerPoint){
+    var _rest=[],_taken={};
+    for(var gi=0;gi<pts.length;gi++){
+      var A=pts[gi]; if(!A.pt.ax){ _rest.push(A); continue; }
+      if(_taken[gi])continue;
+      var grp=[A]; _taken[gi]=1;
+      var pa=map.latLngToContainerPoint([A.pt.lat,A.pt.lng]);
+      for(var gj=gi+1;gj<pts.length;gj++){
+        var Bx=pts[gj]; if(_taken[gj]||!Bx.pt.ax)continue;
+        if(Bx.pt.dong!==A.pt.dong)continue;
+        var pb=map.latLngToContainerPoint([Bx.pt.lat,Bx.pt.lng]);
+        if(Math.abs(pa.x-pb.x)<150 && Math.abs(pa.y-pb.y)<34){ grp.push(Bx); _taken[gj]=1; }
+      }
+      if(grp.length>1) _apxGroups.push(grp); else _rest.push(A);
+    }
+    pts=_rest;
+  }
+  _apxGroups.forEach(function(grp){
+    var la=0,ln=0,tx=0;
+    grp.forEach(function(o){ la+=o.pt.lat; ln+=o.pt.lng; tx+=o.txs.length; });
+    la/=grp.length; ln/=grp.length;
+    var sz=Math.min(58,Math.max(40,Math.round(13*Math.log(tx+2))));
+    var icon=L.divIcon({className:'',html:'<div class="clus" style="width:'+sz+'px;height:'+sz+'px">'
+      +'<span class="cn">'+grp[0].pt.dong+'</span><span class="cc">'+grp.length+'곳</span></div>',
+      iconSize:[sz,sz],iconAnchor:[sz/2,sz/2]});
+    L.marker([la,ln],{icon:icon,title:grp[0].pt.dong+' 지번 비공개 '+grp.length+'곳 · '+tx+'건 (누르면 펼쳐집니다)'})
+      .on('click',function(){ go(la,ln,Math.max(Z_NAME,(map.getZoom()||z)+1)); })
+      .addTo(layer);
+    nPt+=grp.length; nTx+=tx;
+  });
   pts.forEach(function(o){
     var pt=o.pt,txs=o.txs,ti=TYPE[pt.t]||["기타","#6E6E6A"],col=ti[1],latest=txs[0];
     var icon=L.divIcon({className:'',html:'<div class="pricetag'+(pt.ax?' apx':'')+'" style="background:'+col+'">'
@@ -2730,7 +2783,8 @@ function _med(a){if(!a.length)return 0;var b=a.slice().sort(function(x,y){return
 function _eok(m){if(!m)return '';var v=m/10000;
   /* 1억 미만은 '0억'으로 뭉개지 않고 만원으로 적는다(토지 소액 필지에서 실제로 그랬다, 2026-08-09) */
   if(v<1)return Math.round(m).toLocaleString()+'만';
-  return (v>=100?Math.round(v):(''+v.toFixed(1)).replace(/\.0$/,''))+'억';}
+  /* 🔴100억 이상을 정수로 자르지 않는다(2026-09-01) — 규칙은 fmtEok 주석 참조 */
+  return (''+v.toFixed(1)).replace(/\.0$/,'')+'억';}
 var _PT=null;   /* 지금 카드에 열려 있는 지점(2026-08-20) */
 var _MIXPT=null;/* 그 지점에 여러 채가 섞여 있나(2026-08-20) */
 function _drawTx(){
@@ -3671,7 +3725,9 @@ function showAptCard(pt, txs){
   }
   var hoSec='';
   {
-    function eok2(m){if(!m)return '';var v=m/10000;return (v>=100?Math.round(v):(''+v.toFixed(1)).replace(/\.0$/,''))+'억';}
+    function eok2(m){if(!m)return '';var v=m/10000;   /* 규칙은 fmtEok 주석 참조 — 넷이 같아야 한다 */
+        if(v<1)return Math.round(m).toLocaleString()+'만';
+        return (''+v.toFixed(1)).replace(/\.0$/,'')+'억';}
     function md(a){if(!a.length)return 0;var s=a.slice().sort(function(x,y){return x-y;});return s[Math.floor(s.length/2)];}
     var mmT=txs.filter(function(t){return t.u==='매매';}),jeT=txs.filter(function(t){return t.u==='전세';}),woT=txs.filter(function(t){return t.u==='월세';});
     /* 🔴 토지 대표시세에서 **지분 거래를 뺀다**(2026-08-22, 지분 라벨을 붙이다 발견).

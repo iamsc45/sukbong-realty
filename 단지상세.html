@@ -129,7 +129,11 @@
 <script src="data/jeongbi_markers.js"></script>
 <script>
 function qs(k){var m=new RegExp('[?&]'+k+'=([^&]*)').exec(location.search);return m?decodeURIComponent(m[1].replace(/\+/g,' ')):'';}
-function eok(m){if(!m)return '·';var v=m/10000;return (v>=100?Math.round(v):(''+v.toFixed(1)).replace(/\.0$/,''))+'억';}
+/* 🔴 억 표기 — map.html 의 fmtEok·_eok·eok2, 토지상세.html 의 eok 와 **같아야 한다**(2026-09-01 통일).
+   100억 이상을 정수로 자르면 2천만원이 표기에서 사라진다(시흥 153-1: 314.2억 ↔ 314억). */
+function eok(m){if(!m)return '·';var v=m/10000;
+  if(v<1)return Math.round(m).toLocaleString()+'만';
+  return (''+v.toFixed(1)).replace(/\.0$/,'')+'억';}
 /* 평형 라인업 칩 (2026-07-27) */
 var _css=document.createElement('style');
 _css.textContent='.chips{display:flex;flex-wrap:wrap;gap:6px}'
