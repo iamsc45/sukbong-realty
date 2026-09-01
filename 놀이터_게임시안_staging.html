@@ -69,7 +69,8 @@ p.sub b{background:var(--sun);padding:1px 5px;box-shadow:2px 2px 0 var(--ink)}
    (2026-09-01 첫 판에서 실제로 집과 바닥이 화면 밖으로 밀렸다). */
 .phone{width:392px;max-width:100%;margin:0 auto;
   border:4px solid var(--ink);box-shadow:9px 9px 0 var(--ink);background:var(--paper)}
-.scr{height:748px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+/* 요즘 폰의 실제 CSS 픽셀(393x852)에 맞춘 높이. 748로 잡았더니 목록이 43px 넘쳤다. */
+.scr{height:812px;overflow:hidden;display:flex;flex-direction:column;position:relative}
 .pad{padding:20px 18px}
 .grow{flex:1 1 auto;min-height:8px}
 
@@ -335,7 +336,7 @@ canvas{display:block;width:100%;height:auto;background:var(--paper)}
         </div>
       </div>
       <div class="saybar">7년. 엘리베이터에서 다들 아는 척합니다</div>
-      <canvas id="cv" width="740" height="1050"></canvas>
+      <canvas id="cv" width="740" height="1250"></canvas>
       <div class="playfoot">
         <p>화면 아무 데나 누르면<br>그쪽으로 갑니다</p>
         <div class="chip p" style="margin:0;white-space:nowrap">비과세 3.2초</div>
