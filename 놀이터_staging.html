@@ -265,11 +265,11 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .rankpeek li .v{color:var(--text2);font-size:13.5px}
 .rankpeek li:first-child .r{color:var(--gold)}
 .rankpeek .none{font-size:14.5px;color:var(--muted);padding:4px 0}
-/* 지역 대항전 한 줄 요약 — 시작 화면에 크게 넣으면 산만해서 접어서 보여준다 */
-.rankpeek .rsub{margin-top:10px;padding-top:10px;border-top:1px dashed var(--hair);
-  font-size:13.5px;color:var(--text2);line-height:1.7}
-.rankpeek .rsub b{color:var(--text)}
-.rankpeek .rsub .me{color:var(--gold);font-weight:800}
+/* 지역 순위 — 개인 랭킹과 같은 목록. 사이만 점선으로 가른다 */
+.rankpeek .rsub{margin-top:14px;padding-top:12px;border-top:1px dashed var(--hair)}
+.rankpeek .rsub .h{margin-bottom:8px}
+.rankpeek li .me{color:var(--gold);font-weight:800}
+.rankpeek li .cnt{color:var(--muted2);font-weight:600;font-size:13px;margin-left:4px}
 
 /* ── 밸런스 게임 ── */
 .qn{font-size:12.5px;letter-spacing:.06em;color:var(--muted);font-weight:700;margin-bottom:8px}
@@ -546,7 +546,12 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     <div class="rankpeek" id="tPeek">
       <div class="h"><b>랭킹</b><span>역대 기록</span></div>
       <ol id="tPeekList"><li class="none">불러오는 중…</li></ol>
-      <div class="rsub" id="tPeekRegion"></div>
+      <!-- 🔴 지역도 **개인 랭킹과 같은 목록**으로(2026-09-01 석봉님).
+           한 줄로 풀어 쓰니 랭킹으로 안 읽히고 개인 표와 결도 안 맞았다. -->
+      <div class="rsub">
+        <div class="h"><b>지역 순위</b><span>지역별 합계</span></div>
+        <ol id="tPeekRegion"><li class="none">불러오는 중…</li></ol>
+      </div>
     </div>
     <button class="btn full" id="tStart">시작하기</button>
     <div style="text-align:center"><a href="#" class="backlink toHub">다른 놀이 해보기</a></div>
@@ -715,14 +720,16 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
         var box = document.getElementById("tPeekRegion");
         if(!box) return;
         if(!rows || !rows.length){
-          box.innerHTML = "지역 대항전은 아직 시작 전입니다. 지역을 골라 등록하면 우리 동네 점수가 됩니다.";
+          box.innerHTML = "<li class='none'>아직 지역을 고른 분이 없습니다. 우리 지역 첫 점수를 올려 보세요.</li>";
           return;
         }
-        box.innerHTML = "<b>지역 순위</b> · " + rows.map(function(x){
+        box.innerHTML = rows.map(function(x){
           var me = gMyRegion && x.region === gMyRegion;
-          return "<span class='" + (me ? "me" : "") + "'>" + x.rank + "위 " + esc(x.region) +
-                 " " + gHeld(x.total_score) + "</span>";
-        }).join(" · ");
+          return "<li><span class='r'>" + x.rank + "</span>" +
+                 "<span class='n" + (me ? " me" : "") + "'>" + esc(x.region) +
+                   "<span class='cnt'>" + x.n + "명</span></span>" +
+                 "<span class='v'>" + gHeld(x.total_score) + "</span></li>";
+        }).join("");
       });
   }
 
