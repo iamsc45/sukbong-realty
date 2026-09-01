@@ -189,26 +189,62 @@ window.SBBgm = (function(){
     return el;
   }
 
-  /* ── 재생 ────────────────────────────────────────────────────── */
+  /* ── 재생 ──────────────────────────────────────────────────────
+     🔴 2026-09-01 세 번째 시도 — "모바일은 여전히 소리가 안 난다"(석봉님).
+        원인은 **재생을 시작한 자리**였다. iOS·안드로이드는 `audio.play()` 가
+        **사용자가 누른 그 순간의 코드 안에서** 불려야 허락한다.
+        우리는 `build(name).then(...)` 안에서 불렀다 — Promise 를 한 번만 거쳐도
+        브라우저가 보기에는 "사용자가 안 누른 재생"이라 조용히 막힌다.
+        그래서 **곡이 이미 준비돼 있으면 기다리지 않고 그 자리에서 튼다.**
+        (곡 셋은 페이지가 열릴 때 warm() 이 미리 만들어 둔다) */
+  function startEl(url, my){
+    if(my !== token) return false;        // 그 사이 stop() 이나 다른 곡이 왔다
+    var a = ensureEl();
+    if(a.src !== url) a.src = url;
+    a.playbackRate = 1;
+    try{
+      var p = a.play();
+      if(p && p.catch) p.catch(function(e){ lastErr = String(e && e.name || e); });
+    }catch(e){ lastErr = String(e); return false; }
+    return true;
+  }
+
   function play(name){
     if(!on) return Promise.resolve(false);
     cur = name;
     var my = ++token;
-    return build(name).then(function(url){
-      if(my !== token) return false;      // 그 사이 stop() 이나 다른 곡이 왔다
-      var a = ensureEl();
-      if(a.src !== url){ a.src = url; }
-      a.playbackRate = 1;
-      var p = a.play();
-      if(p && p.then) return p.then(function(){ return true; })
-                              .catch(function(e){ lastErr = String(e && e.name || e); return false; });
-      return true;
-    }).catch(function(e){ lastErr = String(e && e.message || e); return false; });
+    /* 준비돼 있으면 **동기**로 — 이래야 브라우저가 "사용자가 누른 재생"으로 본다 */
+    if(cache[name]) return Promise.resolve(startEl(cache[name], my));
+    /* 아직 만드는 중이면 기다릴 수밖에 없다. 이 경우는 첫 진입 몇 백 ms 뿐이다 */
+    return build(name).then(function(url){ return startEl(url, my); })
+                      .catch(function(e){ lastErr = String(e && e.message || e); return false; });
   }
 
   function stop(){
     token++;                               // 아직 도착 안 한 재생을 무효로 만든다
-    if(el){ try{ el.pause(); }catch(e){} }
+    if(el){ try{ el.pause(); el.currentTime = 0; }catch(e){} }
+  }
+
+  /* 🔑 잠금 해제 — 게임을 고르는 **첫 손짓**에서 오디오를 한 번 깨워 둔다.
+     한 번이라도 사용자 동작 안에서 play() 가 성공하면 그 `<audio>` 는
+     그 뒤로 코드에서 자유롭게 틀 수 있다. 소리가 나면 안 되니 음소거로 켰다 끈다.
+     ⚠️ 이 자체가 사용자 동작 안에서 불려야 뜻이 있다(호출부 참고). */
+  var unlocked = false;
+  function unlock(){
+    if(unlocked || !on) return;
+    var a = ensureEl();
+    var url = cache.tax || cache.quiz || cache.balance;
+    if(!url) return;                       // 아직 안 만들어졌으면 다음 손짓에서
+    try{
+      a.src = url; a.muted = true;
+      var p = a.play();
+      var done = function(){
+        try{ a.pause(); a.currentTime = 0; a.muted = false; }catch(e){}
+        unlocked = true;
+      };
+      if(p && p.then) p.then(done).catch(function(){ try{ a.muted = false; }catch(e){} });
+      else done();
+    }catch(e){ try{ a.muted = false; }catch(e2){} }
   }
 
   /* 진행도 0~1 만큼 곡을 조인다. 음높이도 같이 올라가는데 추격곡에서는 그게 낫다.
@@ -296,7 +332,7 @@ window.SBBgm = (function(){
   else warm();
 
   return {
-    play: play, stop: stop, blip: blip, test: test,
+    play: play, stop: stop, blip: blip, test: test, unlock: unlock,
     /* 소리를 다시 켰을 때 「아까 그 곡」으로 돌아간다 */
     resume: function(){ return cur ? play(cur) : Promise.resolve(false); },
     on: function(){ return on; },
@@ -310,7 +346,7 @@ window.SBBgm = (function(){
                길이: el ? +(el.duration || 0).toFixed(2) : null,
                배속: el ? +el.playbackRate.toFixed(3) : null,
                볼륨: el ? el.volume : null,
-               켜짐: on, 마지막오류: lastErr };
+               켜짐: on, 잠금해제: unlocked, 마지막오류: lastErr };
     }
   };
 })();

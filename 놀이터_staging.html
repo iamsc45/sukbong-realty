@@ -488,8 +488,6 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
       <span class="tnote">소리가 안 들리면 아이폰은 <b>측면 무음 스위치</b>를, 안드로이드는 <b>미디어 음량</b>을 확인해 주세요.</span>
     </div>
     <button class="btn full" id="tStart">시작하기</button>
-    <button type="button" class="btn full line" id="tTest">소리 시험</button>
-    <div class="tdiag hide" id="tDiag"></div>
     <div style="text-align:center"><a href="#" class="backlink toHub">다른 놀이 해보기</a></div>
   </section>
 
@@ -525,8 +523,8 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 <script src="data/quiz_price.js?v=4"></script>
 <script src="data/polls.js?v=5"></script>
 <script src="assets/game_balance.js?v=6"></script>
-<script src="assets/sb_bgm.js?v=7"></script>
-<script src="assets/game_tax.js?v=16"></script>
+<script src="assets/sb_bgm.js?v=8"></script>
+<script src="assets/game_tax.js?v=17"></script>
 <script>
 (function(){
   "use strict";
@@ -567,6 +565,16 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   /* 화면 전환 — 게임이 둘이라 섹션을 통째로 관리한다.
      `.scr` 을 단 섹션 가운데 하나만 남기고 나머지를 숨긴다.
      밸런스 모듈도 이 함수를 받아 쓴다(로직은 나뉘어 있어도 화면 관리는 한 곳). */
+  var PLAY_SCR = ["play", "bPlay", "tPlay"];   // 이 셋에서만 곡이 흐른다
+
+  /* 🔑 오디오 잠금 해제 — **페이지에서 처음 뭔가를 누르는 순간** 한 번 깨워 둔다.
+     폰 브라우저는 「사용자가 누른 그 코드 안에서」 시작한 재생만 허락한다.
+     게임 시작 버튼에서 처음 틀면 그 사이 준비 과정이 끼어 막히는 일이 있어,
+     그보다 앞선 손짓(탭·목록 카드)에서 미리 열어 둔다. 소리는 안 난다(음소거로 켰다 끈다). */
+  document.addEventListener("pointerdown", function once(){
+    if(window.SBBgm) SBBgm.unlock();
+    document.removeEventListener("pointerdown", once);
+  }, { passive: true });
   function show(which){
     var all = document.querySelectorAll(".scr");
     for(var i=0;i<all.length;i++) all[i].classList.toggle("hide", all[i].id !== which);
@@ -574,6 +582,10 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
        실거래 출처 문구는 퀴즈 것이라 액션 게임 화면에서는 말이 안 맞고,
        판 아래로 페이지가 길어지면 손가락을 움직일 때 화면이 밀린다. */
     $("foot").classList.toggle("hide", which === "tPlay");
+    /* 🔴 곡은 **게임을 하는 화면에서만** 흐른다(2026-09-01).
+       그 전에는 over()·reveal() 이 각자 멈췄는데, 경로가 늘 때마다 빠뜨렸다.
+       show() 는 모든 전환이 지나는 길목이라 여기서 한 번에 정한다. */
+    if(window.SBBgm && PLAY_SCR.indexOf(which) < 0) SBBgm.stop();
     window.scrollTo(0,0);
   }
   function drawSteps(){

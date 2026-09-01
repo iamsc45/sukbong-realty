@@ -411,20 +411,6 @@ window.TaxGame = (function(){
     cv = $("tCv");
     if(!cv) return null;
     fit(); bindInput();
-    /* 소리 시험 — "안 들린다"의 원인을 석봉님/이용자가 화면에서 직접 가릴 수 있게 한다.
-       세션은 소리를 들을 수 없으므로 이 버튼이 유일한 눈이다. */
-    var tt = $("tTest"), td = $("tDiag");
-    if(tt && td) tt.addEventListener("click", function(){
-      tt.disabled = true;
-      td.classList.remove("hide");
-      td.className = "tdiag";
-      td.innerHTML = "소리를 내는 중입니다. <b>삐 소리 세 번</b>이 들리는지 들어 보세요…";
-      SBBgm.test().then(function(r){
-        tt.disabled = false;
-        td.className = "tdiag" + (r.ok ? "" : " bad");
-        td.innerHTML = (r.ok ? "" : "<b>확인 필요</b> · ") + r.why;
-      });
-    });
     $("tAgain").addEventListener("click", begin);
     $("tShare").addEventListener("click", function(){
 /* 🔴 공유 주소는 **ASCII 짧은 주소**를 쓴다(2026-09-01).
