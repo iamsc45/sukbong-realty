@@ -2026,6 +2026,22 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
     try{ var _PQ=new URLSearchParams(location.search);
          _jbq=_PQ.get('jb'); _c10q=_PQ.get('c10');
          if(_c10q) window._FORCE_C10=_c10q; }catch(e){}
+    /* 🔴필지 링크(`&jb=`)는 **지번이 같은 지점만** 그 필지로 인정한다(2026-09-01 석봉님 제보).
+       마포 성산동 81-2 의 「이 필지 자리에서 주변 보기」를 눌렀는데 옆 「도로 (성산동 8*)」
+       카드가 열렸다(95.2㎡ 지분거래 — 아예 다른 물건이다. 3회 재현).
+       원인: 성산동 land 지점은 3개뿐이고 **전부 마스킹 지번**(5*·8*·2**)인데,
+       정작 81-2 는 2021-08 거래라 최근 계약일 창 밖이어서 **지도 지점 자체가 없다.**
+       아래 else 분기(「필지 카드를 연다」)가 바로 이 경우를 위한 것인데,
+       30m 안 최근접 지점이 먼저 걸려 거기까지 가지 못했다.
+       ⚠️마스킹 지번은 같다고 보지 않는다 — `8*` 은 8·80·81 무엇이든 될 수 있어
+         「이 지번이 맞다」고 말할 근거가 없다. 근거가 없으면 그 필지 카드를 여는 쪽이 옳다. */
+    function _jbEq(a, b){
+      a=String(a==null?'':a).replace(/\s+/g,'');
+      b=String(b==null?'':b).replace(/\s+/g,'');
+      if(!a||!b) return false;
+      if(a.indexOf('*')>=0||b.indexOf('*')>=0) return false;
+      return a===b;
+    }
     function pick(){
       var d=(code&&SB.d[code])||[],best=null,bd=1e9;
       /* ⚠️ 주상복합은 **같은 좌표에 아파트와 구분상가가 겹쳐** 있다(2026-08-15 실측:
@@ -2036,6 +2052,8 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
         if(pass===1&&!typ)break;
         for(var i=0;i<d.length;i++){
           if(pass===0&&typ&&d[i].t!==typ)continue;
+          /* 지번을 지정해 온 링크면 그 지번이어야 한다 — 가까울 뿐인 남의 땅은 안 된다 */
+          if(_jbq&&!_jbEq(d[i].jibun,_jbq))continue;
           var dd=Math.abs(d[i].lat-la)+Math.abs(d[i].lng-ln);
           if(dd<bd){bd=dd;best=d[i];}
         }
