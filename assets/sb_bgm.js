@@ -203,11 +203,17 @@ window.SBBgm = (function(){
     v.setUint16(32, 2, true); v.setUint16(34, 16, true);
     w(36, "data"); v.setUint32(40, len * 2, true);
     var d = buf.getChannelData(0), o = 44;        // ⚠️ 루프 밖에서 한 번만 받는다(느려진다)
-    /* 🔑 **soft clip** — 1 을 넘는 값을 잘라내지 않고 둥글게 눕힌다.
-       하드 컷은 파형에 각을 만들고 그 각이 귀에 「지직」으로 들린다(깨짐의 정체).
-       tanh 는 큰 소리만 완만하게 눌러 같은 크기에서도 훨씬 깨끗하다. */
-    for(var i = 0; i < len; i++){
-      var x = d[i], s = Math.tanh(x * 1.15) * 0.92;
+    /* 🔑 **피크를 재서 맞춘다(normalize)** — 2026-09-02.
+       클리핑을 없애려고 눌렀더니 이번엔 소리가 너무 작아졌다(피크 0.35~0.47, 폰에서 안 들린다).
+       곡마다 볼륨을 손으로 맞추면 새 곡을 넣을 때마다 다시 맞춰야 한다.
+       그래서 **잰 다음 0.9 까지 끌어올린다** — 곡이 몇 개가 되든 소리 크기가 고르다. */
+    var peak = 0;
+    for(var i = 0; i < len; i++){ var av = d[i] < 0 ? -d[i] : d[i]; if(av > peak) peak = av; }
+    var g = peak > 0.0001 ? Math.min(6, 0.9 / peak) : 1;
+    /* soft clip 은 안전망으로 남긴다 — 1 을 넘는 값을 잘라내지 않고 둥글게 눕힌다.
+       하드 컷은 파형에 각을 만들고 그 각이 귀에 「지직」으로 들린다(깨짐의 정체). */
+    for(var i2 = 0; i2 < len; i2++){
+      var s = Math.tanh(d[i2] * g);
       if(s < -1) s = -1; else if(s > 1) s = 1;
       v.setInt16(o, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
       o += 2;
