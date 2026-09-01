@@ -27,8 +27,10 @@ window.SBBgm = (function(){
      숫자는 MIDI 음높이, null 은 쉼표. `beats` 는 한 칸의 길이 배수다.
      ⚠️ **마지막 두 칸은 비워 둔다** — 루프 이음매에서 음이 잘리면 "딱" 소리가 난다. */
   var SONGS = {
-    tax: {
-      bpm: 132, div: 4, steps: 32, gain: 0.7,
+    /* 🎵 세금 피하기 후보 넷 — 2026-09-02 석봉님 "다른 걸로 교체, 샘플을 들려 달라".
+       고르시면 `tax` 를 그 곡으로 바꾼다. 성격을 확실히 갈랐다(음만 다른 게 아니다). */
+    tax: {   /* ① 종종걸음 — 지금 곡의 정리판. 파형·볼륨을 다시 잡아 탁함을 걷어냈다 */
+      bpm: 132, div: 4, steps: 32, gain: 0.62,
       lead: [69, 69, 71, 72,  74, null, 72, 74,   76, 76, 77, 76,  74, null, 72, null,
              69, 69, 71, 72,  74, null, 76, 77,   81, null, 79, 77,  76, 74, null, null],
       bass: [45, null, 45, 46,  47, null, 47, 48,   45, null, 45, 46,  47, 48, 49, 50,
@@ -36,8 +38,48 @@ window.SBBgm = (function(){
       pop:  { 15: 88 },
       kick: [0, 3, 6, 8, 11, 14, 16, 19, 22, 24, 27],
       hat:  [2, 4, 6, 10, 12, 14, 18, 20, 22, 26, 28],
-      leadType: "square", leadDur: 0.075, leadVol: 0.34,
-      bassVol: 0.42, kickVol: 0.9, hatVol: 0.3
+      leadType: "square", leadDur: 0.075, leadVol: 0.30,
+      bassType: "triangle", bassVol: 0.40, kickVol: 0.62, hatVol: 0.20
+    },
+    /* ② 계단 오르기 — 반음씩 기어오른다. 음이 적어 조용한데 자꾸 조여든다.
+       ⚠️ 소리가 적으면 오래 들어도 안 질린다. 오래 버티는 게임에는 이쪽이 맞을 수 있다. */
+    tax_stair: {
+      bpm: 124, div: 4, steps: 32, gain: 0.60,
+      lead: [64, null, 65, null,  66, null, 67, null,   68, null, 69, null,  71, null, null, null,
+             64, null, 65, null,  66, null, 68, null,   69, null, 71, null,  72, null, null, null],
+      bass: [40, null, null, null,  40, null, 41, null,   41, null, null, null,  43, null, null, null,
+             40, null, null, null,  40, null, 41, null,   43, null, null, null,  44, null, null, null],
+      pop:  { 30: 76 },
+      kick: [0, 4, 8, 12, 16, 20, 24, 28],
+      hat:  [2, 6, 10, 14, 18, 22, 26, 30],
+      leadType: "triangle", leadDur: 0.16, leadVol: 0.40,
+      bassType: "sine", bassVol: 0.46, kickVol: 0.58, hatVol: 0.14
+    },
+    /* ③ 시장통 — 3+3+2 로 튀는 리듬. 밝고 익살스럽다. 「똥 피하기」의 그 느낌에 가깝다 */
+    tax_market: {
+      bpm: 140, div: 4, steps: 32, gain: 0.60,
+      lead: [72, null, 72, 76,  null, 79, null, 76,   74, null, 74, 77,  null, 81, null, 77,
+             72, null, 72, 76,  null, 79, null, 81,   83, null, 81, 79,  77, 76, null, null],
+      bass: [48, null, null, 48,  null, null, 48, null,   50, null, null, 50,  null, null, 50, null,
+             48, null, null, 48,  null, null, 48, null,   43, null, null, 43,  null, 45, null, null],
+      pop:  { 7: 91, 23: 93 },
+      kick: [0, 3, 6, 8, 11, 14, 16, 19, 22, 24, 27, 30],
+      hat:  [1, 4, 7, 9, 12, 15, 17, 20, 23, 25, 28, 31],
+      leadType: "square", leadDur: 0.09, leadVol: 0.30,
+      bassType: "triangle", bassVol: 0.42, kickVol: 0.60, hatVol: 0.18
+    },
+    /* ④ 초읽기 — 째깍거리는 저음 위로 리드가 드문드문. 시끄럽지 않은데 마음이 급해진다 */
+    tax_clock: {
+      bpm: 128, div: 4, steps: 32, gain: 0.58,
+      lead: [null, null, 76, null,  null, null, 74, null,   null, null, 77, null,  null, null, 76, null,
+             null, null, 79, null,  null, null, 77, null,   null, null, 81, 79,  77, null, null, null],
+      bass: [40, null, 40, null,  40, null, 40, null,   40, null, 40, null,  40, null, 40, null,
+             38, null, 38, null,  38, null, 38, null,   36, null, 36, null,  35, null, null, null],
+      pop:  {},
+      kick: [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28],
+      hat:  [1, 5, 9, 13, 17, 21, 25, 29],
+      leadType: "triangle", leadDur: 0.20, leadVol: 0.44,
+      bassType: "sine", bassVol: 0.40, kickVol: 0.50, hatVol: 0.12
     },
     /* 퀴즈 — 답을 고르는 동안 깔린다. 몰아치면 방해가 되므로 **여백을 많이 둔다**.
        저음이 째깍째깍 두 박씩 짚고, 그 위에 맑은 삼각파가 천천히 돈다. */
@@ -91,10 +133,19 @@ window.SBBgm = (function(){
 
     var master = oc.createGain();
     master.gain.value = song.gain;
-    /* 사각파가 겹치면 쉽게 찌그러진다. 압축기로 눌러 준다 */
+    /* 🔴 2026-09-02 석봉님 "세금 피하기 BGM 이 좀 깨진다" — 원인이 셋이었다.
+       ①리드와 베이스가 **둘 다 사각파**라 배음이 쌓였다(이제 `bassType` 으로 고른다)
+       ②킥 0.9 + 베이스 + 리드가 동시에 나면 **합이 1을 넘는데**
+       ③마지막 `toWav` 가 1 을 넘는 값을 **하드 컷**으로 잘랐다 — 그 잘린 자리가 「깨짐」이다.
+       압축기를 세게 걸어 누르면 이번엔 펌핑(숨쉬는 듯한 일렁임)이 생긴다.
+       그래서 **압축을 부드럽게 하고, 마지막에 soft clip 으로 둥글게** 받는다. */
     var comp = oc.createDynamicsCompressor();
-    comp.threshold.value = -14; comp.ratio.value = 8; comp.attack.value = 0.003;
-    master.connect(comp); comp.connect(oc.destination);
+    comp.threshold.value = -6; comp.ratio.value = 3;
+    comp.knee.value = 12; comp.attack.value = 0.006; comp.release.value = 0.18;
+    /* 여유를 남겨 두는 마지막 단(headroom). 이 뒤는 soft clip 이 받는다 */
+    var out = oc.createGain();
+    out.gain.value = 0.86;
+    master.connect(comp); comp.connect(out); out.connect(oc.destination);
 
     var noise = oc.createBuffer(1, SR * 0.2, SR), nd = noise.getChannelData(0);
     for(var i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
@@ -130,7 +181,9 @@ window.SBBgm = (function(){
     for(var k = 0; k < song.steps; k++){
       var t = k * spb;
       if(song.lead[k] != null) tone(song.leadType, hz(song.lead[k]), t, song.leadDur, song.leadVol);
-      if(song.bass[k] != null) tone("square", hz(song.bass[k] - 12), t, spb * 1.1, song.bassVol);
+      /* ⚠️ 베이스 파형을 곡이 고른다. 예전에는 무조건 square 라 리드와 겹쳐 탁해졌다 */
+      if(song.bass[k] != null) tone(song.bassType || "triangle", hz(song.bass[k] - 12),
+                                    t, spb * 1.1, song.bassVol);
       if(song.pop[k]) tone("triangle", hz(song.pop[k]), t, 0.10, 0.30);
       if(song.kick.indexOf(k) >= 0) kick(t, song.kickVol);
       if(song.hat.indexOf(k) >= 0) hat(t, song.hatVol);
@@ -150,8 +203,12 @@ window.SBBgm = (function(){
     v.setUint16(32, 2, true); v.setUint16(34, 16, true);
     w(36, "data"); v.setUint32(40, len * 2, true);
     var d = buf.getChannelData(0), o = 44;        // ⚠️ 루프 밖에서 한 번만 받는다(느려진다)
+    /* 🔑 **soft clip** — 1 을 넘는 값을 잘라내지 않고 둥글게 눕힌다.
+       하드 컷은 파형에 각을 만들고 그 각이 귀에 「지직」으로 들린다(깨짐의 정체).
+       tanh 는 큰 소리만 완만하게 눌러 같은 크기에서도 훨씬 깨끗하다. */
     for(var i = 0; i < len; i++){
-      var s = d[i] < -1 ? -1 : d[i] > 1 ? 1 : d[i];
+      var x = d[i], s = Math.tanh(x * 1.15) * 0.92;
+      if(s < -1) s = -1; else if(s > 1) s = 1;
       v.setInt16(o, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
       o += 2;
     }
@@ -204,8 +261,13 @@ window.SBBgm = (function(){
     a.playbackRate = 1;
     try{
       var p = a.play();
-      if(p && p.catch) p.catch(function(e){ lastErr = String(e && e.name || e); });
-    }catch(e){ lastErr = String(e); return false; }
+      /* ⚠️ 막히면 **조용히 지나가지 말고 기억해 둔다** — 다음 손짓에 이어서 튼다.
+         전에는 lastErr 에만 적고 끝나서, 한 번 막히면 그 판은 내내 무음이었다. */
+      if(p && p.catch) p.catch(function(e){
+        lastErr = String(e && e.name || e);
+        if(String(e && e.name) === "NotAllowedError" && my === token) pending = cur;
+      });
+    }catch(e){ lastErr = String(e); pending = cur; return false; }
     return true;
   }
 
@@ -222,6 +284,7 @@ window.SBBgm = (function(){
 
   function stop(){
     token++;                               // 아직 도착 안 한 재생을 무효로 만든다
+    pending = null;                        // 밀린 곡도 취소한다(끝난 판의 곡이 되살아나면 안 된다)
     if(el){ try{ el.pause(); el.currentTime = 0; }catch(e){} }
   }
 
@@ -230,21 +293,47 @@ window.SBBgm = (function(){
      그 뒤로 코드에서 자유롭게 틀 수 있다. 소리가 나면 안 되니 음소거로 켰다 끈다.
      ⚠️ 이 자체가 사용자 동작 안에서 불려야 뜻이 있다(호출부 참고). */
   var unlocked = false;
+  var pending = null;        // 막혀서 못 튼 곡 — 다음 손짓에서 다시 시도한다
   function unlock(){
-    if(unlocked || !on) return;
+    if(unlocked || !on) return unlocked;
     var a = ensureEl();
     var url = cache.tax || cache.quiz || cache.balance;
-    if(!url) return;                       // 아직 안 만들어졌으면 다음 손짓에서
+    if(!url) return false;                 // 아직 안 만들어졌으면 다음 손짓에서
     try{
       a.src = url; a.muted = true;
       var p = a.play();
       var done = function(){
         try{ a.pause(); a.currentTime = 0; a.muted = false; }catch(e){}
         unlocked = true;
+        if(pending){ var n = pending; pending = null; play(n); }   // 밀린 곡을 튼다
       };
       if(p && p.then) p.then(done).catch(function(){ try{ a.muted = false; }catch(e){} });
       else done();
     }catch(e){ try{ a.muted = false; }catch(e2){} }
+    return unlocked;
+  }
+
+  /* 🔴 2026-09-02 석봉님 "이집 얼마일까요 할 때 BGM 이 안 나온다".
+     원인은 곡이 아니라 **잠금 해제가 한 번만 시도되던 것**이었다.
+     `unlock()` 은 곡이 아직 안 만들어졌으면 아무것도 안 하고 돌아가는데,
+     호출부가 그 한 번으로 리스너를 지워 버렸다(`once`). 첫 손짓이 곡 준비보다
+     빠르면 **잠금이 영영 안 풀리고** 그 뒤 모든 재생이 NotAllowedError 로 막힌다.
+     세금 피하기가 되고 가격 퀴즈가 안 되는 것도 그저 **타이밍 차이**였다.
+     그래서 잠금 해제를 이 파일이 스스로 챙긴다 — **풀릴 때까지** 손짓마다 다시 시도하고,
+     막혀서 못 튼 곡은 기억해 두었다가 풀리는 순간 이어서 튼다. */
+  function armUnlock(){
+    if(!document || !document.addEventListener) return;
+    var handler = function(){
+      if(unlock()) {                       // 성공했을 때만 손을 뗀다
+        document.removeEventListener("pointerdown", handler, true);
+        document.removeEventListener("touchstart", handler, true);
+        document.removeEventListener("click", handler, true);
+      }
+    };
+    /* ⚠️ 캡처 단계(true)로 듣는다 — 버튼이 이벤트를 멈춰도 우리는 먼저 받는다 */
+    document.addEventListener("pointerdown", handler, true);
+    document.addEventListener("touchstart", handler, true);
+    document.addEventListener("click", handler, true);
   }
 
   /* 진행도 0~1 만큼 곡을 조인다. 음높이도 같이 올라가는데 추격곡에서는 그게 낫다.
@@ -330,6 +419,10 @@ window.SBBgm = (function(){
   on = isOn();
   if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", warm);
   else warm();
+  /* 🔑 잠금 해제를 **이 파일이 스스로** 챙긴다.
+     전에는 화면 쪽에서 `pointerdown` 한 번만 듣고 지웠다 — 그 한 번이 곡 준비보다
+     빠르면 영영 안 풀렸다(2026-09-02 가격 퀴즈 무음의 원인). 이제 풀릴 때까지 듣는다. */
+  armUnlock();
 
   return {
     play: play, stop: stop, blip: blip, test: test, unlock: unlock,
