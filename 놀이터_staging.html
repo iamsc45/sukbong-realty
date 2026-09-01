@@ -255,6 +255,11 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .rankpeek li .v{color:var(--text2);font-size:13.5px}
 .rankpeek li:first-child .r{color:var(--gold)}
 .rankpeek .none{font-size:14.5px;color:var(--muted);padding:4px 0}
+/* 지역 대항전 한 줄 요약 — 시작 화면에 크게 넣으면 산만해서 접어서 보여준다 */
+.rankpeek .rsub{margin-top:10px;padding-top:10px;border-top:1px dashed var(--hair);
+  font-size:13.5px;color:var(--text2);line-height:1.7}
+.rankpeek .rsub b{color:var(--text)}
+.rankpeek .rsub .me{color:var(--gold);font-weight:800}
 
 /* ── 밸런스 게임 ── */
 .qn{font-size:12.5px;letter-spacing:.06em;color:var(--muted);font-weight:700;margin-bottom:8px}
@@ -284,6 +289,8 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .bar.mine .tr i{background:var(--text)}
 .bar.mine .lb b:after{content:" 내 선택";font-size:12.5px;color:var(--muted);font-weight:400;letter-spacing:0}
 .tot{font-size:14px;color:var(--text2);margin:-4px 0 20px}
+/* 집계 기간 — 표가 언제 것인지 밝힌다(2026-09-01) */
+.bperiod{font-size:13.5px;color:var(--muted);margin:-14px 0 22px;font-weight:600}
 .fact{border-left:2px solid var(--text);padding:2px 0 2px 14px;margin:22px 0}
 .fact .h{font-size:12.5px;letter-spacing:.11em;color:var(--muted);font-weight:700;margin-bottom:8px}
 .fact p{margin:0 0 10px;font-size:15px;line-height:1.9;word-break:keep-all}
@@ -507,6 +514,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     <div class="eyebrow">결과</div>
     <h1 class="q">당신의 선택</h1>
     <p class="lead" id="bEndLead"></p>
+    <div class="bperiod" id="bPeriod"></div>
     <div id="bCards"></div>
     <button class="btn full" id="bShare">결과 공유하기</button>
     <button class="btn full line" id="bAgain">다시 하기</button>
@@ -522,6 +530,13 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
       화면 아무 데나 손가락을 대고 좌우로 움직입니다 · <b>비과세</b>·<b>장기보유</b>를 먹으면 잠깐 무적<br>
       1초가 한 달입니다. 오래 버틸수록 오래 가진 셈입니다.<br>
       <span class="tnote">소리가 안 들리면 아이폰은 <b>측면 무음 스위치</b>를, 안드로이드는 <b>미디어 음량</b>을 확인해 주세요.</span>
+    </div>
+    <!-- 🔴 시작 화면에 랭킹(2026-09-01 석봉님). 남들 기록을 보고 나서 시작해야 도전할 마음이 생긴다.
+         지역「간」과 지역「내」를 같이 보여준다 — 전국 1등은 멀지만 우리 동네 1등은 해볼 만하다. -->
+    <div class="rankpeek" id="tPeek">
+      <div class="h"><b>이번 주 랭킹</b><span>최근 7일</span></div>
+      <ol id="tPeekList"><li class="none">불러오는 중…</li></ol>
+      <div class="rsub" id="tPeekRegion"></div>
     </div>
     <button class="btn full" id="tStart">시작하기</button>
     <div style="text-align:center"><a href="#" class="backlink toHub">다른 놀이 해보기</a></div>
@@ -545,6 +560,34 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     <p class="lead" id="tHit"></p>
     <div class="ttip" id="tTip"></div>
     <div class="tbest" id="tBest"></div>
+
+    <!-- 랭킹 — 퀴즈와 같은 동선(로그인 없이 게임 → 끝나고 도전 권유 → 카카오 → 닉네임·지역) -->
+    <div class="rank-cta" id="gCta">
+      <h3 id="gTitle">이 기록, 랭킹에 올리시겠어요?</h3>
+      <p id="gDesc">우리 지역 순위도 같이 올라갑니다. 닉네임만 있으면 됩니다.</p>
+      <div id="gStep1"><button class="btn full" id="gGo">랭킹에 올리기</button></div>
+      <div id="gStep2" class="hide">
+        <div class="mystat" id="gMine"></div>
+        <div class="nickrow">
+          <input id="gNick" type="text" maxlength="12" placeholder="랭킹에 올릴 이름" autocomplete="off">
+        </div>
+        <div class="nickrow" id="gRegionRow">
+          <select id="gRegion"><option value="">우리 지역 고르기</option></select>
+          <button id="gOk">등록</button>
+        </div>
+        <div class="nicknote">2~12자 · 지역은 <b>한 번만</b> 고를 수 있습니다.</div>
+      </div>
+      <div id="gStep3" class="hide"><div class="mystat" id="gDone"></div></div>
+    </div>
+
+    <div id="gBoardWrap" class="hide">
+      <div class="board" id="gBoard"></div>
+      <div class="rboard">
+        <div class="rh">지역 대항전 <span>최근 7일 · 평균 기록</span></div>
+        <div id="gRBoard"></div>
+      </div>
+    </div>
+
     <button class="btn full" id="tShare">결과 공유하기</button>
     <button class="btn full line" id="tAgain">다시 하기</button>
     <div style="text-align:center"><a href="#" class="backlink toHub">다른 놀이 해보기</a></div>
@@ -558,9 +601,9 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 <script src="assets/sb_share.js?v=2"></script>
 <script src="data/quiz_price.js?v=4"></script>
 <script src="data/polls.js?v=5"></script>
-<script src="assets/game_balance.js?v=6"></script>
+<script src="assets/game_balance.js?v=7"></script>
 <script src="assets/sb_bgm.js?v=8"></script>
-<script src="assets/game_tax.js?v=17"></script>
+<script src="assets/game_tax.js?v=18"></script>
 <script>
 (function(){
   "use strict";
@@ -611,6 +654,202 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     if(window.SBBgm) SBBgm.unlock();
     document.removeEventListener("pointerdown", once);
   }, { passive: true });
+
+  /* ══ 세금 피하기 랭킹 ══════════════════════════════════════════
+     🔴 2026-09-01 석봉님 — 시작 화면에 랭킹을, 그리고 지역「간」·지역「내」를 같이.
+     퀴즈와 같은 동선을 쓴다: 로그인 없이 게임 → 끝나고 권유 → 카카오 → 닉네임·지역.
+     기록은 범용 표 `game_rank`(game='tax')에 들어간다 — 네 번째 게임이 붙어도 그대로 쓴다. */
+  var GACT = "taxrank", gPending = null, gMyNick = "", gMyRegion = "";
+
+  function gFillRegion(){
+    var sel = document.getElementById("gRegion");
+    if(!sel || sel.options.length > 1) return;
+    SIDO.forEach(function(v){
+      var o = document.createElement("option"); o.value = v; o.textContent = v;
+      sel.appendChild(o);
+    });
+  }
+
+  /* 초 → "3년 2개월". 게임 쪽과 같은 규칙(1초 = 한 달) */
+  function gHeld(sec){
+    var m = Math.floor(sec), y = Math.floor(m / 12), mm = m % 12;
+    if(y <= 0) return mm + "개월";
+    return y + "년" + (mm ? " " + mm + "개월" : "");
+  }
+
+  /* 시작 화면 랭킹 — 개인 다섯 줄 + 지역 대항전 한 줄 요약 */
+  function gLoadPeek(){
+    sbFetch("game_rank_board?game=eq.tax&select=rank,nick,region,score&order=rank&limit=5")
+      .then(function(r){ return r.ok ? r.json() : []; })
+      .catch(function(){ return []; })
+      .then(function(rows){
+        var box = document.getElementById("tPeekList");
+        if(!box) return;
+        if(!rows || !rows.length){
+          box.innerHTML = "<li class='none'>아직 등록된 기록이 없습니다. 첫 주인공이 되어 보세요.</li>";
+          return;
+        }
+        box.innerHTML = rows.map(function(x){
+          return "<li><span class='r'>" + x.rank + "</span>" +
+                 "<span class='n'>" + esc(x.nick) +
+                   (x.region ? " <em style='font-style:normal;color:var(--muted2)'>" + esc(x.region) + "</em>" : "") +
+                 "</span><span class='v'>" + gHeld(x.score) + "</span></li>";
+        }).join("");
+      });
+    sbFetch("game_region_board?game=eq.tax&select=rank,region,n,avg_score&order=rank&limit=3")
+      .then(function(r){ return r.ok ? r.json() : []; })
+      .catch(function(){ return []; })
+      .then(function(rows){
+        var box = document.getElementById("tPeekRegion");
+        if(!box) return;
+        if(!rows || !rows.length){
+          box.innerHTML = "지역 대항전은 아직 시작 전입니다. 지역을 골라 등록하면 우리 동네 점수가 됩니다.";
+          return;
+        }
+        box.innerHTML = "<b>지역 대항전</b> · " + rows.map(function(x){
+          var me = gMyRegion && x.region === gMyRegion;
+          return "<span class='" + (me ? "me" : "") + "'>" + x.rank + "위 " + esc(x.region) +
+                 " " + gHeld(x.avg_score) + "</span>";
+        }).join(" · ");
+      });
+  }
+
+  function gShowNick(known){
+    gFillRegion();
+    document.getElementById("gStep1").classList.add("hide");
+    document.getElementById("gStep3").classList.add("hide");
+    document.getElementById("gStep2").classList.remove("hide");
+    document.getElementById("gRegionRow").classList.toggle("hide", !!(known && known.region));
+    document.getElementById("gTitle").textContent = "랭킹에 올릴 이름을 정해 주세요";
+    document.getElementById("gDesc").textContent = "이 이름과 기록, 지역만 랭킹에 보입니다.";
+    document.getElementById("gMine").innerHTML =
+      "이번 기록 <b>" + gHeld(gPending) + "</b>";
+    var nk = document.getElementById("gNick");
+    try{ if(window.SBAuth && SBAuth.nickname) nk.value = (SBAuth.nickname() || "").slice(0, 12); }catch(e){}
+    nk.focus();
+  }
+
+  function gSubmit(nk, uid, btn){
+    if(btn){ btn.disabled = true; btn.textContent = "등록 중"; }
+    var sel = document.getElementById("gRegion");
+    sbFetch("rpc/game_rank_submit", { method: "POST", body: JSON.stringify({
+        p_game: "tax", p_uid: uid, p_nick: nk, p_score: gPending,
+        p_cid: cid(), p_region: (sel ? sel.value : "") || null
+      })})
+      .then(function(r){ return r.json().then(function(d){
+        if(!r.ok) throw new Error(d && d.message ? d.message : "등록 실패"); return d; }); })
+      .then(function(d){
+        gMyNick = d.nick || nk;
+        if(d.region) gMyRegion = d.region;
+        document.getElementById("gStep2").classList.add("hide");
+        document.getElementById("gStep3").classList.remove("hide");
+        document.getElementById("gTitle").textContent =
+          d.improved ? "최고 기록을 새로 세웠습니다" : "랭킹에 올렸습니다";
+        document.getElementById("gDesc").textContent =
+          "한 분당 한 줄이 올라갑니다. 주간 랭킹은 최근 7일 기록으로 매주 새로 열립니다.";
+        document.getElementById("gDone").innerHTML =
+          "<b>" + esc(gMyNick) + "</b> · 전국 <b>" + d.rank + "위</b>" +
+          (d.region ? " <em>" + esc(d.region) + " 안에서 " + (d.local_rank || "-") + "위 · " +
+             "지역 순위 " + (d.region_rank || "-") + "위</em>" : "") +
+          "<br><em>최고 " + gHeld(d.score) + "</em>";
+        gLoadBoard();
+      })
+      .catch(function(e){
+        if(btn){ btn.disabled = false; btn.textContent = "등록"; }
+        alert(String(e.message || "등록하지 못했습니다. 잠시 후 다시 시도해 주세요."));
+      });
+  }
+
+  function gAfterLogin(){
+    var uid = null;
+    try{ if(window.SBAuth && SBAuth.uid) uid = SBAuth.uid() || null; }catch(e){}
+    if(!uid){ gShowNick(null); return; }
+    sbFetch("rpc/game_rank_me", { method: "POST",
+        body: JSON.stringify({ p_game: "tax", p_uid: uid }) })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(d){
+        if(d && d.region) gMyRegion = d.region;
+        if(d && d.nick) gSubmit(d.nick, uid);      // 이미 이름이 있다 → 바로
+        else gShowNick(d);
+      })
+      .catch(function(){ gShowNick(null); });
+  }
+
+  /* 결과 아래 두 표 — 개인, 그리고 지역 대항전 */
+  function gLoadBoard(){
+    document.getElementById("gBoardWrap").classList.remove("hide");
+    sbFetch("game_rank_board?game=eq.tax&select=rank,nick,region,score&order=rank&limit=20")
+      .then(function(r){ return r.ok ? r.json() : []; })
+      .catch(function(){ return []; })
+      .then(function(rows){
+        var box = document.getElementById("gBoard");
+        if(!rows.length){ box.innerHTML = "<div class='empty'>아직 등록된 기록이 없습니다.</div>"; return; }
+        var h = "<div class='h'><span>순위</span><span>이름</span><span class='num'>지역</span>" +
+                "<span class='num'>기록</span><span class='num'></span></div>";
+        h += rows.map(function(x){
+          var me = gMyNick && x.nick === gMyNick;
+          return "<div class='r" + (me ? " me" : "") + "'>" +
+            "<span class='n1'>" + x.rank + "</span>" +
+            "<span class='nk'>" + esc(x.nick) + "</span>" +
+            "<span class='num'>" + esc(x.region || "-") + "</span>" +
+            "<span class='num'>" + gHeld(x.score) + "</span><span></span></div>";
+        }).join("");
+        box.innerHTML = h;
+      });
+    sbFetch("game_region_board?game=eq.tax&select=rank,region,n,avg_score&order=rank&limit=20")
+      .then(function(r){ return r.ok ? r.json() : []; })
+      .catch(function(){ return []; })
+      .then(function(rows){
+        var box = document.getElementById("gRBoard");
+        if(!rows.length){
+          box.innerHTML = "<div class='empty'>아직 지역을 고른 분이 없습니다.</div>"; return;
+        }
+        var h = "<div class='r'><span class='n1'>순위</span><span class='nm'>지역</span>" +
+                "<span class='num'>평균</span><span class='num'>인원</span></div>";
+        h += rows.map(function(x){
+          var me = gMyRegion && x.region === gMyRegion;
+          return "<div class='r" + (me ? " me" : "") + "'>" +
+            "<span class='n1'>" + x.rank + "</span>" +
+            "<span class='nm'>" + esc(x.region) + "</span>" +
+            "<span class='num'>" + gHeld(x.avg_score) + "</span>" +
+            "<span class='num'>" + x.n + "명</span></div>";
+        }).join("");
+        box.innerHTML = h;
+      });
+  }
+
+  function gResetRank(){
+    gPending = null;
+    document.getElementById("gStep1").classList.remove("hide");
+    document.getElementById("gStep2").classList.add("hide");
+    document.getElementById("gStep3").classList.add("hide");
+    document.getElementById("gBoardWrap").classList.add("hide");
+    document.getElementById("gTitle").textContent = "이 기록, 랭킹에 올리시겠어요?";
+    document.getElementById("gDesc").textContent = "우리 지역 순위도 같이 올라갑니다. 닉네임만 있으면 됩니다.";
+    var b = document.getElementById("gOk"); b.disabled = false; b.textContent = "등록";
+  }
+
+  document.getElementById("gGo").addEventListener("click", function(){
+    if(gPending == null) return;
+    try{ if(window.SBAuth) SBAuth.setAct(GACT, { score: gPending }); }catch(e){}
+    if(window.SBAuth && SBAuth.isIn()){ gAfterLogin(); return; }
+    if(window.SBAuth && SBAuth.gate){
+      SBAuth.gate(null, function(){ gAfterLogin(); }, {
+        title: "랭킹은 회원 기능입니다",
+        desc: "카카오로 3초면 됩니다.<br>우리 지역 순위에도 이 기록이 더해집니다."
+      });
+      return;
+    }
+    gShowNick(null);
+  });
+  document.getElementById("gOk").addEventListener("click", function(){
+    var nk = (document.getElementById("gNick").value || "").trim();
+    if(nk.length < 2){ alert("이름은 2자 이상으로 적어 주세요."); return; }
+    var uid = null;
+    try{ if(window.SBAuth && SBAuth.uid) uid = SBAuth.uid() || null; }catch(e){}
+    if(!uid){ alert("로그인이 필요합니다."); return; }
+    gSubmit(nk, uid, this);
+  });
   function show(which){
     var all = document.querySelectorAll(".scr");
     for(var i=0;i<all.length;i++) all[i].classList.toggle("hide", all[i].id !== which);
@@ -862,9 +1101,11 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   for(var i=0;i<backs.length;i++){
     backs[i].addEventListener("click", function(e){ e.preventDefault(); stopTimer(); show("hub"); });
   }
-  $("goTax").addEventListener("click", function(){ show("tIntro"); });
+  $("goTax").addEventListener("click", function(){ show("tIntro"); gLoadPeek(); });
   if(window.TaxGame){
-    TAX = window.TaxGame.init({ show: show });
+    TAX = window.TaxGame.init({ show: show, onEnd: function(sec){
+      gPending = sec; gResetRank();          // 결과 화면에서 랭킹에 올릴 수 있게
+    } });
     if(TAX){
       $("tStart").addEventListener("click", function(){ TAX.start(); });
       window.__tax = TAX;                 // 검증용(숨은 탭에서는 화면으로 확인이 안 된다)

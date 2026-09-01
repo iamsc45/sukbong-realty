@@ -86,7 +86,11 @@ window.BalanceGame = (function(){
     if(window.SBBgm) SBBgm.stop();          // 결과를 읽는 화면에서는 조용히
     var slugs = picked.map(function(x){ return x.slug; });
     $("bCards").innerHTML = "";
-    sbFetch("poll_result?slug=in.(" + slugs.map(encodeURIComponent).join(",") + ")")
+    /* 🔴 2026-09-01 석봉님 — 집계는 **최근 3일**만 센다(뷰에서 자른다).
+       기간을 좁히면 「지금 사람들의 생각」이 되고, 같은 질문을 며칠 뒤 다시 던질 수 있다.
+       from_ts 를 같이 받아 화면에 기간을 밝힌다. */
+    sbFetch("poll_result?slug=in.(" + slugs.map(encodeURIComponent).join(",") + ")" +
+            "&select=slug,a_cnt,b_cnt,total,from_ts")
       .then(function(r){ return r.ok ? r.json() : []; })
       .catch(function(){ return []; })
       .then(function(rows){
@@ -121,6 +125,14 @@ window.BalanceGame = (function(){
         $("bCards").innerHTML = html;
         $("bEndLead").textContent =
           P.length + "개 질문 가운데 " + same + "개에서 다수와 같은 쪽을 고르셨습니다.";
+        var per = $("bPeriod");
+        if(per){
+          var f = (rows && rows[0] && rows[0].from_ts) ? new Date(rows[0].from_ts) : null;
+          var to = new Date();
+          var fmt = function(d){ return (d.getMonth()+1) + "월 " + d.getDate() + "일"; };
+          per.textContent = f ? ("집계 기간 " + fmt(f) + " ~ " + fmt(to) + " (최근 3일)")
+                              : "집계 기간 최근 3일";
+        }
       });
   }
 

@@ -71,7 +71,7 @@ window.TaxGame = (function(){
   function say(t, sec){ toast = { t: t, left: sec || 1.9, all: sec || 1.9 }; }
 
   var cv, ctx, DPR = 1, W = 360, H = 520;
-  var show = null, raf = 0, running = false, lastT = 0;
+  var show = null, onEnd = null, raf = 0, running = false, lastT = 0;
   var elapsed = 0, blocks = [], px = 0, aimX = null, vx = 0;
   var shield = 0, spawnT = 0, itemT = 6, killedBy = null;
   var PW = 46, PH = 40, GROUND = 54;      // 플레이어 크기와 바닥 높이
@@ -353,6 +353,8 @@ window.TaxGame = (function(){
     $("tBest").textContent = rec ? "최고 기록입니다" : "최고 기록 " + held(prev);
     $("tBest").classList.toggle("rec", rec);
     show("tEnd");
+    /* 기록을 호스트에 넘긴다 — 랭킹 등록은 페이지 쪽에서 맡는다(로그인·지역이 얽혀 있다) */
+    if(onEnd){ try{ onEnd(sec); }catch(e){} }
   }
 
   function begin(){
@@ -408,6 +410,7 @@ window.TaxGame = (function(){
 
   function init(opt){
     show = opt.show;
+    onEnd = opt.onEnd || null;
     cv = $("tCv");
     if(!cv) return null;
     fit(); bindInput();
