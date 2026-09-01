@@ -302,6 +302,8 @@ window.TaxGame = (function(){
     var dt = Math.min(0.05, (t - lastT) / 1000);   // ⚠️ 탭 복귀 시 순간이동 방지
     lastT = t;
     var alive = step(dt);
+    /* 오래 버틸수록 반주가 빨라진다 — 60초면 최고 속도 */
+    if(window.SBBgm) SBBgm.setPace(elapsed / 60);
     draw(); hud();
     if(!alive){ over(); return; }
     raf = requestAnimationFrame(loop);
@@ -341,6 +343,7 @@ window.TaxGame = (function(){
   function over(){
     running = false;
     cancelAnimationFrame(raf);
+    if(window.SBBgm) SBBgm.stop();
     var sec = elapsed, prev = best(null), rec = sec > prev;
     best(sec);
     var m = Math.floor(sec), grade = RANKS[RANKS.length - 1];
@@ -357,10 +360,26 @@ window.TaxGame = (function(){
     show("tPlay");
     fit(); reset(); draw(); hud();
     running = true; lastT = 0;
+    /* 소리는 여기서 시작한다 — 시작 버튼을 누른 직후라 브라우저가 허락한다.
+       (사용자 동작 없이 미리 켜 두면 정책에 막혀 조용히 실패한다) */
+    if(window.SBBgm){ SBBgm.setPace(0); SBBgm.start(); }
     raf = requestAnimationFrame(loop);
   }
 
-  function stop(){ running = false; cancelAnimationFrame(raf); }
+  function stop(){
+    running = false; cancelAnimationFrame(raf);
+    if(window.SBBgm) SBBgm.stop();
+  }
+
+  /* 소리 켜고 끄기 — 버튼 글자도 여기서 맞춘다 */
+  function paintSound(){
+    var b = $("tSnd");
+    if(!b || !window.SBBgm) return;
+    var v = SBBgm.on();
+    b.textContent = v ? "♪ 소리 켜짐" : "♪ 소리 꺼짐";
+    b.classList.toggle("off", !v);
+    b.setAttribute("aria-pressed", v ? "true" : "false");
+  }
 
   /* ── 조작 ────────────────────────────────────────────────
      터치·마우스는 "손가락 있는 자리로 집이 온다". 좌우 버튼보다 이 편이 빠르고
@@ -372,6 +391,9 @@ window.TaxGame = (function(){
        판 밖의 x 는 양 끝으로 붙는다(왼쪽 여백을 누르면 집이 왼쪽 끝으로). */
     function at(e){
       if(!running) return;
+      /* ⚠️ 버튼 위에서 시작된 터치는 건드리지 않는다.
+         여기서 preventDefault 를 걸면 그 뒤 click 이 안 나서 **소리 끄기 버튼이 죽는다**. */
+      if(e.target && e.target.closest && e.target.closest("button")) return;
       var r = cv.getBoundingClientRect();
       var cx = (e.touches && e.touches[0] ? e.touches[0].clientX : e.clientX);
       if(cx == null) return;
@@ -399,6 +421,14 @@ window.TaxGame = (function(){
     cv = $("tCv");
     if(!cv) return null;
     fit(); bindInput();
+    paintSound();
+    var sb = $("tSnd");
+    if(sb) sb.addEventListener("click", function(e){
+      e.stopPropagation();
+      SBBgm.setOn(!SBBgm.on());
+      if(SBBgm.on() && running) SBBgm.start();
+      paintSound();
+    });
     $("tAgain").addEventListener("click", begin);
     $("tShare").addEventListener("click", function(){
       var url = "https://xn--2q1br1nnrasc92a76myvau64b.com/" +

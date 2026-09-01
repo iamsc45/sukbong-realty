@@ -24,13 +24,13 @@
    상자 대신 괘선으로 나눈다. 위계는 크기와 굵기로만 만든다. */
 .q-wrap{max-width:560px;margin:0 auto;padding:0 20px 72px}
 
-.eyebrow{font-size:11px;letter-spacing:.14em;color:var(--muted);font-weight:700;margin:38px 0 10px}
+.eyebrow{font-size:12.5px;letter-spacing:.13em;color:var(--muted);font-weight:700;margin:38px 0 10px}
 h1.q{font-size:clamp(30px,7vw,44px);font-weight:800;letter-spacing:-.04em;margin:0 0 12px;line-height:1.15}
 .lead{color:var(--text2);font-size:15.5px;line-height:1.85;margin:0 0 22px;word-break:keep-all}
 .rules{font-size:13.5px;color:var(--text2);border-top:1px solid var(--hair);
   border-bottom:1px solid var(--hair);padding:13px 0;margin:0 0 26px;line-height:1.9}
 .rules b{font-weight:700}
-.mine-best{font-size:13px;color:var(--muted);margin-top:16px}
+.mine-best{font-size:14px;color:var(--text2);margin-top:16px}
 
 .btn.full{display:block;width:100%;text-align:center;border:0;font-family:inherit;cursor:pointer}
 button.btn{font-size:15px}
@@ -48,11 +48,11 @@ button.btn{font-size:15px}
 .steps i.done{background:var(--text)}
 .steps i.on{background:var(--text)}
 .left{margin-left:auto;text-align:right;line-height:1}
-.left .cap{display:block;font-size:10.5px;letter-spacing:.1em;color:var(--muted2);
+.left .cap{display:block;font-size:12.5px;letter-spacing:.09em;color:var(--muted);
   font-weight:700;margin-bottom:3px}
 .left b{display:inline-block;font-size:38px;font-weight:800;letter-spacing:-.04em;
   color:var(--text);font-variant-numeric:tabular-nums}
-.left .u{font-size:15px;font-weight:700;color:var(--muted);margin-left:1px}
+.left .u{font-size:16px;font-weight:700;color:var(--text2);margin-left:1px}
 .left.warn b,.left.warn .u{color:var(--down)}
 .left.warn b{animation:tick .55s ease-in-out infinite}
 @keyframes tick{0%{transform:scale(1)}45%{transform:scale(1.22)}100%{transform:scale(1)}}
@@ -60,22 +60,22 @@ button.btn{font-size:15px}
 .tline i{display:block;height:100%;width:100%;background:var(--text)}
 .tline.warn i{background:var(--down)}
 
-.place{font-size:13.5px;color:var(--muted);margin-bottom:4px}
+.place{font-size:15px;color:var(--text2);margin-bottom:4px}
 .apt{font-size:26px;font-weight:800;letter-spacing:-.035em;line-height:1.25;margin:0 0 10px;word-break:keep-all}
-.spec{font-size:14px;color:var(--text2);line-height:1.85;margin-bottom:34px}
+.spec{font-size:15px;color:var(--text2);line-height:1.85;margin-bottom:34px}
 
 .guess{text-align:center}
 .guess .v{font-size:clamp(34px,9vw,46px);font-weight:800;letter-spacing:-.045em;
   font-variant-numeric:tabular-nums;line-height:1.1}
-.guess .l{font-size:13px;color:var(--muted);margin:6px 0 20px}
+.guess .l{font-size:14.5px;color:var(--text2);margin:6px 0 20px}
 input[type=range]{width:100%;-webkit-appearance:none;background:transparent;margin:0}
 input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--hair)}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;
   background:var(--text);margin-top:-12px;cursor:pointer}
 input[type=range]::-moz-range-track{height:2px;background:var(--hair)}
 input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:var(--text);border:0}
-.ends{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin:9px 0 30px}
-.trail{font-size:12px;color:var(--muted);line-height:1.9;margin-top:18px}
+.ends{display:flex;justify-content:space-between;font-size:14px;color:var(--text2);margin:9px 0 30px}
+.trail{font-size:13.5px;color:var(--text2);line-height:1.9;margin-top:18px}
 
 /* ── 채점 대기 ── */
 .mid{text-align:center;padding:60px 0 20px}
@@ -84,12 +84,12 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 
 /* ── 결과 ── */
 .score{border-bottom:1px solid var(--hair);padding:34px 0 26px;margin-bottom:4px}
-.score .l{font-size:11px;letter-spacing:.14em;color:var(--muted);font-weight:700}
+.score .l{font-size:12.5px;letter-spacing:.13em;color:var(--muted);font-weight:700}
 .score .n{font-size:66px;font-weight:800;letter-spacing:-.05em;line-height:1;margin:10px 0 0;
   font-variant-numeric:tabular-nums;display:inline-block}
-.score .n em{font-style:normal;font-size:26px;color:var(--muted2);font-weight:700;letter-spacing:-.02em}
+.score .n em{font-style:normal;font-size:26px;color:var(--muted);font-weight:700;letter-spacing:-.02em}
 .score .tag{font-size:15px;font-weight:800;margin-top:12px}
-.score .meta{font-size:13.5px;color:var(--text2);line-height:1.8;margin-top:8px}
+.score .meta{font-size:15px;color:var(--text2);line-height:1.8;margin-top:8px}
 
 /* 항목 — 상자 대신 왼쪽 괘선 하나로 정답을 표시한다 */
 .row{border-bottom:1px solid var(--hair);padding:17px 0 17px 15px;
@@ -100,25 +100,25 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     .row .nm{font-size:16.5px;font-weight:700;letter-spacing:-.02em;overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap}
 .row .ans{font-size:18px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;white-space:nowrap}
-.row .b{display:flex;justify-content:space-between;gap:10px;margin-top:6px;font-size:13.5px;color:var(--text2)}
+.row .b{display:flex;justify-content:space-between;gap:10px;margin-top:6px;font-size:15px;color:var(--text2)}
 .row .b .when{white-space:nowrap}
-.row .c{font-size:12.5px;color:var(--muted);margin-top:8px}
+.row .c{font-size:14px;color:var(--text2);margin-top:8px}
 .row .c .ok{color:var(--up);font-weight:700}
-.row .c .no{color:var(--muted)}
+.row .c .no{color:var(--text2)}
 .det{display:none;margin-top:13px;padding-top:13px;border-top:1px dashed var(--hair)}
 .det.open{display:block}
-.det dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:12.5px}
-.det dt{color:var(--muted)}
+.det dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:7px 14px;font-size:14px}
+.det dt{color:var(--text2)}
 .det dd{margin:0;text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
-.det a{display:inline-block;margin-top:11px;font-size:12.5px;font-weight:700;color:var(--text);
+.det a{display:inline-block;margin-top:12px;font-size:14px;font-weight:700;color:var(--text);
   border-bottom:1px solid var(--text);text-decoration:none;padding-bottom:1px}
-.tap{font-size:11.5px;color:var(--muted2);margin:14px 0 30px}
+.tap{font-size:13px;color:var(--muted);margin:14px 0 30px}
 
 /* ── 랭킹 ── */
 .rank-cta{border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);
   padding:22px 0;margin:24px 0}
-.rank-cta h3{font-size:16px;font-weight:800;letter-spacing:-.03em;margin:0 0 6px}
-.rank-cta p{font-size:14px;color:var(--text2);margin:0 0 16px;line-height:1.7}
+.rank-cta h3{font-size:17.5px;font-weight:800;letter-spacing:-.03em;margin:0 0 6px}
+.rank-cta p{font-size:15px;color:var(--text2);margin:0 0 16px;line-height:1.7}
 .nickrow{display:flex;gap:8px;margin-bottom:10px}
 .nickrow input{flex:1 1 0;min-width:0;font-family:inherit;font-size:15px;padding:13px 14px;
   border:1px solid var(--hair);border-radius:10px;background:#fff;color:var(--text)}
@@ -126,24 +126,24 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .nickrow button{flex:0 0 auto;padding:13px 20px;border:0;border-radius:10px;background:var(--text);
   color:#fff;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer}
 .nickrow button:disabled{opacity:.4}
-.nicknote{font-size:11.5px;color:var(--muted2);line-height:1.7}
-.mystat{font-size:14px;font-weight:700;margin-bottom:10px}
-.mystat em{font-style:normal;color:var(--muted);font-weight:400;font-size:12.5px}
+.nicknote{font-size:13px;color:var(--muted);line-height:1.7}
+.mystat{font-size:15.5px;font-weight:700;margin-bottom:10px}
+.mystat em{font-style:normal;color:var(--text2);font-weight:400;font-size:13.5px}
 /* 평소엔 눈에 안 띄게. 오타를 쳤거나 마음이 바뀐 사람만 찾으면 된다 */
-.renlink{font-size:11.5px;color:var(--muted2);text-decoration:underline;text-underline-offset:2px}
+.renlink{font-size:13px;color:var(--muted);text-decoration:underline;text-underline-offset:2px}
 
 .board{margin-top:6px}
 .board .h{display:grid;grid-template-columns:34px minmax(0,1fr) 44px 62px 52px;gap:8px;
-  font-size:11px;letter-spacing:.06em;color:var(--muted);font-weight:700;
-  padding:0 0 8px;border-bottom:1.5px solid var(--text)}
+  font-size:12.5px;letter-spacing:.05em;color:var(--muted);font-weight:700;
+  padding:0 0 9px;border-bottom:1.5px solid var(--text)}
 .board .r{display:grid;grid-template-columns:34px minmax(0,1fr) 44px 62px 52px;gap:8px;
-  font-size:13px;padding:11px 0;border-bottom:1px solid var(--hair);
+  font-size:14.5px;padding:12px 0;border-bottom:1px solid var(--hair);
   font-variant-numeric:tabular-nums;align-items:center}
 .board .r.me{font-weight:800}
 .board .r .nk{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
-.board .r .n1{color:var(--muted)}
+.board .r .n1{color:var(--text2)}
 .board .num{text-align:right}
-.board .empty{font-size:13px;color:var(--muted);padding:18px 0;text-align:center}
+.board .empty{font-size:14.5px;color:var(--text2);padding:18px 0;text-align:center}
 
 /* ── 허브: 탭 + 게시글 목록 (2026-08-31 석봉님 구상) ──
    장르를 탭으로 가르고 그 안에 게임이 하나씩 쌓인다. 새 게임이 붙어도 구조가 안 흔들린다. */
@@ -153,7 +153,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   font-size:16px;font-weight:700;color:var(--muted);padding:11px 16px;letter-spacing:-.02em;
   border-bottom:3px solid transparent;margin-bottom:-1.5px;transition:color 150ms ease}
 .tabs button.on{color:var(--text);border-bottom-color:var(--text)}
-.tabs .cnt{font-size:12px;color:var(--muted2);font-weight:600;margin-left:4px}
+.tabs .cnt{font-size:13px;color:var(--muted);font-weight:600;margin-left:4px}
 
 .glist{margin-bottom:8px}
 .gitem{display:flex;gap:14px;width:100%;text-align:left;background:#fff;border:1px solid var(--hair);
@@ -166,45 +166,51 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .gitem .th img{width:100%;height:100%;object-fit:cover}
 .gitem .tx{flex:1 1 0;min-width:0;display:flex;flex-direction:column;justify-content:center}
 .gitem .gt{display:block;font-size:19px;font-weight:800;letter-spacing:-.035em;line-height:1.3;word-break:keep-all}
-.gitem .gs{display:block;font-size:13.5px;color:var(--text2);margin-top:6px;line-height:1.6;word-break:keep-all}
-.gitem .gm{display:block;font-size:12px;color:var(--muted);margin-top:8px}
+.gitem .gs{display:block;font-size:14.5px;color:var(--text2);margin-top:6px;line-height:1.6;word-break:keep-all}
+.gitem .gm{display:block;font-size:13.5px;color:var(--text2);margin-top:8px}
 .gitem .gm b{color:var(--gold);font-weight:700}
 /* 세금 피하기 — 게임 화면은 군더더기를 다 뺀다. 점수와 판 두 개만 남긴다 */
 .thud{display:flex;align-items:flex-end;justify-content:space-between;margin:4px 0 12px}
-.thud .ts .k{display:block;font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.02em}
+.thud .ts .k{display:block;font-size:13.5px;color:var(--muted);font-weight:600;letter-spacing:.02em}
 .thud .ts b{display:block;font-size:30px;font-weight:800;letter-spacing:-.04em;line-height:1.15}
+.tright{display:flex;align-items:center;gap:8px}
 .tsh{font-size:12.5px;font-weight:800;color:#fff;background:var(--gold);
      border-radius:999px;padding:5px 11px;letter-spacing:-.01em}
+/* 소리 끄기 — 게임 중에도 누를 수 있어야 해서 손가락이 닿는 크기로 둔다 */
+.tsnd{font-family:inherit;font-size:13px;font-weight:700;color:var(--text2);background:#fff;
+     border:1px solid var(--hair);border-radius:999px;padding:7px 13px;cursor:pointer;
+     letter-spacing:-.01em;white-space:nowrap}
+.tsnd.off{color:var(--muted2);background:var(--soft)}
 .tstage{display:flex;justify-content:center}
 .tstage canvas{border:1px solid var(--hair);border-radius:14px;background:var(--canvas);
      touch-action:none;display:block}   /* touch-action 을 빼면 게임 중에 페이지가 스크롤된다 */
 .ttip{border-left:2.5px solid var(--text);padding:2px 0 2px 14px;margin:16px 0 18px;
-     font-size:15px;line-height:1.72;color:var(--text2);word-break:keep-all}
-.tbest{text-align:center;font-size:13.5px;color:var(--muted);font-weight:600;margin-bottom:16px}
+     font-size:16px;line-height:1.75;color:var(--text2);word-break:keep-all}
+.tbest{text-align:center;font-size:15px;color:var(--text2);font-weight:600;margin-bottom:16px}
 .tbest.rec{color:var(--gold);font-weight:800}
 .gempty{border:1px dashed var(--hair);border-radius:14px;padding:26px 18px;text-align:center;
-  color:var(--muted2);font-size:13.5px;line-height:1.7}
+  color:var(--muted);font-size:14.5px;line-height:1.7}
 
-.backlink{display:inline-block;font-size:13px;color:var(--muted);text-decoration:none;
+.backlink{display:inline-block;font-size:14.5px;color:var(--text2);text-decoration:none;
   border-bottom:1px solid var(--hair);padding-bottom:1px;margin-top:20px}
 
 /* 인트로에 붙는 랭킹 미리보기 */
 .rankpeek{border:1px solid var(--hair);border-radius:14px;background:var(--soft);
   padding:16px 18px;margin:0 0 22px}
 .rankpeek .h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
-.rankpeek .h b{font-size:13px;font-weight:800;letter-spacing:-.02em}
-.rankpeek .h span{font-size:11.5px;color:var(--muted2)}
+.rankpeek .h b{font-size:14.5px;font-weight:800;letter-spacing:-.02em}
+.rankpeek .h span{font-size:13px;color:var(--muted)}
 .rankpeek ol{margin:0;padding:0;list-style:none}
 .rankpeek li{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:10px;align-items:center;
-  font-size:13.5px;padding:5px 0;font-variant-numeric:tabular-nums}
-.rankpeek li .r{color:var(--muted2);font-weight:700}
+  font-size:15px;padding:6px 0;font-variant-numeric:tabular-nums}
+.rankpeek li .r{color:var(--muted);font-weight:700}
 .rankpeek li .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
-.rankpeek li .v{color:var(--muted);font-size:12.5px}
+.rankpeek li .v{color:var(--text2);font-size:13.5px}
 .rankpeek li:first-child .r{color:var(--gold)}
-.rankpeek .none{font-size:13px;color:var(--muted2);padding:4px 0}
+.rankpeek .none{font-size:14.5px;color:var(--muted);padding:4px 0}
 
 /* ── 밸런스 게임 ── */
-.qn{font-size:11px;letter-spacing:.12em;color:var(--muted);font-weight:700;margin-bottom:8px}
+.qn{font-size:12.5px;letter-spacing:.11em;color:var(--muted);font-weight:700;margin-bottom:8px}
 .qt{font-size:26px;font-weight:800;letter-spacing:-.035em;line-height:1.3;margin:0 0 24px;word-break:keep-all}
 .picks{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
 .pick{border:1px solid var(--hair);background:var(--soft);border-radius:14px;padding:22px 14px;
@@ -212,32 +218,32 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   transition:border-color 150ms ease}
 .pick:hover{border-color:var(--text)}
 .pick .t{display:block;font-size:19px;font-weight:800;letter-spacing:-.03em;line-height:1.3;word-break:keep-all}
-.pick .s{display:block;font-size:13px;color:var(--text2);margin-top:6px;line-height:1.6;word-break:keep-all}
-.vs{text-align:center;font-size:11px;color:var(--muted2);font-weight:700;letter-spacing:.1em;margin:12px 0 0}
+.pick .s{display:block;font-size:14.5px;color:var(--text2);margin-top:6px;line-height:1.6;word-break:keep-all}
+.vs{text-align:center;font-size:12.5px;color:var(--muted);font-weight:700;letter-spacing:.1em;margin:12px 0 0}
 .bsteps{display:flex;gap:5px;margin:30px 0 22px}
 .bsteps i{flex:1 1 0;height:2px;background:var(--hair)}
 .bsteps i.done{background:var(--text)}
 .qres{border-top:1px solid var(--hair);padding:24px 0 6px}
-.qres .cq{font-size:11px;letter-spacing:.1em;color:var(--muted);font-weight:700;margin-bottom:6px}
+.qres .cq{font-size:12.5px;letter-spacing:.09em;color:var(--muted);font-weight:700;margin-bottom:6px}
 .qres .ct{font-size:18px;font-weight:800;letter-spacing:-.03em;margin-bottom:16px;word-break:keep-all}
 .bars{margin-top:4px}
 .bar{margin-bottom:16px}
-.bar .lb{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;margin-bottom:6px}
+.bar .lb{display:flex;justify-content:space-between;align-items:baseline;font-size:15px;margin-bottom:6px}
 .bar .lb b{font-size:15px;font-weight:800;letter-spacing:-.02em}
 .bar .lb .pc{font-variant-numeric:tabular-nums;font-weight:800;font-size:17px}
 .bar .tr{height:8px;background:var(--gray);border-radius:4px;overflow:hidden}
 .bar .tr i{display:block;height:100%;background:var(--muted2);border-radius:4px;transition:width 400ms ease}
 .bar.mine .tr i{background:var(--text)}
-.bar.mine .lb b:after{content:" 내 선택";font-size:11px;color:var(--muted);font-weight:400;letter-spacing:0}
-.tot{font-size:12.5px;color:var(--muted);margin:-4px 0 20px}
+.bar.mine .lb b:after{content:" 내 선택";font-size:12.5px;color:var(--muted);font-weight:400;letter-spacing:0}
+.tot{font-size:14px;color:var(--text2);margin:-4px 0 20px}
 .fact{border-left:2px solid var(--text);padding:2px 0 2px 14px;margin:22px 0}
-.fact .h{font-size:11px;letter-spacing:.12em;color:var(--muted);font-weight:700;margin-bottom:8px}
+.fact .h{font-size:12.5px;letter-spacing:.11em;color:var(--muted);font-weight:700;margin-bottom:8px}
 .fact p{margin:0 0 10px;font-size:15px;line-height:1.9;word-break:keep-all}
 .fact p:last-of-type{margin-bottom:0}
 .fact a{display:inline-block;margin-top:12px;font-size:12.5px;font-weight:700;color:var(--text);
   border-bottom:1px solid var(--text);text-decoration:none;padding-bottom:1px}
 
-.foot{font-size:12px;color:var(--muted);line-height:1.85;margin-top:38px;
+.foot{font-size:13.5px;color:var(--text2);line-height:1.85;margin-top:38px;
   border-top:1px solid var(--hair);padding-top:14px}
 .hide{display:none}
 </style>
@@ -465,7 +471,10 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   <section id="tPlay" class="scr hide">
     <div class="thud">
       <div class="ts"><span class="k">보유 기간</span><b id="tScore">0개월</b></div>
-      <span class="tsh hide" id="tShield">무적</span>
+      <div class="tright">
+        <span class="tsh hide" id="tShield">무적</span>
+        <button type="button" id="tSnd" class="tsnd" aria-pressed="true">♪ 소리 켜짐</button>
+      </div>
     </div>
     <div class="tstage"><canvas id="tCv"></canvas></div>
   </section>
@@ -490,7 +499,8 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 <script src="data/quiz_price.js?v=4"></script>
 <script src="data/polls.js?v=2"></script>
 <script src="assets/game_balance.js?v=1"></script>
-<script src="assets/game_tax.js?v=7"></script>
+<script src="assets/sb_bgm.js?v=1"></script>
+<script src="assets/game_tax.js?v=8"></script>
 <script>
 (function(){
   "use strict";
