@@ -71,7 +71,11 @@ h1.q{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-siz
   border-radius:0;box-shadow:5px 5px 0 var(--nb-ink);font-size:21px;letter-spacing:.01em;
   padding:15px 0;transition:transform 90ms,box-shadow 90ms}
 button.btn{font-size:21px}
-.btn.full:active{transform:translate(5px,5px);box-shadow:0 0 0 var(--nb-ink)}
+/* ⚠️ site.css 의 `.btn:hover{opacity:.75}` 를 덮는다.
+   이 톤에서 버튼이 흐려지면 「비활성」으로 읽힌다 — 눌림이 곧 언어다.
+   (2026-09-01 라이브에서 시작 버튼이 연주황으로 나와 잡았다) */
+.btn.full:hover{opacity:1;box-shadow:6px 6px 0 var(--nb-ink);transform:translate(-1px,-1px)}
+.btn.full:active{transform:translate(5px,5px);box-shadow:0 0 0 var(--nb-ink);opacity:1}
 .btn.line{background:#fff;color:var(--nb-ink)}
 .btn+.btn{margin-top:12px}
 
@@ -330,6 +334,8 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
 .ttip{background:#fff;border:2.5px solid var(--nb-ink);box-shadow:4px 4px 0 var(--nb-ink);
      padding:13px 15px;margin:22px 0 18px;
      font-size:15.5px;font-weight:700;line-height:1.7;color:var(--nb-ink2);word-break:keep-all}
+.tmascot{text-align:center;margin:2px 0 14px}
+.tmascot img{width:170px;height:auto}
 .tbest{text-align:center;font-size:15px;color:var(--nb-ink2);font-weight:800;margin-bottom:16px}
 .tbest.rec{color:var(--pop);font-weight:900}
 .gempty{border:2.5px dashed var(--nb-ink);border-radius:0;padding:26px 18px;text-align:center;
@@ -720,6 +726,8 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
       1초가 한 달입니다. 오래 버틸수록 오래 가진 셈입니다.<br>
       <span class="tnote">소리가 안 들리면 아이폰은 <b>측면 무음 스위치</b>를, 안드로이드는 <b>미디어 음량</b>을 확인해 주세요.</span>
     </div>
+    <!-- 마스코트가 여기서 처음 인사한다. 게임 캔버스에 들어가는 그 집이다. -->
+    <div class="tmascot"><img src="assets/mascot_house.png?v=1" alt="" width="170"></div>
     <!-- 🔴 시작 화면에 랭킹(2026-09-01 석봉님). 남들 기록을 보고 나서 시작해야 도전할 마음이 생긴다.
          지역「간」과 지역「내」를 같이 보여준다 — 전국 1등은 멀지만 우리 동네 1등은 해볼 만하다. -->
     <div class="rankpeek" id="tPeek">
