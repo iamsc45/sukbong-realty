@@ -154,6 +154,8 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 #gBoard .h span:nth-child(n+4), #gBoard .r span:nth-child(n+4){display:none}
 .rboard .r{grid-template-columns:30px minmax(0,1fr) auto 46px}
 .rboard .num{white-space:nowrap}
+/* 퀴즈 지역표는 칸이 다섯(순위·지역·맞힌 수·평균 시간·인원) */
+#rboard .r{grid-template-columns:28px minmax(0,1fr) 54px 54px 44px;font-size:13.5px}
 /* 이름 옆의 지역 등수 — 「한강뷰(서울 2위)」 */
 .board .rg{font-size:12.5px;color:var(--muted);font-weight:600;margin-left:3px}
 .rboard{margin-top:30px}
@@ -386,7 +388,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 
     <!-- 이번 주 랭킹 미리보기 — 시작 전에 보여 줘야 도전할 마음이 생긴다 -->
     <div class="rankpeek" id="peek">
-      <div class="h"><b>이번 주 랭킹</b><span>최근 7일</span></div>
+      <div class="h"><b>랭킹</b><span>역대 기록</span></div>
       <ol id="peekList"><li class="none">불러오는 중…</li></ol>
     </div>
 
@@ -477,7 +479,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     <div id="boardWrap" class="hide">
       <div class="board" id="board"></div>
       <div class="rboard" id="rboardWrap">
-        <div class="rh">지역 대항전 <span>최근 7일 · 평균 기록</span></div>
+        <div class="rh">지역 순위 <span>맞힌 개수 합계</span></div>
         <div id="rboard"></div>
       </div>
     </div>
@@ -868,7 +870,10 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   }
 
   document.getElementById("gGo").addEventListener("click", function(){
-    if(gPending == null) return;
+    if(gPending == null){                 // 여기 걸리면 위 onEnd 순서를 의심할 것
+      alert("이번 기록을 찾지 못했습니다. 한 판 더 하신 뒤 눌러 주세요.");
+      return;
+    }
     try{ if(window.SBAuth) SBAuth.setAct(GACT, { score: gPending }); }catch(e){}
     if(window.SBAuth && SBAuth.isIn()){ gAfterLogin(); return; }
     if(window.SBAuth && SBAuth.gate){
@@ -1142,7 +1147,11 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   $("goTax").addEventListener("click", function(){ show("tIntro"); gLoadPeek(); });
   if(window.TaxGame){
     TAX = window.TaxGame.init({ show: show, onEnd: function(sec){
-      gPending = sec; gResetRank();          // 결과 화면에서 랭킹에 올릴 수 있게
+      /* 🔴 순서 주의(2026-09-01 사고) — `gResetRank()` 안에서 `gPending = null` 을 한다.
+         기록을 먼저 넣고 초기화하면 **방금 넣은 값이 지워져** 「랭킹에 올리기」가
+         아무 반응도 안 한다(석봉님 "작동 안 됨"). **초기화를 먼저, 기록을 나중에.** */
+      gResetRank();
+      gPending = sec;
     } });
     if(TAX){
       $("tStart").addEventListener("click", function(){ TAX.start(); });
@@ -1322,7 +1331,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
         if(d.region) myRegion = d.region;
         $("rankTitle").textContent = d.improved ? "최고 기록을 새로 세웠습니다" : "랭킹에 올렸습니다";
         $("rankDesc").textContent = d.improved
-          ? "한 분당 한 줄이 올라갑니다. 주간 랭킹은 최근 7일 기록으로 매주 새로 열립니다."
+          ? "한 분당 한 줄이 올라갑니다. 랭킹은 끊기지 않고 계속 쌓입니다."
           : "지난 기록이 더 좋아 그대로 두었습니다. 한 분당 한 줄이 올라갑니다.";
         myNick = d.nick || nk;
         $("rankDone").innerHTML = "<b>" + esc(myNick) + "</b> · 현재 <b>" + d.rank + "위</b> " +
@@ -1387,7 +1396,9 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
      ⚠️ 내 지역을 굵게 표시하려면 내가 어느 지역인지 알아야 한다 → myRegion 에 담아 둔다. */
   var myRegion = "";
   function loadRegionBoard(){
-    sbFetch("quiz_region_board?select=rank,region,n,avg_hit,avg_err&limit=20")
+    /* 🔴 2026-09-01 석봉님 — 7일로 끊지 않고 **누적**, 그리고 **맞힌 개수와 시간을 같이**.
+       뷰는 이미 기간 제한이 없다(합계 기준). 화면에서 total_hit·avg_secs 를 받아 쓴다. */
+    sbFetch("quiz_region_board?select=rank,region,n,total_hit,avg_hit,avg_secs&limit=20")
       .then(function(r){ return r.ok ? r.json() : []; })
       .then(function(rows){
         var box = $("rboard");
@@ -1396,13 +1407,15 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
           return;
         }
         var h = "<div class='r'><span class='n1'>순위</span><span class='nm'>지역</span>" +
-                "<span class='num'>평균</span><span class='num'>인원</span></div>";
+                "<span class='num'>맞힌 수</span><span class='num'>평균 시간</span>" +
+                "<span class='num'>인원</span></div>";
         h += rows.map(function(x){
           var me = myRegion && x.region === myRegion;
           return "<div class='r" + (me ? " me" : "") + "'>" +
             "<span class='n1'>" + x.rank + "</span>" +
             "<span class='nm'>" + esc(x.region) + "</span>" +
-            "<span class='num'>" + (+x.avg_hit).toFixed(1) + "개</span>" +
+            "<span class='num'>" + x.total_hit + "개</span>" +
+            "<span class='num'>" + Math.round(x.avg_secs) + "초</span>" +
             "<span class='num'>" + x.n + "명</span></div>";
         }).join("");
         box.innerHTML = h;
