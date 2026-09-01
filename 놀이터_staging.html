@@ -505,9 +505,9 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 <script src="assets/sb_share.js?v=2"></script>
 <script src="data/quiz_price.js?v=4"></script>
 <script src="data/polls.js?v=2"></script>
-<script src="assets/game_balance.js?v=1"></script>
+<script src="assets/game_balance.js?v=2"></script>
 <script src="assets/sb_bgm.js?v=2"></script>
-<script src="assets/game_tax.js?v=9"></script>
+<script src="assets/game_tax.js?v=10"></script>
 <script>
 (function(){
   "use strict";
@@ -705,7 +705,10 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   $("share").addEventListener("click", function(){
     var btn = this;
     var hit = log.filter(function(x){ return x.err <= HIT; }).length;
-    var url = SITE + encodeURIComponent("놀이터_staging.html");
+    /* 파일명을 손으로 적지 않는다 — 본배포로 이름이 바뀌면 그때 고쳐야 하고,
+       고치는 걸 잊으면 시안 주소가 계속 나간다. 지금 주소를 그대로 쓴다.
+       ⚠️`location.pathname` 은 이미 인코딩돼 있으니 다시 인코딩하면 안 된다(2026-09-01 404 사고). */
+    var url = location.origin + location.pathname;
     var o = {
       title: "실거래가 맞히기 " + hit + " / 5",
       desc: "국토교통부에 신고된 진짜 거래 다섯 건입니다. 당신은 몇 개나 맞히시겠어요?",
