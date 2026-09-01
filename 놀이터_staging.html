@@ -157,6 +157,9 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 /* 이름 옆의 지역 등수 — 「한강뷰(서울 2위)」 */
 .board .rg{font-size:12.5px;color:var(--muted);font-weight:600;margin-left:3px}
 .rboard{margin-top:30px}
+.bhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+  font-size:15px;font-weight:800;letter-spacing:-.02em;margin-bottom:2px}
+.bhead span{font-size:13px;color:var(--muted);font-weight:600;letter-spacing:0}
 .rboard .rh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;
   font-size:15px;font-weight:800;letter-spacing:-.02em;padding-bottom:9px;
   border-bottom:1.5px solid var(--text)}
@@ -601,6 +604,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
            「월간·연간을 지금 만들자」가 아니라 「끊지 말고 계속 쌓자」였다.
            ⚠️ 판 기록(`game_play`)은 그대로 쌓인다 — 월간·연간이 필요해지면
               그때 `game_board(게임,'month')` 를 부르면 된다(서버는 이미 받는다). -->
+      <div class="bhead">개인 랭킹 <span>상위 10위</span></div>
       <div class="board" id="gBoard"></div>
       <div class="rboard">
         <div class="rh">지역 순위 <span>지역별 합계</span></div>
@@ -805,7 +809,10 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 
   function gLoadBoard(){
     document.getElementById("gBoardWrap").classList.remove("hide");
-    gRpc("game_board", { p_game: "tax", p_period: "all", p_limit: 20 }).then(function(rows){
+    /* 🔴 개인 랭킹은 **10위까지**(2026-09-01 석봉님). 20줄은 스크롤만 길고 아무도 안 읽는다.
+       ⚠️ 지역 순위는 따로 자르지 않는다 — **고른 사람이 있는 지역만** 줄이 생기므로
+          17개를 다 채워도 열일곱 줄이고, 대부분은 그보다 짧다. */
+    gRpc("game_board", { p_game: "tax", p_period: "all", p_limit: 10 }).then(function(rows){
       var box = document.getElementById("gBoard");
       if(!rows.length){
         box.innerHTML = "<div class='empty'>아직 등록된 기록이 없습니다.</div>";
@@ -1352,7 +1359,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   });
 
   function loadBoard(mine){
-    sbFetch("quiz_rank_board?select=rank,nick,hit,avg_err,secs&limit=20")
+    sbFetch("quiz_rank_board?select=rank,nick,hit,avg_err,secs,region,local_rank&limit=10")
       .then(function(r){ return r.ok ? r.json() : []; })
       .then(function(rows){
         $("boardWrap").classList.remove("hide");
@@ -1363,7 +1370,9 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
           var me = mine && x.nick === mine;
           return "<div class='r" + (me ? " me" : "") + "'>" +
             "<span class='n1'>" + x.rank + "</span>" +
-            "<span class='nk'>" + esc(x.nick) + "</span>" +
+            "<span class='nk'>" + esc(x.nick) +
+              (x.region ? "<span class='rg'>(" + esc(x.region) +
+                 (x.local_rank ? " " + x.local_rank + "위" : "") + ")</span>" : "") + "</span>" +
             "<span class='num'>" + x.hit + "</span>" +
             "<span class='num'>" + (+x.avg_err).toFixed(1) + "%</span>" +
             "<span class='num'>" + Math.round(x.secs) + "초</span></div>";
