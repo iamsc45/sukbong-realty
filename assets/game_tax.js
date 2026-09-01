@@ -358,7 +358,7 @@ window.TaxGame = (function(){
     running = true; lastT = 0;
     /* 소리는 여기서 시작한다 — 시작 버튼을 누른 직후라 브라우저가 허락한다.
        (사용자 동작 없이 미리 켜 두면 정책에 막혀 조용히 실패한다) */
-    if(window.SBBgm){ SBBgm.setPace(0); SBBgm.start(); }
+    if(window.SBBgm){ SBBgm.setPace(0); SBBgm.play("tax"); }
     raf = requestAnimationFrame(loop);
   }
 
@@ -367,15 +367,6 @@ window.TaxGame = (function(){
     if(window.SBBgm) SBBgm.stop();
   }
 
-  /* 소리 켜고 끄기 — 버튼 글자도 여기서 맞춘다 */
-  function paintSound(){
-    var b = $("tSnd");
-    if(!b || !window.SBBgm) return;
-    var v = SBBgm.on();
-    b.textContent = v ? "♪ 소리 켜짐" : "♪ 소리 꺼짐";
-    b.classList.toggle("off", !v);
-    b.setAttribute("aria-pressed", v ? "true" : "false");
-  }
 
   /* ── 조작 ────────────────────────────────────────────────
      터치·마우스는 "손가락 있는 자리로 집이 온다". 좌우 버튼보다 이 편이 빠르고
@@ -417,17 +408,6 @@ window.TaxGame = (function(){
     cv = $("tCv");
     if(!cv) return null;
     fit(); bindInput();
-    paintSound();
-    var sb = $("tSnd");
-    if(sb) sb.addEventListener("click", function(e){
-      e.stopPropagation();
-      SBBgm.setOn(!SBBgm.on());
-      if(SBBgm.on()){
-        SBBgm.blip();                    // 켰으면 한 번 울려 준다 — 소리가 닿는지 바로 안다
-        if(running) SBBgm.start();
-      }
-      paintSound();
-    });
     /* 소리 시험 — "안 들린다"의 원인을 석봉님/이용자가 화면에서 직접 가릴 수 있게 한다.
        세션은 소리를 들을 수 없으므로 이 버튼이 유일한 눈이다. */
     var tt = $("tTest"), td = $("tDiag");

@@ -80,6 +80,7 @@ window.BalanceGame = (function(){
 
   function reveal(){
     show("bEnd");
+    if(window.SBBgm) SBBgm.stop();          // 결과를 읽는 화면에서는 조용히
     var slugs = picked.map(function(x){ return x.slug; });
     $("bCards").innerHTML = "";
     sbFetch("poll_result?slug=in.(" + slugs.map(encodeURIComponent).join(",") + ")")
@@ -118,6 +119,8 @@ window.BalanceGame = (function(){
     P = shuffle(ALL.slice()).slice(0, PICK);   // 스무 개 중 다섯 개. 다시 하면 다른 문제
     idx = 0; picked = [];
     render(); show("bPlay");
+    /* 밸런스는 3박자 왈츠다 — 고민하는 화면이라 몰아치지 않는다 */
+    if(window.SBBgm) SBBgm.play("balance");
   }
 
   function init(opt){

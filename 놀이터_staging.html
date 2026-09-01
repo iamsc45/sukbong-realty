@@ -187,6 +187,9 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
      border:1px solid var(--hair);border-radius:999px;padding:7px 13px;cursor:pointer;
      letter-spacing:-.01em;white-space:nowrap}
 .tsnd.off{color:var(--muted2);background:var(--soft)}
+.meter .tsnd{align-self:center;margin-left:10px}
+.brow{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.brow .qn{margin-bottom:0}
 /* 한마디 줄 — 판 바깥이라 떨어지는 세금을 가리지 않는다.
    빈 줄일 때도 높이를 유지해 판이 위아래로 튀지 않게 한다 */
 .tsay{height:34px;display:flex;align-items:center;justify-content:center;margin-bottom:6px}
@@ -350,6 +353,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   <section id="play" class="scr hide">
     <div class="meter">
       <div class="steps" id="steps"></div>
+      <button type="button" class="tsnd sndbtn" aria-pressed="true">♪ 소리 켜짐</button>
       <span class="left" id="left"><span class="cap">남은 시간</span><b id="tsec">20</b><span class="u">초</span></span>
     </div>
     <div class="tline" id="tline"><i id="tfill"></i></div>
@@ -440,7 +444,10 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 
   <section id="bPlay" class="scr hide">
     <div class="bsteps" id="bSteps"></div>
-    <div class="qn"><span id="bQi">1</span> / <span id="bQn">5</span></div>
+    <div class="brow">
+      <div class="qn"><span id="bQi">1</span> / <span id="bQn">5</span></div>
+      <button type="button" class="tsnd sndbtn" aria-pressed="true">♪ 소리 켜짐</button>
+    </div>
     <div class="qt" id="bQt"></div>
     <div class="picks">
       <button class="pick" id="bPickA"><span class="t"></span><span class="s"></span></button>
@@ -488,7 +495,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
       <div class="ts"><span class="k">보유 기간</span><b id="tScore">0개월</b></div>
       <div class="tright">
         <span class="tsh hide" id="tShield">무적</span>
-        <button type="button" id="tSnd" class="tsnd" aria-pressed="true">♪ 소리 켜짐</button>
+        <button type="button" id="tSnd" class="tsnd sndbtn" aria-pressed="true">♪ 소리 켜짐</button>
       </div>
     </div>
     <div class="tsay" id="tSay"></div>
@@ -514,9 +521,9 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 <script src="assets/sb_share.js?v=2"></script>
 <script src="data/quiz_price.js?v=4"></script>
 <script src="data/polls.js?v=2"></script>
-<script src="assets/game_balance.js?v=3"></script>
-<script src="assets/sb_bgm.js?v=5"></script>
-<script src="assets/game_tax.js?v=13"></script>
+<script src="assets/game_balance.js?v=4"></script>
+<script src="assets/sb_bgm.js?v=6"></script>
+<script src="assets/game_tax.js?v=14"></script>
 <script>
 (function(){
   "use strict";
@@ -634,6 +641,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   $("submit").addEventListener("click", function(){ submit(false); });
 
   function renderResult(){
+    if(window.SBBgm) SBBgm.stop();          // 결과를 읽는 화면에서는 조용히
     var hit = 0, sum = 0, spent = 0, autos = 0;
     log.forEach(function(x){
       sum += x.err; spent += x.sec;
@@ -700,7 +708,33 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     set = shuffle(POOL.slice()).slice(0, N);
     idx = 0; log = []; away = 0; awayAt = 0; $("trail").textContent = "";
     show("play"); render();
+    if(window.SBBgm) SBBgm.play("quiz");     // 퀴즈에는 퀴즈 곡
   }
+
+  /* 소리 켜고 끄기 — 게임이 셋이라 **한 곳에서** 관리한다.
+     각 화면이 자기 버튼을 따로 들고 있으면 한쪽에서 끈 것이 다른 쪽에 안 비친다. */
+  function wireSound(){
+    if(!window.SBBgm) return;
+    var bs = document.querySelectorAll(".sndbtn");
+    function paint(){
+      var v = SBBgm.on();
+      for(var i = 0; i < bs.length; i++){
+        bs[i].textContent = v ? "♪ 소리 켜짐" : "♪ 소리 꺼짐";
+        bs[i].classList.toggle("off", !v);
+        bs[i].setAttribute("aria-pressed", v ? "true" : "false");
+      }
+    }
+    for(var i = 0; i < bs.length; i++){
+      bs[i].addEventListener("click", function(e){
+        e.stopPropagation();
+        SBBgm.setOn(!SBBgm.on());
+        if(SBBgm.on()){ SBBgm.blip(); SBBgm.resume(); }
+        paint();
+      });
+    }
+    paint();
+  }
+  wireSound();
   $("start").addEventListener("click", function(){
     if(!POOL.length){ alert("문제를 불러오지 못했습니다."); return; }
     begin();
