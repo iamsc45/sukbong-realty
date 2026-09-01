@@ -40,7 +40,8 @@ window.EconQuiz = (function(){
 
   function drawSteps(){
     $("eSteps").innerHTML = P.map(function(_, i){
-      return "<i class='" + (i < idx ? "done" : "") + "'></i>";
+      /* 지금 풀고 있는 칸을 노랗게 짚어 준다(2026-09-01) */
+      return "<i class='" + (i < idx ? "done" : i === idx ? "on" : "") + "'></i>";
     }).join("");
   }
 

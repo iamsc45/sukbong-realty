@@ -48,7 +48,9 @@ window.BalanceGame = (function(){
 
   function drawSteps(){
     $("bSteps").innerHTML = P.map(function(_,i){
-      return "<i class='"+(i<idx?"done":"")+"'></i>";
+      /* 지금 풀고 있는 칸을 노랗게 짚어 준다(2026-09-01) — 빈 칸만 늘어서 있으면
+         몇 번째인지 눈으로 안 세어진다 */
+      return "<i class='"+(i<idx?"done":i===idx?"on":"")+"'></i>";
     }).join("");
   }
   function render(){
