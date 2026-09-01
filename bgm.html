@@ -55,8 +55,11 @@ button{font-family:inherit;cursor:pointer;border-radius:0}
 .play.on{background:var(--ink);color:var(--sun)}
 .meta{font-size:12px;font-weight:800;color:var(--mute);white-space:nowrap}
 
+/* ⚠️ 이 상자는 `.wrap` **밖**에 있다. 음수 마진을 주면 뷰포트를 넘어
+   가로 스크롤이 생긴다(2026-09-02 화면에서 확인). 안쪽에 폭 제한을 둔다. */
 .pacebox{position:sticky;bottom:0;background:var(--sun);border-top:var(--line) solid var(--ink);
-  margin:0 -20px;padding:13px 20px 16px}
+  padding:13px 20px 16px}
+.pacebox .in{max-width:560px;margin:0 auto}
 .pacebox .t{font-size:13px;font-weight:800;margin-bottom:8px}
 .pacebox .t b{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:17px}
 input[type=range]{width:100%;-webkit-appearance:none;background:transparent;margin:0}
@@ -97,11 +100,11 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:0;backg
   </p>
 </div>
 
-<div class="pacebox">
+<div class="pacebox"><div class="in">
   <div class="t">버틴 기간 <b id="paceLabel">0년</b> <span style="font-weight:600;color:#6A6355">— 오래 버틸수록 곡이 빨라집니다</span></div>
   <input type="range" id="pace" min="0" max="100" value="0">
   <button class="stopall" id="stopAll">전부 멈추기</button>
-</div>
+</div></div>
 
 <script src="assets/sb_bgm.js?v=10"></script>
 <script>
