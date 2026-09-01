@@ -84,7 +84,11 @@ button.btn{font-size:21px}
       숫자를 크게 키우고 5초 아래에서 붉게 바꾸며 맥박을 준다.
       🔴맥박은 transform 으로만 준다 — opacity 를 건드리면 탭이 백그라운드일 때
       시계가 멈춰 **숫자가 통째로 안 보인다**(같은 날 결과 화면에서 겪었다). */
-.meter{display:flex;align-items:flex-end;gap:12px;margin:26px 0 10px}
+/* 진행 칸 · 소리 버튼 · 남은 시간이 한 줄에 선다.
+   ⚠️ 폰 폭에서 셋이 안 들어가 소리 버튼이 위로 떠올랐다 — 버튼을 오른쪽으로 밀어붙인다. */
+.meter{display:flex;align-items:flex-end;gap:10px;margin:26px 0 10px}
+.meter .tsnd{margin-left:auto;order:2}
+.meter .left{order:3;margin-left:10px}
 /* 진행 칸 — 채워지는 칸이라 몇 개 남았는지 한눈에 보인다 */
 .steps{display:flex;gap:5px;padding-bottom:7px}
 .steps i{width:24px;height:10px;border:2px solid var(--nb-ink);background:#fff;transition:background 200ms}
@@ -111,8 +115,10 @@ button.btn{font-size:21px}
 /* 값 고르기 — 숫자를 노란 판 위에 올려 「지금 이걸 정한다」를 분명히 한다 */
 .guess{text-align:center;background:var(--sun);border:var(--nb-line) solid var(--nb-ink);
   box-shadow:5px 5px 0 var(--nb-ink);padding:18px 16px 14px;margin-bottom:22px}
-.guess .v{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:clamp(36px,10vw,50px);
-  letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.05}
+/* ⚠️ 「8억 5,000만원」은 아홉 글자다. 폰 폭에서 36px 이면 두 줄로 접힌다
+   (2026-09-01 360px 로 좁혀 보고 잡았다). 최소치를 낮추고 한 줄로 못 박는다. */
+.guess .v{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:clamp(29px,8.2vw,46px);
+  letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.05;white-space:nowrap}
 .guess .l{font-size:14px;font-weight:700;color:#6A6355;margin:6px 0 16px}
 input[type=range]{width:100%;-webkit-appearance:none;background:transparent;margin:0}
 input[type=range]::-webkit-slider-runnable-track{height:6px;background:#fff;border:2.5px solid var(--nb-ink)}
