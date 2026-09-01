@@ -881,10 +881,10 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
      폰 브라우저는 「사용자가 누른 그 코드 안에서」 시작한 재생만 허락한다.
      게임 시작 버튼에서 처음 틀면 그 사이 준비 과정이 끼어 막히는 일이 있어,
      그보다 앞선 손짓(탭·목록 카드)에서 미리 열어 둔다. 소리는 안 난다(음소거로 켰다 끈다). */
-  document.addEventListener("pointerdown", function once(){
-    if(window.SBBgm) SBBgm.unlock();
-    document.removeEventListener("pointerdown", once);
-  }, { passive: true });
+  /* ⚠️ 2026-09-02 — 여기서 하던 「첫 손짓에 한 번만 unlock」을 **없앴다.**
+     곡이 아직 안 만들어졌으면 unlock 이 아무것도 안 하고 돌아가는데 리스너는 지워져
+     **잠금이 영영 안 풀렸다**(가격 퀴즈 무음의 원인). 지금은 `sb_bgm.js` 의
+     `armUnlock()` 이 풀릴 때까지 스스로 듣는다. 화면 쪽에서 할 일이 없다. */
 
   /* ══ 세금 피하기 랭킹 ══════════════════════════════════════════
      🔴 2026-09-01 석봉님 — 시작 화면에 랭킹을, 그리고 지역「간」·지역「내」를 같이.
