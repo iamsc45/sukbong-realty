@@ -305,6 +305,28 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .bar.mine .lb b:after{content:" 내 선택";font-size:12.5px;color:var(--muted);font-weight:400;letter-spacing:0}
 .tot{font-size:14px;color:var(--text2);margin:-4px 0 20px}
 /* 집계 기간 — 표가 언제 것인지 밝힌다(2026-09-01) */
+/* 4지선다 보기 — 손가락으로 누르는 자리라 넉넉하게 */
+.opts{display:grid;gap:9px;margin-top:4px}
+.opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+  background:#fff;border:1.5px solid var(--hair);border-radius:14px;padding:16px 15px;
+  font-family:inherit;color:var(--text);cursor:pointer;transition:border-color 150ms ease}
+.opt:hover{border-color:var(--text)}
+.opt:active{transform:scale(.99)}
+.opt .k{flex:0 0 26px;height:26px;border-radius:50%;background:var(--gray);color:var(--muted);
+  font-size:13px;font-weight:800;display:grid;place-items:center}
+.opt .t{font-size:15.5px;font-weight:600;line-height:1.5;word-break:keep-all}
+/* 결과에서 보기 넷을 다시 보여 준다 — 무엇을 골랐고 무엇이 답이었나 */
+.eans{margin:2px 0 14px}
+.ea{display:flex;align-items:center;gap:10px;padding:9px 0;font-size:14.5px;color:var(--text2)}
+.ea .k{flex:0 0 22px;height:22px;border-radius:50%;background:var(--gray);color:var(--muted);
+  font-size:12px;font-weight:800;display:grid;place-items:center}
+.ea .t{flex:1 1 auto;word-break:keep-all}
+.ea .m{flex:0 0 auto;font-size:12px;font-weight:800}
+.ea.ok{color:var(--text);font-weight:700}
+.ea.ok .k{background:var(--up);color:#fff}
+.ea.ok .m{color:var(--up)}
+.ea.no .k{background:var(--down);color:#fff}
+.ea.no .m{color:var(--down)}
 .bperiod{font-size:13.5px;color:var(--muted);margin:-14px 0 22px;font-weight:600}
 .fact{border-left:2px solid var(--text);padding:2px 0 2px 14px;margin:22px 0}
 .fact .h{font-size:12.5px;letter-spacing:.11em;color:var(--muted);font-weight:700;margin-bottom:8px}
@@ -365,6 +387,14 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
           <span class="gt">이 집, 얼마일까요?</span>
           <span class="gs">신고된 진짜 거래 다섯 건. 얼마에 팔렸을지 맞혀 보세요.</span>
           <span class="gm">5문제 · 문제당 20초 · <b>랭킹</b></span>
+        </span>
+      </button>
+      <button class="gitem" id="goEcon">
+        <span class="th"><img src="assets/th_econ.png?v=1" alt=""></span>
+        <span class="tx">
+          <span class="gt">부동산 경제상식</span>
+          <span class="gs">금리·제도·용어. 알 것 같은데 막상 헷갈리는 것들.</span>
+          <span class="gm" id="econMeta">4지선다 10문제 · <b>바로 채점</b></span>
         </span>
       </button>
       <div class="gempty">새로운 퀴즈를 준비하고 있습니다.</div>
@@ -536,6 +566,41 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     <div style="text-align:center"><a href="#" class="backlink toHub">다른 놀이 해보기</a></div>
   </section>
 
+  <!-- ── 부동산 경제상식 (4지선다) ────────────────────────── -->
+  <section id="eIntro" class="scr hide">
+    <div class="eyebrow">부 동 산   경 제 상 식</div>
+    <h1 class="q">얼마나 알고 계신가요?</h1>
+    <p class="lead">금리·제도·용어에서 열 문제입니다.<br>알 것 같은데 막상 헷갈리는 것들만 골랐습니다.</p>
+    <div class="rules">
+      4지선다 <b>10문제</b> · 시간 제한 없음<br>
+      정답과 해설은 다 푼 뒤에 한꺼번에 보여드립니다.
+    </div>
+    <button class="btn full" id="eStart">시작하기</button>
+    <div style="text-align:center"><a href="#" class="backlink toHub">다른 놀이 해보기</a></div>
+  </section>
+
+  <section id="ePlay" class="scr hide">
+    <div class="bsteps" id="eSteps"></div>
+    <div class="brow">
+      <div class="qn"><span id="eQi">1</span> / <span id="eQn">10</span></div>
+      <button type="button" class="tsnd sndbtn" aria-pressed="true">♪ 소리 켜짐</button>
+    </div>
+    <div class="qt" id="eQt"></div>
+    <div class="opts" id="eOpts"></div>
+  </section>
+
+  <section id="eEnd" class="scr hide">
+    <div class="score">
+      <div class="l">경 제 상 식</div>
+      <div class="n" id="eScore">0 <em>/ 10</em></div>
+      <div class="tag" id="eTag"></div>
+    </div>
+    <div id="eCards"></div>
+    <button class="btn full" id="eShare">결과 공유하기</button>
+    <button class="btn full line" id="eAgain">다시 하기</button>
+    <div style="text-align:center"><a href="#" class="backlink toHub">다른 놀이 해보기</a></div>
+  </section>
+
   <!-- ── 세금 피하기 (액션) ───────────────────────────────── -->
   <section id="tIntro" class="scr hide">
     <div class="eyebrow">액 션</div>
@@ -629,6 +694,8 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 <script src="data/polls.js?v=5"></script>
 <script src="assets/game_balance.js?v=7"></script>
 <script src="assets/sb_bgm.js?v=8"></script>
+<script src="data/quiz_econ.js?v=1"></script>
+<script src="assets/game_econ.js?v=1"></script>
 <script src="assets/game_tax.js?v=19"></script>
 <script>
 (function(){
@@ -1145,6 +1212,19 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     backs[i].addEventListener("click", function(e){ e.preventDefault(); stopTimer(); show("hub"); });
   }
   $("goTax").addEventListener("click", function(){ show("tIntro"); gLoadPeek(); });
+
+  /* 부동산 경제상식 — 4지선다(2026-09-01 석봉님 제안) */
+  var ECON = null;
+  if(window.EconQuiz){
+    ECON = window.EconQuiz.init({ show: show });
+    if(ECON){
+      $("goEcon").addEventListener("click", function(){ show("eIntro"); });
+      $("eStart").addEventListener("click", function(){ ECON.start(); });
+      $("econMeta").innerHTML = "4지선다 " + ECON.pick + "문제 · <b>" +
+        ECON.count + "개 문제 풀</b>";
+      $("tabQuiz").querySelector(".cnt").textContent = "2";
+    }
+  }
   if(window.TaxGame){
     TAX = window.TaxGame.init({ show: show, onEnd: function(sec){
       /* 🔴 순서 주의(2026-09-01 사고) — `gResetRank()` 안에서 `gPending = null` 을 한다.
