@@ -147,13 +147,22 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 
 /* ── 허브: 탭 + 게시글 목록 (2026-08-31 석봉님 구상) ──
    장르를 탭으로 가르고 그 안에 게임이 하나씩 쌓인다. 새 게임이 붙어도 구조가 안 흔들린다. */
-.hub-l{color:var(--text2);font-size:15.5px;line-height:1.8;margin:0 0 22px}
-.tabs{display:flex;gap:6px;border-bottom:1.5px solid var(--hair);margin-bottom:20px}
-.tabs button{flex:0 0 auto;background:none;border:0;font-family:inherit;cursor:pointer;
-  font-size:16px;font-weight:700;color:var(--muted);padding:11px 16px;letter-spacing:-.02em;
-  border-bottom:3px solid transparent;margin-bottom:-1.5px;transition:color 150ms ease}
-.tabs button.on{color:var(--text);border-bottom-color:var(--text)}
-.tabs .cnt{font-size:13px;color:var(--muted);font-weight:600;margin-left:4px}
+.hub-l{color:var(--text2);font-size:15.5px;line-height:1.8;margin:0 0 18px}
+.hub-hint{color:var(--muted);font-size:14px}
+/* 🔴 2026-09-01 석봉님 "퀴즈하고 밸런스 게임이 안 보여".
+   화면에는 멀쩡히 있었다 — **탭이 눌러야 하는 버튼으로 안 읽힌 것**이다.
+   밑줄 방식은 고른 탭만 검고 나머지가 회색이라, 액션만 있는 페이지처럼 보인다.
+   그래서 **알약 버튼**으로 바꿨다. 고른 것은 검게 채우고 나머지는 테두리를 둘러
+   "여기도 누를 수 있다"가 한눈에 보이게 한다. */
+.tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.tabs button{flex:0 0 auto;background:#fff;border:1.5px solid var(--hair);border-radius:999px;
+  font-family:inherit;cursor:pointer;font-size:15px;font-weight:700;color:var(--text2);
+  padding:10px 17px;letter-spacing:-.02em;
+  transition:background 150ms ease,border-color 150ms ease,color 150ms ease}
+.tabs button:active{transform:scale(.97)}
+.tabs button.on{background:var(--text);border-color:var(--text);color:#fff}
+.tabs .cnt{font-size:13px;color:var(--muted);font-weight:600;margin-left:5px}
+.tabs button.on .cnt{color:rgba(255,255,255,.62)}
 
 .glist{margin-bottom:8px}
 .gitem{display:flex;gap:14px;width:100%;text-align:left;background:#fff;border:1px solid var(--hair);
@@ -283,7 +292,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   <section id="hub" class="scr">
     <div class="eyebrow">석봉 놀이터</div>
     <h1 class="q">뭐 하고 놀까요?</h1>
-    <p class="hub-l">우리가 매일 받는 <b>진짜 실거래 자료</b>로 만듭니다.</p>
+    <p class="hub-l">우리가 매일 받는 <b>진짜 실거래 자료</b>로 만듭니다.<br><span class="hub-hint">아래에서 <b>놀이 종류</b>를 골라 보세요.</span></p>
 
     <div class="tabs">
       <button id="tabTax" class="on">액션<span class="cnt">1</span></button>
