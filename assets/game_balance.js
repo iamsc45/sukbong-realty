@@ -17,6 +17,9 @@ window.BalanceGame = (function(){
   var SB_KEY = "sb_publishable_kYd1gCyqCR2Qy8Ix6KE6og_FfJUImfR";
   var ALL = [], PICK = 5, P = [], idx = 0, picked = [];
   var show = null;                       // 호스트가 넣어 준다
+  /* 2026-09-01 — 문제가 주제별 **다섯 세트**로 갈렸다(석봉님).
+     목록에서 고른 세트를 여기 담아 두고, 「다시 하기」는 같은 세트로 돌린다. */
+  var SETS = [], CUR = null;
   var $ = function(id){ return document.getElementById(id); };
 
   function shuffle(a){
@@ -111,13 +114,23 @@ window.BalanceGame = (function(){
         });
         $("bCards").innerHTML = html;
         $("bEndLead").textContent =
-          "다섯 질문 가운데 " + same + "개에서 다수와 같은 쪽을 고르셨습니다.";
+          P.length + "개 질문 가운데 " + same + "개에서 다수와 같은 쪽을 고르셨습니다.";
       });
   }
 
-  function begin(){
-    P = shuffle(ALL.slice()).slice(0, PICK);   // 스무 개 중 다섯 개. 다시 하면 다른 문제
+  function pickSet(id){
+    for(var i = 0; i < SETS.length; i++) if(SETS[i].id === id) return SETS[i];
+    return SETS[0] || null;
+  }
+
+  function begin(id){
+    var st = id ? pickSet(id) : CUR;
+    if(!st) return;
+    CUR = st;
+    ALL = st.items || []; PICK = st.pick || 5;
+    P = shuffle(ALL.slice()).slice(0, PICK);   // 세트 안에서 무작위. 다시 하면 다른 문제
     idx = 0; picked = [];
+    var h = $("bSetName"); if(h) h.textContent = st.title;
     render(); show("bPlay");
     /* 밸런스는 3박자 왈츠다 — 고민하는 화면이라 몰아치지 않는다 */
     if(window.SBBgm) SBBgm.play("balance");
@@ -125,12 +138,11 @@ window.BalanceGame = (function(){
 
   function init(opt){
     show = opt.show;
-    ALL = (window.POLLS && window.POLLS.items) || [];
-    PICK = (window.POLLS && window.POLLS.pick) || 5;
+    SETS = (window.POLLS && window.POLLS.sets) || [];
     $("bPickA").addEventListener("click", function(){ vote("a"); });
     $("bPickB").addEventListener("click", function(){ vote("b"); });
     $("bReveal").addEventListener("click", reveal);
-    $("bAgain").addEventListener("click", begin);
+    $("bAgain").addEventListener("click", function(){ begin(); });   // 같은 세트로 다시
     $("bShare").addEventListener("click", function(){
 /* 🔴 공유 주소는 **ASCII 짧은 주소**를 쓴다(2026-09-01).
          놀이터 파일명이 한글이라 인코딩 단계가 한 번만 어긋나도 404 가 난다.
@@ -144,7 +156,9 @@ window.BalanceGame = (function(){
         text: "부동산 밸런스 게임, 당신의 선택은?\n" + url
       }).then(function(how){ if(how === "clipboard") alert("주소를 복사했습니다."); });
     });
-    return { start: begin, count: ALL.length };
+    return { start: begin, sets: SETS,
+             /* 허브가 목록 카드를 그릴 때 쓴다 */
+             count: SETS.reduce(function(n, x){ return n + (x.items || []).length; }, 0) };
   }
 
   return { init: init };

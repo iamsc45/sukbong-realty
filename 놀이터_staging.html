@@ -234,7 +234,8 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .rankpeek .none{font-size:14.5px;color:var(--muted);padding:4px 0}
 
 /* ── 밸런스 게임 ── */
-.qn{font-size:12.5px;letter-spacing:.11em;color:var(--muted);font-weight:700;margin-bottom:8px}
+.qn{font-size:12.5px;letter-spacing:.06em;color:var(--muted);font-weight:700;margin-bottom:8px}
+.qn b{color:var(--text);letter-spacing:-.01em;font-size:13.5px}
 .qt{font-size:26px;font-weight:800;letter-spacing:-.035em;line-height:1.3;margin:0 0 24px;word-break:keep-all}
 .picks{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
 .pick{border:1px solid var(--hair);background:var(--soft);border-radius:14px;padding:22px 14px;
@@ -325,15 +326,8 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     </div>
 
     <div class="glist hide" id="listBal">
-      <button class="gitem" id="goBalance">
-        <span class="th"><img src="assets/th_balance.png?v=1" alt=""></span>
-        <span class="tx">
-          <span class="gt">당신의 선택은?</span>
-          <span class="gs">정답이 없는 질문. 고르면 다른 분들의 선택과 실제 거래를 보여드립니다.</span>
-          <span class="gm" id="balCount">스무 개 중 다섯 개 · <b>매번 다른 질문</b></span>
-        </span>
-      </button>
-      <div class="gempty">새로운 밸런스 게임을 준비하고 있습니다.</div>
+      <!-- 카드는 세트 수만큼 JS 가 그린다(아래 인라인 스크립트) -->
+      <div class="gempty">밸런스 게임을 불러오는 중입니다.</div>
     </div>
   </section>
 
@@ -454,7 +448,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   <section id="bPlay" class="scr hide">
     <div class="bsteps" id="bSteps"></div>
     <div class="brow">
-      <div class="qn"><span id="bQi">1</span> / <span id="bQn">5</span></div>
+      <div class="qn"><b id="bSetName"></b> · <span id="bQi">1</span> / <span id="bQn">5</span></div>
       <button type="button" class="tsnd sndbtn" aria-pressed="true">♪ 소리 켜짐</button>
     </div>
     <div class="qt" id="bQt"></div>
@@ -529,10 +523,10 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 <script src="assets/sb_auth.js?v=8"></script>
 <script src="assets/sb_share.js?v=2"></script>
 <script src="data/quiz_price.js?v=4"></script>
-<script src="data/polls.js?v=2"></script>
-<script src="assets/game_balance.js?v=4"></script>
+<script src="data/polls.js?v=3"></script>
+<script src="assets/game_balance.js?v=5"></script>
 <script src="assets/sb_bgm.js?v=6"></script>
-<script src="assets/game_tax.js?v=14"></script>
+<script src="assets/game_tax.js?v=15"></script>
 <script>
 (function(){
   "use strict";
@@ -815,10 +809,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   }
 
   $("goQuiz").addEventListener("click", function(){ show("intro"); loadPeek(); });
-  $("goBalance").addEventListener("click", function(){
-    if(!BAL){ alert("질문을 불러오지 못했습니다."); return; }
-    BAL.start();
-  });
+  /* 밸런스는 세트가 다섯이라 카드가 JS 로 그려진다 — 배선도 그쪽(아래 BalanceGame 블록)에 있다 */
   var backs = document.querySelectorAll(".toHub");
   for(var i=0;i<backs.length;i++){
     backs[i].addEventListener("click", function(e){ e.preventDefault(); stopTimer(); show("hub"); });
@@ -833,9 +824,28 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   }
   if(window.BalanceGame){
     BAL = window.BalanceGame.init({ show: show });
-    $("bStart").addEventListener("click", function(){ BAL.start(); });
-    if(BAL.count) $("balCount").textContent =
-      BAL.count + "개 가운데 다섯 개 · 다시 하면 다른 질문";
+    /* 밸런스 목록 — 세트가 다섯이라 카드를 손으로 적지 않고 그려 낸다.
+       세트를 늘리면 data/polls.js 만 고치면 목록이 따라온다. */
+    (function(){
+      var wrap = $("listBal"), sets = BAL.sets || [];
+      if(!wrap) return;
+      if(!sets.length){ wrap.innerHTML = "<div class='gempty'>질문을 불러오지 못했습니다.</div>"; return; }
+      wrap.innerHTML = sets.map(function(st){
+        return "<button class='gitem' data-set='" + esc(st.id) + "'>" +
+          "<span class='th'><img src='assets/th_balance.png?v=1' alt=''></span>" +
+          "<span class='tx'>" +
+            "<span class='gt'>" + esc(st.title) + "</span>" +
+            "<span class='gs'>" + esc(st.sub) + "</span>" +
+            "<span class='gm'>" + st.items.length + "개 중 " + st.pick +
+              "문제 · <b>매번 다른 질문</b></span>" +
+          "</span></button>";
+      }).join("") + "<div class='gempty'>새로운 밸런스 게임을 준비하고 있습니다.</div>";
+      wrap.addEventListener("click", function(e){
+        var b = e.target.closest && e.target.closest(".gitem[data-set]");
+        if(b) BAL.start(b.getAttribute("data-set"));
+      });
+      $("tabBal").querySelector(".cnt").textContent = sets.length;
+    })();
   }
 
   /* ───────────────────────── 랭킹 ─────────────────────────
