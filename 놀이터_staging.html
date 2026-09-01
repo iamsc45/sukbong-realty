@@ -181,6 +181,12 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
      border:1px solid var(--hair);border-radius:999px;padding:7px 13px;cursor:pointer;
      letter-spacing:-.01em;white-space:nowrap}
 .tsnd.off{color:var(--muted2);background:var(--soft)}
+/* 한마디 줄 — 판 바깥이라 떨어지는 세금을 가리지 않는다.
+   빈 줄일 때도 높이를 유지해 판이 위아래로 튀지 않게 한다 */
+.tsay{height:34px;display:flex;align-items:center;justify-content:center;margin-bottom:6px}
+.tsay:not(.on){visibility:hidden}
+.tsay.on{background:var(--text);color:#fff;border-radius:999px;padding:0 16px;
+     font-size:14.5px;font-weight:700;letter-spacing:-.02em;width:fit-content;margin:0 auto 6px}
 .tstage{display:flex;justify-content:center}
 .tstage canvas{border:1px solid var(--hair);border-radius:14px;background:var(--canvas);
      touch-action:none;display:block}   /* touch-action 을 빼면 게임 중에 페이지가 스크롤된다 */
@@ -476,6 +482,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
         <button type="button" id="tSnd" class="tsnd" aria-pressed="true">♪ 소리 켜짐</button>
       </div>
     </div>
+    <div class="tsay" id="tSay"></div>
     <div class="tstage"><canvas id="tCv"></canvas></div>
   </section>
 
@@ -500,7 +507,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 <script src="data/polls.js?v=2"></script>
 <script src="assets/game_balance.js?v=1"></script>
 <script src="assets/sb_bgm.js?v=2"></script>
-<script src="assets/game_tax.js?v=8"></script>
+<script src="assets/game_tax.js?v=9"></script>
 <script>
 (function(){
   "use strict";

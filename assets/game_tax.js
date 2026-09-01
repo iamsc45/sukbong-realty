@@ -259,20 +259,9 @@ window.TaxGame = (function(){
 
     drawHouse(px, H - GROUND);
 
-    /* 한마디 — 화면 위쪽에 잠깐 떴다 사라진다.
-       ⚠️ 블록이 지나다니는 자리라 반투명 상자를 깔아야 글자가 읽힌다. */
-    if(toast){
-      var a = Math.min(1, toast.left / 0.45);          // 끝날 때만 흐려진다
-      ctx.font = "700 14.5px Pretendard, -apple-system, sans-serif";
-      var tw = ctx.measureText(toast.t).width + 30, ty = H * 0.30;
-      ctx.save();
-      ctx.globalAlpha = a;
-      ctx.fillStyle = INK;
-      roundRect(W/2 - tw/2, ty - 17, tw, 34, 17); ctx.fill();
-      ctx.fillStyle = "#FFFFFF";
-      ctx.fillText(toast.t, W/2, ty + 0.5);
-      ctx.restore();
-    }
+    /* 🔴 한마디를 판 안에 그리지 않는다(2026-09-01 스크린샷에서 잡음).
+       처음에는 화면 가운데에 띄웠는데 **떨어지는 세금을 가려서** 피할 수가 없었다.
+       연출이 게임을 방해하면 연출이 아니라 버그다. 판 위 DOM 줄로 뺐다(hud 참조). */
 
     /* 아래 안내 한 줄 */
     ctx.font = "600 12px Pretendard, -apple-system, sans-serif";
@@ -294,6 +283,13 @@ window.TaxGame = (function(){
     var s = $("tShield");
     if(shield > 0){ s.classList.remove("hide"); s.textContent = "무적 " + shield.toFixed(1) + "초"; }
     else s.classList.add("hide");
+    /* 한마디 — 판 바로 위 한 줄. 자리는 늘 잡아 두어 판이 위아래로 튀지 않게 한다 */
+    var y = $("tSay");
+    if(y){
+      var t = toast ? toast.t : "";
+      if(y.textContent !== t) y.textContent = t;
+      y.classList.toggle("on", !!toast);
+    }
   }
 
   function loop(t){
