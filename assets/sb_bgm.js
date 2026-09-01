@@ -55,7 +55,7 @@ window.SBBgm = (function(){
     o.type = "sine";
     o.frequency.setValueAtTime(140, t);
     o.frequency.exponentialRampToValueAtTime(45, t + 0.09);
-    g.gain.setValueAtTime(0.5, t);
+    g.gain.setValueAtTime(0.9, t);
     g.gain.exponentialRampToValueAtTime(0.0001, t + 0.13);
     o.connect(g); g.connect(master);
     o.start(t); o.stop(t + 0.15);
@@ -64,7 +64,7 @@ window.SBBgm = (function(){
   function hat(t){
     var s = ac.createBufferSource(), g = ac.createGain(), hp = ac.createBiquadFilter();
     s.buffer = noise; hp.type = "highpass"; hp.frequency.value = 7000;
-    g.gain.setValueAtTime(0.16, t);
+    g.gain.setValueAtTime(0.3, t);
     g.gain.exponentialRampToValueAtTime(0.0001, t + 0.035);
     s.connect(hp); hp.connect(g); g.connect(master);
     s.start(t); s.stop(t + 0.05);
@@ -80,8 +80,8 @@ window.SBBgm = (function(){
     if(!playing) return;
     while(nextT < ac.currentTime + LOOK){
       var i = step % 32, t = nextT;
-      if(LEAD[i] != null) tone("square", hz(LEAD[i]), t, 0.085, 0.10);
-      if(BASS[i] != null) tone("square", hz(BASS[i] - 12), t, 0.13, 0.13);
+      if(LEAD[i] != null) tone("square", hz(LEAD[i]), t, 0.085, 0.34);
+      if(BASS[i] != null) tone("square", hz(BASS[i] - 12), t, 0.13, 0.40);
       if(KICK.indexOf(i) >= 0) kick(t);
       if(HAT.indexOf(i) >= 0) hat(t);
       nextT += spb();
@@ -111,16 +111,23 @@ window.SBBgm = (function(){
     if(!AC) return false;
     ac = new AC();
     master = ac.createGain();
-    /* 🔴 2026-09-01 석봉님 "BGM 도 안 나온다". 0.07 은 폰 스피커에서 사실상 안 들린다.
-       배경음이라고 너무 낮춰 잡았다. 게임 소리는 들려야 소리다. */
-    master.gain.value = 0.18;
+    /* 🔴 2026-09-01 석봉님 "BGM 도 안 나온다".
+       처음엔 0.07 이었고 0.18 로 올렸는데도 **계측기로 재 보니 진폭이 5%** 였다.
+       원인은 master 와 음 하나하나의 음량이 **곱해진다**는 것 —
+       0.18 × 0.13 = 0.023 이라 사실상 무음이다. 배경음이라고 두 곳에서 깎은 셈이다.
+       이제 음 쪽은 자기 배합만 정하고, 전체 크기는 여기 한 곳에서 정한다. */
+    master.gain.value = 0.5;
     /* 신호가 실제로 나가는지 재기 위한 계측기.
        "스케줄러가 돈다"와 "소리가 난다"는 다른 이야기라 눈금이 필요하다.
        분석기는 소리를 바꾸지 않는다(그냥 지나가며 본다). */
     ana = ac.createAnalyser();
     ana.fftSize = 256;
     abuf = new Uint8Array(ana.fftSize);
-    master.connect(ana);
+    /* 사각파가 여럿 겹치면 쉽게 찌그러진다. 압축기를 물려 큰 소리를 눌러 준다 */
+    var comp = ac.createDynamicsCompressor();
+    comp.threshold.value = -12; comp.ratio.value = 6; comp.attack.value = 0.003;
+    master.connect(comp);
+    comp.connect(ana);
     ana.connect(ac.destination);
     var n = ac.sampleRate * 0.2, buf = ac.createBuffer(1, n, ac.sampleRate), d = buf.getChannelData(0);
     for(var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
@@ -143,8 +150,8 @@ window.SBBgm = (function(){
     if(!ensure()) return;
     if(ac.state === "suspended") ac.resume();
     var t = ac.currentTime + 0.02;
-    tone("square", 880, t, 0.09, 0.22);
-    tone("square", 1320, t + 0.1, 0.12, 0.22);
+    tone("square", 880, t, 0.09, 0.5);
+    tone("square", 1320, t + 0.1, 0.12, 0.5);
   }
   function stop(){
     playing = false;
