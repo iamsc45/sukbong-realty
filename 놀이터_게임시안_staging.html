@@ -64,7 +64,11 @@ p.sub b{background:var(--sun);padding:1px 5px;box-shadow:2px 2px 0 var(--ink)}
 .meta .ds{font-size:13.5px;color:#5C564C;line-height:1.7;word-break:keep-all}
 
 /* ── 폰 프레임 ────────────────────────────────────────────────────── */
-.phone{border:4px solid var(--ink);box-shadow:9px 9px 0 var(--ink);background:var(--paper)}
+/* ⚠️ 폰 폭을 실제 기기(390px)에 맞춰 고정한다.
+   열 폭에 맡겨 늘리면 캔버스가 같이 늘어나 **폰에서는 안 나는 잘림**이 시안에서만 난다
+   (2026-09-01 첫 판에서 실제로 집과 바닥이 화면 밖으로 밀렸다). */
+.phone{width:392px;max-width:100%;margin:0 auto;
+  border:4px solid var(--ink);box-shadow:9px 9px 0 var(--ink);background:var(--paper)}
 .scr{height:748px;overflow:hidden;display:flex;flex-direction:column;position:relative}
 .pad{padding:20px 18px}
 .grow{flex:1 1 auto;min-height:8px}
@@ -169,7 +173,7 @@ canvas{display:block;width:100%;height:auto;background:var(--paper)}
 .steps{display:flex;gap:5px;margin:0 0 14px}
 .steps i{flex:1;height:9px;border:2px solid var(--ink);background:#fff}
 .steps i.done{background:var(--pop)}
-.qnum{font-family:'Black Han Sans',sans-serif;font-size:13px;color:var(--mute);letter-spacing:.06em}
+.qnum{font-family:'Black Han Sans',sans-serif;font-size:13.5px;color:#6A6355;letter-spacing:.06em}
 .qt{font-size:21px;font-weight:800;line-height:1.45;letter-spacing:-.03em;margin:8px 0 16px;
   word-break:keep-all}
 .qt b{background:var(--sun);padding:0 4px;box-shadow:2px 2px 0 var(--ink)}
@@ -190,9 +194,12 @@ canvas{display:block;width:100%;height:auto;background:var(--paper)}
   margin:12px 0 4px;word-break:keep-all}
 .bsub{font-size:13px;color:var(--ink2);line-height:1.6;margin:0 0 16px;word-break:keep-all}
 .bpick{display:grid;gap:12px}
+/* 두 장을 살짝 어긋나게 기울인다 — 스티커를 손으로 붙인 것처럼 보이게.
+   대칭으로 놓으면 표가 되고, 표는 고르고 싶은 마음이 안 든다. */
 .bopt{border:var(--line) solid var(--ink);box-shadow:5px 5px 0 var(--ink);background:#fff;
-  padding:16px 15px;cursor:pointer;transition:transform 90ms,box-shadow 90ms}
-.bopt:active{transform:translate(5px,5px);box-shadow:0 0 0 var(--ink)}
+  padding:16px 15px;cursor:pointer;transition:transform 90ms,box-shadow 90ms;transform:rotate(-.7deg)}
+.bopt.b{transform:rotate(.6deg)}
+.bopt:active,.bopt.b:active{transform:translate(5px,5px);box-shadow:0 0 0 var(--ink)}
 .bopt .ab{display:inline-block;width:26px;height:26px;background:var(--ink);color:var(--paper);
   font-family:'Black Han Sans',sans-serif;font-size:14px;text-align:center;line-height:26px;
   margin-bottom:8px}
@@ -542,7 +549,7 @@ canvas{display:block;width:100%;height:auto;background:var(--paper)}
   box(214*S,  40*S, "관리비",   "#fff", INK);
   box( 96*S, 236*S, "종부세",   RED,  "#fff");
   box(232*S, 318*S, "대출이자", SUN,  INK);
-  box( 40*S, 404*S, "비과세",   WIN,  "#fff");    // 먹으면 무적 — 초록으로만 구분
+  box( 28*S, 348*S, "비과세",   WIN,  "#fff");    // 먹으면 무적 — 초록으로만 구분
   box(206*S, 168*S, "재산세",   "#fff", INK);
 
   /* 바닥 — 두꺼운 먹선 하나 + 아래는 옅은 사선(땅) */
