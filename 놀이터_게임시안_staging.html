@@ -278,7 +278,7 @@ canvas{display:block;width:100%;height:auto;background:var(--paper)}
               <span style="font-family:'Black Han Sans';font-size:30px;color:var(--mute)">+</span></div>
             <div>
               <h3 style="color:var(--mute)">다음 게임</h3>
-              <p>여기에 계속 붙습니다. 하고 싶은 게임이 있으시면 정보방에 남겨 주세요.</p>
+              <p style="margin:0">여기에 계속 붙습니다.</p>
             </div>
           </div>
         </div>
@@ -569,11 +569,13 @@ canvas{display:block;width:100%;height:auto;background:var(--paper)}
   box(214*S,  40*S, "관리비",   "#fff", INK);
   box( 96*S, 236*S, "종부세",   POP,  "#fff");
   box(232*S, 318*S, "대출이자", "#fff", INK);
-  box( 28*S, 348*S, "비과세",   WIN,  "#fff");    // 먹으면 무적 — 초록은 여기에만
+  box( 18*S, 330*S, "비과세",   WIN,  "#fff");    // 먹으면 무적 — 초록은 여기에만
   box(206*S, 168*S, "재산세",   POP,  "#fff");
 
-  /* 바닥 — 두꺼운 먹선 하나 + 아래는 옅은 사선(땅) */
-  var gy = H - 92*S;
+  /* 바닥 — 두꺼운 먹선 하나 + 아래는 옅은 사선(땅)
+     ⚠️ 높이는 게임 코드의 GROUND(54)와 같은 값을 쓴다. 시안에서만 두껍게 잡으면
+        실제 화면과 달라져 비교가 안 된다(첫 판에서 92로 잡아 땅이 화면의 1/6을 먹었다). */
+  var gy = H - 54*S;
   g.strokeStyle = INK; g.lineWidth = 6*S;
   g.beginPath(); g.moveTo(0, gy); g.lineTo(W, gy); g.stroke();
   g.save(); g.beginPath(); g.rect(0, gy, W, H-gy); g.clip();
