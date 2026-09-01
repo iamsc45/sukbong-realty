@@ -74,6 +74,11 @@ window.SBBgm = (function(){
   var el = null;             // 지금 재생 중인 <audio>
   var cur = null, on = false, pace = 0;
   var lastErr = "";
+  /* 🔴 재생은 비동기다(WAV 를 만들고 <audio> 에 물리는 사이 시간이 흐른다).
+     그 사이에 stop() 이 오면 **먼저 멈추고 뒤늦게 재생이 시작**된다 —
+     2026-09-01 실측: 게임이 끝났는데 곡이 계속 흘렀다.
+     그래서 재생마다 번호를 매기고, 자기 번호가 아니면 시작하지 않는다. */
+  var token = 0;
 
   function hz(n){ return 440 * Math.pow(2, (n - 69) / 12); }
 
@@ -188,7 +193,9 @@ window.SBBgm = (function(){
   function play(name){
     if(!on) return Promise.resolve(false);
     cur = name;
+    var my = ++token;
     return build(name).then(function(url){
+      if(my !== token) return false;      // 그 사이 stop() 이나 다른 곡이 왔다
       var a = ensureEl();
       if(a.src !== url){ a.src = url; }
       a.playbackRate = 1;
@@ -200,6 +207,7 @@ window.SBBgm = (function(){
   }
 
   function stop(){
+    token++;                               // 아직 도착 안 한 재생을 무효로 만든다
     if(el){ try{ el.pause(); }catch(e){} }
   }
 
