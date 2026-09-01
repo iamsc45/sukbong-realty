@@ -314,7 +314,9 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
      transition:transform 90ms,box-shadow 90ms}
 .tsnd:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--nb-ink)}
 .tsnd.off{color:var(--nb-mute);background:#EDE8DA}
-.meter .tsnd{align-self:center;margin-left:10px}
+/* ⚠️ 이 규칙이 위의 `.meter .tsnd` 보다 아래에 있어 이긴다 — 둘을 여기서 합친다.
+   center 로 두면 「남은 시간」 캡션 높이에 떠올라 줄이 어긋나 보인다(2026-09-01). */
+.meter .tsnd{align-self:flex-end;margin-left:auto;order:2}
 .brow{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .brow .qn{margin-bottom:0}
 /* 한마디 줄 — 판 바깥이라 떨어지는 세금을 가리지 않는다.
