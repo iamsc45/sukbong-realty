@@ -444,12 +444,10 @@ window.TaxGame = (function(){
     });
     $("tAgain").addEventListener("click", begin);
     $("tShare").addEventListener("click", function(){
-      /* 🔴 2026-09-01 석봉님 "공유하고 나도 해보기 누르니까 404".
-         `location.pathname` 은 **이미 인코딩된 문자열**(`/%EB%86%80...`)이다.
-         거기에 encodeURIComponent 를 또 걸어 `%25EB%25...` 가 되어 있던 주소가 나갔다.
-         한글 파일명이라 눈으로는 멀쩡해 보인다. 지금 주소를 그대로 쓰는 게 옳고,
-         본배포로 파일명이 바뀌어도 알아서 따라간다. */
-      var url = location.origin + location.pathname;
+/* 🔴 공유 주소는 **ASCII 짧은 주소**를 쓴다(2026-09-01).
+         놀이터 파일명이 한글이라 인코딩 단계가 한 번만 어긋나도 404 가 난다.
+         실제로 두 번 겪었다. `play.html` 이 진짜 놀이터로 보내 준다. */
+      var url = location.origin + "/play.html";
       window.SBShare.any({
         title: "세금 피하기",
         desc: "취득세·양도세를 피해 집을 지키는 게임. 저는 " + held(elapsed) + " 버텼습니다.",

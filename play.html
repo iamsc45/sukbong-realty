@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>석봉 놀이터</title>
+<!-- ── 공유 전용 짧은 주소 (2026-09-01 신설) ───────────────────────────────
+     🔴 왜 만들었나
+       놀이터 파일명이 한글(`놀이터_staging.html`)이라 주소가 `%EB%86%80…` 이다.
+       공유 링크가 **두 번 인코딩**되어 `%25EB%25…` 로 나가면서 404 가 났다.
+       코드에서 한 번 고쳤는데도 카카오톡 카드에서 또 404 가 나왔다 —
+       옛 카드를 누른 것인지 카카오가 한 번 더 인코딩하는 것인지 밖에서는 가릴 수 없다.
+       **그래서 원인을 가리는 대신, 어느 쪽이든 안 깨지는 길을 만든다.**
+       주소에 한글이 없으면 인코딩 단계가 몇 번이든 결과가 같다.
+
+     공유 링크는 전부 이 주소를 쓴다. 여기서 진짜 놀이터로 보낸다.
+     ⚠️ 본배포로 놀이터 파일명이 바뀌면 **아래 DEST 한 줄만** 고치면 된다.
+        (공유된 카드들은 이미 이 주소를 가리키고 있으므로 링크가 살아 있다) -->
+<meta property="og:title" content="석봉 놀이터">
+<meta property="og:description" content="실거래 자료로 만든 놀이터. 세금 피하기 · 집값 맞히기 · 밸런스 게임.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="석봉 부동산 정보방">
+<meta property="og:url" content="https://xn--2q1br1nnrasc92a76myvau64b.com/play.html">
+<meta property="og:image" content="https://xn--2q1br1nnrasc92a76myvau64b.com/assets/og_tax.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+  body{margin:0;min-height:100vh;display:grid;place-items:center;background:#F2F2EF;color:#6E6E6A;
+       font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;
+       font-size:15px}
+  a{color:#141414}
+</style>
+</head>
+<body>
+<p>놀이터로 이동합니다. <a id="go" href="%EB%86%80%EC%9D%B4%ED%84%B0_staging.html">바로 가기</a></p>
+<script>
+  /* 목적지 — 본배포 때 여기 한 줄만 바꾼다 */
+  var DEST = "%EB%86%80%EC%9D%B4%ED%84%B0_staging.html";
+  /* 쿼리(예: ?g=tax)는 그대로 넘긴다. 나중에 게임을 지정해 열 때 쓴다 */
+  var q = location.search || "";
+  document.getElementById("go").href = DEST + q;
+  /* replace 로 보내야 뒤로가기가 이 페이지에 걸리지 않는다 */
+  location.replace(DEST + q);
+</script>
+</body>
+</html>

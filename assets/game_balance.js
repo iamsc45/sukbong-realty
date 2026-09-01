@@ -129,9 +129,10 @@ window.BalanceGame = (function(){
     $("bReveal").addEventListener("click", reveal);
     $("bAgain").addEventListener("click", begin);
     $("bShare").addEventListener("click", function(){
-      /* 🔴 이중 인코딩 사고(2026-09-01) — `location.pathname` 은 이미 인코딩돼 있다.
-         또 인코딩하면 `%25EB%25...` 가 되어 404 가 뜬다. 자세한 것은 game_tax.js 같은 자리. */
-      var url = location.origin + location.pathname;
+/* 🔴 공유 주소는 **ASCII 짧은 주소**를 쓴다(2026-09-01).
+         놀이터 파일명이 한글이라 인코딩 단계가 한 번만 어긋나도 404 가 난다.
+         실제로 두 번 겪었다. `play.html` 이 진짜 놀이터로 보내 준다. */
+      var url = location.origin + "/play.html";
       window.SBShare.any({
         title: "부동산 밸런스 게임",
         desc: "정답이 없는 질문 다섯 개. 고르고 나면 실제 거래가 어땠는지 보여드립니다.",
