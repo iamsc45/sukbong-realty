@@ -249,7 +249,10 @@ window.TaxGame = (function(){
     for(var i = blocks.length - 1; i >= 0; i--){
       var b = blocks[i];
       b.y += b.vy * dt;
-      if(b.y > H){ blocks.splice(i, 1); continue; }
+      /* ⚠️ 바닥선에 닿으면 지운다 — 전에는 캔버스 끝까지 내려가 **땅에 박힌 것처럼** 보였다
+         (2026-09-02 화면에서 확인). 판정에는 영향이 없다: 집은 바닥 위에 서 있으므로
+         여기까지 온 블록은 이미 안 맞은 것이다. */
+      if(b.y + b.h > H - GROUND + 4){ blocks.splice(i, 1); continue; }
       if(b.x < hx + hw && b.x + b.w > hx && b.y < hy + hh && b.y + b.h > hy){
         if(b.kind === "item"){
           shield = Math.max(shield, b.o.d);
