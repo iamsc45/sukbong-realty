@@ -152,6 +152,9 @@ h2.t.sm{font-size:33px}
   box-shadow:3px 3px 0 var(--ink);font-size:16px;line-height:1;display:flex;
   align-items:center;justify-content:center;font-weight:900;cursor:pointer}
 canvas{display:block;width:100%;height:auto;background:var(--paper)}
+/* 한마디 띠 — HUD 바로 아래. 캔버스 위에 겹치지 않고 자기 자리를 갖는다 */
+.saybar{background:var(--sun);border-bottom:2.5px solid var(--ink);padding:8px 14px;
+  font-size:13.5px;font-weight:800;letter-spacing:-.02em;text-align:center;word-break:keep-all}
 .playfoot{border-top:var(--line) solid var(--ink);padding:11px 14px;background:#fff;
   display:flex;justify-content:space-between;align-items:center;gap:10px}
 .playfoot p{margin:0;font-size:12.5px;font-weight:700;color:var(--ink2);word-break:keep-all}
@@ -332,7 +335,8 @@ canvas{display:block;width:100%;height:auto;background:var(--paper)}
           <div class="icobtn">♪</div>
         </div>
       </div>
-      <canvas id="cv" width="740" height="1120"></canvas>
+      <div class="saybar">7년. 엘리베이터에서 다들 아는 척합니다</div>
+      <canvas id="cv" width="740" height="1050"></canvas>
       <div class="playfoot">
         <p>화면 아무 데나 누르면<br>그쪽으로 갑니다</p>
         <div class="chip p" style="margin:0;white-space:nowrap">비과세 3.2초</div>
@@ -359,6 +363,11 @@ canvas{display:block;width:100%;height:auto;background:var(--paper)}
           <div class="r"><div class="n">7</div><div class="who">버티는중 <em>서울</em></div><div class="v">13년 0개월</div></div>
           <div class="r me"><div class="n">8</div><div class="who">나 <em>이번 판</em></div><div class="v">12년 7개월</div></div>
           <div class="r"><div class="n">9</div><div class="who">영끌1호 <em>인천</em></div><div class="v">12년 1개월</div></div>
+        </div>
+        <div class="card sun" style="margin-top:0">
+          <div style="font-size:13px;font-weight:800;line-height:1.65">
+            5개월만 더 버티면 7위입니다.<br>
+            <span style="font-weight:600;color:#5C564C">서울은 지금 지역 3위. 내 기록이 합계에 더해집니다.</span></div>
         </div>
       </div>
       <div class="grow"></div>
@@ -552,12 +561,16 @@ canvas{display:block;width:100%;height:auto;background:var(--paper)}
     return w;
   }
 
+  /* 🔑 색이 정보를 말하게 한다.
+     세금은 여덟 가지인데 색으로 다 구분할 수 없다 — 이름이 이미 적혀 있으니 색은
+     **흰 바탕과 주황 바탕을 번갈아** 써서 리듬만 준다. 초록은 **오직 무적 아이템**.
+     ⚠️ 첫 판에서 빨강·노랑까지 네 색을 썼더니 초록이 특별해 보이지 않았다. */
   box( 26*S,  86*S, "취득세",   POP,  "#fff");
   box(214*S,  40*S, "관리비",   "#fff", INK);
-  box( 96*S, 236*S, "종부세",   RED,  "#fff");
-  box(232*S, 318*S, "대출이자", SUN,  INK);
-  box( 28*S, 348*S, "비과세",   WIN,  "#fff");    // 먹으면 무적 — 초록으로만 구분
-  box(206*S, 168*S, "재산세",   "#fff", INK);
+  box( 96*S, 236*S, "종부세",   POP,  "#fff");
+  box(232*S, 318*S, "대출이자", "#fff", INK);
+  box( 28*S, 348*S, "비과세",   WIN,  "#fff");    // 먹으면 무적 — 초록은 여기에만
+  box(206*S, 168*S, "재산세",   POP,  "#fff");
 
   /* 바닥 — 두꺼운 먹선 하나 + 아래는 옅은 사선(땅) */
   var gy = H - 92*S;
@@ -585,15 +598,9 @@ canvas{display:block;width:100%;height:auto;background:var(--paper)}
   };
   im.src = "assets/mascot_house.png";
 
-  /* 한마디 — 캔버스 위에 스티커처럼 */
-  var msg = "7년. 엘리베이터에서 다들 아는 척합니다";
-  g.font = "800 " + (18*S) + "px Pretendard, sans-serif";
-  var mw = g.measureText(msg).width + 30*S, mh = 42*S, mx = (W-mw)/2, my = H - 62*S;
-  g.fillStyle = INK; g.fillRect(mx + 4*S, my + 4*S, mw, mh);
-  g.fillStyle = SUN; g.fillRect(mx, my, mw, mh);
-  g.lineWidth = 3*S; g.strokeStyle = INK; g.strokeRect(mx, my, mw, mh);
-  g.fillStyle = INK; g.textAlign = "center"; g.textBaseline = "middle";
-  g.fillText(msg, W/2, my + mh/2 + 1*S);
+  /* ⚠️ 한마디(마일스톤)는 **캔버스에 그리지 않는다.**
+     첫 판에서 캔버스 아래에 스티커로 그렸더니 바닥과 집을 밟았다.
+     화면 요소(.saybar)로 빼면 게임 그림을 안 가리고 글자도 더 선명하다. */
 })();
 </script>
 </body>
