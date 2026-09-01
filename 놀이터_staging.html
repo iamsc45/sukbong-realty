@@ -146,6 +146,14 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .board .empty{font-size:14.5px;color:var(--text2);padding:18px 0;text-align:center}
 
 /* 지역 대항전 — 개인 표와 같은 뼈대를 쓰되 칸을 셋으로 줄인다 */
+/* 기간 고르기 — 역대·올해·이번 달 */
+.pertabs{display:flex;gap:6px;margin:0 0 14px}
+.pertabs button{flex:1 1 0;background:#fff;border:1.5px solid var(--hair);border-radius:999px;
+  font-family:inherit;font-size:14px;font-weight:700;color:var(--text2);padding:9px 0;cursor:pointer;
+  transition:background 150ms ease,border-color 150ms ease,color 150ms ease}
+.pertabs button.on{background:var(--text);border-color:var(--text);color:#fff}
+/* 이름 옆의 지역 등수 — 「한강뷰(서울 2위)」 */
+.board .rg{font-size:12.5px;color:var(--muted);font-weight:600;margin-left:3px}
 .rboard{margin-top:30px}
 .rboard .rh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;
   font-size:15px;font-weight:800;letter-spacing:-.02em;padding-bottom:9px;
@@ -534,7 +542,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     <!-- 🔴 시작 화면에 랭킹(2026-09-01 석봉님). 남들 기록을 보고 나서 시작해야 도전할 마음이 생긴다.
          지역「간」과 지역「내」를 같이 보여준다 — 전국 1등은 멀지만 우리 동네 1등은 해볼 만하다. -->
     <div class="rankpeek" id="tPeek">
-      <div class="h"><b>이번 주 랭킹</b><span>최근 7일</span></div>
+      <div class="h"><b>랭킹</b><span>역대 기록</span></div>
       <ol id="tPeekList"><li class="none">불러오는 중…</li></ol>
       <div class="rsub" id="tPeekRegion"></div>
     </div>
@@ -581,9 +589,16 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     </div>
 
     <div id="gBoardWrap" class="hide">
+      <!-- 🔴 랭킹은 이제 끊기지 않는다(2026-09-01 석봉님). 역대가 기본이고
+           월간·연간을 함께 볼 수 있게 기간을 고른다. -->
+      <div class="pertabs" id="gPer">
+        <button data-p="all" class="on">역대</button>
+        <button data-p="year">올해</button>
+        <button data-p="month">이번 달</button>
+      </div>
       <div class="board" id="gBoard"></div>
       <div class="rboard">
-        <div class="rh">지역 대항전 <span>최근 7일 · 평균 기록</span></div>
+        <div class="rh">지역 순위 <span id="gRHint">평균 기록</span></div>
         <div id="gRBoard"></div>
       </div>
     </div>
@@ -679,9 +694,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 
   /* 시작 화면 랭킹 — 개인 다섯 줄 + 지역 대항전 한 줄 요약 */
   function gLoadPeek(){
-    sbFetch("game_rank_board?game=eq.tax&select=rank,nick,region,score&order=rank&limit=5")
-      .then(function(r){ return r.ok ? r.json() : []; })
-      .catch(function(){ return []; })
+    gRpc("game_board", { p_game: "tax", p_period: "all", p_limit: 5 })
       .then(function(rows){
         var box = document.getElementById("tPeekList");
         if(!box) return;
@@ -692,13 +705,12 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
         box.innerHTML = rows.map(function(x){
           return "<li><span class='r'>" + x.rank + "</span>" +
                  "<span class='n'>" + esc(x.nick) +
-                   (x.region ? " <em style='font-style:normal;color:var(--muted2)'>" + esc(x.region) + "</em>" : "") +
+                   (x.region ? " <em style='font-style:normal;color:var(--muted2)'>(" + esc(x.region) +
+                      (x.local_rank ? " " + x.local_rank + "위" : "") + ")</em>" : "") +
                  "</span><span class='v'>" + gHeld(x.score) + "</span></li>";
         }).join("");
       });
-    sbFetch("game_region_board?game=eq.tax&select=rank,region,n,avg_score&order=rank&limit=3")
-      .then(function(r){ return r.ok ? r.json() : []; })
-      .catch(function(){ return []; })
+    gRpc("game_region_rank", { p_game: "tax", p_period: "all", p_limit: 3 })
       .then(function(rows){
         var box = document.getElementById("tPeekRegion");
         if(!box) return;
@@ -706,7 +718,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
           box.innerHTML = "지역 대항전은 아직 시작 전입니다. 지역을 골라 등록하면 우리 동네 점수가 됩니다.";
           return;
         }
-        box.innerHTML = "<b>지역 대항전</b> · " + rows.map(function(x){
+        box.innerHTML = "<b>지역 순위</b> · " + rows.map(function(x){
           var me = gMyRegion && x.region === gMyRegion;
           return "<span class='" + (me ? "me" : "") + "'>" + x.rank + "위 " + esc(x.region) +
                  " " + gHeld(x.avg_score) + "</span>";
@@ -746,11 +758,12 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
         document.getElementById("gTitle").textContent =
           d.improved ? "최고 기록을 새로 세웠습니다" : "랭킹에 올렸습니다";
         document.getElementById("gDesc").textContent =
-          "한 분당 한 줄이 올라갑니다. 주간 랭킹은 최근 7일 기록으로 매주 새로 열립니다.";
+          "랭킹은 계속 쌓입니다. 역대·올해·이번 달을 따로 볼 수 있습니다.";
         document.getElementById("gDone").innerHTML =
           "<b>" + esc(gMyNick) + "</b> · 전국 <b>" + d.rank + "위</b>" +
           (d.region ? " <em>" + esc(d.region) + " 안에서 " + (d.local_rank || "-") + "위 · " +
              "지역 순위 " + (d.region_rank || "-") + "위</em>" : "") +
+          (d.month_rank ? " <em>· 이번 달 " + d.month_rank + "위</em>" : "") +
           "<br><em>최고 " + gHeld(d.score) + "</em>";
         gLoadBoard();
       })
@@ -775,48 +788,77 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
       .catch(function(){ gShowNick(null); });
   }
 
-  /* 결과 아래 두 표 — 개인, 그리고 지역 대항전 */
+  /* 결과 아래 두 표 — 개인, 그리고 지역 순위.
+     🔴 2026-09-01 석봉님 — 「이번 주」로 끊지 않는다. 역대가 기본이고 올해·이번 달을 고를 수 있다.
+        기록은 판마다 `game_play` 에 쌓이므로 어느 기간이든 뒤늦게도 뽑을 수 있다. */
+  var gPeriod = "all";
+  var PER_NAME = { all: "역대", year: "올해", month: "이번 달" };
+
+  function gRpc(fn, body){
+    return sbFetch("rpc/" + fn, { method: "POST", body: JSON.stringify(body) })
+      .then(function(r){ return r.ok ? r.json() : []; })
+      .catch(function(){ return []; });
+  }
+
   function gLoadBoard(){
     document.getElementById("gBoardWrap").classList.remove("hide");
-    sbFetch("game_rank_board?game=eq.tax&select=rank,nick,region,score&order=rank&limit=20")
-      .then(function(r){ return r.ok ? r.json() : []; })
-      .catch(function(){ return []; })
-      .then(function(rows){
-        var box = document.getElementById("gBoard");
-        if(!rows.length){ box.innerHTML = "<div class='empty'>아직 등록된 기록이 없습니다.</div>"; return; }
-        var h = "<div class='h'><span>순위</span><span>이름</span><span class='num'>지역</span>" +
-                "<span class='num'>기록</span><span class='num'></span></div>";
-        h += rows.map(function(x){
-          var me = gMyNick && x.nick === gMyNick;
-          return "<div class='r" + (me ? " me" : "") + "'>" +
-            "<span class='n1'>" + x.rank + "</span>" +
-            "<span class='nk'>" + esc(x.nick) + "</span>" +
-            "<span class='num'>" + esc(x.region || "-") + "</span>" +
-            "<span class='num'>" + gHeld(x.score) + "</span><span></span></div>";
-        }).join("");
-        box.innerHTML = h;
-      });
-    sbFetch("game_region_board?game=eq.tax&select=rank,region,n,avg_score&order=rank&limit=20")
-      .then(function(r){ return r.ok ? r.json() : []; })
-      .catch(function(){ return []; })
-      .then(function(rows){
-        var box = document.getElementById("gRBoard");
-        if(!rows.length){
-          box.innerHTML = "<div class='empty'>아직 지역을 고른 분이 없습니다.</div>"; return;
-        }
-        var h = "<div class='r'><span class='n1'>순위</span><span class='nm'>지역</span>" +
-                "<span class='num'>평균</span><span class='num'>인원</span></div>";
-        h += rows.map(function(x){
-          var me = gMyRegion && x.region === gMyRegion;
-          return "<div class='r" + (me ? " me" : "") + "'>" +
-            "<span class='n1'>" + x.rank + "</span>" +
-            "<span class='nm'>" + esc(x.region) + "</span>" +
-            "<span class='num'>" + gHeld(x.avg_score) + "</span>" +
-            "<span class='num'>" + x.n + "명</span></div>";
-        }).join("");
-        box.innerHTML = h;
-      });
+    var per = gPeriod;
+    document.getElementById("gRHint").textContent = PER_NAME[per] + " · 평균 기록";
+
+    gRpc("game_board", { p_game: "tax", p_period: per, p_limit: 20 }).then(function(rows){
+      var box = document.getElementById("gBoard");
+      if(!rows.length){
+        box.innerHTML = "<div class='empty'>" + PER_NAME[per] + " 기록이 아직 없습니다.</div>";
+        return;
+      }
+      var h = "<div class='h'><span>순위</span><span>이름</span>" +
+              "<span class='num'>기록</span><span class='num'></span><span class='num'></span></div>";
+      h += rows.map(function(x){
+        var me = gMyNick && x.nick === gMyNick;
+        /* 🔑 「한강뷰(서울 2위)」 — 전국 등수 옆에 지역 안 등수를 같이 보여 준다(석봉님).
+           전국 20위여도 우리 동네 1위면 자랑할 거리가 된다. */
+        var rg = x.region ? "<span class='rg'>(" + esc(x.region) +
+                   (x.local_rank ? " " + x.local_rank + "위" : "") + ")</span>" : "";
+        return "<div class='r" + (me ? " me" : "") + "'>" +
+          "<span class='n1'>" + x.rank + "</span>" +
+          "<span class='nk'>" + esc(x.nick) + rg + "</span>" +
+          "<span class='num'>" + gHeld(x.score) + "</span><span></span><span></span></div>";
+      }).join("");
+      box.innerHTML = h;
+    });
+
+    gRpc("game_region_rank", { p_game: "tax", p_period: per, p_limit: 20 }).then(function(rows){
+      var box = document.getElementById("gRBoard");
+      if(!rows.length){
+        box.innerHTML = "<div class='empty'>아직 지역을 고른 분이 없습니다.</div>"; return;
+      }
+      var h = "<div class='r'><span class='n1'>순위</span><span class='nm'>지역</span>" +
+              "<span class='num'>평균</span><span class='num'>인원</span></div>";
+      h += rows.map(function(x){
+        var me = gMyRegion && x.region === gMyRegion;
+        return "<div class='r" + (me ? " me" : "") + "'>" +
+          "<span class='n1'>" + x.rank + "</span>" +
+          "<span class='nm'>" + esc(x.region) + "</span>" +
+          "<span class='num'>" + gHeld(x.avg_score) + "</span>" +
+          "<span class='num'>" + x.n + "명</span></div>";
+      }).join("");
+      box.innerHTML = h;
+    });
   }
+
+  (function wirePeriod(){
+    var box = document.getElementById("gPer");
+    if(!box) return;
+    box.addEventListener("click", function(e){
+      var b = e.target.closest && e.target.closest("button[data-p]");
+      if(!b) return;
+      gPeriod = b.getAttribute("data-p");
+      [].forEach.call(box.querySelectorAll("button"), function(x){
+        x.classList.toggle("on", x === b);
+      });
+      gLoadBoard();
+    });
+  })();
 
   function gResetRank(){
     gPending = null;
