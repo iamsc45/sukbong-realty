@@ -1167,13 +1167,18 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
      참여가 늘면 서울만 구 단위로 나누는 식으로 넓히면 된다. */
   var SIDO = ["서울","경기","인천","부산","대구","광주","대전","울산","세종",
               "강원","충북","충남","전북","전남","경북","경남","제주"];
+  /* 지역 칸 둘(퀴즈·세금)을 여기서 한 번에 채운다.
+     ⚠️ 등록 단계에서 채우면 **로그인 왕복이 끼었을 때 채우는 시점을 놓친다.**
+        옵션 17개는 가벼우니 처음부터 만들어 둔다. */
   (function fillRegion(){
-    var sel = $("region");
-    if(!sel) return;
-    SIDO.forEach(function(v){
-      var o = document.createElement("option");
-      o.value = v; o.textContent = v;
-      sel.appendChild(o);
+    ["region", "gRegion"].forEach(function(id){
+      var sel = $(id);
+      if(!sel || sel.options.length > 1) return;
+      SIDO.forEach(function(v){
+        var o = document.createElement("option");
+        o.value = v; o.textContent = v;
+        sel.appendChild(o);
+      });
     });
   })();
 
