@@ -30,21 +30,50 @@ window.TaxGame = (function(){
 
   /* 떨어지는 것들. 라벨이 곧 그림이라 따로 이미지가 필요 없다.
      w 는 글자 폭에 맞춘 상자 너비(측정해서 채운다). */
+  /* 🔴 2026-09-02 석봉님 "세금 종류를 좀 더 다양하고 재미있게".
+     8종 → 20종. 집 한 채에 실제로 붙는 것들만 골랐다(세금이 아닌 비용도 체감은 세금이다).
+     ⚠️ **세율·금액은 한 줄도 안 쓴다** — 자주 바뀌고, 틀리면 게임이 아니라 오보가 된다.
+        tip 은 「언제·왜 오는가」만 말한다. */
   var TAXES = [
-    { t: "취득세",    tip: "집을 사는 순간 가장 먼저 만나는 세금입니다." },
-    { t: "양도세",    tip: "팔 때 오른 만큼 냅니다. 오래 가질수록 공제가 커집니다." },
-    { t: "재산세",    tip: "6월 1일에 가지고 있던 사람에게 갑니다. 5월 31일에 팔면 안 옵니다." },
-    { t: "종부세",    tip: "재산세와 같은 날을 기준으로 매깁니다." },
+    /* ── 살 때 ── */
+    { t: "취득세",     tip: "집을 사는 순간 가장 먼저 만나는 세금입니다." },
+    { t: "등기비용",   tip: "잔금 치르는 날 같이 따라옵니다." },
+    { t: "인지세",     tip: "계약서에 붙는 작은 세금입니다. 금액에 따라 달라집니다." },
     { t: "중개수수료", tip: "세금은 아닌데 체감은 세금입니다." },
-    { t: "대출이자",  tip: "매달 조용히 나갑니다. 금리가 오르면 소리도 커집니다." },
-    { t: "등기비용",  tip: "잔금 치르는 날 같이 따라옵니다." },
-    { t: "관리비",    tip: "작아 보이지만 30년이면 집 한 채 값입니다." }
+    { t: "지방교육세", tip: "취득세에 얹혀 함께 나옵니다. 따로 고지되지 않아 모르고 지나칩니다." },
+    { t: "채권매입",   tip: "등기할 때 국민주택채권을 사야 합니다. 대개 바로 되팔아 차액만 냅니다." },
+    /* ── 가지고 있을 때 ── */
+    { t: "재산세",     tip: "6월 1일에 가지고 있던 사람에게 갑니다. 5월 31일에 팔면 안 옵니다." },
+    { t: "종부세",     tip: "재산세와 같은 날을 기준으로 매깁니다." },
+    { t: "대출이자",   tip: "매달 조용히 나갑니다. 금리가 오르면 소리도 커집니다." },
+    { t: "관리비",     tip: "작아 보이지만 30년이면 집 한 채 값입니다." },
+    { t: "수선충당금", tip: "관리비에 섞여 매달 쌓입니다. 세입자가 냈다면 이사할 때 돌려받습니다." },
+    { t: "화재보험",   tip: "한 해에 한 번 오지만 없으면 큰일 납니다." },
+    { t: "건강보험료", tip: "세금은 아닌데 공시가격이 오르면 같이 오릅니다." },
+    { t: "보일러교체", tip: "10년 넘으면 어느 겨울엔가 반드시 옵니다." },
+    { t: "누수공사",   tip: "위층에서 오면 남의 일이 아니게 됩니다." },
+    /* ── 팔 때·물려줄 때 ── */
+    { t: "양도세",     tip: "팔 때 오른 만큼 냅니다. 오래 가질수록 공제가 커집니다." },
+    { t: "증여세",     tip: "살아 있을 때 물려주면 이쪽입니다." },
+    { t: "상속세",     tip: "돌아가신 뒤 넘어가면 이쪽입니다. 신고 기한이 따로 있습니다." },
+    { t: "임대소득세", tip: "세를 놓아 받은 돈에도 세금이 붙습니다." },
+    { t: "재건축부담금", tip: "재건축으로 크게 오른 몫의 일부를 나라가 가져갑니다." }
+  ];
+  /* 🔴 드물게 떨어지는 **큰 놈**. 폭이 넓어 피하기 어려운 대신 느리게 온다.
+     한 판에 두어 번만 나오게 해서 「어 뭐야」 하는 순간을 만든다. */
+  var BIGS = [
+    { t: "세무조사",   tip: "가끔은 세금이 아니라 사람이 옵니다." },
+    { t: "종부세 폭탄", tip: "공시가격이 뛰면 어느 해 갑자기 커집니다." },
+    { t: "금리인상",   tip: "빚이 있으면 매달 내는 돈이 같이 오릅니다." }
   ];
   /* 먹으면 잠깐 무적. 진짜 있는 제도의 이름만 빌린다(수치는 안 쓴다). */
   var ITEMS = [
     { t: "비과세",   d: 4, say: "비과세! 지금은 아무도 못 건드립니다" },
     { t: "장기보유", d: 4, say: "버틴 보람이 있습니다" },
-    { t: "1주택",    d: 5, say: "딱 한 채라 마음이 편합니다" }
+    { t: "1주택",    d: 5, say: "딱 한 채라 마음이 편합니다" },
+    { t: "상생임대", d: 4, say: "세를 안 올렸더니 돌아오는 것이 있습니다" },
+    { t: "분납신청", d: 3, say: "나눠 내기로 했습니다. 숨통이 트입니다" },
+    { t: "이의신청", d: 3, say: "따져 물으니 잠시 멈췄습니다" }
   ];
 
   /* ── 웃자고 넣은 것들 ─────────────────────────────────────
@@ -114,6 +143,13 @@ window.TaxGame = (function(){
       o.w = Math.round(ctx.measureText(o.t).width) + 26;
       o.h = 34;
     });
+    /* 큰 놈은 글자도 크고 상자도 넓다 — 화면에서 「덩치」로 먼저 읽혀야 한다 */
+    ctx.font = "800 19px Pretendard, -apple-system, sans-serif";
+    BIGS.forEach(function(o){
+      o.w = Math.round(ctx.measureText(o.t).width) + 42;
+      o.h = 44;
+      o.big = true;
+    });
   }
 
   /* 마스코트를 미리 받아 둔다 — 첫 판이 시작될 때 이미 와 있어야 도형으로 안 그린다.
@@ -129,19 +165,30 @@ window.TaxGame = (function(){
   function reset(){
     /* 시작하고 1.4초는 아무것도 안 떨어뜨린다. 손가락을 올려놓을 짬을 줘야
        "시작하자마자 죽었다"는 억울함이 없다. */
-    elapsed = 0; blocks = []; shield = 0; spawnT = 1.4; itemT = 7;
+    elapsed = 0; blocks = []; shield = 0; spawnT = 1.4; itemT = 7; bigT = 22;
     killedBy = null; vx = 0; aimX = null; px = W / 2;
     toast = null; mileIdx = 0;
     say("집을 지키세요", 1.6);
   }
 
   var altFlip = false;                 // 주황·흰색을 번갈아 내보내 리듬을 만든다
+  var bigT = 22;                       // 큰 놈은 22초쯤에 한 번씩
   function spawn(){
     var o = TAXES[Math.floor(Math.random() * TAXES.length)];
     altFlip = !altFlip;
     blocks.push({ o: o, kind: "tax", alt: altFlip,
       x: 10 + Math.random() * (W - o.w - 20), y: -o.h,
       w: o.w, h: o.h, vy: speed() * (0.85 + Math.random() * 0.3) });
+  }
+  /* 큰 놈 — 넓어서 피하기 어려운 대신 **느리게** 온다.
+     ⚠️ 빠르기까지 하면 피할 수 없다. 어려운 것과 불공평한 것은 다르다. */
+  function spawnBig(){
+    var o = BIGS[Math.floor(Math.random() * BIGS.length)];
+    var w = Math.min(o.w, W - 24);
+    blocks.push({ o: o, kind: "tax", alt: false, big: true,
+      x: 10 + Math.random() * Math.max(1, W - w - 20), y: -o.h,
+      w: w, h: o.h, vy: speed() * 0.58 });
+    say("큰 게 옵니다", 1.4);
   }
   function spawnItem(){
     var o = ITEMS[Math.floor(Math.random() * ITEMS.length)];
@@ -190,6 +237,9 @@ window.TaxGame = (function(){
     if(spawnT <= 0){ spawn(); spawnT = gap(); }
     itemT -= dt;
     if(itemT <= 0){ spawnItem(); itemT = 7 + Math.random() * 6; }
+    /* 큰 놈 — 20초쯤 지나서부터 이따금. 처음부터 나오면 시작하자마자 억울해진다 */
+    bigT -= dt;
+    if(bigT <= 0 && elapsed > 18){ spawnBig(); bigT = 24 + Math.random() * 14; }
 
     /* 히트박스는 보이는 것보다 작게 잡는다.
        스치기만 해도 죽으면 억울해서 다시 안 한다. */
@@ -300,12 +350,15 @@ window.TaxGame = (function(){
     blocks.forEach(function(b){
       var fill, tone;
       if(b.kind === "item"){ fill = GREEN; tone = "#FFFFFF"; }
+      else if(b.big){ fill = INK; tone = GOLD; }     // 큰 놈은 먹판 — 한눈에 다르다
       else if(b.alt){ fill = "#FFFFFF"; tone = INK; }
       else { fill = RED; tone = "#FFFFFF"; }
-      slab(b.x, b.y, b.w, b.h, fill);
+      slab(b.x, b.y, b.w, b.h, fill, b.big ? 6 : 4);
       ctx.fillStyle = tone;
+      ctx.font = "800 " + (b.big ? 19 : 15) + "px Pretendard, -apple-system, sans-serif";
       ctx.fillText(b.o.t, b.x + b.w/2, b.y + b.h/2 + 0.5);
     });
+    ctx.font = "800 15px Pretendard, -apple-system, sans-serif";   // 원래대로 되돌린다
 
     drawHouse(px, H - GROUND);
 
