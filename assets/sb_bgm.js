@@ -133,6 +133,14 @@ window.SBBgm = (function(){
     setOn: setOn,
     /* 게임이 얼마나 왔는지 0~1 로 알려 주면 그만큼 빨라진다 */
     setPace: function(v){ pace = v; },
-    playing: function(){ return playing; }
+    playing: function(){ return playing; },
+    /* 검증용 — "스케줄러가 돈다"와 "실제로 소리가 난다"는 다른 이야기다.
+       브라우저가 재생을 막고 있으면 state 가 running 이 아니고, 그때는
+       시계(currentTime)도 안 흐른다. 그 둘을 밖에서 볼 수 있게 열어 둔다. */
+    _dbg: function(){
+      return { state: ac ? ac.state : "없음",
+               now: ac ? +ac.currentTime.toFixed(3) : null,
+               step: step, bpmStep: +spb().toFixed(4), playing: playing, on: on };
+    }
   };
 })();
