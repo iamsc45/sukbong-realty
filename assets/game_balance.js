@@ -106,8 +106,14 @@ window.BalanceGame = (function(){
               "<div class='bars'>" + bar(q.a.t, pa, p.choice === "a") +
                                      bar(q.b.t, pb, p.choice === "b") + "</div>" +
               "<div class='tot'>" + tot.toLocaleString() + "명이 골랐습니다</div>" +
-              "<div class='fact'><div class='h'>그런데 실제로는</div>" +
-                "<p>" + q.fact + "</p><p>" + q.more + "</p>" +
+              /* 🔴 2026-09-01 — 문제가 두 갈래가 됐다(석봉님 "데이터 기반이 아니어도").
+                 ①실측 수치가 붙는 문제(fact) ②정답도 데이터도 없는 경험 문제(fact 없음).
+                 ②는 수치 자리에 **실무에서 아는 것 한 줄**을 준다. 빈 <p> 를 그리면
+                 결과 카드에 이유 없는 여백이 생기므로 있는 것만 그린다. */
+              "<div class='fact'><div class='h'>" +
+                  (q.fact ? "그런데 실제로는" : "알아 두면 좋은 것") + "</div>" +
+                (q.fact ? "<p>" + q.fact + "</p>" : "") +
+                (q.more ? "<p>" + q.more + "</p>" : "") +
                 (q.link ? "<a href='" + q.link.u + "' target='_blank' rel='noopener'>" +
                           esc(q.link.t) + "</a>" : "") +
               "</div></div>";
