@@ -15,135 +15,186 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/site.css">
 <style>
-/* ── 놀이터 · 가격 맞히기 (2026-08-31 개편) ────────────────────────
-   설계 원칙: **사이트와 같은 B&W 에디토리얼**로 되돌린다.
-   전 판은 네이비 배경 + 파란 칩 + 초록 카드라 사이트에서 혼자 튀었다
-   (석봉님 "너무 촌스러워"). 색은 잉크 + 회색 + 강조 하나로 줄이고,
-   상자 대신 괘선으로 나눈다. 위계는 크기와 굵기로만 만든다. */
+/* ══════════════════════════════════════════════════════════════════════
+   놀이터 — A안 네오브루탈 (2026-09-01 석봉님 확정)
+
+   방향
+     성격      종이 위에 매직으로 그린 아케이드
+     레퍼런스  오락실 안내판 + 스티커북
+     과감한 선택  **모든 것이 눌린다** — 3px 먹선 + 블러 없는 5px 그림자,
+                 누르면 그림자가 사라지며 5px 내려앉는다
+     폰트 2종   제목 Black Han Sans / 본문 Pretendard
+
+   🔴 여기만 사이트 톤(B&W 에디토리얼)과 다르다. 놀이터는 「게임 코너」라
+      다른 옷을 입는 편이 맞다고 석봉님이 정하셨다. 다만 **머리글(site-header)은
+      그대로 두어** 같은 사이트임이 보이게 한다.
+   ⚠️ 클래스 이름은 하나도 바꾸지 않았다 — 이름을 건드리면 JS 가 조용히 깨진다.
+      (2026-09-01 시안에서 확인한 규칙을 그대로 옮긴 것이다)
+   ══════════════════════════════════════════════════════════════════════ */
+:root{
+  --paper:#FFFCF2;      /* 종이. 순백을 피해 살짝 따뜻하게 */
+  --nb-ink:#16130F;     /* 먹. 순검정을 피한다 */
+  --nb-ink2:#4A443A;    /* 본문(따뜻한 회색) */
+  --nb-mute:#8A8478;
+  --pop:#FF5C39;        /* 강조색 하나 */
+  --sun:#FFD84D;        /* 보조 — 지금 여기 보라는 표시 */
+  --nb-win:#2FBF71;
+  --nb-lose:#E23B2E;
+  --nb-line:3px;
+}
+body{background:var(--paper);color:var(--nb-ink)}
 .q-wrap{max-width:560px;margin:0 auto;padding:0 20px 72px}
 
-.eyebrow{font-size:12.5px;letter-spacing:.13em;color:var(--muted);font-weight:700;margin:38px 0 10px}
-h1.q{font-size:clamp(30px,7vw,44px);font-weight:800;letter-spacing:-.04em;margin:0 0 12px;line-height:1.15}
-.lead{color:var(--text2);font-size:15.5px;line-height:1.85;margin:0 0 22px;word-break:keep-all}
-.rules{font-size:13.5px;color:var(--text2);border-top:1px solid var(--hair);
-  border-bottom:1px solid var(--hair);padding:13px 0;margin:0 0 26px;line-height:1.9}
-.rules b{font-weight:700}
-.mine-best{font-size:14px;color:var(--text2);margin-top:16px}
+.eyebrow{display:inline-block;background:var(--nb-ink);color:var(--paper);font-size:12px;
+  font-weight:800;letter-spacing:.15em;padding:5px 10px;margin:34px 0 0;transform:rotate(-1.5deg)}
+h1.q{font-family:'Black Han Sans',Pretendard,sans-serif;font-size:clamp(34px,9vw,50px);
+  letter-spacing:-.02em;margin:16px 0 10px;line-height:1.04}
+.lead{color:var(--nb-ink2);font-size:15.5px;line-height:1.8;margin:0 0 20px;word-break:keep-all}
+.rules{font-size:14px;color:var(--nb-ink2);background:#fff;border:2.5px dashed var(--nb-ink);
+  padding:13px 15px;margin:0 0 22px;line-height:1.85;word-break:keep-all}
+.rules b{font-weight:800;color:var(--nb-ink)}
+.mine-best{font-size:14.5px;font-weight:700;color:var(--nb-ink2);margin-top:14px}
 
-.btn.full{display:block;width:100%;text-align:center;border:0;font-family:inherit;cursor:pointer}
-button.btn{font-size:15px}
-.btn.line{background:transparent;color:var(--text);border:1px solid var(--text)}
-.btn+.btn{margin-top:9px}
+/* 버튼 — 이 화면에서 가장 중요한 부품. 누르면 종이가 눌리듯 내려앉는다 */
+.btn.full{display:block;width:100%;text-align:center;font-family:'Black Han Sans',Pretendard,sans-serif;
+  cursor:pointer;background:var(--pop);color:#fff;border:var(--nb-line) solid var(--nb-ink);
+  border-radius:0;box-shadow:5px 5px 0 var(--nb-ink);font-size:21px;letter-spacing:.01em;
+  padding:15px 0;transition:transform 90ms,box-shadow 90ms}
+button.btn{font-size:21px}
+.btn.full:active{transform:translate(5px,5px);box-shadow:0 0 0 var(--nb-ink)}
+.btn.line{background:#fff;color:var(--nb-ink)}
+.btn+.btn{margin-top:12px}
 
 /* ── 문제 ──
    ⚠️ 남은 시간은 눈에 확 띄어야 한다(2026-08-31 석봉님 "쫓기는 기분이 들도록").
       숫자를 크게 키우고 5초 아래에서 붉게 바꾸며 맥박을 준다.
       🔴맥박은 transform 으로만 준다 — opacity 를 건드리면 탭이 백그라운드일 때
       시계가 멈춰 **숫자가 통째로 안 보인다**(같은 날 결과 화면에서 겪었다). */
-.meter{display:flex;align-items:flex-end;gap:12px;margin:30px 0 8px}
-.steps{display:flex;gap:5px;padding-bottom:9px}
-.steps i{width:22px;height:2px;background:var(--hair);transition:background 200ms}
-.steps i.done{background:var(--text)}
-.steps i.on{background:var(--text)}
+.meter{display:flex;align-items:flex-end;gap:12px;margin:26px 0 10px}
+/* 진행 칸 — 채워지는 칸이라 몇 개 남았는지 한눈에 보인다 */
+.steps{display:flex;gap:5px;padding-bottom:7px}
+.steps i{width:24px;height:10px;border:2px solid var(--nb-ink);background:#fff;transition:background 200ms}
+.steps i.done{background:var(--pop)}
+.steps i.on{background:var(--sun)}
 .left{margin-left:auto;text-align:right;line-height:1}
-.left .cap{display:block;font-size:12.5px;letter-spacing:.09em;color:var(--muted);
-  font-weight:700;margin-bottom:3px}
-.left b{display:inline-block;font-size:38px;font-weight:800;letter-spacing:-.04em;
-  color:var(--text);font-variant-numeric:tabular-nums}
-.left .u{font-size:16px;font-weight:700;color:var(--text2);margin-left:1px}
-.left.warn b,.left.warn .u{color:var(--down)}
+.left .cap{display:block;font-size:11.5px;letter-spacing:.12em;color:#6A6355;
+  font-weight:800;margin-bottom:4px}
+.left b{display:inline-block;font-family:'Black Han Sans',Pretendard,sans-serif;font-size:40px;
+  letter-spacing:-.01em;color:var(--nb-ink);font-variant-numeric:tabular-nums}
+.left .u{font-size:16px;font-weight:800;color:var(--nb-ink2);margin-left:2px}
+.left.warn b,.left.warn .u{color:var(--nb-lose)}
 .left.warn b{animation:tick .55s ease-in-out infinite}
 @keyframes tick{0%{transform:scale(1)}45%{transform:scale(1.22)}100%{transform:scale(1)}}
-.tline{height:4px;background:var(--hair);border-radius:2px;margin-bottom:26px;overflow:hidden}
-.tline i{display:block;height:100%;width:100%;background:var(--text)}
-.tline.warn i{background:var(--down)}
+.tline{height:12px;background:#fff;border:2.5px solid var(--nb-ink);margin-bottom:24px;overflow:hidden}
+.tline i{display:block;height:100%;width:100%;background:var(--nb-ink)}
+.tline.warn i{background:var(--nb-lose)}
 
-.place{font-size:15px;color:var(--text2);margin-bottom:4px}
-.apt{font-size:26px;font-weight:800;letter-spacing:-.035em;line-height:1.25;margin:0 0 10px;word-break:keep-all}
-.spec{font-size:15px;color:var(--text2);line-height:1.85;margin-bottom:34px}
+.place{font-size:15px;font-weight:700;color:var(--nb-ink2);margin-bottom:4px}
+.apt{font-family:'Black Han Sans',Pretendard,sans-serif;font-size:29px;letter-spacing:-.02em;
+  line-height:1.22;margin:0 0 10px;word-break:keep-all}
+.spec{font-size:15px;color:var(--nb-ink2);line-height:1.8;margin-bottom:30px}
 
-.guess{text-align:center}
-.guess .v{font-size:clamp(34px,9vw,46px);font-weight:800;letter-spacing:-.045em;
-  font-variant-numeric:tabular-nums;line-height:1.1}
-.guess .l{font-size:14.5px;color:var(--text2);margin:6px 0 20px}
+/* 값 고르기 — 숫자를 노란 판 위에 올려 「지금 이걸 정한다」를 분명히 한다 */
+.guess{text-align:center;background:var(--sun);border:var(--nb-line) solid var(--nb-ink);
+  box-shadow:5px 5px 0 var(--nb-ink);padding:18px 16px 14px;margin-bottom:22px}
+.guess .v{font-family:'Black Han Sans',Pretendard,sans-serif;font-size:clamp(36px,10vw,50px);
+  letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.05}
+.guess .l{font-size:14px;font-weight:700;color:#6A6355;margin:6px 0 16px}
 input[type=range]{width:100%;-webkit-appearance:none;background:transparent;margin:0}
-input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--hair)}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;
-  background:var(--text);margin-top:-12px;cursor:pointer}
-input[type=range]::-moz-range-track{height:2px;background:var(--hair)}
-input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:var(--text);border:0}
-.ends{display:flex;justify-content:space-between;font-size:14px;color:var(--text2);margin:9px 0 30px}
-.trail{font-size:13.5px;color:var(--text2);line-height:1.9;margin-top:18px}
+input[type=range]::-webkit-slider-runnable-track{height:6px;background:#fff;border:2.5px solid var(--nb-ink)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;border-radius:0;
+  background:var(--pop);border:3px solid var(--nb-ink);margin-top:-15px;cursor:pointer}
+input[type=range]::-moz-range-track{height:6px;background:#fff;border:2.5px solid var(--nb-ink)}
+input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;background:var(--pop);
+  border:3px solid var(--nb-ink)}
+.ends{display:flex;justify-content:space-between;font-size:13.5px;font-weight:800;color:#6A6355;margin:9px 0 0}
+.trail{font-size:14px;font-weight:700;color:var(--nb-ink2);line-height:1.85;margin-top:16px}
 
 /* ── 채점 대기 ── */
-.mid{text-align:center;padding:60px 0 20px}
-.mid h2{font-size:22px;font-weight:800;letter-spacing:-.03em;margin:0 0 8px}
-.mid p{color:var(--text2);font-size:15px;margin:0 0 26px}
+.mid{text-align:center;padding:56px 0 20px}
+.mid h2{font-family:'Black Han Sans',Pretendard,sans-serif;font-size:27px;letter-spacing:-.02em;margin:0 0 8px}
+.mid p{color:var(--nb-ink2);font-size:15px;margin:0 0 26px;word-break:keep-all}
 
 /* ── 결과 ── */
-.score{border-bottom:1px solid var(--hair);padding:34px 0 26px;margin-bottom:4px}
-.score .l{font-size:12.5px;letter-spacing:.13em;color:var(--muted);font-weight:700}
-.score .n{font-size:66px;font-weight:800;letter-spacing:-.05em;line-height:1;margin:10px 0 0;
-  font-variant-numeric:tabular-nums;display:inline-block}
-.score .n em{font-style:normal;font-size:26px;color:var(--muted);font-weight:700;letter-spacing:-.02em}
-.score .tag{font-size:15px;font-weight:800;margin-top:12px}
-.score .meta{font-size:15px;color:var(--text2);line-height:1.8;margin-top:8px}
+.score{text-align:center;padding:26px 0 22px}
+.score .l{display:inline-block;background:var(--nb-ink);color:var(--sun);
+  font-family:'Black Han Sans',Pretendard,sans-serif;font-size:14px;letter-spacing:.08em;
+  padding:6px 13px;transform:rotate(-2deg)}
+.score .n{font-family:'Black Han Sans',Pretendard,sans-serif;font-size:70px;letter-spacing:-.02em;
+  line-height:1.02;margin:14px 0 0;font-variant-numeric:tabular-nums;display:inline-block}
+.score .n em{font-style:normal;font-size:28px;color:var(--pop)}
+.score .tag{font-size:16px;font-weight:800;margin-top:10px;word-break:keep-all}
+.score .meta{font-size:14.5px;color:var(--nb-ink2);line-height:1.75;margin-top:8px;word-break:keep-all}
 
-/* 항목 — 상자 대신 왼쪽 괘선 하나로 정답을 표시한다 */
-.row{border-bottom:1px solid var(--hair);padding:17px 0 17px 15px;
-  border-left:2px solid transparent;cursor:pointer;animation:rise .3s ease}
-.row.hit{border-left-color:var(--up)}
+/* 항목 — 카드 하나하나가 눌리는 종이. 맞힌 것만 노랑 띠를 두른다 */
+.row{background:#fff;border:2.5px solid var(--nb-ink);box-shadow:4px 4px 0 var(--nb-ink);
+  padding:14px 15px;margin-bottom:12px;cursor:pointer;animation:rise .3s ease;
+  transition:transform 90ms,box-shadow 90ms}
+.row:active{transform:translate(4px,4px);box-shadow:0 0 0 var(--nb-ink)}
+.row.hit{background:var(--sun)}
 @keyframes rise{from{transform:translateY(6px)}to{transform:none}}
 .row .a{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
-    .row .nm{font-size:16.5px;font-weight:700;letter-spacing:-.02em;overflow:hidden;
+.row .nm{font-size:17px;font-weight:800;letter-spacing:-.02em;overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap}
-.row .ans{font-size:18px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;white-space:nowrap}
-.row .b{display:flex;justify-content:space-between;gap:10px;margin-top:6px;font-size:15px;color:var(--text2)}
+.row .ans{font-family:'Black Han Sans',Pretendard,sans-serif;font-size:19px;letter-spacing:-.01em;
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+.row .b{display:flex;justify-content:space-between;gap:10px;margin-top:6px;font-size:14.5px;color:var(--nb-ink2)}
 .row .b .when{white-space:nowrap}
-.row .c{font-size:14px;color:var(--text2);margin-top:8px}
-.row .c .ok{color:var(--up);font-weight:700}
-.row .c .no{color:var(--text2)}
-.det{display:none;margin-top:13px;padding-top:13px;border-top:1px dashed var(--hair)}
+.row .c{font-size:14px;font-weight:700;color:var(--nb-ink2);margin-top:8px}
+.row .c .ok{color:var(--nb-win);font-weight:800}
+.row .c .no{color:var(--nb-ink2)}
+.det{display:none;margin-top:12px;padding-top:12px;border-top:2px dashed var(--nb-ink)}
 .det.open{display:block}
 .det dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:7px 14px;font-size:14px}
-.det dt{color:var(--text2)}
-.det dd{margin:0;text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
-.det a{display:inline-block;margin-top:12px;font-size:14px;font-weight:700;color:var(--text);
-  border-bottom:1px solid var(--text);text-decoration:none;padding-bottom:1px}
-.tap{font-size:13px;color:var(--muted);margin:14px 0 30px}
+.det dt{color:var(--nb-ink2);font-weight:700}
+.det dd{margin:0;text-align:right;font-weight:800;font-variant-numeric:tabular-nums}
+.det a{display:inline-block;margin-top:12px;font-size:14px;font-weight:800;color:#fff;
+  background:var(--nb-ink);text-decoration:none;padding:7px 12px}
+.tap{font-size:13px;font-weight:700;color:var(--nb-mute);margin:12px 0 26px}
 
 /* ── 랭킹 ── */
-.rank-cta{border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);
-  padding:22px 0;margin:24px 0}
-.rank-cta h3{font-size:17.5px;font-weight:800;letter-spacing:-.03em;margin:0 0 6px}
-.rank-cta p{font-size:15px;color:var(--text2);margin:0 0 16px;line-height:1.7}
-.nickrow{display:flex;gap:8px;margin-bottom:10px}
-.nickrow input{flex:1 1 0;min-width:0;font-family:inherit;font-size:15px;padding:13px 14px;
-  border:1px solid var(--hair);border-radius:10px;background:#fff;color:var(--text)}
-.nickrow input:focus{outline:none;border-color:var(--text)}
-.nickrow button{flex:0 0 auto;padding:13px 20px;border:0;border-radius:10px;background:var(--text);
-  color:#fff;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer}
+.rank-cta{background:#fff;border:var(--nb-line) solid var(--nb-ink);box-shadow:5px 5px 0 var(--nb-ink);
+  padding:18px 17px;margin:24px 0}
+.rank-cta h3{font-family:'Black Han Sans',Pretendard,sans-serif;font-size:21px;letter-spacing:-.02em;
+  margin:0 0 7px;word-break:keep-all}
+.rank-cta p{font-size:14.5px;color:var(--nb-ink2);margin:0 0 15px;line-height:1.7;word-break:keep-all}
+.nickrow{display:flex;gap:9px;margin-bottom:11px}
+.nickrow input{flex:1 1 0;min-width:0;font-family:inherit;font-size:15.5px;font-weight:700;padding:12px 13px;
+  border:2.5px solid var(--nb-ink);border-radius:0;background:#fff;color:var(--nb-ink)}
+.nickrow input:focus{outline:none;box-shadow:3px 3px 0 var(--nb-ink)}
+.nickrow button{flex:0 0 auto;padding:12px 19px;border:2.5px solid var(--nb-ink);border-radius:0;
+  background:var(--nb-ink);color:var(--paper);font-family:'Black Han Sans',Pretendard,sans-serif;
+  font-size:16px;cursor:pointer;box-shadow:3px 3px 0 var(--nb-ink);
+  transition:transform 90ms,box-shadow 90ms}
+.nickrow button:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--nb-ink)}
 .nickrow button:disabled{opacity:.4}
-.nicknote{font-size:13px;color:var(--muted);line-height:1.7}
-.mystat{font-size:15.5px;font-weight:700;margin-bottom:10px}
-.mystat em{font-style:normal;color:var(--text2);font-weight:400;font-size:13.5px}
+.nicknote{font-size:13px;color:var(--nb-mute);line-height:1.7;word-break:keep-all}
+.mystat{font-size:15.5px;font-weight:800;margin-bottom:11px;word-break:keep-all}
+.mystat em{font-style:normal;color:var(--nb-ink2);font-weight:600;font-size:13.5px}
 /* 평소엔 눈에 안 띄게. 오타를 쳤거나 마음이 바뀐 사람만 찾으면 된다 */
-.renlink{font-size:13px;color:var(--muted);text-decoration:underline;text-underline-offset:2px}
+.renlink{font-size:13px;color:var(--nb-mute);text-decoration:underline;text-underline-offset:2px}
 
-.board{margin-top:6px}
+/* 순위표 — 머리줄은 먹판, 내 줄은 노랑. 그 둘만 눈에 들어오면 된다 */
+.board{margin-top:6px;background:#fff;border:var(--nb-line) solid var(--nb-ink);
+  box-shadow:5px 5px 0 var(--nb-ink);padding:0 13px 6px}
 .board .h{display:grid;grid-template-columns:34px minmax(0,1fr) 44px 62px 52px;gap:8px;
-  font-size:12.5px;letter-spacing:.05em;color:var(--muted);font-weight:700;
-  padding:0 0 9px;border-bottom:1.5px solid var(--text)}
+  font-size:12px;letter-spacing:.04em;color:var(--nb-mute);font-weight:800;
+  padding:11px 0 8px;border-bottom:2.5px solid var(--nb-ink)}
 .board .r{display:grid;grid-template-columns:34px minmax(0,1fr) 44px 62px 52px;gap:8px;
-  font-size:14.5px;padding:12px 0;border-bottom:1px solid var(--hair);
+  font-size:14.5px;padding:11px 0;border-bottom:1.5px dashed #DCD5C2;
   font-variant-numeric:tabular-nums;align-items:center}
-.board .r.me{font-weight:800}
-.board .r .nk{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
-.board .r .n1{color:var(--text2)}
-.board .num{text-align:right}
-.board .empty{font-size:14.5px;color:var(--text2);padding:18px 0;text-align:center}
+.board .r:last-child{border-bottom:0}
+.board .r.me{background:var(--sun);margin:0 -13px;padding:11px 13px;font-weight:800;border-bottom:0}
+.board .r .nk{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:800}
+.board .r .n1{font-family:'Black Han Sans',Pretendard,sans-serif;font-size:16px;color:var(--nb-mute)}
+.board .r:nth-child(2) .n1,.board .r:nth-child(3) .n1,.board .r:nth-child(4) .n1{color:var(--pop)}
+.board .num{text-align:right;font-weight:800}
+.board .empty{font-size:14.5px;color:var(--nb-ink2);padding:18px 0;text-align:center}
 
 /* 지역 대항전 — 개인 표와 같은 뼈대를 쓰되 칸을 셋으로 줄인다 */
 /* 🔴 세금 랭킹 표는 칸이 셋뿐이다(순위·이름·기록).
@@ -157,190 +208,239 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 /* 퀴즈 지역표는 칸이 다섯(순위·지역·맞힌 수·평균 시간·인원) */
 #rboard .r{grid-template-columns:28px minmax(0,1fr) 54px 54px 44px;font-size:13.5px}
 /* 이름 옆의 지역 등수 — 「한강뷰(서울 2위)」 */
-.board .rg{font-size:12.5px;color:var(--muted);font-weight:600;margin-left:3px}
-.rboard{margin-top:30px}
+.board .rg{font-size:12.5px;color:var(--nb-mute);font-weight:700;margin-left:3px}
+.rboard{margin-top:26px;background:#fff;border:var(--nb-line) solid var(--nb-ink);
+  box-shadow:5px 5px 0 var(--nb-ink);padding:0 13px 6px}
 .bhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;
-  font-size:15px;font-weight:800;letter-spacing:-.02em;margin-bottom:2px}
-.bhead span{font-size:13px;color:var(--muted);font-weight:600;letter-spacing:0}
+  font-family:'Black Han Sans',Pretendard,sans-serif;font-size:17px;letter-spacing:-.01em;
+  padding:11px 0 0}
+.bhead span{font-family:Pretendard,sans-serif;font-size:12.5px;color:var(--nb-mute);font-weight:700}
 .rboard .rh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;
-  font-size:15px;font-weight:800;letter-spacing:-.02em;padding-bottom:9px;
-  border-bottom:1.5px solid var(--text)}
-.rboard .rh span{font-size:13px;color:var(--muted);font-weight:600;letter-spacing:0}
+  font-family:'Black Han Sans',Pretendard,sans-serif;font-size:17px;letter-spacing:-.01em;
+  padding:11px 0 8px;border-bottom:2.5px solid var(--nb-ink)}
+.rboard .rh span{font-family:Pretendard,sans-serif;font-size:12.5px;color:var(--nb-mute);font-weight:700}
 .rboard .r{display:grid;grid-template-columns:34px minmax(0,1fr) 62px 52px;gap:8px;
-  font-size:14.5px;padding:12px 0;border-bottom:1px solid var(--hair);
+  font-size:14.5px;padding:11px 0;border-bottom:1.5px dashed #DCD5C2;
   font-variant-numeric:tabular-nums;align-items:center}
-.rboard .r.me{font-weight:800}
-.rboard .r .nm{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.rboard .r .n1{color:var(--muted)}
-.rboard .num{text-align:right}
-.rboard .empty{font-size:14.5px;color:var(--text2);padding:18px 0;text-align:center}
-.nickrow select{flex:1 1 0;min-width:0;font-family:inherit;font-size:15px;padding:13px 14px;
-  border:1px solid var(--hair);border-radius:10px;background:#fff;color:var(--text);
+.rboard .r:last-child{border-bottom:0}
+.rboard .r.me{background:var(--sun);margin:0 -13px;padding:11px 13px;font-weight:800;border-bottom:0}
+.rboard .r .nm{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rboard .r .n1{font-family:'Black Han Sans',Pretendard,sans-serif;font-size:16px;color:var(--nb-mute)}
+.rboard .num{text-align:right;font-weight:800}
+.rboard .empty{font-size:14.5px;color:var(--nb-ink2);padding:18px 0;text-align:center}
+.nickrow select{flex:1 1 0;min-width:0;font-family:inherit;font-size:15.5px;font-weight:700;padding:12px 13px;
+  border:2.5px solid var(--nb-ink);border-radius:0;background:#fff;color:var(--nb-ink);
   -webkit-appearance:none;appearance:none;
-  background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),
-                   linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+  background-image:linear-gradient(45deg,transparent 50%,var(--nb-ink) 50%),
+                   linear-gradient(135deg,var(--nb-ink) 50%,transparent 50%);
   background-position:calc(100% - 19px) calc(50% + 1px),calc(100% - 14px) calc(50% + 1px);
-  background-size:5px 5px,5px 5px;background-repeat:no-repeat}
-.nickrow select:focus{outline:none;border-color:var(--text)}
+  background-size:6px 6px,6px 6px;background-repeat:no-repeat}
+.nickrow select:focus{outline:none;box-shadow:3px 3px 0 var(--nb-ink)}
 
 /* ── 허브: 탭 + 게시글 목록 (2026-08-31 석봉님 구상) ──
    장르를 탭으로 가르고 그 안에 게임이 하나씩 쌓인다. 새 게임이 붙어도 구조가 안 흔들린다. */
-.hub-l{color:var(--text2);font-size:15.5px;line-height:1.8;margin:0 0 18px}
-.hub-hint{color:var(--muted);font-size:14px}
+.hub-l{color:var(--nb-ink2);font-size:15.5px;line-height:1.8;margin:0 0 18px;word-break:keep-all}
+.hub-hint{color:var(--nb-mute);font-size:14px;font-weight:700}
 /* 🔴 2026-09-01 석봉님 "퀴즈하고 밸런스 게임이 안 보여".
    화면에는 멀쩡히 있었다 — **탭이 눌러야 하는 버튼으로 안 읽힌 것**이다.
    밑줄 방식은 고른 탭만 검고 나머지가 회색이라, 액션만 있는 페이지처럼 보인다.
    그래서 **알약 버튼**으로 바꿨다. 고른 것은 검게 채우고 나머지는 테두리를 둘러
    "여기도 누를 수 있다"가 한눈에 보이게 한다. */
-.tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
-.tabs button{flex:0 0 auto;background:#fff;border:1.5px solid var(--hair);border-radius:999px;
-  font-family:inherit;cursor:pointer;font-size:15px;font-weight:700;color:var(--text2);
-  padding:10px 17px;letter-spacing:-.02em;
-  transition:background 150ms ease,border-color 150ms ease,color 150ms ease}
-.tabs button:active{transform:scale(.97)}
-.tabs button.on{background:var(--text);border-color:var(--text);color:#fff}
-.tabs .cnt{font-size:13px;color:var(--muted);font-weight:600;margin-left:5px}
-.tabs button.on .cnt{color:rgba(255,255,255,.62)}
+/* 탭 — 서류철처럼 붙는다. 고른 것만 노랑으로 올라오고 나머지는 뒤로 물러난다.
+   ⚠️ 알약 버튼에서 파일 탭으로 바꿨지만 **"여기도 누를 수 있다"가 보여야 한다**는
+      2026-09-01 지적은 그대로다 — 안 고른 탭도 같은 굵기의 먹선을 두른다. */
+.tabs{display:flex;gap:0;margin:18px 0 0;position:relative;z-index:2}
+.tabs button{flex:1 1 0;background:#EDE8DA;border:var(--nb-line) solid var(--nb-ink);border-bottom:0;
+  border-radius:0;font-family:'Black Han Sans',Pretendard,sans-serif;cursor:pointer;font-size:17px;
+  color:#7A7568;padding:11px 0 9px;letter-spacing:-.01em;margin-right:-3px;position:relative;top:3px}
+.tabs button:last-child{margin-right:0}
+.tabs button.on{background:var(--sun);color:var(--nb-ink);top:0;padding-bottom:12px;z-index:1}
+.tabs .cnt{font-family:Pretendard,sans-serif;font-size:12.5px;color:#8A8478;font-weight:700;margin-left:5px}
+.tabs button.on .cnt{color:#6A6355}
 
-.glist{margin-bottom:8px}
-.gitem{display:flex;gap:14px;width:100%;text-align:left;background:#fff;border:1px solid var(--hair);
-  border-radius:14px;padding:14px;margin-bottom:12px;cursor:pointer;font-family:inherit;color:var(--text);
-  align-items:stretch;transition:border-color 150ms ease,transform 100ms ease}
-.gitem:hover{border-color:var(--text)}
-.gitem:active{transform:scale(.99)}
-.gitem .th{flex:0 0 96px;height:96px;border-radius:10px;overflow:hidden;background:var(--gray);
-  display:grid;place-items:center}
+.glist{border:var(--nb-line) solid var(--nb-ink);box-shadow:5px 5px 0 var(--nb-ink);background:#fff;
+  padding:13px 12px;margin-bottom:22px}
+.glist.hide{display:none}
+.gitem{display:flex;gap:13px;width:100%;text-align:left;background:var(--paper);
+  border:2.5px solid var(--nb-ink);box-shadow:4px 4px 0 var(--nb-ink);border-radius:0;
+  padding:11px;margin-bottom:11px;cursor:pointer;font-family:inherit;color:var(--nb-ink);
+  align-items:stretch;transition:transform 90ms,box-shadow 90ms}
+.gitem:last-child{margin-bottom:0}
+.gitem:active{transform:translate(4px,4px);box-shadow:0 0 0 var(--nb-ink)}
+.gitem .th{flex:0 0 86px;height:86px;border:2.5px solid var(--nb-ink);border-radius:0;overflow:hidden;
+  background:var(--nb-ink);display:grid;place-items:center}
 .gitem .th img{width:100%;height:100%;object-fit:cover}
 .gitem .tx{flex:1 1 0;min-width:0;display:flex;flex-direction:column;justify-content:center}
-.gitem .gt{display:block;font-size:19px;font-weight:800;letter-spacing:-.035em;line-height:1.3;word-break:keep-all}
-.gitem .gs{display:block;font-size:14.5px;color:var(--text2);margin-top:6px;line-height:1.6;word-break:keep-all}
-.gitem .gm{display:block;font-size:13.5px;color:var(--text2);margin-top:8px}
-.gitem .gm b{color:var(--gold);font-weight:700}
-/* 세금 피하기 — 게임 화면은 군더더기를 다 뺀다. 점수와 판 두 개만 남긴다 */
-.thud{display:flex;align-items:flex-end;justify-content:space-between;margin:4px 0 12px}
-.thud .ts .k{display:block;font-size:13.5px;color:var(--muted);font-weight:600;letter-spacing:.02em}
-.thud .ts b{display:block;font-size:30px;font-weight:800;letter-spacing:-.04em;line-height:1.15}
-.tnote{display:inline-block;margin-top:4px;color:var(--muted);font-size:12.5px}
+.gitem .gt{display:block;font-family:'Black Han Sans',Pretendard,sans-serif;font-size:21px;
+  letter-spacing:-.01em;line-height:1.25;word-break:keep-all}
+.gitem .gs{display:block;font-size:13.5px;color:var(--nb-ink2);margin-top:5px;line-height:1.6;word-break:keep-all}
+.gitem .gm{display:block;font-size:12.5px;font-weight:700;color:var(--nb-mute);margin-top:7px}
+.gitem .gm b{color:var(--pop);font-weight:900}
+/* 세금 피하기 — 계기판을 노란 띠로 만들어 판 위에 얹는다. 점수와 판 둘만 남긴다 */
+.thud{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:var(--sun);border:var(--nb-line) solid var(--nb-ink);border-bottom:0;
+  padding:10px 13px;margin:16px 0 0}
+.thud .ts .k{display:block;font-size:11px;color:#6A6355;font-weight:800;letter-spacing:.12em}
+.thud .ts b{display:block;font-family:'Black Han Sans',Pretendard,sans-serif;font-size:31px;
+  letter-spacing:-.01em;line-height:1.1;margin-top:2px}
+.tnote{display:inline-block;margin-top:3px;color:#6A6355;font-size:12.5px;font-weight:700}
 /* 소리 시험 결과 — "안 들린다"의 원인을 화면에서 가른다(2026-09-01) */
-.tdiag{margin-top:12px;padding:13px 15px;border-radius:12px;font-size:14px;line-height:1.7;
-     background:var(--soft);border:1px solid var(--hair);color:var(--text2);word-break:keep-all}
-.tdiag.bad{border-color:var(--down);color:var(--text)}
-.tdiag b{font-weight:800;color:var(--text)}
+.tdiag{margin-top:12px;padding:13px 15px;border-radius:0;font-size:14px;line-height:1.7;
+     background:#fff;border:2.5px dashed var(--nb-ink);color:var(--nb-ink2);word-break:keep-all}
+.tdiag.bad{border-color:var(--nb-lose);border-style:solid;color:var(--nb-ink)}
+.tdiag b{font-weight:800;color:var(--nb-ink)}
 .tright{display:flex;align-items:center;gap:8px}
-.tsh{font-size:12.5px;font-weight:800;color:#fff;background:var(--gold);
-     border-radius:999px;padding:5px 11px;letter-spacing:-.01em}
+.tsh{font-size:12px;font-weight:900;color:#fff;background:var(--pop);border:2.5px solid var(--nb-ink);
+     border-radius:0;padding:5px 10px;letter-spacing:-.01em;white-space:nowrap}
 /* 소리 끄기 — 게임 중에도 누를 수 있어야 해서 손가락이 닿는 크기로 둔다 */
-.tsnd{font-family:inherit;font-size:13px;font-weight:700;color:var(--text2);background:#fff;
-     border:1px solid var(--hair);border-radius:999px;padding:7px 13px;cursor:pointer;
-     letter-spacing:-.01em;white-space:nowrap}
-.tsnd.off{color:var(--muted2);background:var(--soft)}
+.tsnd{font-family:inherit;font-size:15px;font-weight:900;color:var(--nb-ink);background:#fff;
+     border:2.5px solid var(--nb-ink);border-radius:0;padding:6px 11px;cursor:pointer;
+     box-shadow:3px 3px 0 var(--nb-ink);letter-spacing:-.01em;white-space:nowrap;
+     transition:transform 90ms,box-shadow 90ms}
+.tsnd:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--nb-ink)}
+.tsnd.off{color:var(--nb-mute);background:#EDE8DA}
 .meter .tsnd{align-self:center;margin-left:10px}
 .brow{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .brow .qn{margin-bottom:0}
 /* 한마디 줄 — 판 바깥이라 떨어지는 세금을 가리지 않는다.
-   빈 줄일 때도 높이를 유지해 판이 위아래로 튀지 않게 한다 */
-.tsay{height:34px;display:flex;align-items:center;justify-content:center;margin-bottom:6px}
-.tsay:not(.on){visibility:hidden}
-.tsay.on{background:var(--text);color:#fff;border-radius:999px;padding:0 16px;
-     font-size:14.5px;font-weight:700;letter-spacing:-.02em;width:fit-content;margin:0 auto 6px}
-.tstage{display:flex;justify-content:center}
-.tstage canvas{border:1px solid var(--hair);border-radius:14px;background:var(--canvas);
+   ⚠️ 빈 줄일 때도 자리를 지켜야 판이 위아래로 튀지 않는다.
+      그래서 visibility 로 숨긴다(display 로 지우면 판이 통째로 뛴다). */
+.tsay{height:36px;display:flex;align-items:center;justify-content:center;
+  background:var(--sun);border-left:var(--nb-line) solid var(--nb-ink);
+  border-right:var(--nb-line) solid var(--nb-ink);border-bottom:2.5px solid var(--nb-ink);
+  font-size:13.5px;font-weight:800;letter-spacing:-.02em;color:var(--nb-ink);
+  padding:0 12px;text-align:center;word-break:keep-all}
+/* 띠 자체는 늘 보인다 — 글자만 비었다 채워졌다 한다(JS 가 textContent 를 갈아 끼운다).
+   그래서 따로 숨길 것이 없다. `.on` 은 글자가 있을 때만 붙는 표시라 굵기만 다르게 준다. */
+.tsay.on{background:var(--sun)}
+/* ⚠️ 테두리는 **판(.tstage)** 에 준다. 캔버스에 주면 CSS 폭 W 에 테두리 6px 이 더해져
+   위의 계기판·한마디 띠보다 6px 넓어진다(셋이 한 덩어리로 보여야 한다). */
+.tstage{display:flex;justify-content:center;background:var(--paper);
+     border:var(--nb-line) solid var(--nb-ink);border-top:0;box-shadow:5px 5px 0 var(--nb-ink)}
+.tstage canvas{border:0;border-radius:0;background:var(--paper);
      touch-action:none;display:block}   /* touch-action 을 빼면 게임 중에 페이지가 스크롤된다 */
-.ttip{border-left:2.5px solid var(--text);padding:2px 0 2px 14px;margin:16px 0 18px;
-     font-size:16px;line-height:1.75;color:var(--text2);word-break:keep-all}
-.tbest{text-align:center;font-size:15px;color:var(--text2);font-weight:600;margin-bottom:16px}
-.tbest.rec{color:var(--gold);font-weight:800}
-.gempty{border:1px dashed var(--hair);border-radius:14px;padding:26px 18px;text-align:center;
-  color:var(--muted);font-size:14.5px;line-height:1.7}
+/* 조작 안내 — 판 안에 그리던 것을 빼냈다(글자가 세금에 묻혔다) */
+.tfoot{display:flex;align-items:center;justify-content:space-between;gap:10px;
+     margin-top:16px;font-size:13px;font-weight:700;color:var(--nb-ink2);word-break:keep-all}
+.ttip{background:#fff;border:2.5px solid var(--nb-ink);box-shadow:4px 4px 0 var(--nb-ink);
+     padding:13px 15px;margin:22px 0 18px;
+     font-size:15.5px;font-weight:700;line-height:1.7;color:var(--nb-ink2);word-break:keep-all}
+.tbest{text-align:center;font-size:15px;color:var(--nb-ink2);font-weight:800;margin-bottom:16px}
+.tbest.rec{color:var(--pop);font-weight:900}
+.gempty{border:2.5px dashed var(--nb-ink);border-radius:0;padding:26px 18px;text-align:center;
+  color:var(--nb-mute);font-size:14.5px;line-height:1.7;word-break:keep-all}
 
-.backlink{display:inline-block;font-size:14.5px;color:var(--text2);text-decoration:none;
-  border-bottom:1px solid var(--hair);padding-bottom:1px;margin-top:20px}
+.backlink{display:inline-block;font-size:14px;font-weight:800;color:var(--nb-ink);text-decoration:none;
+  background:#fff;border:2.5px solid var(--nb-ink);box-shadow:3px 3px 0 var(--nb-ink);
+  padding:8px 13px;margin-top:22px}
 
 /* 인트로에 붙는 랭킹 미리보기 */
-.rankpeek{border:1px solid var(--hair);border-radius:14px;background:var(--soft);
-  padding:16px 18px;margin:0 0 22px}
-.rankpeek .h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
-.rankpeek .h b{font-size:14.5px;font-weight:800;letter-spacing:-.02em}
-.rankpeek .h span{font-size:13px;color:var(--muted)}
+.rankpeek{border:var(--nb-line) solid var(--nb-ink);border-radius:0;background:#fff;
+  box-shadow:5px 5px 0 var(--nb-ink);padding:14px 15px;margin:0 0 20px}
+.rankpeek .h{display:flex;justify-content:space-between;align-items:baseline;
+  border-bottom:2.5px solid var(--nb-ink);padding-bottom:7px;margin-bottom:6px}
+.rankpeek .h b{font-family:'Black Han Sans',Pretendard,sans-serif;font-size:16px;letter-spacing:-.01em}
+.rankpeek .h span{font-size:12px;color:var(--nb-mute);font-weight:700}
 .rankpeek ol{margin:0;padding:0;list-style:none}
-.rankpeek li{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:10px;align-items:center;
-  font-size:15px;padding:6px 0;font-variant-numeric:tabular-nums}
-.rankpeek li .r{color:var(--muted);font-weight:700}
-.rankpeek li .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
-.rankpeek li .v{color:var(--text2);font-size:13.5px}
-.rankpeek li:first-child .r{color:var(--gold)}
+.rankpeek li{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:10px;align-items:center;
+  font-size:14.5px;padding:7px 0;font-variant-numeric:tabular-nums}
+.rankpeek li + li{border-top:1.5px dashed #DCD5C2}
+.rankpeek li .r{font-family:'Black Han Sans',Pretendard,sans-serif;font-size:16px;
+  color:var(--nb-mute);text-align:center}
+.rankpeek li .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:800}
+.rankpeek li .v{color:var(--nb-ink);font-size:13.5px;font-weight:800}
+.rankpeek li:first-child .r,.rankpeek li:nth-child(2) .r,.rankpeek li:nth-child(3) .r{color:var(--pop)}
 /* 🔴 빈 안내문은 격자에서 빼낸다(2026-09-01 석봉님 첨부).
-   `.rankpeek li` 가 grid 라 안내문이 **첫 칸(20px)에 갇혀 한 글자씩 세로로** 떨어졌다.
+   `.rankpeek li` 가 grid 라 안내문이 **첫 칸(22px)에 갇혀 한 글자씩 세로로** 떨어졌다.
    실측: 높이 611px. 줄이 하나뿐인 안내문은 그냥 블록이면 된다. */
-.rankpeek li.none{display:block;font-size:14.5px;color:var(--muted);
-  padding:6px 0;line-height:1.7;word-break:keep-all}
+.rankpeek li.none{display:block;font-size:14px;color:var(--nb-mute);font-weight:700;
+  padding:8px 0;line-height:1.7;word-break:keep-all;border-top:0}
 /* 지역 순위 — 개인 랭킹과 같은 목록. 사이만 점선으로 가른다 */
-.rankpeek .rsub{margin-top:14px;padding-top:12px;border-top:1px dashed var(--hair)}
-.rankpeek .rsub .h{margin-bottom:8px}
-.rankpeek li .me{color:var(--gold);font-weight:800}
-.rankpeek li .cnt{color:var(--muted2);font-weight:600;font-size:13px;margin-left:4px}
+.rankpeek .rsub{margin-top:14px;padding-top:0;border-top:0}
+.rankpeek .rsub .h{margin-bottom:6px}
+.rankpeek li .me{color:var(--pop);font-weight:900}
+.rankpeek li .cnt{color:var(--nb-mute);font-weight:700;font-size:12.5px;margin-left:4px}
 
 /* ── 밸런스 게임 ── */
-.qn{font-size:12.5px;letter-spacing:.06em;color:var(--muted);font-weight:700;margin-bottom:8px}
-.qn b{color:var(--text);letter-spacing:-.01em;font-size:13.5px}
-.qt{font-size:26px;font-weight:800;letter-spacing:-.035em;line-height:1.3;margin:0 0 24px;word-break:keep-all}
-.picks{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
-.pick{border:1px solid var(--hair);background:var(--soft);border-radius:14px;padding:22px 14px;
-  text-align:center;cursor:pointer;font-family:inherit;color:var(--text);
-  transition:border-color 150ms ease}
-.pick:hover{border-color:var(--text)}
-.pick .t{display:block;font-size:19px;font-weight:800;letter-spacing:-.03em;line-height:1.3;word-break:keep-all}
-.pick .s{display:block;font-size:14.5px;color:var(--text2);margin-top:6px;line-height:1.6;word-break:keep-all}
-.vs{text-align:center;font-size:12.5px;color:var(--muted);font-weight:700;letter-spacing:.1em;margin:12px 0 0}
-.bsteps{display:flex;gap:5px;margin:30px 0 22px}
-.bsteps i{flex:1 1 0;height:2px;background:var(--hair)}
-.bsteps i.done{background:var(--text)}
-.qres{border-top:1px solid var(--hair);padding:24px 0 6px}
-.qres .cq{font-size:12.5px;letter-spacing:.09em;color:var(--muted);font-weight:700;margin-bottom:6px}
-.qres .ct{font-size:18px;font-weight:800;letter-spacing:-.03em;margin-bottom:16px;word-break:keep-all}
-.bars{margin-top:4px}
-.bar{margin-bottom:16px}
-.bar .lb{display:flex;justify-content:space-between;align-items:baseline;font-size:15px;margin-bottom:6px}
+.qn{font-family:'Black Han Sans',Pretendard,sans-serif;font-size:13.5px;letter-spacing:.05em;
+  color:#6A6355;margin-bottom:8px}
+.qn b{color:var(--nb-ink);letter-spacing:-.01em;font-size:15px}
+.qt{font-family:'Black Han Sans',Pretendard,sans-serif;font-size:28px;letter-spacing:-.02em;
+  line-height:1.28;margin:0 0 22px;word-break:keep-all}
+/* 🔑 두 장을 살짝 어긋나게 기울인다 — 스티커를 손으로 붙인 것처럼.
+   대칭으로 놓으면 표가 되고, 표는 고르고 싶은 마음이 안 든다. */
+.picks{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.pick{border:var(--nb-line) solid var(--nb-ink);background:#fff;border-radius:0;padding:20px 13px;
+  box-shadow:5px 5px 0 var(--nb-ink);text-align:center;cursor:pointer;font-family:inherit;
+  color:var(--nb-ink);transform:rotate(-.7deg);transition:transform 90ms,box-shadow 90ms}
+.pick:nth-child(2){transform:rotate(.6deg)}
+.pick:active,.pick:nth-child(2):active{transform:translate(5px,5px);box-shadow:0 0 0 var(--nb-ink)}
+.pick .t{display:block;font-family:'Black Han Sans',Pretendard,sans-serif;font-size:20px;
+  letter-spacing:-.01em;line-height:1.3;word-break:keep-all}
+.pick .s{display:block;font-size:13.5px;color:var(--nb-ink2);margin-top:7px;line-height:1.6;word-break:keep-all}
+.vs{text-align:center;font-family:'Black Han Sans',Pretendard,sans-serif;font-size:14px;
+  color:var(--nb-mute);letter-spacing:.1em;margin:14px 0 0}
+.bsteps{display:flex;gap:5px;margin:26px 0 20px}
+.bsteps i{flex:1 1 0;height:10px;border:2px solid var(--nb-ink);background:#fff}
+.bsteps i.done{background:var(--pop)}
+.qres{background:#fff;border:2.5px solid var(--nb-ink);box-shadow:4px 4px 0 var(--nb-ink);
+  padding:0;margin-bottom:16px}
+.qres .cq{background:var(--nb-ink);color:var(--paper);font-family:'Black Han Sans',Pretendard,sans-serif;
+  font-size:14px;letter-spacing:.05em;padding:8px 13px;margin-bottom:0}
+.qres .ct{font-size:17px;font-weight:800;letter-spacing:-.02em;margin:0;padding:13px 14px 12px;
+  word-break:keep-all;line-height:1.45}
+.bars{margin:0;padding:0 14px 12px}
+.bar{margin-bottom:14px}
+.bar:last-child{margin-bottom:0}
+.bar .lb{display:flex;justify-content:space-between;align-items:baseline;font-size:14.5px;margin-bottom:6px}
 .bar .lb b{font-size:15px;font-weight:800;letter-spacing:-.02em}
-.bar .lb .pc{font-variant-numeric:tabular-nums;font-weight:800;font-size:17px}
-.bar .tr{height:8px;background:var(--gray);border-radius:4px;overflow:hidden}
-.bar .tr i{display:block;height:100%;background:var(--muted2);border-radius:4px;transition:width 400ms ease}
-.bar.mine .tr i{background:var(--text)}
-.bar.mine .lb b:after{content:" 내 선택";font-size:12.5px;color:var(--muted);font-weight:400;letter-spacing:0}
-.tot{font-size:14px;color:var(--text2);margin:-4px 0 20px}
+.bar .lb .pc{font-family:'Black Han Sans',Pretendard,sans-serif;font-variant-numeric:tabular-nums;font-size:19px}
+.bar .tr{height:20px;background:#fff;border:2.5px solid var(--nb-ink);border-radius:0;overflow:hidden}
+.bar .tr i{display:block;height:100%;background:#C6C0B2;border-radius:0;transition:width 400ms ease}
+.bar.mine .tr i{background:var(--pop)}
+.bar.mine .lb b:after{content:" 내 선택";font-size:12px;color:var(--nb-mute);font-weight:700;letter-spacing:0}
+.tot{font-size:13.5px;font-weight:700;color:var(--nb-ink2);margin:0;padding:0 14px 4px}
 /* 집계 기간 — 표가 언제 것인지 밝힌다(2026-09-01) */
-/* 4지선다 보기 — 손가락으로 누르는 자리라 넉넉하게 */
-.opts{display:grid;gap:9px;margin-top:4px}
-.opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
-  background:#fff;border:1.5px solid var(--hair);border-radius:14px;padding:16px 15px;
-  font-family:inherit;color:var(--text);cursor:pointer;transition:border-color 150ms ease}
-.opt:hover{border-color:var(--text)}
-.opt:active{transform:scale(.99)}
-.opt .k{flex:0 0 26px;height:26px;border-radius:50%;background:var(--gray);color:var(--muted);
-  font-size:13px;font-weight:800;display:grid;place-items:center}
-.opt .t{font-size:15.5px;font-weight:600;line-height:1.5;word-break:keep-all}
-/* 결과에서 보기 넷을 다시 보여 준다 — 무엇을 골랐고 무엇이 답이었나 */
-.eans{margin:2px 0 14px}
-.ea{display:flex;align-items:center;gap:10px;padding:9px 0;font-size:14.5px;color:var(--text2)}
-.ea .k{flex:0 0 22px;height:22px;border-radius:50%;background:var(--gray);color:var(--muted);
-  font-size:12px;font-weight:800;display:grid;place-items:center}
-.ea .t{flex:1 1 auto;word-break:keep-all}
-.ea .m{flex:0 0 auto;font-size:12px;font-weight:800}
-.ea.ok{color:var(--text);font-weight:700}
-.ea.ok .k{background:var(--up);color:#fff}
-.ea.ok .m{color:var(--up)}
-.ea.no .k{background:var(--down);color:#fff}
-.ea.no .m{color:var(--down)}
-.bperiod{font-size:13.5px;color:var(--muted);margin:-14px 0 22px;font-weight:600}
-.fact{border-left:2px solid var(--text);padding:2px 0 2px 14px;margin:22px 0}
-.fact .h{font-size:12.5px;letter-spacing:.11em;color:var(--muted);font-weight:700;margin-bottom:8px}
-.fact p{margin:0 0 10px;font-size:15px;line-height:1.9;word-break:keep-all}
+/* 4지선다 보기 — 손가락으로 누르는 자리라 넉넉하게. 네 장 전부 눌린다 */
+.opts{display:grid;gap:11px;margin-top:4px}
+.opt{display:grid;grid-template-columns:34px 1fr;align-items:center;gap:11px;width:100%;text-align:left;
+  background:#fff;border:2.5px solid var(--nb-ink);border-radius:0;box-shadow:4px 4px 0 var(--nb-ink);
+  padding:13px 13px;font-family:inherit;color:var(--nb-ink);cursor:pointer;
+  transition:transform 90ms,box-shadow 90ms}
+.opt:active{transform:translate(4px,4px);box-shadow:0 0 0 var(--nb-ink)}
+.opt .k{width:34px;height:34px;border-radius:0;background:var(--nb-ink);color:var(--paper);
+  font-family:'Black Han Sans',Pretendard,sans-serif;font-size:17px;display:grid;place-items:center}
+.opt .t{font-size:15.5px;font-weight:700;line-height:1.5;word-break:keep-all}
+/* 결과에서 보기 넷을 다시 보여 준다 — 무엇을 골랐고 무엇이 답이었나.
+   맞은 것은 초록으로 칠하고, 안 고른 보기는 점선으로 흐린다. */
+.eans{margin:0;padding:0 14px 12px;display:grid;gap:8px}
+.ea{display:grid;grid-template-columns:26px 1fr auto;align-items:center;gap:10px;
+  border:2px solid var(--nb-ink);padding:9px 10px;font-size:14px;color:var(--nb-ink2);background:#fff}
+.ea .k{width:26px;height:26px;border-radius:0;background:var(--nb-ink);color:var(--paper);
+  font-family:'Black Han Sans',Pretendard,sans-serif;font-size:13px;display:grid;place-items:center}
+.ea .t{word-break:keep-all;font-weight:700}
+.ea .m{font-size:11.5px;font-weight:900;white-space:nowrap}
+.ea.ok{background:var(--nb-win);border-color:var(--nb-ink);color:#fff}
+.ea.ok .k{background:#fff;color:var(--nb-win)}
+.ea.ok .m{color:#fff}
+.ea.no{border-style:dashed;color:var(--nb-mute)}
+.ea.no .k{background:#fff;color:var(--nb-mute);border:2px solid #DCD5C2}
+.ea.no .m{color:var(--nb-mute)}
+/* 안 고르고 안 맞은 보기 — 있는 듯 없는 듯 */
+.ea:not(.ok):not(.no){border-style:dashed;border-color:#DCD5C2}
+.ea:not(.ok):not(.no) .k{background:#fff;color:var(--nb-mute);border:2px solid #DCD5C2}
+.bperiod{font-size:13.5px;color:var(--nb-mute);margin:-10px 0 20px;font-weight:700}
+/* 해설 — 종이를 한 장 덧댄 것처럼 점선으로 두른다 */
+.fact{border:2.5px dashed var(--nb-ink);background:var(--paper);padding:11px 12px;margin:0 14px 14px}
+.fact .h{font-family:'Black Han Sans',Pretendard,sans-serif;font-size:13px;letter-spacing:.06em;
+  color:#6A6355;margin-bottom:7px}
+.fact p{margin:0 0 9px;font-size:14.5px;line-height:1.8;color:var(--nb-ink2);word-break:keep-all}
 .fact p:last-of-type{margin-bottom:0}
-.fact a{display:inline-block;margin-top:12px;font-size:12.5px;font-weight:700;color:var(--text);
-  border-bottom:1px solid var(--text);text-decoration:none;padding-bottom:1px}
+.fact a{display:inline-block;margin-top:11px;font-size:12.5px;font-weight:800;color:#fff;
+  background:var(--nb-ink);text-decoration:none;padding:6px 11px}
 
-.foot{font-size:13.5px;color:var(--text2);line-height:1.85;margin-top:38px;
-  border-top:1px solid var(--hair);padding-top:14px}
+.foot{font-size:13.5px;color:var(--nb-ink2);line-height:1.85;margin-top:36px;
+  border-top:2.5px solid var(--nb-ink);padding-top:14px;word-break:keep-all}
 .hide{display:none}
 </style>
 </head>
@@ -641,6 +741,10 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     </div>
     <div class="tsay" id="tSay"></div>
     <div class="tstage"><canvas id="tCv"></canvas></div>
+    <div class="tfoot">
+      <span>화면 아무 데나 누르면 그쪽으로 집이 갑니다</span>
+      <span>1초 = 한 달</span>
+    </div>
   </section>
 
   <section id="tEnd" class="scr hide">
@@ -700,7 +804,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 <script src="assets/sb_bgm.js?v=8"></script>
 <script src="data/quiz_econ.js?v=1"></script>
 <script src="assets/game_econ.js?v=1"></script>
-<script src="assets/game_tax.js?v=19"></script>
+<script src="assets/game_tax.js?v=20"></script>
 <script>
 (function(){
   "use strict";

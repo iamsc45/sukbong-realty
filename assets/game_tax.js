@@ -19,8 +19,14 @@ window.TaxGame = (function(){
   "use strict";
 
   /* 색은 site.css 토큰과 같은 값을 쓴다. 여기서 새 색을 지어내면 사이트와 어긋난다. */
-  var CANVAS = "#F2F2EF", INK = "#141414", RED = "#C24B37",
-      GREEN = "#1E7A45", GOLD = "#E8A13A", HAIR = "#D9D9D3", MUTED = "#6E6E6A";
+  /* 색 — A안 네오브루탈(2026-09-01 석봉님 확정).
+     🔑 **색이 정보를 말하게 한다.** 세금은 여덟 가지인데 색으로 다 구분할 수 없다.
+        이름이 이미 적혀 있으니 세금은 **주황과 흰색을 번갈아** 써서 리듬만 주고,
+        **초록은 오직 무적 아이템에만** 쓴다.
+        (시안에서 빨강·노랑까지 네 색을 썼더니 초록이 특별해 보이지 않았다) */
+  var CANVAS = "#FFFCF2", INK = "#16130F", RED = "#FF5C39",
+      GREEN = "#2FBF71", GOLD = "#FFD84D", HAIR = "#E3DDCC", MUTED = "#8A8478";
+  var MASCOT = null;                 // 집 그림. 로드되기 전에는 도형으로 그린다
 
   /* 떨어지는 것들. 라벨이 곧 그림이라 따로 이미지가 필요 없다.
      w 는 글자 폭에 맞춘 상자 너비(측정해서 채운다). */
@@ -103,11 +109,20 @@ window.TaxGame = (function(){
   /* 라벨 폭을 재서 상자 너비를 정한다. 폰트가 로드된 뒤에 재야 정확하다. */
   function measure(){
     if(!ctx) return;
-    ctx.font = "700 15px Pretendard, -apple-system, sans-serif";
+    ctx.font = "800 15px Pretendard, -apple-system, sans-serif";
     TAXES.concat(ITEMS).forEach(function(o){
       o.w = Math.round(ctx.measureText(o.t).width) + 26;
       o.h = 34;
     });
+  }
+
+  /* 마스코트를 미리 받아 둔다 — 첫 판이 시작될 때 이미 와 있어야 도형으로 안 그린다.
+     ⚠️ 실패해도 아무것도 안 한다. 그림이 없으면 `drawHouse` 가 도형으로 그린다. */
+  function loadMascot(){
+    if(MASCOT) return;
+    var im = new Image();
+    im.src = "assets/mascot_house.png";
+    MASCOT = im;
   }
 
   /* ── 게임 상태 ───────────────────────────────────────────── */
@@ -120,9 +135,11 @@ window.TaxGame = (function(){
     say("집을 지키세요", 1.6);
   }
 
+  var altFlip = false;                 // 주황·흰색을 번갈아 내보내 리듬을 만든다
   function spawn(){
     var o = TAXES[Math.floor(Math.random() * TAXES.length)];
-    blocks.push({ o: o, kind: "tax",
+    altFlip = !altFlip;
+    blocks.push({ o: o, kind: "tax", alt: altFlip,
       x: 10 + Math.random() * (W - o.w - 20), y: -o.h,
       w: o.w, h: o.h, vy: speed() * (0.85 + Math.random() * 0.3) });
   }
@@ -211,15 +228,34 @@ window.TaxGame = (function(){
     ctx.closePath();
   }
 
+  /* 네오브루탈의 기본 부품 — 채움 + 먹선 + **블러 없는** 오프셋 그림자.
+     화면의 모든 상자가 이 손을 쓴다. blur 를 주는 순간 톤이 무너진다. */
+  function slab(x, y, w, h, fill, off){
+    var d = off === undefined ? 4 : off;
+    ctx.fillStyle = INK; ctx.fillRect(x + d, y + d, w, h);
+    ctx.fillStyle = fill; ctx.fillRect(x, y, w, h);
+    ctx.lineWidth = 3; ctx.strokeStyle = INK; ctx.strokeRect(x, y, w, h);
+  }
+
   function drawHouse(x, y){
-    /* 집 한 채. 무적일 때는 금색 테를 두른다(먹은 걸 알아야 한다). */
+    /* 집 한 채. 무적일 때는 초록 점선 고리를 두른다(먹은 걸 알아야 한다).
+       ⚠️ 고리를 반투명 원으로 채우면 집이 흐려 보인다. 선으로만 두른다. */
     var w = PW, h = PH, bx = x - w/2;
     if(shield > 0){
       ctx.save();
-      ctx.globalAlpha = 0.25 + 0.2 * Math.sin(elapsed * 12);
-      ctx.fillStyle = GOLD;
-      ctx.beginPath(); ctx.arc(x, y - h/2 + 4, w * 0.86, 0, Math.PI * 2); ctx.fill();
+      ctx.setLineDash([7, 6]);
+      ctx.lineDashOffset = -elapsed * 26;      // 고리가 돌아 무적임이 눈에 띈다
+      ctx.lineWidth = 3.5; ctx.strokeStyle = GREEN;
+      ctx.beginPath(); ctx.arc(x, y - h * 0.48, w * 0.92, 0, Math.PI * 2); ctx.stroke();
       ctx.restore();
+    }
+    /* 마스코트 — 눈·볼터치가 있는 집(2026-09-01 석봉님이 고르신 3번).
+       ⚠️ 이미지가 아직 안 왔을 때를 대비해 도형 경로를 남긴다. 그림이 없다고
+          게임이 멈추면 안 된다(첫 판 로딩과 캐시 실패 둘 다 실제로 겪는다). */
+    if(MASCOT && MASCOT.complete && MASCOT.naturalWidth){
+      var ih = h + 14, iw = MASCOT.naturalWidth * ih / MASCOT.naturalHeight;
+      ctx.drawImage(MASCOT, x - iw/2, y - ih + 4, iw, ih);
+      return;
     }
     ctx.fillStyle = INK;
     ctx.beginPath();                          // 지붕
@@ -239,26 +275,35 @@ window.TaxGame = (function(){
     ctx.fillStyle = CANVAS;
     ctx.fillRect(0, 0, W, H);
 
-    /* 바닥 */
-    ctx.fillStyle = HAIR;
-    ctx.fillRect(0, H - GROUND, W, 1.5);
+    /* 배경 — 공책 줄. 「종이 위」 느낌이 살고 떨어지는 속도의 기준선도 된다 */
+    ctx.strokeStyle = "rgba(22,19,15,.07)"; ctx.lineWidth = 1.5;
+    for(var gy = 34; gy < H - GROUND; gy += 34){
+      ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke();
+    }
 
-    /* 떨어지는 것들 */
-    ctx.font = "700 15px Pretendard, -apple-system, sans-serif";
+    /* 바닥 — 두꺼운 먹선 하나 + 아래는 옅은 사선(땅) */
+    var by = H - GROUND;
+    ctx.strokeStyle = INK; ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(0, by); ctx.lineTo(W, by); ctx.stroke();
+    ctx.save();
+    ctx.beginPath(); ctx.rect(0, by, W, H - by); ctx.clip();
+    ctx.strokeStyle = "rgba(22,19,15,.15)"; ctx.lineWidth = 2.5;
+    for(var sx = -60; sx < W + 70; sx += 18){
+      ctx.beginPath(); ctx.moveTo(sx, H); ctx.lineTo(sx + 42, by); ctx.stroke();
+    }
+    ctx.restore();
+
+    /* 떨어지는 것들 — 세금은 주황·흰색을 번갈아, 아이템만 초록 */
+    ctx.font = "800 15px Pretendard, -apple-system, sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     blocks.forEach(function(b){
-      if(b.kind === "item"){
-        ctx.fillStyle = "#FFFFFF";
-        roundRect(b.x, b.y, b.w, b.h, 9); ctx.fill();
-        ctx.strokeStyle = GREEN; ctx.lineWidth = 2;
-        roundRect(b.x + 1, b.y + 1, b.w - 2, b.h - 2, 8); ctx.stroke();
-        ctx.fillStyle = GREEN;
-      } else {
-        ctx.fillStyle = RED;
-        roundRect(b.x, b.y, b.w, b.h, 9); ctx.fill();
-        ctx.fillStyle = "#FFFFFF";
-      }
+      var fill, tone;
+      if(b.kind === "item"){ fill = GREEN; tone = "#FFFFFF"; }
+      else if(b.alt){ fill = "#FFFFFF"; tone = INK; }
+      else { fill = RED; tone = "#FFFFFF"; }
+      slab(b.x, b.y, b.w, b.h, fill);
+      ctx.fillStyle = tone;
       ctx.fillText(b.o.t, b.x + b.w/2, b.y + b.h/2 + 0.5);
     });
 
@@ -267,11 +312,6 @@ window.TaxGame = (function(){
     /* 🔴 한마디를 판 안에 그리지 않는다(2026-09-01 스크린샷에서 잡음).
        처음에는 화면 가운데에 띄웠는데 **떨어지는 세금을 가려서** 피할 수가 없었다.
        연출이 게임을 방해하면 연출이 아니라 버그다. 판 위 DOM 줄로 뺐다(hud 참조). */
-
-    /* 아래 안내 한 줄 */
-    ctx.font = "600 12px Pretendard, -apple-system, sans-serif";
-    ctx.fillStyle = MUTED;
-    ctx.fillText("화면 아무 데나 손가락을 대고 움직이세요", W/2, H - 22);
   }
 
   /* ── 점수 표기 ────────────────────────────────────────────
@@ -415,6 +455,7 @@ window.TaxGame = (function(){
     onEnd = opt.onEnd || null;
     cv = $("tCv");
     if(!cv) return null;
+    loadMascot();
     fit(); bindInput();
     $("tAgain").addEventListener("click", begin);
     $("tShare").addEventListener("click", function(){
