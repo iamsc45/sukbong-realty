@@ -422,7 +422,10 @@ window.TaxGame = (function(){
     if(sb) sb.addEventListener("click", function(e){
       e.stopPropagation();
       SBBgm.setOn(!SBBgm.on());
-      if(SBBgm.on() && running) SBBgm.start();
+      if(SBBgm.on()){
+        SBBgm.blip();                    // 켰으면 한 번 울려 준다 — 소리가 닿는지 바로 안다
+        if(running) SBBgm.start();
+      }
       paintSound();
     });
     $("tAgain").addEventListener("click", begin);

@@ -20,8 +20,8 @@
 window.SBBgm = (function(){
   "use strict";
 
-  var ac = null, master = null, noise = null, timer = 0;
-  var step = 0, nextT = 0, on = false, playing = false, pace = 0;
+  var ac = null, master = null, noise = null, timer = 0, ana = null, abuf = null;
+  var step = 0, nextT = 0, on = false, playing = false, pace = 0, peak = 0;
   var LOOK = 0.12, TICK = 25;
 
   /* A 마이너. 익살은 **옥타브 점프와 반음 장식**에서 나온다 — 음을 많이 쓰지 않는다.
@@ -87,7 +87,22 @@ window.SBBgm = (function(){
       nextT += spb();
       step++;
     }
+    meter();
     timer = setTimeout(schedule, TICK);
+  }
+
+  /* 지금 스피커로 나가는 신호의 세기. 0 이면 소리가 안 난다는 뜻이다.
+     ⚠️ 음과 음 사이에는 원래 0 이므로 **최고값을 쌓아** 본다. */
+  function meter(){
+    if(!ana) return 0;
+    ana.getByteTimeDomainData(abuf);
+    var m = 0;
+    for(var i = 0; i < abuf.length; i++){
+      var d = Math.abs(abuf[i] - 128);
+      if(d > m) m = d;
+    }
+    if(m > peak) peak = m;
+    return m;
   }
 
   function ensure(){
@@ -96,8 +111,17 @@ window.SBBgm = (function(){
     if(!AC) return false;
     ac = new AC();
     master = ac.createGain();
-    master.gain.value = 0.07;                  // 배경음이다. 앞에 나서면 안 된다
-    master.connect(ac.destination);
+    /* 🔴 2026-09-01 석봉님 "BGM 도 안 나온다". 0.07 은 폰 스피커에서 사실상 안 들린다.
+       배경음이라고 너무 낮춰 잡았다. 게임 소리는 들려야 소리다. */
+    master.gain.value = 0.18;
+    /* 신호가 실제로 나가는지 재기 위한 계측기.
+       "스케줄러가 돈다"와 "소리가 난다"는 다른 이야기라 눈금이 필요하다.
+       분석기는 소리를 바꾸지 않는다(그냥 지나가며 본다). */
+    ana = ac.createAnalyser();
+    ana.fftSize = 256;
+    abuf = new Uint8Array(ana.fftSize);
+    master.connect(ana);
+    ana.connect(ac.destination);
     var n = ac.sampleRate * 0.2, buf = ac.createBuffer(1, n, ac.sampleRate), d = buf.getChannelData(0);
     for(var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
     noise = buf;
@@ -108,8 +132,19 @@ window.SBBgm = (function(){
     if(!on || playing) return;
     if(!ensure()) return;
     if(ac.state === "suspended") ac.resume();
-    step = 0; nextT = ac.currentTime + 0.06; playing = true;
+    step = 0; nextT = ac.currentTime + 0.06; playing = true; peak = 0;
     schedule();
+  }
+
+  /* 소리를 켤 때 짧게 한 번 울린다.
+     "켜짐"이라고 써 있는데 아무 소리도 안 나면 사람은 고장인지 자기 기기 문제인지 모른다.
+     이 한 번이 울리면 적어도 스피커까지는 닿았다는 뜻이다. */
+  function blip(){
+    if(!ensure()) return;
+    if(ac.state === "suspended") ac.resume();
+    var t = ac.currentTime + 0.02;
+    tone("square", 880, t, 0.09, 0.22);
+    tone("square", 1320, t + 0.1, 0.12, 0.22);
   }
   function stop(){
     playing = false;
@@ -128,7 +163,7 @@ window.SBBgm = (function(){
 
   on = isOn();
   return {
-    start: start, stop: stop,
+    start: start, stop: stop, blip: blip,
     on: function(){ return on; },
     setOn: setOn,
     /* 게임이 얼마나 왔는지 0~1 로 알려 주면 그만큼 빨라진다 */
@@ -140,7 +175,9 @@ window.SBBgm = (function(){
     _dbg: function(){
       return { state: ac ? ac.state : "없음",
                now: ac ? +ac.currentTime.toFixed(3) : null,
-               step: step, bpmStep: +spb().toFixed(4), playing: playing, on: on };
+               step: step, bpmStep: +spb().toFixed(4), playing: playing, on: on,
+               /* level=지금 이 순간, peak=시작 이후 최고. peak 이 0 이면 소리가 안 나간 것이다 */
+               level: meter(), peak: peak, vol: master ? master.gain.value : null };
     }
   };
 })();

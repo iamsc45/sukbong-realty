@@ -173,6 +173,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .thud{display:flex;align-items:flex-end;justify-content:space-between;margin:4px 0 12px}
 .thud .ts .k{display:block;font-size:13.5px;color:var(--muted);font-weight:600;letter-spacing:.02em}
 .thud .ts b{display:block;font-size:30px;font-weight:800;letter-spacing:-.04em;line-height:1.15}
+.tnote{display:inline-block;margin-top:4px;color:var(--muted);font-size:12.5px}
 .tright{display:flex;align-items:center;gap:8px}
 .tsh{font-size:12.5px;font-weight:800;color:#fff;background:var(--gold);
      border-radius:999px;padding:5px 11px;letter-spacing:-.01em}
@@ -277,12 +278,23 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     <p class="hub-l">우리가 매일 받는 <b>진짜 실거래 자료</b>로 만듭니다.</p>
 
     <div class="tabs">
-      <button id="tabQuiz" class="on">퀴즈<span class="cnt">1</span></button>
+      <button id="tabTax" class="on">액션<span class="cnt">1</span></button>
+      <button id="tabQuiz">퀴즈<span class="cnt">1</span></button>
       <button id="tabBal">밸런스<span class="cnt">1</span></button>
-      <button id="tabTax">액션<span class="cnt">1</span></button>
     </div>
 
-    <div class="glist" id="listQuiz">
+    <div class="glist" id="listTax">
+      <button class="gitem" id="goTax">
+        <span class="th"><img src="assets/th_tax.png?v=1" alt=""></span>
+        <span class="tx">
+          <span class="gt">세금 피하기</span>
+          <span class="gs">취득세도 양도세도 위에서 떨어집니다. 집 한 채를 지켜 보세요.</span>
+          <span class="gm">한 손으로 · <b>얼마나 버티나</b></span>
+        </span>
+      </button>
+      <div class="gempty">새로운 액션 게임을 준비하고 있습니다.</div>
+
+    <div class="glist hide" id="listQuiz">
       <button class="gitem" id="goQuiz">
         <span class="th"><img src="assets/th_quiz.png?v=1" alt=""></span>
         <span class="tx">
@@ -305,17 +317,6 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
       </button>
       <div class="gempty">새로운 밸런스 게임을 준비하고 있습니다.</div>
     </div>
-
-    <div class="glist hide" id="listTax">
-      <button class="gitem" id="goTax">
-        <span class="th"><img src="assets/th_tax.png?v=1" alt=""></span>
-        <span class="tx">
-          <span class="gt">세금 피하기</span>
-          <span class="gs">취득세도 양도세도 위에서 떨어집니다. 집 한 채를 지켜 보세요.</span>
-          <span class="gm">한 손으로 · <b>얼마나 버티나</b></span>
-        </span>
-      </button>
-      <div class="gempty">새로운 액션 게임을 준비하고 있습니다.</div>
     </div>
   </section>
 
@@ -468,7 +469,8 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     <p class="lead">위에서 취득세가, 양도세가, 재산세가 떨어집니다.<br>집 한 채를 지키며 얼마나 버티는지 보세요.</p>
     <div class="rules">
       화면 아무 데나 손가락을 대고 좌우로 움직입니다 · <b>비과세</b>·<b>장기보유</b>를 먹으면 잠깐 무적<br>
-      1초가 한 달입니다. 오래 버틸수록 오래 가진 셈입니다.
+      1초가 한 달입니다. 오래 버틸수록 오래 가진 셈입니다.<br>
+      <span class="tnote">소리가 안 들리면 아이폰은 <b>측면 무음 스위치</b>를, 안드로이드는 <b>미디어 음량</b>을 확인해 주세요.</span>
     </div>
     <button class="btn full" id="tStart">시작하기</button>
     <div style="text-align:center"><a href="#" class="backlink toHub">다른 놀이 해보기</a></div>
@@ -506,8 +508,8 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 <script src="data/quiz_price.js?v=4"></script>
 <script src="data/polls.js?v=2"></script>
 <script src="assets/game_balance.js?v=2"></script>
-<script src="assets/sb_bgm.js?v=2"></script>
-<script src="assets/game_tax.js?v=10"></script>
+<script src="assets/sb_bgm.js?v=3"></script>
+<script src="assets/game_tax.js?v=11"></script>
 <script>
 (function(){
   "use strict";
@@ -733,7 +735,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   /* ── 허브: 탭으로 장르를 고르고 목록에서 게임을 고른다 (2026-08-31 석봉님) ── */
   var BAL = null, TAX = null;
   /* 탭이 셋이 되면서 if 를 늘리지 않고 표로 돌린다. 넷째가 붙어도 한 줄만 는다. */
-  var TABS = [["tabQuiz","listQuiz"],["tabBal","listBal"],["tabTax","listTax"]];
+  var TABS = [["tabTax","listTax"],["tabQuiz","listQuiz"],["tabBal","listBal"]];
   function tab(which){
     TABS.forEach(function(p){
       $(p[0]).classList.toggle("on", p[0] === which);
