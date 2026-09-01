@@ -314,8 +314,10 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
 /* 한마디 줄 — 판 바깥이라 떨어지는 세금을 가리지 않는다.
    ⚠️ 빈 줄일 때도 자리를 지켜야 판이 위아래로 튀지 않는다.
       그래서 visibility 로 숨긴다(display 로 지우면 판이 통째로 뛴다). */
+/* ⚠️ 빈 띠까지 진한 노랑이면 계기판과 이어져 **커다란 노란 덩어리**가 된다
+   (2026-09-01 라이브에서 확인). 평소엔 옅게 두고 글자가 붙을 때만 진해진다. */
 .tsay{height:36px;display:flex;align-items:center;justify-content:center;
-  background:var(--sun);border-left:var(--nb-line) solid var(--nb-ink);
+  background:#FFF6D9;border-left:var(--nb-line) solid var(--nb-ink);
   border-right:var(--nb-line) solid var(--nb-ink);border-bottom:2.5px solid var(--nb-ink);
   font-size:13.5px;font-weight:800;letter-spacing:-.02em;color:var(--nb-ink);
   padding:0 12px;text-align:center;word-break:keep-all}
