@@ -574,7 +574,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     <!-- 랭킹 — 퀴즈와 같은 동선(로그인 없이 게임 → 끝나고 도전 권유 → 카카오 → 닉네임·지역) -->
     <div class="rank-cta" id="gCta">
       <h3 id="gTitle">이 기록, 랭킹에 올리시겠어요?</h3>
-      <p id="gDesc">우리 지역 순위도 같이 올라갑니다. 닉네임만 있으면 됩니다.</p>
+      <p id="gDesc">내 기록이 <b>우리 지역 합계</b>에 더해집니다. 짧아도 보탬이 됩니다.</p>
       <div id="gStep1"><button class="btn full" id="gGo">랭킹에 올리기</button></div>
       <div id="gStep2" class="hide">
         <div class="mystat" id="gMine"></div>
@@ -598,7 +598,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
               그때 `game_board(게임,'month')` 를 부르면 된다(서버는 이미 받는다). -->
       <div class="board" id="gBoard"></div>
       <div class="rboard">
-        <div class="rh">지역 순위 <span>평균 기록</span></div>
+        <div class="rh">지역 순위 <span>지역별 합계</span></div>
         <div id="gRBoard"></div>
       </div>
     </div>
@@ -721,7 +721,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
         box.innerHTML = "<b>지역 순위</b> · " + rows.map(function(x){
           var me = gMyRegion && x.region === gMyRegion;
           return "<span class='" + (me ? "me" : "") + "'>" + x.rank + "위 " + esc(x.region) +
-                 " " + gHeld(x.avg_score) + "</span>";
+                 " " + gHeld(x.total_score) + "</span>";
         }).join(" · ");
       });
   }
@@ -825,14 +825,17 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
       if(!rows.length){
         box.innerHTML = "<div class='empty'>아직 지역을 고른 분이 없습니다.</div>"; return;
       }
+      /* 🔴 합계다(2026-09-01 석봉님). 평균이면 고수 한 명 있는 지역이 1등이라
+         못하는 사람은 "내가 하면 평균 깎이겠네"가 된다 — 지역전을 만든 목적과 반대다.
+         합계면 1개월이라도 보태지고 "우리 지역 사람 더 모으자"가 나온다. */
       var h = "<div class='r'><span class='n1'>순위</span><span class='nm'>지역</span>" +
-              "<span class='num'>평균</span><span class='num'>인원</span></div>";
+              "<span class='num'>합계</span><span class='num'>인원</span></div>";
       h += rows.map(function(x){
         var me = gMyRegion && x.region === gMyRegion;
         return "<div class='r" + (me ? " me" : "") + "'>" +
           "<span class='n1'>" + x.rank + "</span>" +
           "<span class='nm'>" + esc(x.region) + "</span>" +
-          "<span class='num'>" + gHeld(x.avg_score) + "</span>" +
+          "<span class='num'>" + gHeld(x.total_score) + "</span>" +
           "<span class='num'>" + x.n + "명</span></div>";
       }).join("");
       box.innerHTML = h;
@@ -846,7 +849,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     document.getElementById("gStep3").classList.add("hide");
     document.getElementById("gBoardWrap").classList.add("hide");
     document.getElementById("gTitle").textContent = "이 기록, 랭킹에 올리시겠어요?";
-    document.getElementById("gDesc").textContent = "우리 지역 순위도 같이 올라갑니다. 닉네임만 있으면 됩니다.";
+    document.getElementById("gDesc").innerHTML = "내 기록이 <b>우리 지역 합계</b>에 더해집니다. 짧아도 보탬이 됩니다.";
     var b = document.getElementById("gOk"); b.disabled = false; b.textContent = "등록";
   }
 
