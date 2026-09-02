@@ -1185,8 +1185,8 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
         /* 비어 있어도 「없습니다」로 끝내지 않는다 — 기준 기록만이라도 보여 준다.
            대신 「1호가 됩니다」로 첫 등록의 값어치를 살린다. */
         box.innerHTML = h + gSeedRows(0, 10) +
-          "<div class='seednote'>「기준」은 아직 실제 기록이 없어 목표선으로 걸어 둔 " +
-          "연습 기록입니다. 등록하시면 <b>1호</b>로 맨 위에 오릅니다.</div>";
+          "<div class='seednote'>「기준」은 순위에 들어가지 않는 <b>목표 기록</b>입니다. " +
+          "등록하시면 <b>1호</b>로 맨 위에 오릅니다.</div>";
         return;
       }
       h += rows.map(function(x){
@@ -1202,8 +1202,11 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
       }).join("");
       var seed = gSeedRows(rows.length, 10);
       box.innerHTML = h + seed + (seed
-        ? "<div class='seednote'>「기준」은 목표선으로 걸어 둔 연습 기록입니다. " +
-          "실제 기록이 쌓이면 밀려납니다.</div>"
+        /* ⚠️ 「왜 24.6초가 19.4초보다 아래에 있지?」 — 시드를 점수로 섞지 않고 실제 기록
+           밑에만 붙이기 때문이다(위 설계 ② 참조). 그 의문이 안 남게 **순위에 들어가지
+           않는다**는 말을 각주 첫머리에 둔다(2026-09-02 라이브 화면 확인 후 문구 교체). */
+        ? "<div class='seednote'>「기준」은 순위에 들어가지 않는 <b>목표 기록</b>입니다. " +
+          "실제 기록이 쌓이면 사라집니다.</div>"
         : "");
     });
 
