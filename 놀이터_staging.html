@@ -234,7 +234,10 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
   padding:0 0 6px;margin-top:6px}
 .bhead span{font-family:Pretendard,sans-serif;font-size:12.5px;color:var(--nb-mute);font-weight:700}
 /* 🔑 「개인 랭킹(전국)」 — 지역 순위와 나란히 놓이므로 **무엇의 순위인지** 밝힌다
-   (2026-09-02 석봉님 *"개인 랭킹 이라기 보다는 전국 랭킹 이라고 표현해주자"*). */
+   (2026-09-02 석봉님 *"개인 랭킹 이라기 보다는 전국 랭킹 이라고 표현해주자"*).
+   ⚠️ `.bhead` 가 `space-between` 이라 제목과 「(전국)」을 형제로 두면 **가운데로 벌어진다**
+      — `<b>` 로 한 덩어리로 묶어야 붙는다(2026-09-02 라이브 화면에서 확인). */
+.bhead > b{font-weight:inherit;display:flex;align-items:baseline}
 .bhead .scope{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;
   font-size:17px;color:var(--pop);letter-spacing:-.01em;margin-left:1px}
 .bhead .scope::before{content:"(" }
@@ -909,7 +912,7 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
            「월간·연간을 지금 만들자」가 아니라 「끊지 말고 계속 쌓자」였다.
            ⚠️ 판 기록(`game_play`)은 그대로 쌓인다 — 월간·연간이 필요해지면
               그때 `game_board(게임,'month')` 를 부르면 된다(서버는 이미 받는다). -->
-      <div class="bhead">개인 랭킹<span class="scope">전국</span> <span>상위 10위</span></div>
+      <div class="bhead"><b>개인 랭킹<span class="scope">전국</span></b><span>상위 10위</span></div>
       <div class="board" id="gBoard"></div>
       <div class="rboard">
         <div class="rh">지역 순위 <span>지역별 합계</span></div>
