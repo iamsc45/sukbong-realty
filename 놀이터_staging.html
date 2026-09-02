@@ -174,7 +174,7 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
 
 /* ── 랭킹 ── */
 .rank-cta{background:#fff;border:var(--nb-line) solid var(--nb-ink);box-shadow:5px 5px 0 var(--nb-ink);
-  padding:18px 17px;margin:24px 0}
+  padding:18px 17px;margin:28px 0 32px}
 .rank-cta h3{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:21px;letter-spacing:-.02em;
   margin:0 0 7px;word-break:keep-all}
 .rank-cta p{font-size:14.5px;color:var(--nb-ink2);margin:0 0 15px;line-height:1.7;word-break:keep-all}
@@ -189,13 +189,16 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
 .nickrow button:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--nb-ink)}
 .nickrow button:disabled{opacity:.4}
 .nicknote{font-size:13px;color:var(--nb-mute);line-height:1.7;word-break:keep-all}
-.mystat{font-size:15.5px;font-weight:800;margin-bottom:11px;word-break:keep-all}
+/* ⚠️ 세 줄(이름·순위 / 최고 / 지역)이 들어가므로 줄 간격을 벌린다.
+   2026-09-02 석봉님 "너무 겹쳐 보인다" — 이 톤은 그림자가 5px 나와 있어
+   여백을 평소보다 넉넉히 줘야 붙어 보이지 않는다. */
+.mystat{font-size:15.5px;font-weight:800;margin-bottom:11px;word-break:keep-all;line-height:1.7}
 .mystat em{font-style:normal;color:var(--nb-ink2);font-weight:600;font-size:13.5px}
 /* 평소엔 눈에 안 띄게. 오타를 쳤거나 마음이 바뀐 사람만 찾으면 된다 */
 .renlink{font-size:13px;color:var(--nb-mute);text-decoration:underline;text-underline-offset:2px}
 
 /* 순위표 — 머리줄은 먹판, 내 줄은 노랑. 그 둘만 눈에 들어오면 된다 */
-.board{margin-top:6px;background:#fff;border:var(--nb-line) solid var(--nb-ink);
+.board{margin-top:10px;background:#fff;border:var(--nb-line) solid var(--nb-ink);
   box-shadow:5px 5px 0 var(--nb-ink);padding:0 13px 6px}
 .board .h{display:grid;grid-template-columns:34px minmax(0,1fr) 44px 62px 52px;gap:8px;
   font-size:12px;letter-spacing:.04em;color:var(--nb-mute);font-weight:800;
@@ -224,11 +227,11 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
 #rboard .r{grid-template-columns:28px minmax(0,1fr) 54px 54px 44px;font-size:13.5px}
 /* 이름 옆의 지역 등수 — 「한강뷰(서울 2위)」 */
 .board .rg{font-size:12.5px;color:var(--nb-mute);font-weight:700;margin-left:3px}
-.rboard{margin-top:26px;background:#fff;border:var(--nb-line) solid var(--nb-ink);
+.rboard{margin-top:32px;background:#fff;border:var(--nb-line) solid var(--nb-ink);
   box-shadow:5px 5px 0 var(--nb-ink);padding:0 13px 6px}
 .bhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;
   font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:17px;letter-spacing:-.01em;
-  padding:11px 0 0}
+  padding:0 0 6px;margin-top:6px}
 .bhead span{font-family:Pretendard,sans-serif;font-size:12.5px;color:var(--nb-mute);font-weight:700}
 .rboard .rh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;
   font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:17px;letter-spacing:-.01em;
@@ -243,6 +246,16 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
 .rboard .r .n1{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:16px;color:var(--nb-mute)}
 .rboard .num{text-align:right;font-weight:800}
 .rboard .empty{font-size:14.5px;color:var(--nb-ink2);padding:18px 0;text-align:center}
+/* 기준 기록(시드) — 사람의 기록인 척하지 않는다. 흐리게 + 배지 + 등수 없음.
+   2026-09-02 석봉님 "거짓말 하자는건 아니야" */
+.board .r.seed{opacity:.5}
+.board .r.seed .n1{color:var(--nb-mute)}
+.sbadge{display:inline-block;margin-left:6px;padding:1px 5px;border:1.5px solid var(--nb-mute);
+  border-radius:3px;font-size:10.5px;font-weight:800;color:var(--nb-mute);vertical-align:1px;
+  letter-spacing:.02em}
+.seednote{font-size:12px;line-height:1.6;color:var(--nb-mute);padding:10px 0 2px;
+  border-top:1.5px dashed var(--nb-mute);margin-top:6px;word-break:keep-all}
+.seednote b{color:var(--nb-ink2)}
 .nickrow select{flex:1 1 0;min-width:0;font-family:inherit;font-size:15.5px;font-weight:700;padding:12px 13px;
   border:2.5px solid var(--nb-ink);border-radius:0;background:#fff;color:var(--nb-ink);
   -webkit-appearance:none;appearance:none;
@@ -363,11 +376,11 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
 /* 「초록」이라는 낱말을 실제 초록으로 — 글자만으로는 어느 상자인지 안 와닿는다 */
 .tfoot .k:first-child b{color:#1E8A50}
 .ttip{background:#fff;border:2.5px solid var(--nb-ink);box-shadow:4px 4px 0 var(--nb-ink);
-     padding:13px 15px;margin:22px 0 18px;
+     padding:13px 15px;margin:24px 0 6px;
      font-size:15.5px;font-weight:700;line-height:1.7;color:var(--nb-ink2);word-break:keep-all}
 .tmascot{text-align:center;margin:2px 0 14px}
 .tmascot img{width:170px;height:auto}
-.tbest{text-align:center;font-size:15px;color:var(--nb-ink2);font-weight:800;margin-bottom:16px}
+.tbest{text-align:center;font-size:15px;color:var(--nb-ink2);font-weight:800;margin:22px 0 4px}
 .tbest.rec{color:var(--pop);font-weight:900}
 .gempty{border:2.5px dashed var(--nb-ink);border-radius:0;padding:26px 18px;text-align:center;
   color:var(--nb-mute);font-size:14.5px;line-height:1.7;word-break:keep-all}
@@ -1056,17 +1069,24 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
       .then(function(d){
         gMyNick = d.nick || nk;
         if(d.region) gMyRegion = d.region;
+        /* 🔴 2026-09-02 석봉님 첨부 — 「랭킹에 올렸습니다」인데 **「랭킹에 올리기」 버튼이
+           그대로 남아** 있었다. gStep2 만 숨기고 **gStep1 을 안 숨긴 것**이다.
+           (닉네임 화면을 거치면 gShowNick 이 숨겨 주지만, 이미 이름이 있어 바로 등록되는
+            경로에서는 아무도 안 숨겼다) */
+        document.getElementById("gStep1").classList.add("hide");
         document.getElementById("gStep2").classList.add("hide");
         document.getElementById("gStep3").classList.remove("hide");
         document.getElementById("gTitle").textContent =
           d.improved ? "최고 기록을 새로 세웠습니다" : "랭킹에 올렸습니다";
         document.getElementById("gDesc").textContent =
           "랭킹은 끊기지 않고 계속 쌓입니다.";
+        /* ⚠️ 여기가 `gHeld` 로 박혀 있어 **층 올리기인데 「2년 10개월」**이 나왔다.
+           게임별 표기는 `gFmt` 를 쓴다(2026-09-02). */
         document.getElementById("gDone").innerHTML =
           "<b>" + esc(gMyNick) + "</b> · 전국 <b>" + d.rank + "위</b>" +
-          (d.region ? " <em>" + esc(d.region) + " 안에서 " + (d.local_rank || "-") + "위 · " +
-             "지역 순위 " + (d.region_rank || "-") + "위</em>" : "") +
-          "<br><em>최고 " + gHeld(d.score) + "</em>";
+          "<br><em>최고 " + gFmt(d.score) + "</em>" +
+          (d.region ? "<br><em>" + esc(d.region) + " 안에서 " + (d.local_rank || "-") + "위 · " +
+             "지역 순위 " + (d.region_rank || "-") + "위</em>" : "");
         gLoadBoard();
       })
       .catch(function(e){
@@ -1099,6 +1119,59 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
       .catch(function(){ return []; });
   }
 
+  /* ───────── 기준 기록(시드) ─────────
+     2026-09-02 석봉님: "초반에 이용하는 사람들이 랭킹 등록 하는데 아무도 랭킹에 없으면
+     흥미가 바로 떨어질거잖아. 어차피 적어놓은건 실제 이용하는 사람들에 의해서 사라질
+     랭킹이니까. **거짓말 하자는건 아니야**"
+
+     🔑 그 마지막 한마디대로 설계했다 — 세 가지를 지킨다.
+       ① **DB 에 넣지 않는다.** 화면에서만 이어 붙인다. 지역 합계·참여자 수 같은
+          실제 집계에 단 한 건도 섞이지 않는다.
+       ② **실제 기록 위, 시드 아래.** 점수로 뒤섞지 않는다. 섞으면 서버가 준 등수와
+          결과 화면의 「전국 N위」가 어긋나 실제 1위가 6위처럼 보인다.
+          시드에는 등수를 아예 매기지 않고 「·」 를 넣는다.
+       ③ **눈에 보이게 표시한다.** 「기준」 배지 + 흐린 톤 + 보드 밑에 한 줄 설명.
+          사람의 기록인 척하지 않는다.
+     실제 기록이 10개가 되면 시드는 한 줄도 안 나온다(저절로 사라진다).
+     ⚠️ 점수는 지어낸 값이 아니라 **봇 실측치를 기준선으로 잡은 것**이다
+        (세금 피하기 봇 중앙값 약 17초 · 층 올리기 봇 약 31층). 사람이 조금 익히면
+        넘을 수 있는 구간으로 폭을 잡았다 — 넘을 수 없는 벽이면 목표가 아니라 포기다. */
+  var SEED = {
+    tax: [
+      { nick: "임장왕",     score: 24.6 },
+      { nick: "월세탈출",   score: 21.2 },
+      { nick: "계약갱신권", score: 18.9 },
+      { nick: "첫집마련",   score: 16.4 },
+      { nick: "청약만7년",  score: 14.1 },
+      { nick: "대출한도끝", score: 12.3 },
+      { nick: "보증금지킴이", score: 10.5 },
+      { nick: "전세살이3년", score: 8.7 }
+    ],
+    stack: [
+      { nick: "타워크레인", score: 34 },
+      { nick: "용적률꽉",   score: 29 },
+      { nick: "골조반장",   score: 25 },
+      { nick: "상량식",     score: 21 },
+      { nick: "옥탑방주인", score: 18 },
+      { nick: "재건축대기", score: 15 },
+      { nick: "필로티1층",  score: 12 },
+      { nick: "층수욕심",   score: 9 }
+    ]
+  };
+
+  /* 실제 기록 줄 뒤에 붙일 시드 줄을 만든다. 자리가 남을 때만 나온다. */
+  function gSeedRows(used, limit){
+    var s = (SEED[gGame] || []);
+    var room = limit - used;
+    if(room <= 0) return "";
+    return s.slice(0, room).map(function(x){
+      return "<div class='r seed'>" +
+        "<span class='n1'>·</span>" +
+        "<span class='nk'>" + esc(x.nick) + "<span class='sbadge'>기준</span></span>" +
+        "<span class='num'>" + gFmt(x.score) + "</span><span></span><span></span></div>";
+    }).join("");
+  }
+
   function gLoadBoard(){
     document.getElementById("gBoardWrap").classList.remove("hide");
     /* 🔴 개인 랭킹은 **10위까지**(2026-09-01 석봉님). 20줄은 스크롤만 길고 아무도 안 읽는다.
@@ -1106,12 +1179,16 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
           17개를 다 채워도 열일곱 줄이고, 대부분은 그보다 짧다. */
     gRpc("game_board", { p_game: gGame, p_period: "all", p_limit: 10 }).then(function(rows){
       var box = document.getElementById("gBoard");
-      if(!rows.length){
-        box.innerHTML = "<div class='empty'>아직 등록된 기록이 없습니다.</div>";
-        return;
-      }
       var h = "<div class='h'><span>순위</span><span>이름</span>" +
               "<span class='num'>기록</span><span class='num'></span><span class='num'></span></div>";
+      if(!rows.length){
+        /* 비어 있어도 「없습니다」로 끝내지 않는다 — 기준 기록만이라도 보여 준다.
+           대신 「1호가 됩니다」로 첫 등록의 값어치를 살린다. */
+        box.innerHTML = h + gSeedRows(0, 10) +
+          "<div class='seednote'>「기준」은 아직 실제 기록이 없어 목표선으로 걸어 둔 " +
+          "연습 기록입니다. 등록하시면 <b>1호</b>로 맨 위에 오릅니다.</div>";
+        return;
+      }
       h += rows.map(function(x){
         var me = gMyNick && x.nick === gMyNick;
         /* 🔑 「한강뷰(서울 2위)」 — 전국 등수 옆에 지역 안 등수를 같이 보여 준다(석봉님).
@@ -1123,13 +1200,21 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
           "<span class='nk'>" + esc(x.nick) + rg + "</span>" +
           "<span class='num'>" + gFmt(x.score) + "</span><span></span><span></span></div>";
       }).join("");
-      box.innerHTML = h;
+      var seed = gSeedRows(rows.length, 10);
+      box.innerHTML = h + seed + (seed
+        ? "<div class='seednote'>「기준」은 목표선으로 걸어 둔 연습 기록입니다. " +
+          "실제 기록이 쌓이면 밀려납니다.</div>"
+        : "");
     });
 
     gRpc("game_region_rank", { p_game: gGame, p_period: "all", p_limit: 20 }).then(function(rows){
       var box = document.getElementById("gRBoard");
       if(!rows.length){
-        box.innerHTML = "<div class='empty'>아직 지역을 고른 분이 없습니다.</div>"; return;
+        /* ⚠️ 지역 합계에는 시드를 넣지 않는다. 여기 가짜를 채우면 「우리 지역은 이미
+           1등이네」가 되어 **지역전을 만든 목적과 정반대**가 된다. 대신 비어 있는 것을
+           기회로 바꿔 말한다. */
+        box.innerHTML = "<div class='empty'>아직 지역을 고른 분이 없습니다." +
+          "<br>지금 등록하면 <b>우리 지역 1호</b>가 됩니다.</div>"; return;
       }
       /* 🔴 합계다(2026-09-01 석봉님). 평균이면 고수 한 명 있는 지역이 1등이라
          못하는 사람은 "내가 하면 평균 깎이겠네"가 된다 — 지역전을 만든 목적과 반대다.
