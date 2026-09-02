@@ -542,8 +542,10 @@ window.TaxGame = (function(){
     if(!cv) return null;
     loadMascot();
     fit(); bindInput();
-    $("tAgain").addEventListener("click", begin);
-    $("tShare").addEventListener("click", function(){
+    /* ⚠️ `tAgain`·`tShare` 는 **호스트가 잡는다**(2026-09-02).
+       결과 화면을 층 올리기와 함께 쓰기 때문에, 어느 게임의 결과인지는
+       호스트만 안다. 여기서 잡으면 층 올리기 결과에서도 세금이 다시 시작된다. */
+    function share(){
 /* 🔴 공유 주소는 **ASCII 짧은 주소**를 쓴다(2026-09-01).
          놀이터 파일명이 한글이라 인코딩 단계가 한 번만 어긋나도 404 가 난다.
          실제로 두 번 겪었다. `play.html` 이 진짜 놀이터로 보내 준다. */
@@ -555,8 +557,9 @@ window.TaxGame = (function(){
         url: url, btn: "나도 해보기",
         text: "세금 피하기, 저는 " + held(elapsed) + " 버텼습니다.\n" + url
       }).then(function(how){ if(how === "clipboard") alert("주소를 복사했습니다."); });
-    });
-    return { start: begin, stop: stop,
+    }
+
+    return { start: begin, stop: stop, share: share,
       /* 검증용 — rAF 없이 로직만 돌린다(숨은 탭에서는 화면으로 확인할 수 없다).
          bot=true 면 "잘 피하는 사람"을 흉내 내 실제 난이도를 잰다.
          가만히 서 있는 결과만 보면 3초에 죽어서 난이도를 알 수 없다. */
