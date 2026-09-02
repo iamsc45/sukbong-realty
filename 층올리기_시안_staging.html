@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>[시안] 층 올리기 · 석봉 부동산 정보방</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════════════════════
+   층 올리기 — 화면 시안 (2026-09-02 석봉님 "괜찮을 것 같아, 샘플 이미지로 먼저")
+
+   ⚠️ 그림으로 그려 놓고 "이렇게 보일 겁니다"라고 말하면 틀린다.
+      **실제 게임에 쓸 렌더 함수로** 다섯 상태를 그린다. 그대로 옮겨 쓸 수 있는 코드다.
+   톤은 놀이터와 같은 A안 네오브루탈(먹선 3px · 블러 없는 오프셋 그림자).
+   ══════════════════════════════════════════════════════════════════════ */
+:root{
+  --paper:#FFFCF2; --ink:#16130F; --ink2:#4A443A; --mute:#8A8478;
+  --pop:#FF5C39; --sun:#FFD84D; --win:#2FBF71; --lose:#E23B2E; --line:3px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#DEDBD2;color:var(--ink);overflow-x:hidden;
+  font-family:Pretendard,-apple-system,BlinkMacSystemFont,sans-serif;
+  background-image:radial-gradient(circle at 1px 1px, rgba(0,0,0,.07) 1px, transparent 0);
+  background-size:22px 22px}
+.wrap{max-width:1820px;margin:0 auto;padding:40px 24px 80px}
+h1.top{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:38px;
+  letter-spacing:-.02em;margin:0 0 10px}
+p.sub{color:#4A443A;font-size:15.5px;line-height:1.85;margin:0 0 6px;max-width:840px;word-break:keep-all}
+p.sub b{background:var(--sun);padding:1px 5px;box-shadow:2px 2px 0 var(--ink)}
+.rulebox{background:#fff;border:var(--line) solid var(--ink);box-shadow:6px 6px 0 var(--ink);
+  padding:18px 20px;margin:22px 0 34px;max-width:840px}
+.rulebox h3{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:20px;margin:0 0 10px}
+.rulebox ol{margin:0;padding-left:20px}
+.rulebox li{font-size:15px;line-height:1.85;color:var(--ink2);margin-bottom:5px;word-break:keep-all}
+.rulebox li b{color:var(--ink);font-weight:800}
+
+.row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:24px;align-items:start}
+@media(max-width:1620px){.row{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:1080px){.row{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.row{grid-template-columns:minmax(0,1fr)}}
+.col .meta{margin-bottom:12px}
+.meta .no{font-family:'Black Han Sans',sans-serif;font-weight:400;font-size:13px;letter-spacing:.1em;color:#7A7568}
+.meta .nm{font-size:18px;font-weight:800;letter-spacing:-.03em;margin:2px 0 5px}
+.meta .ds{font-size:13.5px;color:#5C564C;line-height:1.7;word-break:keep-all}
+
+.phone{width:340px;max-width:100%;margin:0 auto;
+  border:4px solid var(--ink);box-shadow:9px 9px 0 var(--ink);background:var(--paper)}
+.scr{height:660px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.pad{padding:16px 15px}
+.grow{flex:1 1 auto;min-height:6px}
+
+.hud{display:flex;justify-content:space-between;align-items:center;
+  padding:10px 13px;background:var(--sun);border-bottom:var(--line) solid var(--ink)}
+.hud .cap{font-size:10.5px;font-weight:800;letter-spacing:.12em;color:#6A6355}
+.hud .big{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:31px;
+  letter-spacing:-.01em;line-height:1.1;margin-top:2px}
+.hud .best{font-size:12.5px;font-weight:800;color:#6A6355;text-align:right}
+.say{height:36px;display:flex;align-items:center;justify-content:center;background:#FFF6D9;
+  border-left:var(--line) solid var(--ink);border-right:var(--line) solid var(--ink);
+  border-bottom:2.5px solid var(--ink);font-size:14px;font-weight:800;letter-spacing:-.02em}
+.say.on{background:var(--ink);color:var(--sun);font-size:14.5px}
+.stage{display:flex;justify-content:center;background:var(--paper);
+  border:var(--line) solid var(--ink);border-top:0;box-shadow:5px 5px 0 var(--ink)}
+canvas{display:block;width:100%;height:auto}
+.foot{display:flex;justify-content:space-between;gap:8px;margin-top:12px;
+  font-size:12px;font-weight:700;color:var(--ink2)}
+.foot .k{background:#fff;border:2px solid var(--ink);padding:5px 8px}
+.foot .k b{font-weight:900}
+
+.eyebrow{display:inline-block;background:var(--ink);color:var(--paper);font-size:11.5px;
+  font-weight:800;letter-spacing:.16em;padding:5px 10px;transform:rotate(-1.6deg)}
+h2.t{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:38px;
+  letter-spacing:-.02em;line-height:1.03;margin:14px 0 9px}
+.lead{font-size:14px;line-height:1.75;color:var(--ink2);margin:0 0 14px;word-break:keep-all}
+.btn{display:block;width:100%;background:var(--pop);color:#fff;border:var(--line) solid var(--ink);
+  box-shadow:5px 5px 0 var(--ink);font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;
+  font-size:21px;padding:14px 0;cursor:pointer;text-align:center}
+.btn.g{background:#fff;color:var(--ink)}
+.btn.k{background:var(--ink);color:var(--paper)}
+.btn.sm{font-size:15px;padding:10px 0;box-shadow:4px 4px 0 var(--ink)}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}
+.chip{display:inline-block;background:var(--sun);border:2.5px solid var(--ink);font-size:12px;
+  font-weight:800;padding:4px 8px;margin:0 4px 5px 0;box-shadow:2.5px 2.5px 0 var(--ink)}
+.result{text-align:center;padding:6px 0 2px}
+.result .grade{display:inline-block;background:var(--ink);color:var(--sun);
+  font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:14px;
+  letter-spacing:.06em;padding:6px 13px;transform:rotate(-2deg)}
+.result .score{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:64px;
+  line-height:1.05;margin:13px 0 2px}
+.result .score em{font-style:normal;font-size:28px;color:var(--pop)}
+.result .say2{font-size:14.5px;font-weight:700;color:var(--ink2);margin:6px 0 0;word-break:keep-all}
+.card{background:#fff;border:2.5px solid var(--ink);box-shadow:4px 4px 0 var(--ink);
+  padding:12px 13px;margin-top:13px}
+.card .h{display:flex;justify-content:space-between;align-items:baseline;
+  border-bottom:2.5px solid var(--ink);padding-bottom:6px;margin-bottom:5px}
+.card .h b{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:15px}
+.card .h span{font-size:11.5px;font-weight:700;color:var(--mute)}
+.r{display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:center;
+  padding:6px 0;font-size:13.5px;font-variant-numeric:tabular-nums}
+.r + .r{border-top:1.5px dashed #DCD5C2}
+.r .n{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:15px;
+  color:var(--pop);text-align:center}
+.r .who{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.r .who em{font-style:normal;font-weight:600;color:var(--mute);font-size:11.5px}
+.r .v{font-weight:800}
+.r.me{background:var(--sun);margin:0 -13px;padding:6px 13px;border-top:0}
+.r.me .n{color:var(--ink)}
+
+.note{margin-top:40px;border:var(--line) solid var(--ink);background:#fff;
+  box-shadow:6px 6px 0 var(--ink);padding:20px 22px;max-width:900px}
+.note h3{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:20px;margin:0 0 10px}
+.note li{font-size:14.5px;line-height:1.85;color:var(--ink2);margin-bottom:6px;word-break:keep-all}
+.note li b{background:var(--sun);padding:0 4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1 class="top">층 올리기 · 화면 시안</h1>
+<p class="sub">오락실 <b>스태커</b>의 규칙에 건물을 입혔습니다. 조작은 <b>탭 하나</b>뿐입니다.
+아래 다섯 장은 그림이 아니라 <b>실제 게임에 쓸 렌더 코드로 그린 것</b>이라, 만들면 이대로 나옵니다.</p>
+
+<div class="rulebox">
+  <h3>규칙</h3>
+  <ol>
+    <li>층이 <b>좌우로 왔다 갔다</b> 합니다. 화면을 누르면 그 자리에 <b>얹힙니다</b>.</li>
+    <li>아래층과 <b>어긋난 만큼 잘려 나갑니다.</b> 그래서 다음 층이 좁아집니다.</li>
+    <li>딱 맞추면 <b>「정확」</b>이 뜨고 폭이 조금 <b>돌아옵니다</b>. 연속으로 맞추면 더 돌아옵니다.</li>
+    <li>완전히 빗나가면 그 자리에서 끝. 점수는 <b>올린 층수</b>입니다.</li>
+    <li>올라갈수록 <b>빨라집니다.</b> 20층부터는 바람도 붑니다(좌우로 미세하게 흔들림).</li>
+  </ol>
+</div>
+
+<div class="row">
+
+  <!-- ① 시작 -->
+  <div class="col">
+    <div class="meta"><div class="no">화면 01</div><div class="nm">시작</div>
+      <div class="ds">규칙이 한 줄이라 설명이 짧습니다. 바로 누르고 싶어지는 화면.</div></div>
+    <div class="phone"><div class="scr">
+      <div class="pad">
+        <span class="eyebrow">탭 하 나 로 하 는 게 임</span>
+        <h2 class="t">층 올리기</h2>
+        <p class="lead">좌우로 움직이는 층을 눌러 얹습니다. 어긋난 만큼 잘려 나가니, 몇 층까지 올리시겠어요?</p>
+        <div><span class="chip">최고 32층</span><span class="chip" style="background:#fff">전체 2,140판</span></div>
+        <div class="card">
+          <div class="h"><b>역대 순위</b><span>상위 3명</span></div>
+          <div class="r"><div class="n">1</div><div class="who">건축왕 <em>부산</em></div><div class="v">61층</div></div>
+          <div class="r"><div class="n">2</div><div class="who">시공능력 <em>서울</em></div><div class="v">54층</div></div>
+          <div class="r"><div class="n">3</div><div class="who">용적률만렙 <em>경기</em></div><div class="v">49층</div></div>
+        </div>
+      </div>
+      <div class="grow"></div>
+      <div class="pad" style="padding-top:0"><div class="btn">시 작 하 기</div></div>
+    </div></div>
+  </div>
+
+  <!-- ② 초반 -->
+  <div class="col">
+    <div class="meta"><div class="no">화면 02</div><div class="nm">초반 — 7층</div>
+      <div class="ds">아직 넓습니다. 조금씩 어긋난 자국이 왼쪽에 계단처럼 남습니다.</div></div>
+    <div class="phone"><div class="scr">
+      <div class="hud">
+        <div><div class="cap">올 린 층</div><div class="big">7층</div></div>
+        <div class="best">최고<br>32층</div>
+      </div>
+      <div class="say">&nbsp;</div>
+      <div class="stage"><canvas id="c2" width="680" height="880"></canvas></div>
+      <div class="pad" style="padding-top:0">
+        <div class="foot"><span class="k">화면 아무 데나 <b>탭</b></span><span class="k">딱 맞추면 폭이 <b>돌아옵니다</b></span></div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- ③ 정확 -->
+  <div class="col">
+    <div class="meta"><div class="no">화면 03</div><div class="nm">정확히 맞춘 순간</div>
+      <div class="ds">딱 맞추면 층이 번쩍이고 폭이 조금 돌아옵니다. 연속이면 더 크게.</div></div>
+    <div class="phone"><div class="scr">
+      <div class="hud">
+        <div><div class="cap">올 린 층</div><div class="big">16층</div></div>
+        <div class="best">최고<br>32층</div>
+      </div>
+      <div class="say on">정확! 3연속 — 폭이 돌아옵니다</div>
+      <div class="stage"><canvas id="c3" width="680" height="880"></canvas></div>
+      <div class="pad" style="padding-top:0">
+        <div class="foot"><span class="k"><b>3연속</b> 정확</span><span class="k">폭 +12</span></div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- ④ 고층 -->
+  <div class="col">
+    <div class="meta"><div class="no">화면 04</div><div class="nm">고층 — 28층</div>
+      <div class="ds">폭이 좁아지고 빨라집니다. 20층부터 바람이 불어 미세하게 흔들립니다.</div></div>
+    <div class="phone"><div class="scr">
+      <div class="hud">
+        <div><div class="cap">올 린 층</div><div class="big">28층</div></div>
+        <div class="best">최고<br>32층</div>
+      </div>
+      <div class="say on">28층. 이제 이 동네에서 제일 높습니다</div>
+      <div class="stage"><canvas id="c4" width="680" height="880"></canvas></div>
+      <div class="pad" style="padding-top:0">
+        <div class="foot"><span class="k">바람 <b>강</b></span><span class="k">남은 폭 <b>34</b></span></div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- ⑤ 결과 -->
+  <div class="col">
+    <div class="meta"><div class="no">화면 05</div><div class="nm">결과</div>
+      <div class="ds">세금 피하기와 같은 결과 화면 뼈대를 씁니다. 랭킹·공유가 그대로 붙습니다.</div></div>
+    <div class="phone"><div class="scr">
+      <div class="pad">
+        <div class="result">
+          <span class="grade">주 상 복 합 급</span>
+          <div class="score">28<em>층</em></div>
+          <p class="say2">최고 기록까지 <b>4층</b> 남았습니다.<br>마지막 층이 <b>7px</b> 어긋났습니다.</p>
+        </div>
+        <div class="card">
+          <div class="h"><b>내 자리</b><span>역대 기준</span></div>
+          <div class="r"><div class="n">6</div><div class="who">벽돌한장 <em>서울</em></div><div class="v">30층</div></div>
+          <div class="r me"><div class="n">7</div><div class="who">나 <em>이번 판</em></div><div class="v">28층</div></div>
+          <div class="r"><div class="n">8</div><div class="who">지하1층 <em>인천</em></div><div class="v">26층</div></div>
+        </div>
+      </div>
+      <div class="grow"></div>
+      <div class="pad" style="padding-top:0">
+        <div class="btn">랭 킹 에 올 리 기</div>
+        <div class="btns"><div class="btn g sm">다시 하기</div><div class="btn k sm">자랑하기</div></div>
+      </div>
+    </div></div>
+  </div>
+
+</div>
+
+<div class="note">
+  <h3>만들 때 이렇게 하겠습니다</h3>
+  <ul>
+    <li><b>세금 피하기의 뼈대를 그대로 씁니다.</b> 랭킹(game_rank 테이블 game='stack')·지역 대항전·공유·소리가 이미 있어서, 새로 만들 것은 <b>게임 로직과 렌더뿐</b>입니다.</li>
+    <li>층에 <b>실제 가격을 붙이지 않습니다.</b> 「32층 = 얼마」로 읽히면 틀린 정보가 되고, 층수만으로도 자랑이 됩니다.</li>
+    <li>대신 <b>층수 마일스톤</b>으로 부동산 맛을 냅니다 — 5층 빌라, 10층 아파트, 20층 주상복합, 30층 랜드마크, 50층 초고층.</li>
+    <li>실패 원인을 숫자로 보여 줍니다(<b>「마지막 층이 7px 어긋났습니다」</b>). 아깝다는 느낌이 다시 누르게 만듭니다.</li>
+    <li>난이도 손잡이는 세금 피하기와 같은 방식으로 <b>둘로 나눕니다</b> — 시작 속도(앞)와 가속(뒤). 앞이 지루하면 앞만 만집니다.</li>
+  </ul>
+</div>
+
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════
+   층 올리기 — 렌더 (실제 게임에 그대로 쓸 코드)
+   🔑 층 하나는 { x, w } 뿐이다. 아주 단순한 상태라 로직도 짧다.
+   ⚠️ 카메라: 층이 쌓이면 건물이 내려가고 새 층이 위에 온다.
+      「보이는 층 수」를 고정하고 그만큼만 그린다.
+   ═══════════════════════════════════════════════════════════════════════ */
+(function(){
+  var INK = "#16130F", PAPER = "#FFFCF2", POP = "#FF5C39",
+      SUN = "#FFD84D", WIN = "#2FBF71";
+  var S = 2;                        // 논리 픽셀 배율
+  var FH = 30 * S;                  // 층 높이
+  var GROUND = 54 * S;              // 바닥 두께
+  var VIS = 12;                     // 화면에 보이는 층 수
+
+  /* 네오브루탈 기본 부품 — 채움 + 먹선 + 블러 없는 그림자 */
+  function slab(g, x, y, w, h, fill, off){
+    var d = off === undefined ? 5 * S : off;
+    g.fillStyle = INK; g.fillRect(x + d, y + d, w, h);
+    g.fillStyle = fill; g.fillRect(x, y, w, h);
+    g.lineWidth = 3 * S; g.strokeStyle = INK; g.strokeRect(x, y, w, h);
+  }
+
+  /* floors = [{x, w}] 아래부터. moving = {x, w} 지금 움직이는 층(없으면 null)
+     opt = { perfect: 몇 번째 층이 방금 정확했나, cut: {x,w,y} 잘려 떨어지는 조각 } */
+  function draw(cv, floors, moving, opt){
+    opt = opt || {};
+    var g = cv.getContext("2d"), W = cv.width, H = cv.height;
+    g.fillStyle = PAPER; g.fillRect(0, 0, W, H);
+
+    /* 배경 — 옅은 가로줄(높이 감각을 준다) */
+    g.strokeStyle = "rgba(22,19,15,.06)"; g.lineWidth = 2 * S;
+    for(var gy = 40 * S; gy < H; gy += 60 * S){
+      g.beginPath(); g.moveTo(0, gy); g.lineTo(W, gy); g.stroke();
+    }
+
+    var baseY = H - GROUND;                       // 바닥선
+    var n = floors.length;
+    var from = Math.max(0, n - VIS);              // 이 아래는 화면 밖
+    /* 바닥(대지) — 맨 아래 층이 화면에 남아 있을 때만 그린다 */
+    if(from === 0){
+      g.strokeStyle = INK; g.lineWidth = 5 * S;
+      g.beginPath(); g.moveTo(0, baseY); g.lineTo(W, baseY); g.stroke();
+      g.save(); g.beginPath(); g.rect(0, baseY, W, H - baseY); g.clip();
+      g.strokeStyle = "rgba(22,19,15,.15)"; g.lineWidth = 2.5 * S;
+      for(var sx = -60 * S; sx < W + 70 * S; sx += 18 * S){
+        g.beginPath(); g.moveTo(sx, H); g.lineTo(sx + 42 * S, baseY); g.stroke();
+      }
+      g.restore();
+    }
+
+    /* 쌓인 층 — 아래부터 위로. 색은 주황·흰색을 번갈아(세금 피하기와 같은 규칙) */
+    for(var i = from; i < n; i++){
+      var f = floors[i];
+      var y = baseY - (i - from + 1) * FH;
+      var isPerfect = (opt.perfect != null && i === opt.perfect);
+      slab(g, f.x, y, f.w, FH - 3 * S,
+           isPerfect ? SUN : (i % 2 ? "#FFFFFF" : POP), 4 * S);
+      /* 층 번호 — 다섯 층마다 하나씩만. 다 적으면 지저분하다 */
+      if((i + 1) % 5 === 0 && f.w > 60 * S){
+        g.font = "800 " + (13 * S) + "px Pretendard, sans-serif";
+        g.fillStyle = i % 2 ? INK : "#FFFFFF";
+        g.textAlign = "left"; g.textBaseline = "middle";
+        g.fillText((i + 1) + "F", f.x + 9 * S, y + (FH - 3 * S) / 2);
+      }
+    }
+
+    /* 잘려 떨어지는 조각 — 「어긋났다」를 눈으로 알린다 */
+    if(opt.cut){
+      g.save(); g.globalAlpha = 0.85;
+      slab(g, opt.cut.x, opt.cut.y, opt.cut.w, FH - 3 * S, "#C9C3B4", 3 * S);
+      g.restore();
+    }
+
+    /* 지금 움직이는 층 — 맨 위에서 좌우로 */
+    if(moving){
+      var my = baseY - (n - from + 1) * FH;
+      slab(g, moving.x, my, moving.w, FH - 3 * S, WIN, 5 * S);
+      /* 어디에 얹힐지 보여 주는 안내선 — 초보자가 감을 잡는다 */
+      g.save();
+      g.setLineDash([6 * S, 6 * S]); g.lineWidth = 2.5 * S; g.strokeStyle = "rgba(22,19,15,.35)";
+      g.beginPath();
+      g.moveTo(moving.x, my + FH); g.lineTo(moving.x, baseY);
+      g.moveTo(moving.x + moving.w, my + FH); g.lineTo(moving.x + moving.w, baseY);
+      g.stroke(); g.restore();
+    }
+  }
+
+  /* ── 다섯 장의 상태를 만든다 ─────────────────────────────────────
+     ⚠️ 손으로 좌표를 찍지 않고 **게임과 같은 규칙으로 쌓아** 만든다.
+        그래야 「실제로 이렇게 보인다」가 참이 된다. */
+  function build(count, seed, startW){
+    var rnd = function(){ seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+    var W = 680, w = startW || 300, x = (W - w) / 2;
+    var out = [{ x: x, w: w }];
+    for(var i = 1; i < count; i++){
+      var prev = out[i - 1];
+      /* 사람이 하는 만큼의 오차 — 위로 갈수록 조금씩 커진다 */
+      var err = (rnd() - 0.5) * Math.min(46, 14 + i * 1.5);
+      var nx = prev.x + err;
+      var overlap = Math.min(prev.x + prev.w, nx + prev.w) - Math.max(prev.x, nx);
+      var nw = Math.max(24, overlap);
+      out.push({ x: Math.max(prev.x, nx), w: nw });
+    }
+    return out;
+  }
+
+  function go(id, count, seed, moving, opt){
+    var cv = document.getElementById(id);
+    if(!cv) return;
+    var fl = build(count, seed);
+    draw(cv, fl, moving, opt);
+  }
+
+  /* ② 초반 7층 — 아직 넓다 */
+  go("c2", 7, 7777, { x: 120, w: 246 });
+
+  /* ③ 정확히 맞춘 순간 — 맨 위 층이 노랗게 번쩍인다 */
+  (function(){
+    var cv = document.getElementById("c3");
+    var fl = build(16, 3131);
+    /* 정확히 맞춘 층은 아래층과 x·w 가 같다 */
+    fl[15] = { x: fl[14].x, w: fl[14].w };
+    draw(cv, fl, { x: fl[15].x + 4, w: fl[15].w }, { perfect: 15 });
+  })();
+
+  /* ④ 고층 28층 — 좁고 빠르다 */
+  go("c4", 28, 5150, { x: 300, w: 68 });
+})();
+</script>
+</body>
+</html>
