@@ -233,6 +233,14 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
   font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:17px;letter-spacing:-.01em;
   padding:0 0 6px;margin-top:6px}
 .bhead span{font-family:Pretendard,sans-serif;font-size:12.5px;color:var(--nb-mute);font-weight:700}
+/* 🔑 「개인 랭킹(전국)」 — 지역 순위와 나란히 놓이므로 **무엇의 순위인지** 밝힌다
+   (2026-09-02 석봉님 *"개인 랭킹 이라기 보다는 전국 랭킹 이라고 표현해주자"*). */
+.bhead .scope{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;
+  font-size:17px;color:var(--pop);letter-spacing:-.01em;margin-left:1px}
+.bhead .scope::before{content:"(" }
+.bhead .scope::after{content:")"}
+/* 보드가 옮겨 다니는 자리. 시작 화면과 결과 화면이 같은 보드를 나눠 쓴다. */
+.bslot{margin-top:22px}
 .rboard .rh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;
   font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:17px;letter-spacing:-.01em;
   padding:11px 0 8px;border-bottom:2.5px solid var(--nb-ink)}
@@ -801,17 +809,8 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
     <div class="tmascot"><img src="assets/mascot_house.png?v=1" alt="" width="170"></div>
     <!-- 🔴 시작 화면에 랭킹(2026-09-01 석봉님). 남들 기록을 보고 나서 시작해야 도전할 마음이 생긴다.
          지역「간」과 지역「내」를 같이 보여준다 — 전국 1등은 멀지만 우리 동네 1등은 해볼 만하다. -->
-    <div class="rankpeek" id="tPeek">
-      <div class="h"><b>랭킹</b><span>역대 기록</span></div>
-      <ol id="tPeekList"><li class="none">불러오는 중…</li></ol>
-      <!-- 🔴 지역도 **개인 랭킹과 같은 목록**으로(2026-09-01 석봉님).
-           한 줄로 풀어 쓰니 랭킹으로 안 읽히고 개인 표와 결도 안 맞았다. -->
-      <div class="rsub">
-        <div class="h"><b>지역 순위</b><span>지역별 합계</span></div>
-        <ol id="tPeekRegion"><li class="none">불러오는 중…</li></ol>
-      </div>
-    </div>
     <button class="btn full" id="tStart">시작하기</button>
+    <div class="bslot" id="tPeekSlot"></div>
     <div style="text-align:center"><a href="#" class="backlink toHub">다른 놀이 해보기</a></div>
   </section>
 
@@ -846,15 +845,8 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
       딱 맞추면 <b>「정확」</b>이 뜨고 폭이 조금 돌아옵니다. 연속으로 맞추면 더 돌아옵니다.<br>
       <span class="tnote">20층부터는 바람이 불어 좌우로 미세하게 흔들립니다.</span>
     </div>
-    <div class="rankpeek" id="sPeek">
-      <div class="h"><b>랭킹</b><span>역대 기록</span></div>
-      <ol id="sPeekList"><li class="none">불러오는 중…</li></ol>
-      <div class="rsub">
-        <div class="h"><b>지역 순위</b><span>지역별 합계</span></div>
-        <ol id="sPeekRegion"><li class="none">불러오는 중…</li></ol>
-      </div>
-    </div>
     <button class="btn full" id="sStart">시작하기</button>
+    <div class="bslot" id="sPeekSlot"></div>
     <div style="text-align:center"><a href="#" class="backlink toHub">다른 놀이 해보기</a></div>
   </section>
 
@@ -899,24 +891,31 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
       <div id="gStep3" class="hide"><div class="mystat" id="gDone"></div></div>
     </div>
 
+    <div class="bslot" id="tEndSlot"></div>
+
+    <button class="btn full" id="tShare">결과 공유하기</button>
+    <button class="btn full line" id="tAgain">다시 하기</button>
+    <div style="text-align:center"><a href="#" class="backlink toHub">다른 놀이 해보기</a></div>
+  </section>
+
+  <!-- 🔑 랭킹 보드는 **한 벌뿐**이다(2026-09-02 석봉님 *"시작할때 나오는 랭킹순위도
+       끝날때 나오는 랭킹처럼 확인가능하게"*). 두 벌로 복제하면 지역 펼침·시드·표기를
+       고칠 때마다 두 군데를 고쳐야 하고, 한쪽을 빠뜨리면 조용히 어긋난다.
+       그래서 이 블록을 화면 바깥에 두고 `gMoveBoard()` 가 슬롯으로 **옮긴다**
+       (DOM 이동은 이벤트 리스너와 펼침 상태를 그대로 유지한다). -->
     <div id="gBoardWrap" class="hide">
       <!-- 🔴 랭킹은 끊기지 않는다 — **역대 하나**만 보여준다(2026-09-01 석봉님).
            기간 버튼(역대·올해·이번 달)을 만들었다가 되돌렸다. 석봉님 뜻은
            「월간·연간을 지금 만들자」가 아니라 「끊지 말고 계속 쌓자」였다.
            ⚠️ 판 기록(`game_play`)은 그대로 쌓인다 — 월간·연간이 필요해지면
               그때 `game_board(게임,'month')` 를 부르면 된다(서버는 이미 받는다). -->
-      <div class="bhead">개인 랭킹 <span>상위 10위</span></div>
+      <div class="bhead">개인 랭킹<span class="scope">전국</span> <span>상위 10위</span></div>
       <div class="board" id="gBoard"></div>
       <div class="rboard">
         <div class="rh">지역 순위 <span>지역별 합계</span></div>
         <div id="gRBoard"></div>
       </div>
     </div>
-
-    <button class="btn full" id="tShare">결과 공유하기</button>
-    <button class="btn full line" id="tAgain">다시 하기</button>
-    <div style="text-align:center"><a href="#" class="backlink toHub">다른 놀이 해보기</a></div>
-  </section>
 
   <div class="foot" id="foot"></div>
 </div>
@@ -1017,41 +1016,17 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
   }
 
   /* 시작 화면 랭킹 — 개인 다섯 줄 + 지역 대항전 한 줄 요약 */
-  function gLoadPeek(game, listId, regionId){
-    game = game || "tax";
-    listId = listId || "tPeekList"; regionId = regionId || "tPeekRegion";
-    gRpc("game_board", { p_game: game, p_period: "all", p_limit: 5 })
-      .then(function(rows){
-        var box = document.getElementById(listId);
-        if(!box) return;
-        if(!rows || !rows.length){
-          box.innerHTML = "<li class='none'>아직 등록된 기록이 없습니다. 첫 주인공이 되어 보세요.</li>";
-          return;
-        }
-        box.innerHTML = rows.map(function(x){
-          return "<li><span class='r'>" + x.rank + "</span>" +
-                 "<span class='n'>" + esc(x.nick) +
-                   (x.region ? " <em style='font-style:normal;color:var(--muted2)'>(" + esc(x.region) +
-                      (x.local_rank ? " " + x.local_rank + "위" : "") + ")</em>" : "") +
-                 "</span><span class='v'>" + FMT[game](x.score) + "</span></li>";
-        }).join("");
-      });
-    gRpc("game_region_rank", { p_game: game, p_period: "all", p_limit: 3 })
-      .then(function(rows){
-        var box = document.getElementById(regionId);
-        if(!box) return;
-        if(!rows || !rows.length){
-          box.innerHTML = "<li class='none'>아직 지역을 고른 분이 없습니다. 우리 지역 첫 점수를 올려 보세요.</li>";
-          return;
-        }
-        box.innerHTML = rows.map(function(x){
-          var me = gMyRegion && x.region === gMyRegion;
-          return "<li><span class='r'>" + x.rank + "</span>" +
-                 "<span class='n" + (me ? " me" : "") + "'>" + esc(x.region) +
-                   "<span class='cnt'>" + x.n + "명</span></span>" +
-                 "<span class='v'>" + FMT[game](x.total_score) + "</span></li>";
-        }).join("");
-      });
+  /* 랭킹 보드를 슬롯으로 옮긴다 — 보드는 문서에 **한 벌뿐**이다.
+     ⚠️ `appendChild` 는 복사가 아니라 **이동**이라, 붙여 둔 클릭 리스너와 펼침 상태
+        (`gOpen`)가 그대로 따라온다. 그래서 시작 화면에서 지역을 펼쳐 두고 게임을 하면
+        결과 화면에도 펼쳐진 채로 나온다 — 의도한 동작이다.
+     `open` 이 true 면 바로 보여 준다(시작 화면). 결과 화면은 등록을 마친 뒤에만
+     `gLoadBoard()` 가 열기 때문에 여기서 열지 않는다. */
+  function gMoveBoard(slotId, open){
+    var slot = document.getElementById(slotId), b = document.getElementById("gBoardWrap");
+    if(!slot || !b) return;
+    if(b.parentNode !== slot) slot.appendChild(b);
+    if(open) b.classList.remove("hide");
   }
 
   function gShowNick(known){
@@ -1245,6 +1220,9 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
     document.getElementById("gStep1").classList.remove("hide");
     document.getElementById("gStep2").classList.add("hide");
     document.getElementById("gStep3").classList.add("hide");
+    /* 결과 화면으로 보드를 되돌린다. 등록을 마치기 전까지는 숨겨 둔다
+       (시작 화면에서 열어 둔 채로 왔을 수 있다). */
+    gMoveBoard("tEndSlot", false);
     document.getElementById("gBoardWrap").classList.add("hide");
     document.getElementById("gTitle").textContent = "이 기록, 랭킹에 올리시겠어요?";
     document.getElementById("gDesc").innerHTML = "내 기록이 <b>우리 지역 합계</b>에 더해집니다. 짧아도 보탬이 됩니다.";
@@ -1530,11 +1508,14 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
   }
   $("goTax").addEventListener("click", function(){
     curGame = "tax"; gGame = "tax"; gFmt = FMT.tax;
-    show("tIntro"); gLoadPeek("tax", "tPeekList", "tPeekRegion");
+    /* 🔴 시작 화면에도 **결과 화면과 똑같은 랭킹**을 보여 준다(2026-09-02 석봉님).
+       전에는 상위 5줄짜리 요약이라 지역을 펼쳐 볼 수 없었다 — 같은 화면을 두 벌로
+       만들지 않고 보드 하나를 옮겨 쓴다. */
+    show("tIntro"); gMoveBoard("tPeekSlot", true); gLoadBoard();
   });
   $("goStack").addEventListener("click", function(){
     curGame = "stack"; gGame = "stack"; gFmt = FMT.stack;
-    show("sIntro"); gLoadPeek("stack", "sPeekList", "sPeekRegion");
+    show("sIntro"); gMoveBoard("sPeekSlot", true); gLoadBoard();
   });
 
   /* 부동산 경제상식 — 4지선다(2026-09-01 석봉님 제안) */
