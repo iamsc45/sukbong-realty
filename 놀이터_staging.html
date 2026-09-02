@@ -246,6 +246,28 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
 .rboard .r .n1{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:16px;color:var(--nb-mute)}
 .rboard .num{text-align:right;font-weight:800}
 .rboard .empty{font-size:14.5px;color:var(--nb-ink2);padding:18px 0;text-align:center}
+/* ── 지역 안 명단 (2026-09-02 석봉님 "지역내 순위는 어떻게 확인해?") ──
+   지역 줄을 누르면 그 지역 사람들이 펼쳐진다. 내 지역은 처음부터 펼쳐 둔다. */
+.rboard .rrow{cursor:pointer;user-select:none}
+.rboard .rrow .nm{display:flex;align-items:center;gap:5px}
+.caret{width:0;height:0;border-left:4.5px solid transparent;border-right:4.5px solid transparent;
+  border-top:5.5px solid var(--nb-mute);transition:transform .15s;flex:0 0 auto}
+.rboard .rrow.on .caret{transform:rotate(180deg)}
+.rboard .rrow.on{border-bottom:0}
+.rmem{background:var(--paper);border:2px solid var(--nb-ink);margin:0 0 9px;padding:7px 10px}
+.mrow{display:grid;grid-template-columns:38px minmax(0,1fr) 58px 62px;gap:6px;
+  align-items:baseline;padding:6px 2px;font-size:13.5px;
+  border-bottom:1px dotted var(--nb-mute)}
+.mrow:last-child{border-bottom:0}
+.mrow.me{background:var(--sun);margin:0 -10px;padding:6px 10px;font-weight:800}
+.mrow .ln{font-weight:800;color:var(--pop)}
+.mrow .mn{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mrow .ms{text-align:right;font-weight:800}
+.mrow .mg{text-align:right;font-size:11.5px;color:var(--nb-mute);font-weight:700}
+.mnone{font-size:13px;color:var(--nb-mute);padding:6px 2px}
+/* 전국 10위 밖인 내 줄 앞의 생략 표시 */
+.board .gap{text-align:center;color:var(--nb-mute);font-weight:800;letter-spacing:3px;
+  padding:2px 0 4px}
 .nickrow select{flex:1 1 0;min-width:0;font-family:inherit;font-size:15.5px;font-weight:700;padding:12px 13px;
   border:2.5px solid var(--nb-ink);border-radius:0;background:#fff;color:var(--nb-ink);
   -webkit-appearance:none;appearance:none;
@@ -1116,20 +1138,25 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
         (`--keep N` 으로 상위 몇 개만 남기며 서서히 줄일 수도 있다).
      🔑 region 을 비워 뒀기 때문에 **지역 합계에는 안 잡힌다** — 지역전에 가짜가 섞이면
         「우리 지역은 이미 1등이네」가 되어 만든 목적과 반대가 된다. */
+  /* 🔑 한 번만 받아 두 곳에 쓴다. 상위 10줄과 「지역 안 명단」이 같은 자료라
+     따로 부르면 호출이 두 배가 되고, 두 화면의 순위가 어긋날 수도 있다. */
+  var gAll = [];
+
   function gLoadBoard(){
     document.getElementById("gBoardWrap").classList.remove("hide");
     /* 🔴 개인 랭킹은 **10위까지**(2026-09-01 석봉님). 20줄은 스크롤만 길고 아무도 안 읽는다.
        ⚠️ 지역 순위는 따로 자르지 않는다 — **고른 사람이 있는 지역만** 줄이 생기므로
           17개를 다 채워도 열일곱 줄이고, 대부분은 그보다 짧다. */
-    gRpc("game_board", { p_game: gGame, p_period: "all", p_limit: 10 }).then(function(rows){
+    gRpc("game_board", { p_game: gGame, p_period: "all", p_limit: 300 }).then(function(rows){
+      gAll = rows || [];
       var box = document.getElementById("gBoard");
       var h = "<div class='h'><span>순위</span><span>이름</span>" +
               "<span class='num'>기록</span><span class='num'></span><span class='num'></span></div>";
-      if(!rows.length){
+      if(!gAll.length){
         box.innerHTML = "<div class='empty'>아직 등록된 기록이 없습니다.</div>";
         return;
       }
-      h += rows.map(function(x){
+      h += gAll.slice(0, 10).map(function(x){
         var me = gMyNick && x.nick === gMyNick;
         /* 🔑 「한강뷰(서울 2위)」 — 전국 등수 옆에 지역 안 등수를 같이 보여 준다(석봉님).
            전국 20위여도 우리 동네 1위면 자랑할 거리가 된다. */
@@ -1140,37 +1167,81 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
           "<span class='nk'>" + esc(x.nick) + rg + "</span>" +
           "<span class='num'>" + gFmt(x.score) + "</span><span></span><span></span></div>";
       }).join("");
+      /* 전국 10위 밖이면 **내 줄을 따로 한 줄 더** 붙인다 — 안 그러면 등록하고 나서
+         자기 기록을 어디서도 못 본다(2026-09-02). */
+      var mine = gMyNick ? gAll.filter(function(x){ return x.nick === gMyNick; })[0] : null;
+      if(mine && mine.rank > 10){
+        h += "<div class='gap'>⋯</div>" +
+          "<div class='r me'><span class='n1'>" + mine.rank + "</span>" +
+          "<span class='nk'>" + esc(mine.nick) +
+            (mine.region ? "<span class='rg'>(" + esc(mine.region) + " " +
+               (mine.local_rank || "-") + "위)</span>" : "") + "</span>" +
+          "<span class='num'>" + gFmt(mine.score) + "</span><span></span><span></span></div>";
+      }
       box.innerHTML = h;
+      gPaintRegion();          // 명단이 준비된 뒤에 지역판을 그린다
     });
 
-    gRpc("game_region_rank", { p_game: gGame, p_period: "all", p_limit: 20 }).then(function(rows){
-      var box = document.getElementById("gRBoard");
-      if(!rows.length){
-        /* ⚠️ 지역 합계에는 시드를 넣지 않는다. 여기 가짜를 채우면 「우리 지역은 이미
-           1등이네」가 되어 **지역전을 만든 목적과 정반대**가 된다. 대신 비어 있는 것을
-           기회로 바꿔 말한다. */
-        box.innerHTML = "<div class='empty'>아직 지역을 고른 분이 없습니다." +
-          "<br>지금 등록하면 <b>우리 지역 1호</b>가 됩니다.</div>"; return;
-      }
-      /* 🔴 합계다(2026-09-01 석봉님). 평균이면 고수 한 명 있는 지역이 1등이라
-         못하는 사람은 "내가 하면 평균 깎이겠네"가 된다 — 지역전을 만든 목적과 반대다.
-         합계면 1개월이라도 보태지고 "우리 지역 사람 더 모으자"가 나온다. */
-      var h = "<div class='r'><span class='n1'>순위</span><span class='nm'>지역</span>" +
-              "<span class='num'>합계</span><span class='num'>인원</span></div>";
-      h += rows.map(function(x){
-        var me = gMyRegion && x.region === gMyRegion;
-        return "<div class='r" + (me ? " me" : "") + "'>" +
-          "<span class='n1'>" + x.rank + "</span>" +
-          "<span class='nm'>" + esc(x.region) + "</span>" +
-          "<span class='num'>" + gFmt(x.total_score) + "</span>" +
-          "<span class='num'>" + x.n + "명</span></div>";
-      }).join("");
-      box.innerHTML = h;
-    });
+    gRpc("game_region_rank", { p_game: gGame, p_period: "all", p_limit: 20 })
+      .then(function(rows){ gRegions = rows || []; gPaintRegion(); });
   }
+
+  var gRegions = null;
+  var gOpen = {};              // 펼쳐 둔 지역
+
+  function gPaintRegion(){
+    if(gRegions === null) return;           // 아직 안 왔다
+    var box = document.getElementById("gRBoard");
+    if(!gRegions.length){
+      box.innerHTML = "<div class='empty'>아직 지역을 고른 분이 없습니다." +
+        "<br>지금 등록하면 <b>우리 지역 1호</b>가 됩니다.</div>"; return;
+    }
+    /* 🔴 합계다(2026-09-01 석봉님). 평균이면 고수 한 명 있는 지역이 1등이라
+       못하는 사람은 "내가 하면 평균 깎이겠네"가 된다 — 지역전을 만든 목적과 반대다.
+       합계면 1개월이라도 보태지고 "우리 지역 사람 더 모으자"가 나온다. */
+    var h = "<div class='r'><span class='n1'>순위</span><span class='nm'>지역</span>" +
+            "<span class='num'>합계</span><span class='num'>인원</span></div>";
+    /* 🔑 내 지역은 처음부터 펼쳐 둔다(2026-09-02 석봉님 *"지역내 순위는 어떻게 확인해?"*).
+       그 전에는 지역 안 등수를 **전국 10위 안에 든 사람과 등록 직후 화면**에서만 볼 수
+       있었다 — 지역 대항전을 만들어 놓고 「우리 동네 누가 잘하나」를 볼 데가 없었다. */
+    if(gMyRegion && gOpen[gMyRegion] === undefined) gOpen[gMyRegion] = true;
+    gRegions.forEach(function(x){
+      var me = gMyRegion && x.region === gMyRegion;
+      var on = !!gOpen[x.region];
+      h += "<div class='r rrow" + (me ? " me" : "") + (on ? " on" : "") +
+             "' data-rg='" + esc(x.region) + "'>" +
+        "<span class='n1'>" + x.rank + "</span>" +
+        "<span class='nm'>" + esc(x.region) + "<i class='caret'></i></span>" +
+        "<span class='num'>" + gFmt(x.total_score) + "</span>" +
+        "<span class='num'>" + x.n + "명</span></div>";
+      if(on){
+        var mem = gAll.filter(function(p){ return p.region === x.region; });
+        h += "<div class='rmem'>" + (mem.length
+          ? mem.map(function(p){
+              return "<div class='mrow" + (gMyNick && p.nick === gMyNick ? " me" : "") + "'>" +
+                "<span class='ln'>" + (p.local_rank || "-") + "위</span>" +
+                "<span class='mn'>" + esc(p.nick) + "</span>" +
+                "<span class='ms'>" + gFmt(p.score) + "</span>" +
+                "<span class='mg'>전국 " + p.rank + "위</span></div>";
+            }).join("")
+          : "<div class='mnone'>명단을 불러오는 중입니다.</div>") + "</div>";
+      }
+    });
+    box.innerHTML = h;
+  }
+
+  /* 지역 줄을 눌러 펼친다. 보드는 다시 그려지므로 위임으로 붙인다(한 번만). */
+  document.getElementById("gRBoard").addEventListener("click", function(e){
+    var row = e.target.closest ? e.target.closest(".rrow") : null;
+    if(!row) return;
+    var rg = row.getAttribute("data-rg");
+    gOpen[rg] = !gOpen[rg];
+    gPaintRegion();
+  });
 
   function gResetRank(){
     gPending = null;
+    gRegions = null; gAll = []; gOpen = {};   // 게임을 바꾸면 지역 명단도 새로 받는다
     document.getElementById("gStep1").classList.remove("hide");
     document.getElementById("gStep2").classList.add("hide");
     document.getElementById("gStep3").classList.add("hide");
