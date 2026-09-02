@@ -106,10 +106,26 @@ window.EconQuiz = (function(){
     if(window.SBBgm) SBBgm.play("quiz");        // 퀴즈 곡을 함께 쓴다
   }
 
+  /* 🔴 오래된 금리 문제는 스스로 뺀다 — 2026-09-02 석봉님 "기준일을 물어보자".
+     기준일을 밝히면 답이 **틀린 것이 아니라 「그때는 맞았던 것」**이 된다. 거짓말은 면한다.
+     ⚠️ 그런데 그것만으로는 부족하다 — **두 달 전 기준일이 화면에 뜨는 것 자체**가
+        「이 사이트 자료가 낡았다」는 인상을 준다. 우리 강점이 「매일 받는 자료」인데
+        정반대 인상을 주면 손해다.
+     그래서 빌더가 실어 준 `asof` 를 보고 **오래된 것은 아예 안 낸다.**
+     빌더가 며칠 안 돌면 금리 문제 셋만 조용히 빠지고 나머지 95문항으로 굴러간다.
+     ⚠️ 날짜가 없는 문항(제도·용어)은 안 바뀌므로 그대로 둔다. */
+  var FRESH_DAYS = 14;
+  function fresh(q){
+    if(!q || !q.asof) return true;
+    var t = Date.parse(q.asof);
+    if(isNaN(t)) return true;              // 날짜를 못 읽으면 빼지 않는다(있는 문제를 잃지 않게)
+    return (Date.now() - t) / 86400000 <= FRESH_DAYS;
+  }
+
   function init(opt){
     show = opt.show;
     var src = window.QUIZ_ECON || {};
-    ALL = src.items || [];
+    ALL = (src.items || []).filter(fresh);
     PICK = Math.min(src.pick || 10, ALL.length);
     if(!ALL.length) return null;
     $("eOpts").addEventListener("click", function(e){
