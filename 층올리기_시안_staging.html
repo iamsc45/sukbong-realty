@@ -323,6 +323,21 @@ h2.t{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-siz
       g.restore();
     }
 
+    /* 🔑 아래가 잘린 경우 — **밑동을 옅게 흐린다.**
+       그냥 뚝 자르면 건물이 공중에 뜬 것처럼 보인다(2026-09-02 화면에서 확인).
+       흐려 두면 「아래로 더 이어진다」가 읽혀 높이 올라온 느낌이 산다. */
+    if(from > 0){
+      var fade = g.createLinearGradient(0, H - 150 * S, 0, H);
+      fade.addColorStop(0, "rgba(255,252,242,0)");
+      fade.addColorStop(1, PAPER);
+      g.fillStyle = fade; g.fillRect(0, H - 150 * S, W, 150 * S);
+      /* 아래에 몇 층이 더 있는지 한 줄 — 점수는 HUD 에 있지만 여기선 「깊이」를 말한다 */
+      g.font = "800 " + (14 * S) + "px Pretendard, sans-serif";
+      g.fillStyle = "rgba(22,19,15,.42)";
+      g.textAlign = "center"; g.textBaseline = "middle";
+      g.fillText("▼ 아래로 " + from + "층 더", W / 2, H - 28 * S);
+    }
+
     /* 지금 움직이는 층 — 맨 위에서 좌우로 */
     if(moving){
       var my = baseY - (n - from + 1) * FH;
