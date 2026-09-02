@@ -1,1 +1,1 @@
-window.SB=window.SB||{};SB.chips={"updated":"2026-09-02","win":"2026-08-20~2026-09-02","items":[{"t":"안양 에버포레","n":9,"src":"log"},{"t":"고양 창릉 청약","n":6,"src":"log"},{"t":"수원 당수지구 a5","n":6,"src":"log"},{"t":"노원구","n":229,"src":"trade"},{"t":"강서구","n":150,"src":"trade"}],"note":"REST 집계 뷰"};
+window.SB=window.SB||{};SB.chips={"updated":"2026-09-03","win":"2026-08-21~2026-09-03","items":[{"t":"목동팔라이스10","n":5,"src":"log"},{"t":"목동10단지","n":2,"src":"log"},{"t":"은마","n":2,"src":"log"},{"t":"노원구","n":231,"src":"trade"},{"t":"강서구","n":168,"src":"trade"}],"note":"REST 집계 뷰"};
