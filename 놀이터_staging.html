@@ -246,16 +246,6 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
 .rboard .r .n1{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:16px;color:var(--nb-mute)}
 .rboard .num{text-align:right;font-weight:800}
 .rboard .empty{font-size:14.5px;color:var(--nb-ink2);padding:18px 0;text-align:center}
-/* 기준 기록(시드) — 사람의 기록인 척하지 않는다. 흐리게 + 배지 + 등수 없음.
-   2026-09-02 석봉님 "거짓말 하자는건 아니야" */
-.board .r.seed{opacity:.5}
-.board .r.seed .n1{color:var(--nb-mute)}
-.sbadge{display:inline-block;margin-left:6px;padding:1px 5px;border:1.5px solid var(--nb-mute);
-  border-radius:3px;font-size:10.5px;font-weight:800;color:var(--nb-mute);vertical-align:1px;
-  letter-spacing:.02em}
-.seednote{font-size:12px;line-height:1.6;color:var(--nb-mute);padding:10px 0 2px;
-  border-top:1.5px dashed var(--nb-mute);margin-top:6px;word-break:keep-all}
-.seednote b{color:var(--nb-ink2)}
 .nickrow select{flex:1 1 0;min-width:0;font-family:inherit;font-size:15.5px;font-weight:700;padding:12px 13px;
   border:2.5px solid var(--nb-ink);border-radius:0;background:#fff;color:var(--nb-ink);
   -webkit-appearance:none;appearance:none;
@@ -1119,59 +1109,13 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
       .catch(function(){ return []; });
   }
 
-  /* ───────── 기준 기록(시드) ─────────
-     2026-09-02 석봉님: "초반에 이용하는 사람들이 랭킹 등록 하는데 아무도 랭킹에 없으면
-     흥미가 바로 떨어질거잖아. 어차피 적어놓은건 실제 이용하는 사람들에 의해서 사라질
-     랭킹이니까. **거짓말 하자는건 아니야**"
-
-     🔑 그 마지막 한마디대로 설계했다 — 세 가지를 지킨다.
-       ① **DB 에 넣지 않는다.** 화면에서만 이어 붙인다. 지역 합계·참여자 수 같은
-          실제 집계에 단 한 건도 섞이지 않는다.
-       ② **실제 기록 위, 시드 아래.** 점수로 뒤섞지 않는다. 섞으면 서버가 준 등수와
-          결과 화면의 「전국 N위」가 어긋나 실제 1위가 6위처럼 보인다.
-          시드에는 등수를 아예 매기지 않고 「·」 를 넣는다.
-       ③ **눈에 보이게 표시한다.** 「기준」 배지 + 흐린 톤 + 보드 밑에 한 줄 설명.
-          사람의 기록인 척하지 않는다.
-     실제 기록이 10개가 되면 시드는 한 줄도 안 나온다(저절로 사라진다).
-     ⚠️ 점수는 지어낸 값이 아니라 **봇 실측치를 기준선으로 잡은 것**이다
-        (세금 피하기 봇 중앙값 약 17초 · 층 올리기 봇 약 31층). 사람이 조금 익히면
-        넘을 수 있는 구간으로 폭을 잡았다 — 넘을 수 없는 벽이면 목표가 아니라 포기다. */
-  var SEED = {
-    tax: [
-      { nick: "임장왕",     score: 24.6 },
-      { nick: "월세탈출",   score: 21.2 },
-      { nick: "계약갱신권", score: 18.9 },
-      { nick: "첫집마련",   score: 16.4 },
-      { nick: "청약만7년",  score: 14.1 },
-      { nick: "대출한도끝", score: 12.3 },
-      { nick: "보증금지킴이", score: 10.5 },
-      { nick: "전세살이3년", score: 8.7 }
-    ],
-    stack: [
-      { nick: "타워크레인", score: 34 },
-      { nick: "용적률꽉",   score: 29 },
-      { nick: "골조반장",   score: 25 },
-      { nick: "상량식",     score: 21 },
-      { nick: "옥탑방주인", score: 18 },
-      { nick: "재건축대기", score: 15 },
-      { nick: "필로티1층",  score: 12 },
-      { nick: "층수욕심",   score: 9 }
-    ]
-  };
-
-  /* 실제 기록 줄 뒤에 붙일 시드 줄을 만든다. 자리가 남을 때만 나온다. */
-  function gSeedRows(used, limit){
-    var s = (SEED[gGame] || []);
-    var room = limit - used;
-    if(room <= 0) return "";
-    return s.slice(0, room).map(function(x){
-      return "<div class='r seed'>" +
-        "<span class='n1'>·</span>" +
-        "<span class='nk'>" + esc(x.nick) + "<span class='sbadge'>기준</span></span>" +
-        "<span class='num'>" + gFmt(x.score) + "</span><span></span><span></span></div>";
-    }).join("");
-  }
-
+  /* 초기 랭킹은 **DB 에 직접 넣는다**(2026-09-02 석봉님 결정).
+     처음엔 화면에서만 합치고 「기준」 배지를 달았는데, 석봉님 지시로 실제 기록과
+     똑같이 취급하는 쪽으로 바꿨다. 등록·삭제는 `데이터관리/스크립트/놀이터_시드랭킹.py`.
+     🔑 uid 가 `seed_` 로 시작하므로 실제 이용자가 쌓이면 `--purge` 한 줄로 지운다
+        (`--keep N` 으로 상위 몇 개만 남기며 서서히 줄일 수도 있다).
+     🔑 region 을 비워 뒀기 때문에 **지역 합계에는 안 잡힌다** — 지역전에 가짜가 섞이면
+        「우리 지역은 이미 1등이네」가 되어 만든 목적과 반대가 된다. */
   function gLoadBoard(){
     document.getElementById("gBoardWrap").classList.remove("hide");
     /* 🔴 개인 랭킹은 **10위까지**(2026-09-01 석봉님). 20줄은 스크롤만 길고 아무도 안 읽는다.
@@ -1182,11 +1126,7 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
       var h = "<div class='h'><span>순위</span><span>이름</span>" +
               "<span class='num'>기록</span><span class='num'></span><span class='num'></span></div>";
       if(!rows.length){
-        /* 비어 있어도 「없습니다」로 끝내지 않는다 — 기준 기록만이라도 보여 준다.
-           대신 「1호가 됩니다」로 첫 등록의 값어치를 살린다. */
-        box.innerHTML = h + gSeedRows(0, 10) +
-          "<div class='seednote'>「기준」은 순위에 들어가지 않는 <b>목표 기록</b>입니다. " +
-          "등록하시면 <b>1호</b>로 맨 위에 오릅니다.</div>";
+        box.innerHTML = "<div class='empty'>아직 등록된 기록이 없습니다.</div>";
         return;
       }
       h += rows.map(function(x){
@@ -1200,14 +1140,7 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
           "<span class='nk'>" + esc(x.nick) + rg + "</span>" +
           "<span class='num'>" + gFmt(x.score) + "</span><span></span><span></span></div>";
       }).join("");
-      var seed = gSeedRows(rows.length, 10);
-      box.innerHTML = h + seed + (seed
-        /* ⚠️ 「왜 24.6초가 19.4초보다 아래에 있지?」 — 시드를 점수로 섞지 않고 실제 기록
-           밑에만 붙이기 때문이다(위 설계 ② 참조). 그 의문이 안 남게 **순위에 들어가지
-           않는다**는 말을 각주 첫머리에 둔다(2026-09-02 라이브 화면 확인 후 문구 교체). */
-        ? "<div class='seednote'>「기준」은 순위에 들어가지 않는 <b>목표 기록</b>입니다. " +
-          "실제 기록이 쌓이면 사라집니다.</div>"
-        : "");
+      box.innerHTML = h;
     });
 
     gRpc("game_region_rank", { p_game: gGame, p_period: "all", p_limit: 20 }).then(function(rows){
