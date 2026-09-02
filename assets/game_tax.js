@@ -209,10 +209,22 @@ window.TaxGame = (function(){
      🔴 2026-09-01 석봉님 "난이도는 조금 더 높았으면" → 4/3 에서 **1.62** 로 올렸다.
      🔴 같은 날 "조금 더 어렵게" → **1.95**. 눈금이 또 좁아져 예전 4년의 빡셈이
         이제 **2년쯤**에 온다. 최고 속도에 닿는 시점도 33초 → 27초.
-        (고칠 때는 늘 이 숫자 하나만 만진다) */
+
+     🔴🔴 2026-09-02 석봉님 "게임 난이도가 더 어려워져야 할 것 같아, **하다가 지루함**을 느꼈다."
+        ⚠️ 여기서 `PACE` 를 또 올리는 것은 **틀린 처방이다.** PACE 는 「시간이 얼마나 빨리
+           조여드는가」라서 아무리 올려도 **0초의 속도는 늘 150 · 간격은 늘 1.25초**다.
+           지루한 구간은 바로 그 앞부분인데 손이 안 닿는다.
+        그래서 손잡이를 **둘로 갈랐다** —
+          `PACE`  = 시간이 지나며 조여드는 속도(뒤쪽을 만진다)
+          `START` = **시작이 얼마나 빡센가**(앞쪽을 만진다. 1.0 이 예전 값)
+        START 1.34 → 시작 속도 150→201, 시작 간격 1.25→0.93초. 첫 5초부터 손이 바쁘다.
+        상한도 520 → 600 으로 올려 뒤가 더 조인다.
+        📏 봇 실측(15판 중앙값): 21.8초 → **14.3초**. 20초 이상 8판 → 3판.
+        (다음에 고칠 때: **앞이 지루하면 START, 뒤가 싱거우면 PACE**) */
   var PACE = 1.95;
-  function speed(){ return Math.min(520, 150 + elapsed * 7 * PACE); }
-  function gap(){ return Math.max(0.38, 1.25 - elapsed * 0.019 * PACE); }
+  var START = 1.34;
+  function speed(){ return Math.min(600, 150 * START + elapsed * 7 * PACE); }
+  function gap(){ return Math.max(0.34, 1.25 / START - elapsed * 0.019 * PACE); }
 
   function step(dt){
     elapsed += dt;
@@ -384,11 +396,23 @@ window.TaxGame = (function(){
     var s = $("tShield");
     if(shield > 0){ s.classList.remove("hide"); s.textContent = "무적 " + shield.toFixed(1) + "초"; }
     else s.classList.add("hide");
-    /* 한마디 — 판 바로 위 한 줄. 자리는 늘 잡아 두어 판이 위아래로 튀지 않게 한다 */
+    /* 한마디 — 판 바로 위 한 줄. 자리는 늘 잡아 두어 판이 위아래로 튀지 않게 한다.
+       🔴 2026-09-02 석봉님 "멘트가 눈에 잘 안 띈다".
+          글자만 갈아 끼우니 **새 멘트가 온 것을 알아챌 수가 없었다.**
+          그래서 문구가 바뀌는 순간 `pop` 을 다시 붙여 튀어오르게 한다.
+          ⚠️ 클래스를 떼었다 붙이는 사이에 **리플로를 한 번 일으켜야** 애니메이션이 재생된다
+             (그냥 다시 붙이면 브라우저가 「이미 있는 클래스」로 보고 넘어간다). */
     var y = $("tSay");
     if(y){
       var t = toast ? toast.t : "";
-      if(y.textContent !== t) y.textContent = t;
+      if(y.textContent !== t){
+        y.textContent = t;
+        if(t){
+          y.classList.remove("pop");
+          void y.offsetWidth;                 // 리플로 — 이 한 줄이 없으면 애니메이션이 안 돈다
+          y.classList.add("pop");
+        }
+      }
       y.classList.toggle("on", !!toast);
     }
   }
