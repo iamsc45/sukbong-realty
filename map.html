@@ -513,10 +513,14 @@ var loading={}, loaded={};
    담보 실무에서 2천만원은 작지 않으므로 **자르지 않는 쪽**으로 맞췄다.
      1억 미만 → 만원 (8,500만)      ← 소액 토지에서 '0억'으로 뭉개지던 것(2026-08-09)
      1억 이상 → 0.1억, 소수가 0이면 생략 (3.5억 · 25억 · 314.2억)
+   🔴 반올림은 **toFixed 를 쓰지 말고 Math.round(만원/1000)/10** 로 한다(2026-09-03).
+      toFixed 는 부동소수 표현 때문에 딱 절반인 값에서 내려간다 — 5.35억(53,500만)이
+      `(5.35).toFixed(1)` → **5.3억**, 토지상세의 half-up → **5.4억** 으로 갈렸다
+      (남양주 336 필지, 랜덤점검이 잡음). CLAUDE.md 「표기용 반올림은 ROUND_HALF_UP」.
    ⚠️한 곳만 고치지 말 것. `python3 데이터관리/스크립트/억표기_대조.py` 가 넷을 대조한다. */
 function fmtEok(man){if(!man)return '';var v=man/10000;
   if(v<1)return Math.round(man).toLocaleString()+'만';
-  return (''+v.toFixed(1)).replace(/\.0$/,'')+'억';}
+  return (Math.round(man/1000)/10).toLocaleString()+'억';}
 function PY(m){m=+m;if(!m)return '';var p=m/3.305785;return (p<100?p.toFixed(1):Math.round(p).toLocaleString())+'평';}
 /* 관심단지 (이 기기 브라우저에 저장) */
 function favList(){try{return JSON.parse(localStorage.getItem('sb_fav')||'[]');}catch(e){return [];}}
@@ -2793,8 +2797,9 @@ function _med(a){if(!a.length)return 0;var b=a.slice().sort(function(x,y){return
 function _eok(m){if(!m)return '';var v=m/10000;
   /* 1억 미만은 '0억'으로 뭉개지 않고 만원으로 적는다(토지 소액 필지에서 실제로 그랬다, 2026-08-09) */
   if(v<1)return Math.round(m).toLocaleString()+'만';
-  /* 🔴100억 이상을 정수로 자르지 않는다(2026-09-01) — 규칙은 fmtEok 주석 참조 */
-  return (''+v.toFixed(1)).replace(/\.0$/,'')+'억';}
+  /* 🔴100억 이상을 정수로 자르지 않는다(2026-09-01) — 규칙은 fmtEok 주석 참조
+     🔴toFixed 금지(2026-09-03) — 5.35억이 5.3으로 내려가 토지상세와 갈렸다 */
+  return (Math.round(m/1000)/10).toLocaleString()+'억';}
 var _PT=null;   /* 지금 카드에 열려 있는 지점(2026-08-20) */
 var _MIXPT=null;/* 그 지점에 여러 채가 섞여 있나(2026-08-20) */
 function _drawTx(){
@@ -3737,7 +3742,7 @@ function showAptCard(pt, txs){
   {
     function eok2(m){if(!m)return '';var v=m/10000;   /* 규칙은 fmtEok 주석 참조 — 넷이 같아야 한다 */
         if(v<1)return Math.round(m).toLocaleString()+'만';
-        return (''+v.toFixed(1)).replace(/\.0$/,'')+'억';}
+        return (Math.round(m/1000)/10).toLocaleString()+'억';}   /* toFixed 금지(2026-09-03) */
     function md(a){if(!a.length)return 0;var s=a.slice().sort(function(x,y){return x-y;});return s[Math.floor(s.length/2)];}
     var mmT=txs.filter(function(t){return t.u==='매매';}),jeT=txs.filter(function(t){return t.u==='전세';}),woT=txs.filter(function(t){return t.u==='월세';});
     /* 🔴 토지 대표시세에서 **지분 거래를 뺀다**(2026-08-22, 지분 라벨을 붙이다 발견).

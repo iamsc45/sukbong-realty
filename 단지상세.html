@@ -133,7 +133,9 @@ function qs(k){var m=new RegExp('[?&]'+k+'=([^&]*)').exec(location.search);retur
    100억 이상을 정수로 자르면 2천만원이 표기에서 사라진다(시흥 153-1: 314.2억 ↔ 314억). */
 function eok(m){if(!m)return '·';var v=m/10000;
   if(v<1)return Math.round(m).toLocaleString()+'만';
-  return (''+v.toFixed(1)).replace(/\.0$/,'')+'억';}
+  /* 🔴toFixed 금지(2026-09-03) — 부동소수 때문에 딱 절반인 값이 내려간다(5.35억→5.3).
+     map.html fmtEok 주석의 규칙을 따른다. 억표기_대조.py 가 다섯을 대조한다. */
+  return (Math.round(m/1000)/10).toLocaleString()+'억';}
 /* 평형 라인업 칩 (2026-07-27) */
 var _css=document.createElement('style');
 _css.textContent='.chips{display:flex;flex-wrap:wrap;gap:6px}'
