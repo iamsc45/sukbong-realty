@@ -4,7 +4,7 @@
    화면은 새 주소를 보는데 자료는 옛 저장소에 있는 사고가 난다. */
 window.SBDATA = (function () {
   var EXT = "https://iamsc45.github.io/sukbong-data";
-  var MOVED = ["land_gongsi_","land_poly/","land_dong/"];
+  var MOVED = [];
   return function (p) {
     var s = String(p || "");
     var rel = s.replace(/^\.?\/?data\//, "");
