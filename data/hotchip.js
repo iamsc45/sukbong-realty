@@ -1,1 +1,1 @@
-window.SB=window.SB||{};SB.chips={"updated":"2026-09-03","win":"2026-08-21~2026-09-03","items":[{"t":"목동팔라이스10","n":5,"src":"log"},{"t":"목동10단지","n":2,"src":"log"},{"t":"은마","n":2,"src":"log"},{"t":"노원구","n":231,"src":"trade"},{"t":"강서구","n":168,"src":"trade"}],"note":"REST 집계 뷰"};
+window.SB=window.SB||{};SB.chips={"updated":"2026-09-04","win":"2026-08-22~2026-09-04","items":[{"t":"노원구","n":224,"src":"trade"},{"t":"강서구","n":172,"src":"trade"},{"t":"도봉구","n":156,"src":"trade"},{"t":"중랑구","n":145,"src":"trade"},{"t":"은평구","n":135,"src":"trade"}],"note":"REST 집계 뷰"};
