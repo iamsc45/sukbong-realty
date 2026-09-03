@@ -3129,6 +3129,28 @@ function landDongFetch(c10){
       },200); })
     .catch(function(){ window._LANDD[c10]=null; });
 }
+/* 🔴 지금 켜진 상품에 맞는 필지만 (2026-09-03 석봉님 제보 — 「빌딩으로 검색했는데 토지 폴리곤이 보인다」).
+   원효로2가 실측: land_poly 37필지 = 빌딩 거래 31 + 토지 거래 6. 그전에는 **상품과 무관하게 37개를 다 그렸고**,
+   풍선(`landPolyTags`)은 `D.d`(토지 거래)만 읽어서 **빌딩 모드인데 빌딩 필지엔 풍선이 없고 토지 필지 6개에만
+   토지 과거 거래 풍선**이 달렸다. 그게 화면에서 「토지가 섞여 있다」로 보인 것이다.
+   규칙: 토지 모드 → 토지 거래(D.d)·토지 매물(D.l) 필지 / 단독 모드 → D.b 종류 H / 빌딩 모드 → D.b 종류 C.
+   (D.b 마지막 칸 = 종류. H 단독다가구 · C 상업업무용 · F 공장창고 — `토지조회_보강데이터_빌더.py:270`)
+   ⚠️D 가 아직 안 왔으면(undefined) null 을 돌려 일단 다 그린다 — 도착하면 다시 그려져 걸러진다.
+   ⚠️결과는 D 에 캐시하고 상품이 바뀌면 다시 만든다(폴리곤마다 배열을 훑지 않는다). */
+function _polyAllow(D){
+  if(!D || !curTset) return null;
+  var key=Object.keys(curTset).filter(function(k){return curTset[k];}).sort().join(',');
+  if(D._allowKey===key) return D._allow;
+  var s={};
+  if(curTset.land){
+    (D.d||[]).forEach(function(x){ s[x[0]]=1; });
+    (D.l||[]).forEach(function(x){ s[x[0]]=1; });
+  }
+  var kinds={}; if(curTset.house)kinds.H=1; if(curTset.bldg)kinds.C=1;
+  (D.b||[]).forEach(function(x){ if(kinds[x[7]]) s[x[0]]=1; });
+  D._allowKey=key; D._allow=s;
+  return s;
+}
 function renderLandPoly(){
   if(!landPolyLayer) return;
   landPolyLayer.clearLayers();
@@ -3177,8 +3199,10 @@ function renderLandPoly(){
       D.d.forEach(function(x){ _cnt[x[0]]=(_cnt[x[0]]||0)+1; if(x[4]==='도로')_rd[x[0]]=(_rd[x[0]]||0)+1; });
       D._roads={}; for(var _q in _rd) if(_rd[_q]===_cnt[_q]) D._roads[_q]=1;
     }
+    var _allow=_polyAllow(D);            /* null = 자료 대기 중이라 일단 다 그린다 */
     for(var jb in m){
       if(D&&D._roads&&D._roads[jb]) continue;
+      if(_allow && !_allow[jb]) continue; /* 지금 상품과 다른 종류의 거래 필지 */
       var g=m[jb][1]; if(!g||!g.length) continue;
       /* 🔴첫 점만 보면 「깊이 확대해 필지 안에 들어간」 순간 첫 꼭짓점이 화면 밖이라
          스킵된다 — 필지가 화면을 가득 채울 때 사라지는 가장 이상한 동작(2026-08-23 제보).
@@ -3249,6 +3273,17 @@ function landPolyTags(){
      ⚠️화면 밖 폴리곤은 아예 후보에서 뺀다 — 그려 봐야 안 보이고 자리만 차지한다. */
   var cand=[], placed=[], vb=null;
   try{ vb=map.getBounds().pad(0.05); }catch(e){}
+  /* 🔴 지점 마커(.pricetag·.clus)가 이미 차지한 자리를 **먼저** 채운다(2026-09-03 석봉님 제보
+     「가격 말풍선이 또 뭉개져 있다」). 아래 겹침 방지는 필지 풍선끼리만 봤다 — 지점 마커는
+     다른 레이어라 서로 몰랐고, 원효로2가에서 「17.1억」 지점 마커 위에 「84.8억」 필지 풍선이
+     그대로 얹혔다. 지점 마커가 우선이다(그쪽이 최근 거래이고 누르면 카드가 열린다). */
+  try{
+    var _mr=map.getContainer().getBoundingClientRect();
+    document.querySelectorAll('#map .pricetag,#map .clus').forEach(function(el){
+      var r=el.getBoundingClientRect(); if(!r.width) return;
+      placed.push({x:r.left-_mr.left+r.width/2, y:r.top-_mr.top+r.height/2, w:r.width, h:r.height});
+    });
+  }catch(e){}
   landPolyLayer.eachLayer(function(pg){
     var jb=pg._jb, c10=pg._c10; if(!jb||!c10) return;
     if(paired[c10+'|'+jb]) return;
@@ -3267,7 +3302,15 @@ function landPolyTags(){
       html='<div class="lp-tag ho">'+_eok(ls[0][1])
         +'<span class="s">호가'+(ls.length>1?' 외 '+(ls.length-1)+'건':'')+'</span></div>';
     }else{
-      var ds=(D.d||[]).filter(function(x){return x[0]===jb;});
+      /* 🔴 지금 켜진 상품의 거래만 풍선으로 (2026-09-03). 그전에는 D.d(토지)만 읽어서
+         빌딩 모드에서 **토지 과거 거래** 풍선이 떴고, 정작 빌딩 필지엔 풍선이 없었다.
+         토지 모드 → D.d / 단독·빌딩 모드 → D.b 에서 종류(H·C)가 맞는 것. */
+      var ds=[];
+      if(curTset&&curTset.land) ds=(D.d||[]).filter(function(x){return x[0]===jb;});
+      if(curTset&&(curTset.house||curTset.bldg)){
+        var _k={}; if(curTset.house)_k.H=1; if(curTset.bldg)_k.C=1;
+        ds=ds.concat((D.b||[]).filter(function(x){return x[0]===jb&&_k[x[7]];}));
+      }
       if(!ds.length) return;
       ds.sort(function(a,b){return String(b[1]).localeCompare(String(a[1]));});
       sortv=+ds[0][2]||0;
@@ -3285,7 +3328,9 @@ function landPolyTags(){
     if(n>=120) return;
     var p; try{ p=map.latLngToContainerPoint(o.c); }catch(e){ return; }
     for(var i=0;i<placed.length;i++){
-      if(Math.abs(p.x-placed[i].x)<HX*2 && Math.abs(p.y-placed[i].y)<HY*2) return;
+      /* 지점 마커는 자기 크기(w·h)가 있다 — 가격+면적+이름이라 필지 풍선보다 크다 */
+      var _hw=placed[i].w?(placed[i].w/2+HX):HX*2, _hh=placed[i].h?(placed[i].h/2+HY):HY*2;
+      if(Math.abs(p.x-placed[i].x)<_hw && Math.abs(p.y-placed[i].y)<_hh) return;
     }
     placed.push(p);
     L.marker(o.c,{icon:L.divIcon({className:'',html:o.html,iconSize:[0,0],iconAnchor:[24,12]})})
