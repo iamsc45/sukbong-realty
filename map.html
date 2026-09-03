@@ -3277,11 +3277,19 @@ function landPolyTags(){
      「가격 말풍선이 또 뭉개져 있다」). 아래 겹침 방지는 필지 풍선끼리만 봤다 — 지점 마커는
      다른 레이어라 서로 몰랐고, 원효로2가에서 「17.1억」 지점 마커 위에 「84.8억」 필지 풍선이
      그대로 얹혔다. 지점 마커가 우선이다(그쪽이 최근 거래이고 누르면 카드가 열린다). */
+  /* ⚠️DOM(.pricetag)이 아니라 **데이터(_PTS)** 로 자리를 잡는다. 처음엔 DOM 을 읽었는데
+     라이브에서 그대로 겹쳤다 — 자료가 늦게 오면 필지 풍선이 지점 마커보다 **먼저** 그려져
+     그 시점 DOM 에 마커가 없다(로컬은 빨라서 통과, 라이브는 실패. 타이밍에 기대면 안 된다).
+     _PTS 는 화면 안 지점 목록이라 마커가 그려지기 전에도 위치를 안다. 크기는 z17 이상
+     가격표(3줄: 금액·면적·이름)를 실측한 값으로 고정한다. 여기서는 z<17 이면 풍선을 안 그리므로
+     어제(9/1) 넣은 묶음 마커와는 안 부딪힌다(묶음은 Z_NAME 미만에서만). */
   try{
-    var _mr=map.getContainer().getBoundingClientRect();
-    document.querySelectorAll('#map .pricetag,#map .clus').forEach(function(el){
-      var r=el.getBoundingClientRect(); if(!r.width) return;
-      placed.push({x:r.left-_mr.left+r.width/2, y:r.top-_mr.top+r.height/2, w:r.width, h:r.height});
+    (window._PTS||[]).forEach(function(o){
+      var pt=(o&&o.pt)||o; if(!pt||pt.lat==null) return;
+      var p=map.latLngToContainerPoint([pt.lat,pt.lng]);
+      /* 가격표는 iconAnchor [30,12] — div 의 (30,12) 지점이 좌표에 놓이므로 div 중심(60,25)은
+         좌표보다 오른쪽 30·아래 13 에 있다. 크기는 넉넉히 잡는다(짧은 쪽으로 틀리면 또 겹친다). */
+      placed.push({x:p.x+30, y:p.y+13, w:140, h:60});
     });
   }catch(e){}
   landPolyLayer.eachLayer(function(pg){
