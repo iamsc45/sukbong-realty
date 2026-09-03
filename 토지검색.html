@@ -134,6 +134,11 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
   <div class="fine">편집·제작: 석봉 부동산 정보방 · ⓒ 2026 석봉 부동산 정보방 · 방문 통계 수집을 위해 Google Analytics(쿠키)를 사용합니다</div>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- 🔴 2026-09-03 자료 저장소 2단계 — land_poly/·land_dong/ 를 옮긴다. 자료가 어디 있는지는
+     assets/data_base.js 의 SBDATA() 가 정한다(정본은 데이터관리/_config/_이전목록.txt).
+     아래 fetch·script.src 는 전부 _D() 를 거친다. 직접 경로를 새로 쓰지 말 것 — 옮긴 뒤 404 가 된다. -->
+<script src="assets/data_base.js?v=1"></script>
+<script>function _D(p){return (window.SBDATA?SBDATA(p):p);}</script>
 <script src="assets/sb_auth.js?v=8"></script>
 <script defer src="assets/sb_tabbar.js?v=10"></script>
 <script defer src="assets/sb_feedback.js?v=4"></script>
@@ -688,7 +693,7 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
     $('state').textContent=p.label;
     var code=p.pnu.slice(0,10), s=null;
     try{
-      var r=await fetch('data/land_dong/'+code+'.json');   /* force-cache 금지(위 사고 참조) */
+      var r=await fetch(_D('data/land_dong/'+code+'.json'));   /* force-cache 금지(위 사고 참조) */
       if(r.ok){ var j=await r.json(); s=j&&j.s; }
     }catch(e){ /* 미리보기는 없어도 그만 */ }
 
@@ -739,7 +744,7 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
          no-store 로는 200·매물 27건, force-cache 로는 404).
          ⚠️ 네 섹션이 **한꺼번에** 비면 자료 부재가 아니라 이 fetch 실패를 의심하라.
          기본 캐시로 둔다 — GitHub Pages 가 ETag 를 주므로 재요청 비용은 거의 없다. */
-      var r=await fetch('data/land_dong/'+code+'.json');
+      var r=await fetch(_D('data/land_dong/'+code+'.json'));
       if(r.ok) data=await r.json();
     }catch(_e){}
     var deals=(data&&data.d)||[], lists=(data&&data.l)||[];

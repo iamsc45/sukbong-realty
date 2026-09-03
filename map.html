@@ -383,6 +383,11 @@ window._toast=function(msg,ms){var t=document.getElementById('mtoast');if(!t||!m
 </footer>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<!-- 🔴 2026-09-03 자료 저장소 2단계 — land_poly/·land_dong/ 를 옮긴다. 자료가 어디 있는지는
+     assets/data_base.js 의 SBDATA() 가 정한다(정본은 데이터관리/_config/_이전목록.txt).
+     아래 fetch·script.src 는 전부 _D() 를 거친다. 직접 경로를 새로 쓰지 말 것 — 옮긴 뒤 404 가 된다. -->
+<script src="assets/data_base.js?v=1"></script>
+<script>function _D(p){return (window.SBDATA?SBDATA(p):p);}</script>
 <script src="assets/sb_auth.js?v=8"></script>
 <script src="assets/sb_log.js"></script>
 <script src="data/summary.js"></script>
@@ -1316,7 +1321,7 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
           /* 색인이 아직 없다 — 시군구 5자리는 SB.dongs 가 안다(landFill 과 같은 길) */
           var _c5=(window.SB&&SB.dongs&&SB.dongs[_dg])?SB.dongs[_dg][0]:'';
           if(_c5 && (!window.LANDIDX || window.LANDIDX[_c5]===undefined)){
-            var _sc=document.createElement('script'); _sc.src='data/land_dong/_idx_'+_c5+'.js';
+            var _sc=document.createElement('script'); _sc.src=_D('data/land_dong/_idx_'+_c5+'.js');
             _sc.onload=_retry;
             _sc.onerror=function(){ window.LANDIDX=window.LANDIDX||{}; window.LANDIDX[_c5]={}; };
             document.body.appendChild(_sc);
@@ -3043,7 +3048,7 @@ function landPrefetch(pt){
     if(!window.LANDIDX || window.LANDIDX[c5]===undefined){
       landPrefetch._i=landPrefetch._i||{}; if(landPrefetch._i[c5]) return;
       landPrefetch._i[c5]=1;
-      var sc=document.createElement('script'); sc.src='data/land_dong/_idx_'+c5+'.js';
+      var sc=document.createElement('script'); sc.src=_D('data/land_dong/_idx_'+c5+'.js');
       sc.onload=again;
       sc.onerror=function(){ window.LANDIDX=window.LANDIDX||{}; window.LANDIDX[c5]={}; };
       document.body.appendChild(sc); return;
@@ -3055,7 +3060,7 @@ function landPrefetch(pt){
     if(window._LANDD[c10]!==undefined) return;
     landPrefetch._j=landPrefetch._j||{}; if(landPrefetch._j[c10]) return;
     landPrefetch._j[c10]=1;
-    fetch('data/land_dong/'+c10+'.json')
+    fetch(_D('data/land_dong/'+c10+'.json'))
       .then(function(r){ return r.ok?r.json():null; })
       .then(function(j){ window._LANDD[c10]=j||null; if(j) again(); })
       .catch(function(){ window._LANDD[c10]=null; });
@@ -3097,7 +3102,7 @@ window._LANDP={};                  /* 법정동코드10 → {지번:[등급,좌�
 function landPolyFetch(c10){
   if(!c10 || window._LANDP[c10]!==undefined) return;
   window._LANDP[c10]=null;         /* 받는 중 — 두 번 받지 않는다 */
-  fetch('data/land_poly/'+c10+'.json')
+  fetch(_D('data/land_poly/'+c10+'.json'))
     .then(function(r){ return r.ok?r.json():null; })
     .then(function(j){
       if(!j||!j.p){ window._LANDP[c10]=null; return; }
@@ -3115,7 +3120,7 @@ function landDongFetch(c10){
   window._LANDD=window._LANDD||{};
   if(!c10||window._LANDD[c10]!==undefined)return;
   landDongFetch._f=landDongFetch._f||{}; if(landDongFetch._f[c10])return; landDongFetch._f[c10]=1;
-  fetch('data/land_dong/'+c10+'.json')
+  fetch(_D('data/land_dong/'+c10+'.json'))
     .then(function(r){ return r.ok?r.json():null; })
     .then(function(j){ window._LANDD[c10]=j||null;
       clearTimeout(landDongFetch._t);
@@ -3451,7 +3456,7 @@ function landFill(pt, txs){
     if(landFill._p[code5]) return;
     landFill._p[code5]=1;
     var sc=document.createElement('script');
-    sc.src='data/land_dong/_idx_'+code5+'.js';
+    sc.src=_D('data/land_dong/_idx_'+code5+'.js');
     sc.onload=function(){ landFill(pt,txs); };
     sc.onerror=function(){ window.LANDIDX=window.LANDIDX||{}; window.LANDIDX[code5]={}; };
     document.body.appendChild(sc);
@@ -3471,7 +3476,7 @@ function landFill(pt, txs){
     landFill._q[code10]=1;
     /* ⚠️ `cache:'force-cache'` 를 쓰지 말 것 — 배포 전에 받은 404 를 계속 물고 있어
        자료를 올린 뒤에도 「자료 없음」이 나온다(2026-08-18 사고). 기본 캐시로 둔다. */
-    fetch('data/land_dong/'+code10+'.json')
+    fetch(_D('data/land_dong/'+code10+'.json'))
       .then(function(r){ return r.ok?r.json():null; })
       .then(function(j){ window._LANDD[code10]=j||null; landFill(pt,txs); })
       .catch(function(){ window._LANDD[code10]=null; });
