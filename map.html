@@ -1445,6 +1445,27 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
         }).join('')
         +'<div class="rc-note" style="padding:6px 0 0">호가는 협상 전 가격입니다.</div></div>';
     }
+    /* 🔴 건물 딸린 땅 거래(D.b)도 싣는다(2026-09-04 필지 랜덤점검에서 발견).
+       그전에는 D.d(토지)·D.l(매물)만 읽어서, 빌딩 모드에서 건물 필지 폴리곤을 누르면
+       **풍선에는 「34.8억 · 26.02 계약」이 떠 있는데 카드는 「이 필지 거래가 없습니다」** 라고
+       했다(종로 143 · 3회 재현). 8/24 석봉님 지적 「실거래된 필지면 내용이 있어야」의 건물판.
+       형식은 지점 카드의 landSide() ③과 같다 — b = [지번, 계약YYMM, 금액만원, 대지㎡, 연면적㎡, 준공년, 등급, 종류]
+       (`토지조회_보강데이터_빌더.py:22`). ⚠️금액은 땅+건물 합이라 토지 평당가와 견주지 말라는 주석을 단다. */
+    var bs=(D.b||[]).filter(function(x){return String(x[0])===jb;});
+    if(bs.length){
+      var TY={H:'단독·다가구',C:'상업·업무용',F:'공장·창고'};
+      bs.sort(function(a,b){return String(b[1]).localeCompare(String(a[1]));});
+      h+='<div class="rc-sec"><div class="rc-lab">이 필지 건물 거래 '+bs.length+'건</div>'
+        +bs.slice(0,3).map(function(x){
+          return '<div class="rc-dl"><span style="color:#6b6355">'+ymT(x[1])
+            +(x[3]?' · 대지 '+x[3]+'㎡('+PY(x[3])+')':'')
+            +(x[4]?' · 연면적 '+x[4]+'㎡('+PY(x[4])+')':'')
+            +(x[5]?' · '+x[5]+'년':'')+(TY[x[7]]?' · '+TY[x[7]]:'')+'</span>'
+            +'<b>'+_eok(x[2])+'</b></div>';
+        }).join('')
+        +'<div class="rc-note" style="padding:6px 0 0">건물 거래 금액은 <b>땅값과 건물값을 합한 것</b>입니다. '
+        +'토지 평당가와 바로 견주지 마세요. 지도 기간 필터와 무관하게 이 필지에 되짚은 거래입니다.</div></div>';
+    }
     return h;
   }
 
