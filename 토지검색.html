@@ -343,11 +343,36 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
         note=esc(d.estimate.scope)+' 실거래 '+comma(d.estimate.n)+'건 · 공시지가의 '+d.estimate.lo+'~'+d.estimate.hi+'배';
         gradeTxt=esc(d.estimate.grade);
       }
+      /* 🔴 2026-09-05 감정에서 달리 보는 요인 — 석봉님 지시 「정보가 있으면 써야」. 양주 봉양동 탁상자문
+         대조에서 우리가 안 쓰던 것 셋: ①현황 도로(이용상황 '도로등')는 평가에서 0원 처리됐다
+         ②도로 저촉(소로3류 [저촉], 비고 「도로저촉 11프로」)은 저촉 부분을 감액 ③자연취락지구 [포함]은
+         건폐율 완화로 같은 자연녹지의 공장용지보다 높게 봤다(대 720,000 > 공장용지 680,000).
+         ①은 값에 바로 반영한다(구간 대신 「0원 관행」). ②③은 **저촉 여부·포함 여부만 있고 비율·배율이
+         없어** 값을 지어내지 않고 요인으로 명시한다(비율 산출은 도시계획선·지구 폴리곤 교차가 필요 — 별도). */
+      var _lu=(d.landuse||[]);
+      var _luHit=function(re,cf){return _lu.some(function(u){var nm=String(u.prposAreaDstrcCodeNm||''),c=String(u.cnflcAtNm||u.cnflcAt||'').trim();return re.test(nm)&&(cf?cf.indexOf(c)>=0:true);});};
+      var _isRoad=/도로/.test(_use)||/도로/.test((ch&&ch.lndcgrCodeNm)||'');
+      var _factors=[];
+      if(_luHit(/(소로|중로|대로|광로|도로)/,['저촉','포함']))_factors.push('<b>도로 계획선 저촉</b> — 저촉 부분은 감정에서 감액 대상(비율은 도시계획도 확인)');
+      if(_luHit(/자연취락지구/,['포함']))_factors.push('<b>자연취락지구 포함</b> — 건폐율 완화 대상이라 같은 용도지역의 다른 필지보다 높게 평가되는 경향');
+      if(_luHit(/개발제한구역/,['포함']))_factors.push('<b>개발제한구역 포함</b> — 같은 동 대비 크게 낮게 평가(우리 실측 0.31배)');
+      if(_luHit(/(군사|비행안전|문화재|보호구역)/,['포함']))_factors.push('<b>군사·문화재 등 보호구역 포함</b> — 처분·개발 제약으로 감액 요인');
+      if(_isRoad){
+        h.push('<div class="card" style="border:2px solid #B23A48;margin:22px 0 10px">'
+          +'<div style="font-size:13px;color:#5A6478;letter-spacing:1px">이 필지 참고 구간</div>'
+          +'<div class="v big" style="font-size:24px;margin:6px 0 2px">현황 도로 — 평가 관행상 <b>0원</b> 또는 극히 낮게 봅니다</div>'
+          +'<div class="note" style="margin-top:6px">토지특성의 이용상황이 「'+esc(_use||'도로')+'」입니다. 담보 평가(탁상·정식)에서는 '
+          +'현황 도로로 쓰이는 필지를 <b>0원으로 두거나 인근 토지의 1/3 이하</b>로 봅니다. 그래서 시세 구간을 제시하지 않습니다. '
+          +'아래 공시지가와 토지이용계획은 그대로 확인하실 수 있습니다.</div></div>');
+        return;
+      }
       if(!lo){
         h.push('<div class="card" style="border:2px solid #E3E8F0;margin:22px 0 10px">'
           +'<div style="font-size:13px;color:#5A6478;letter-spacing:1px">이 필지 참고 구간</div>'
           +'<div class="note" style="margin-top:6px">이 지역·지목은 거래 표본이 적어 <b>구간을 제시하지 않습니다</b>. '
-          +'아래 공시지가와 건축물대장은 그대로 확인하실 수 있습니다.</div></div>');
+          +'아래 공시지가와 건축물대장은 그대로 확인하실 수 있습니다.</div>'
+          +(_factors.length?'<div class="note" style="margin-top:6px">감정에서 달리 보는 요인: '+_factors.join(' · ')+'</div>':'')
+          +'</div>');
         return;
       }
       h.push('<div class="card" style="border:2px solid #12264A;margin:22px 0 10px">'
@@ -392,7 +417,10 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
          이제 **행안부 건물신축가격기준액(2026년 64~86만원/㎡)** 을 구조별로 쓰고,
          정액 감가에 **최종잔가율 하한 20%** 를 둔다. 45년을 넘긴 건물은 금액을 적지 않는다.
          ⚠️구조·용도별 세부 지수는 고시 원문에만 있어 아직 3등급 잠정표다(`건물재조달_단가.py`). */
-      var LIFE=45, FLOOR=0.20;
+      /* 🔴 2026-09-05 석봉님 결정 — 최종잔가율 하한 20% → **10%**. 근거: 양주 봉양동 887-5
+         탁상자문(2026-09-04)이 45년차 단독주택에 관찰감가로 5/45(11%)를 줬는데 하한 20%로는
+         우리가 +62% 높았다. 10%면 -19%. 표본은 이 건 1건이라 다음 평가서가 오면 다시 잰다. */
+      var LIFE=45, FLOOR=0.10;
       /* ✅ 2026-08-25 고시 원문 확보(석봉님 다운로드) — 축이 구조가 아니라 «용도» 6종이었다.
          행안부고시 제2025-82호 [별표] 그대로: 주거·상업·문화복지 86만 · 공공 85만 ·
          공업 84만 · 농수산 64만 (원/㎡). 미상은 최빈값 86만. 원본은 _원본자료/ 보관. */
@@ -473,6 +501,11 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
       }
       h.push('<div class="row" style="margin-top:6px"><div class="k">근거</div><div class="v">'+note
         +' <span class="tag">신뢰도 '+gradeTxt+'</span></div></div>');
+      if(_factors.length){
+        /* 위 구간은 지역·지목·용도지역까지만 본 값이다. 이 필지에만 붙는 요인은 여기서 밝힌다(값은 안 바꾼다). */
+        h.push('<div class="row"><div class="k warn">요인</div><div class="v" style="font-size:13.5px">'
+          +_factors.join('<br>')+'<div style="font-size:12.5px;color:#5A6478;margin-top:3px">위 구간에는 반영돼 있지 않습니다. 감정에서는 이 요인으로 값이 달라집니다.</div></div></div>');
+      }
       /* ── 검토 가격 대조 (2026-08-24 석봉님 지시 · 표현은 「위치만 관찰형」으로 확정)
          🔴 「비싸다/싸다」·「적정/부적정」을 쓰지 않는다. 값이 분포 어디에 있는지만 알려 준다.
             2026-08-17 석봉님 지시 — 「좋다고 좋은 것도, 나쁘다고 틀린 것도 아니다」를 함께 적는다.
