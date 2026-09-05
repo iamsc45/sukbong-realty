@@ -544,7 +544,7 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
 .sbexit.hide{display:none}
 /* 플레이 중에는 하단 탭바를 걷는다 — 액션 게임이 innerHeight 로 판 높이를 재서 56px 을 먹으면 좁아진다 */
 body.sbplay #sbtab{display:none}
-body.sbplay{padding-bottom:0}
+body.sbplay{padding-bottom:0!important} /* 탭바가 인라인 style 로 50px 을 박아서 !important 가 필요하다 */
 </style>
 </head>
 <body>
