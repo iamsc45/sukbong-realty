@@ -289,7 +289,14 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
          단가로 재게 되어 **체계적으로 높게** 잡힌다(사후 검산 편향 +16% → 유형을 가르면 +3%).
          우선순위: 유형 > 면적 > 동 전체. */
       var TL={H:'단독·다가구',C:'상가·업무용',F:'공장·창고',L:'빈 땅'};
-      var _pu='', _bt=(d.building&&d.building.title)||[];
+      /* 🔴 2026-09-05 폐쇄대장 제외 — 양주 봉양동 887-4 탁상자문 대조에서 잡힘. 건축HUB 표제부는
+         철거·말소된 건물의 «폐쇄대장»(bldNm 에 그 글자가 온다)을 현존 건물과 함께 돌려준다.
+         그걸 연면적에 합산해 건물값이 평가사의 4.8배(5.28억 vs 1.09억)로 나갔다. 건축면적 합이
+         대지면적을 넘어(1,783㎡ > 1,239㎡ · 건폐율 144%) 물리적으로 불가능한 조합이었다. */
+      var _btAll=(d.building&&d.building.title)||[];
+      var _isClosed=function(t){return /폐쇄/.test(String(t.bldNm||''));};
+      var _bt=_btAll.filter(function(t){return !_isClosed(t);});
+      var _pu='';
       _bt.forEach(function(t){ if(!_pu)_pu=(t.mainPurpsCdNm||''); });
       var _use=(ch&&ch.ladUseSittnNm)||'';
       var kind='';
@@ -360,13 +367,19 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
             여기에 건물값을 더하면 원래의 물건 전체로 돌아온다. 앞뒤가 맞물린다.
          ⚠️ 용도·구조별 단가 차이는 반영하지 못한다(그래서 「개략」이라고 밝힌다). */
       var bTot=0,bYear=0,bNote='',bStruct='';
-      var _t=(d.building&&d.building.title)||[],_r=(d.building&&d.building.recap)||[];
+      /* 🔴 2026-09-05 폐쇄대장 제외(위 _bt 와 같은 필터). 그 전에는 d.building.title 전부를 더했다. */
+      var _t=_bt,_r=(d.building&&d.building.recap)||[];
       if(_r.length&&+_r[0].totArea)bTot=+_r[0].totArea;
       else _t.forEach(function(t){if(+t.totArea)bTot+=+t.totArea;});
       _t.forEach(function(t){var ap=String(t.useAprDay||'');
         if(ap.length===8){var y=+ap.slice(0,4);if(!bYear||y>bYear)bYear=y;}
         if(!bStruct)bStruct=(t.etcStrct||'').trim()||t.strctCdNm||'';});
       if(!bStruct&&_r.length)bStruct=(_r[0].strctCdNm||'');
+      /* 물리 검산(2026-09-05) — 현존 건물의 건축면적 합이 대지면적을 넘으면 대장이 겹친 것이다
+         (멸실 미반영·중복 등재). 값을 고치지는 않고 아래 건물 줄에 경고만 붙인다. */
+      var _archSum=0; _t.forEach(function(t){_archSum+=(+t.archArea||0);});
+      var _closedN=_btAll.length-_bt.length;
+      var _physWarn=(area&&_archSum>area*1.02)?' ⚠️건축면적 합 '+m2py(_archSum)+'이 대지 '+m2py(area)+'를 넘습니다(대장 중복 가능성 — 대장 확인 필요)':'';
       /* ⚠️ hp(개별주택가격)는 이 블록보다 «아래»에서 정의된다 — 직접 읽는다(호이스팅으로 undefined). */
       if(!bTot){
         var _hp=(d.houseprice||[]).slice().sort(function(a,b){
@@ -388,9 +401,30 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
         if(/동물|식물|축사|온실|버섯|양어|농수산/.test(s))return 640000;
         if(/공공|교정|군사|방송통신|발전/.test(s))return 850000;
         return 860000;};
-      var bVal=0, bOld=false;
-      if(bTot&&bYear){
-        var used=Math.max(new Date().getFullYear()-bYear,0);
+      var bVal=0, bOld=false, _nowY=new Date().getFullYear();
+      /* 🔴 2026-09-05 동별 감가 — 그 전에는 «가장 새 건물의 준공년»을 연면적 전체에 씌웠다.
+         봉양동 887-4 에서 1998년(폐쇄된 창고)의 잔존 38%가 1991년 공장 622㎡에도 적용됐다.
+         평가 실무(탁상자문·감정평가서 모두)는 건물마다 재조달원가×잔존연수비를 따로 매겨 합산한다.
+         여기서도 표제부 한 줄(=건물 한 동)마다 용도 단가·경과연수를 따로 적용해 더한다.
+         총괄표제부만 있고 표제부가 없을 때만 예전 방식(전체 연면적 × 최신 준공년)으로 폴백. */
+      var _withArea=_t.filter(function(t){return +t.totArea>0;});
+      if(_withArea.length){
+        var _parts=[], _liveN=0, _oldN=0, _unkN=0;
+        _withArea.forEach(function(t){
+          var ap=String(t.useAprDay||''), y=(ap.length===8)?+ap.slice(0,4):0, ar=+t.totArea;
+          var nm=(t.mainPurpsCdNm||'').trim()||'건물';
+          if(!y){_unkN++;_parts.push(nm+' '+m2py(ar)+' 준공년 미상(값 없음)');return;}
+          var usedT=Math.max(_nowY-y,0);
+          if(usedT>LIFE){_oldN++;_parts.push(nm+' '+m2py(ar)+' '+y+'년('+usedT+'년차 · 감가 완료)');return;}
+          var remT=Math.max((LIFE-usedT)/LIFE,FLOOR), uT=UNIT(t.mainPurpsCdNm||_pu||_use);
+          bVal+=uT*remT*ar; _liveN++;
+          _parts.push(nm+' '+m2py(ar)+' '+y+'년(잔존 '+Math.round(remT*100)+'% · 재조달 '+Math.round(uT/10000)+'만원/㎡)');
+        });
+        bOld=(!_liveN&&_oldN>0);
+        bNote=_parts.join(' / ')+(bStruct?' · '+esc(bStruct):'')
+              +(_closedN?' · 폐쇄대장 '+_closedN+'건은 철거·말소된 건물이라 제외':'')+_physWarn;
+      }else if(bTot&&bYear){
+        var used=Math.max(_nowY-bYear,0);
         if(used>LIFE){
           bOld=true;
           bNote='연면적 '+m2py(bTot)+' · '+bYear+'년 준공('+used+'년차)';
