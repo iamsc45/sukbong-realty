@@ -1024,6 +1024,9 @@ document.addEventListener('click',function(e){if(n.classList.contains('m-open')&
        담보대출 주선이 본업이라 금리는 첫 화면에서 바로 닿아야 한다. */
     {n:'금리·지표',d:'기준금리·대출금리',i:'percentage',c:'#7A5AF8',h:'%EC%A7%80%ED%91%9C.html'},
     {n:'리포트',d:'우리가 쓴 분석 글',i:'file-text',c:'#6E6E6A',h:'%EA%B8%80.html'},
+    /* 놀이터(2026-09-06 석봉님 "홈화면 타일 버튼에 놀이터 추가"). 전체 메뉴·상단 nav 에는 있었는데
+       홈 타일에만 빠져 있었다(아래 CHECK 가 콘솔 오류로 잡고 있었다). 색은 놀이터의 강조색. */
+    {n:'놀이터',d:'부동산 퀴즈·랭킹 게임',i:'device-gamepad-2',c:'#FF5C39',h:'%EB%86%80%EC%9D%B4%ED%84%B0.html'},
     /* 모바일에서는 뺀다(deskOnly) — 아래 채널 버튼(텔레그램·오픈채팅·블로그)에 이미 있어 중복이고,
        금리·지표를 넣으면서 4칸 격자가 한 칸 어긋나던 것도 이걸로 맞는다(2026-08-11). */
     {n:'블로그',d:'네이버 블로그',i:'notebook',c:'#03C75A',h:'https://blog.naver.com/seokbongnews',blank:true,deskOnly:true},
@@ -1041,7 +1044,9 @@ document.addEventListener('click',function(e){if(n.classList.contains('m-open')&
        4칸 격자에 열세 번째 타일 하나만 덩그러니 남으면 보기 싫고, 설치는 휴대폰에서
        가장 필요한 일이라 눈에 띄는 편이 맞다. */
     {n:'앱 다운로드',d:'홈 화면에 추가',i:'download',c:'#2554E0',h:'%EC%95%B1%EC%84%A4%EC%B9%98.html',wide:true},
-    {n:'커뮤니티',d:'동네 이야기',i:'messages',c:'#8A8A85',soon:true}
+    /* 준비중 자리표시는 모바일에서 뺀다(deskOnly) — 놀이터가 들어오면서 4칸 격자가 한 칸 남게 됐고,
+       눌러도 아무 일 없는 칸이 폰에서 자리를 차지할 이유가 없다(2026-09-06). PC 는 5칸 x 4줄 = 20 으로 딱 맞는다. */
+    {n:'커뮤니티',d:'동네 이야기',i:'messages',c:'#8A8A85',soon:true,deskOnly:true}
   ];
   /* 🔴 허브 타일과 전체 메뉴가 또 갈리지 않게 감시한다(2026-08-22).
      메뉴가 세 곳에 흩어져 있어 새 화면이 계속 누락됐다(땅값·자료실이 실제로 그랬다).
