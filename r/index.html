@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>이동 중…</title>
+<!--
+  짧은 링크 리다이렉터 — 2026-09-05 신설
+
+  왜 만드나
+    우리 리포트 URL 은 **한글 파일명**이라 퍼센트 인코딩되면 231자가 된다.
+    스레드는 500자 상한이라 링크 하나가 본문의 절반을 먹는다(첫 글에서 490자로
+    상한에 붙었다). 이 페이지를 거치면 **55자쯤**으로 줄어 본문을 그만큼 더 쓸 수 있다.
+    하루 3건씩 올리므로 매일 500자 넘게 아끼는 셈이다.
+
+  쓰는 법
+    /r/?g=<슬러그>&c=<슬롯이름>
+    예) /r/?g=fw&c=satev   →  /글/2026-09-04_불꽃뷰아파트_한강.html
+                              ?utm_source=threads&utm_medium=social
+                              &utm_campaign=satev&utm_content=<오늘>
+
+  🔑 UTM 은 **여기서 붙인다.** 짧은 링크에는 슬롯 이름만 넘기고, 표준 파라미터는
+     이 스크립트가 만들어 목적지에 실어 준다. GA4 가 읽는 이름은 그대로 유지된다.
+  ⚠️ 새 글을 스레드에 올릴 때 아래 MAP 에 한 줄 추가한다. 슬러그는 **영문 소문자**로
+     짧게(2~6자). 한글을 쓰면 인코딩돼서 짧게 만든 의미가 없어진다.
+  ⚠️ GitHub Pages 는 정적이라 서버 리다이렉트를 못 쓴다. 그래서 JS 로 보내고,
+     JS 가 막힌 환경을 위해 아래에 링크를 그대로 노출한다.
+-->
+<style>
+  body{font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+       margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+       background:#12264A;color:#fff;text-align:center;padding:24px}
+  .b{max-width:520px}
+  h1{font-size:19px;font-weight:700;margin:0 0 10px}
+  p{font-size:14px;color:#C6D3E6;line-height:1.7;margin:0 0 18px}
+  a{color:#fff;font-weight:700}
+</style>
+</head>
+<body>
+<div class="b">
+  <h1>석봉 부동산 정보방</h1>
+  <p id="m">잠시만요, 글로 이동하고 있습니다.</p>
+  <p><a id="go" href="/">바로 열기</a></p>
+</div>
+<script>
+(function(){
+  /* 슬러그 → 실제 글 경로. 새 글을 올릴 때 여기 한 줄 추가한다. */
+  var MAP = {
+    "fw":   "/글/2026-09-04_불꽃뷰아파트_한강.html",           // 불꽃뷰 아파트 27곳
+    "lh16": "/글/2026-08-21_매입약정_매입제외16.html",          // LH 매입 제외 16가지
+    "sf":   "/글/2026-08-28_셀러파이낸싱_집주인이빌려줍니다.html", // 셀러 파이낸싱
+    "j5":   "/글/2026-08-16_잠실주공5단지_48년.html",           // 잠실주공5단지 48년
+    "mibun":"/글/2026-09-05_준공후미분양_4배.html",             // 준공후 미분양
+    "gap":  "/글/2026-07-12_갭투자지도.html"                    // 갭투자 지도
+  };
+  var q = new URLSearchParams(location.search);
+  var g = (q.get("g") || "").toLowerCase();
+  var dest = MAP[g];
+
+  if(!dest){
+    /* 슬러그가 없거나 오타면 리포트 목록으로 보낸다. 빈 화면보다 낫다. */
+    document.getElementById("m").textContent =
+      "찾는 글을 못 찾았습니다. 리포트 목록으로 안내할게요.";
+    document.getElementById("go").href = "/글.html";
+    setTimeout(function(){ location.replace("/글.html"); }, 1200);
+    return;
+  }
+
+  /* 짧은 파라미터를 표준 UTM 으로 펼친다 — GA4 가 읽는 이름을 그대로 쓴다. */
+  var d = new Date();
+  var ymd = d.getFullYear() +
+            String(d.getMonth()+1).padStart(2,"0") +
+            String(d.getDate()).padStart(2,"0");
+  var p = new URLSearchParams();
+  p.set("utm_source",   q.get("s") || "threads");
+  p.set("utm_medium",   "social");
+  p.set("utm_campaign", q.get("c") || "threads");
+  p.set("utm_content",  q.get("d") || ymd);
+
+  var url = dest + "?" + p.toString();
+  document.getElementById("go").href = url;
+  location.replace(url);
+})();
+</script>
+</body>
+</html>
