@@ -49,6 +49,12 @@
 .tabs b{flex:1;text-align:center;font-size:12.5px;padding:6px 0;border:1px solid var(--line);border-radius:7px;color:#8a8071;font-weight:600;cursor:pointer;background:#fff}
 .tabs b.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .list{border:1px solid var(--line);border-radius:10px;background:#fff;max-height:260px;overflow-y:auto;padding:0 12px}
+/* 과거 매매 연도별 접힘(2026-09-05) — 열기 전엔 한 줄, 열면 .deal 줄이 그대로 이어진다 */
+details.hist summary{display:flex;justify-content:space-between;align-items:baseline;padding:8px 2px;border-bottom:1px dotted #e3ddd0;font-size:13px;cursor:pointer;list-style:none}
+details.hist summary::-webkit-details-marker{display:none}
+details.hist summary::after{content:'펼치기';font-size:11px;color:#8a8071}
+details.hist[open] summary::after{content:'접기'}
+details.hist .deal{padding-left:10px;background:#fbfaf7}
 .loan{background:var(--ivory);border:1px solid var(--line);border-radius:10px;padding:11px 13px}
 .loan .lt{font-size:12px;color:#6b6355;margin-bottom:7px}
 .lrow{display:flex;justify-content:space-between;padding:4px 0;font-size:13px;border-bottom:1px dotted #e3ddd0}.lrow:last-child{border:0}.lrow .lv{font-weight:700;font-variant-numeric:tabular-nums}
@@ -205,6 +211,18 @@ function boot(){
     var a=document.getElementById('goMap');
     if(a)a.href='map.html?q='+encodeURIComponent(nm)+(dong?'&dong='+encodeURIComponent(dong):'');
   })();
+  /* 과거 매매 실거래(hist_apt_<code>.js, 자료실과 같은 파일)를 **나란히** 받는다(2026-09-05).
+     쓰는 곳 둘 — ①호가 가드가 창 안 거래 1~2건만으로 판단하지 않게(영화블렌하임 사고)
+     ②실거래 이력에 「과거 매매」 접힘 블록. 아파트가 아니면 안 받고, 못 받아도 막지 않는다.
+     순서 사슬에 끼우지 않는 이유 — 300~700KB 라 첫 화면이 그만큼 늦어진다. */
+  var _histReady=!!(ptype&&ptype!=='apt'), _goPend=null;
+  function _go(){ if(_histReady)go(code,nm,dong,ptype,pjb); else _goPend=1; }
+  if(!_histReady){
+    var hs=document.createElement('script');
+    hs.src=(window.SBDATA?SBDATA('data/hist_apt_'+code+'.js'):'data/hist_apt_'+code+'.js');
+    hs.onload=hs.onerror=function(){_histReady=true; if(_goPend)go(code,nm,dong,ptype,pjb);};
+    document.body.appendChild(hs);
+  }
   var s=document.createElement('script');s.src='data/detail_'+code+'.js';
   s.onload=function(){
     var a=document.createElement('script');a.src='data/apt_info_'+code+'.js';
@@ -218,7 +236,7 @@ function boot(){
             var tr=document.createElement('script');tr.src='data/apt_trend_'+code+'.js';
             tr.onload=tr.onerror=function(){
               var pg=document.createElement('script');pg.src='data/apt_pages.js';
-              pg.onload=pg.onerror=function(){_loadLand(code,dong,function(){go(code,nm,dong,ptype,pjb);});};document.body.appendChild(pg);
+              pg.onload=pg.onerror=function(){_loadLand(code,dong,function(){_go();});};document.body.appendChild(pg);
             };document.body.appendChild(tr);
           };document.body.appendChild(fe);
         };document.body.appendChild(al);
@@ -282,6 +300,39 @@ function _mixInfo(pt,txs){
     var ks=Object.keys(g).sort();
     return ks.length>1?{n:ks.length,un:un,list:ks}:null;
   }catch(e){return null;}
+}
+/* 과거 매매 실거래(hist_apt_<code>.js) — 이 단지 행만. r = [건물색인, 전용㎡, 층, 계약YYYYMM, 일, 금액만원, 해제].
+   최신순. 없으면 []. (실거래히스토리_사이트빌더.py 참고) */
+function _histRows(code,pt){
+  try{
+    var H=window.HIST&&window.HIST[code]; if(!H||!H.b||!H.r)return [];
+    var idx=-1;
+    for(var i=0;i<H.b.length;i++){if(H.b[i][0]===(pt.dong||'')&&H.b[i][1]===pt.name){idx=i;break;}}
+    if(idx<0)return [];
+    return H.r.filter(function(r){return r[0]===idx;})
+      .sort(function(a,b){return (b[3]*100+b[4])-(a[3]*100+a[4]);});
+  }catch(e){return [];}
+}
+/* 과거 매매 **최근 12건** 평당 중위(해제 제외). 3건 미만이면 0.
+   최근 12건으로 자르는 이유 — 파일은 2024년부터라 오른 시장에서 전 기간 중위를 쓰면
+   호가가 실거래보다 높아 보여 다시 감춘다. ⚠️ map.html 에 같은 함수가 있다. 고치면 둘 다. */
+function _histPy(code,pt){
+  var rows=_histRows(code,pt).filter(function(r){return !r[6]&&r[1]>0&&r[5]>0;}).slice(0,12);
+  if(rows.length<3)return 0;
+  var v=rows.map(function(r){return r[5]/r[1]*3.305785;}).sort(function(a,b){return a-b;});
+  return v[Math.floor(v.length/2)];
+}
+/* 이 시군구 자료가 실제로 담은 계약 기간 「YYYY.MM~YYYY.MM」(2026-09-05).
+   화면에 「최근 6개월」이라고 박아 두었는데 실제 자료는 2026년 6월부터라 넉 달이었다 —
+   기간은 손으로 적지 말고 자료에서 읽는다(CLAUDE.md 기준시점 표기 규칙). */
+function _winLabel(code){
+  try{
+    var arr=(window.SB&&SB.d&&SB.d[code])||[], lo='',hi='';
+    arr.forEach(function(p){(p.txs||[]).forEach(function(t){var c=String(t.cd||'').slice(0,7);if(!c)return;if(!lo||c<lo)lo=c;if(!hi||c>hi)hi=c;});});
+    if(!lo)return '';
+    var a=lo.replace('-','.'), b=hi.replace('-','.');
+    return a===b?a:(a.slice(0,4)===b.slice(0,4)?a+'~'+b.slice(5):a+'~'+b);
+  }catch(e){return '';}
 }
 function fail(){document.getElementById('nm').textContent='단지 정보를 찾지 못했습니다';document.getElementById('body').innerHTML='<p style="color:#8a8071">지도 카드에서 단지를 눌러 다시 열어주세요.</p>';}
 /* 🔴 이름+법정동만으로는 물건이 안 갈린다 (2026-08-20 석봉님 제보, 서울 1,260곳)
@@ -566,14 +617,15 @@ function render(pt,code){
   var lastCd=txs.length?txs.map(function(t){return t.cd;}).sort().pop():'';
   kp.push([mmTop?eok(mmTop):'·','최고 매매가'+(mmTopT&&mmTopT.a?' · 전용 '+mmTopT.a.toFixed(1)+'㎡':'')]);
   kp.push([wo.length?(eok(woB)+'<small style="font-size:11px">/'+comma(woW)+'만</small>'):'·','월세 중위(보증금/월세)']);
-  kp.push([txs.length?comma(txs.length)+'<small style="font-size:11px">건</small>':'·','최근 6개월 거래'+(lastCd?' · 최근 '+lastCd.slice(2).replace(/-/g,'.'):'')]);
+  var _WIN=_winLabel(code), _WINL=_WIN?_WIN+' 거래':'최근 거래';
+  kp.push([txs.length?comma(txs.length)+'<small style="font-size:11px">건</small>':'·',_WINL+(lastCd?' · 최근 '+lastCd.slice(2).replace(/-/g,'.'):'')]);
   /* 🔴 여러 채가 섞인 지점에서는 **대표 시세를 내지 않는다**(2026-08-20 석봉님 지적).
      지도 카드와 같은 판단이다 — 한쪽은 「대표값 없음」, 다른 쪽은 중위를 보여 주면 말이 갈린다. */
   var _MIX=(typeof _mixInfo==='function')?_mixInfo(pt,txs):null;
   var _UNIT=(pt.t==='land')?'필지':'건물';
   if(_MIX){
     kp=[[_MIX.n+'<small style="font-size:11px">채</small>','이 자리의 '+_UNIT+' 수'],
-        [txs.length?comma(txs.length)+'<small style="font-size:11px">건</small>':'·','최근 6개월 거래'],
+        [txs.length?comma(txs.length)+'<small style="font-size:11px">건</small>':'·',_WINL],
         [lastCd?lastCd.slice(2).replace(/-/g,'.'):'·','최근 계약']];
   }
   var h='<div class="top"><div id="map"></div><div class="kpis">'
@@ -600,6 +652,11 @@ function render(pt,code){
   if(A&&A.t&&_ASKT[pt.t]&&_ASKT[pt.t].indexOf(A.t)<0){A=null;_askOff=true;}
   if(A&&A.mm&&A.mm.py&&mmpy){
     var _rt=A.mm.py/mmpy, _hn=A.mm.n||0;
+    /* 🔴 창 안 거래가 1~2건이고 배율이 밖이면 **과거 실거래(최근 12건)로 한 번 더 잰다**(2026-09-05).
+       망원동 영화블렌하임: 창 안 1건 6.6억/107㎡(평당 2,033) · 호가 17건 평당 4,172 → 2.05배로 감춰졌는데,
+       2024년 이후 거래 중위는 평당 3,2xx 로 호가와 1.3배 — 튄 것은 호가가 아니라 그 1건이었다.
+       지도 카드(map.html)와 같은 규칙. 한쪽만 고치면 말이 갈린다. */
+    if(mm.length<3&&(_rt<0.65||_rt>1.6)){var _hp=_histPy(code,pt); if(_hp)_rt=A.mm.py/_hp;}
     /* ⚠️ 얇은 표본만으로는 감추지 않는다(지도 카드와 같은 조건) */
     if(_hn>=3&&(mm.length>=2||_hn>=10)&&(_rt<0.65||_rt>1.6)){A=null;_askOff=true;}
   }
@@ -1019,13 +1076,37 @@ document.getElementById('body').innerHTML=h;
   function rMM(x){return '<div class="deal"><div><b>'+x.a+'㎡('+PY(x.a)+')</b><span class="meta">'+x.f+'층 · '+x.cd.slice(2).replace(/-/g,'.')+'</span></div><div class="pr">'+eok(x.p)+'<span class="s">'+(x.a?comma(Math.round(x.p/x.a*3.305785))+'만/평':'')+'</span></div></div>';}
   function rJE(x){return '<div class="deal"><div><b>'+x.a+'㎡('+PY(x.a)+')</b><span class="meta">'+x.f+'층 · '+x.cd.slice(2).replace(/-/g,'.')+'</span></div><div class="pr">'+eok(x.p)+'<span class="s">전세</span></div></div>';}
   function rWO(x){return '<div class="deal"><div><b>'+x.a+'㎡('+PY(x.a)+')</b><span class="meta">'+x.f+'층 · '+x.cd.slice(2).replace(/-/g,'.')+'</span></div><div class="pr">'+eok(x.p)+' / '+x.r+'만<span class="s">월세</span></div></div>';}
+  /* 과거 매매(자료실과 같은 hist_apt 파일) — 창(_WIN) **이전** 계약만, 연도별로 접어 둔다(2026-09-05).
+     창 안 거래는 위 목록에 이미 있으니 계약월 < 창 시작월인 행만 붙인다(같은 거래가 두 번 보이지 않게).
+     해제 신고분은 지우지 않고 「해제」로 표시한다(빌더 규칙과 같다). 매매 탭에만 있다(파일이 매매뿐). */
+  var _HP=[];
+  if(pt.t==='apt'){var _ws=(_WIN||'').slice(0,7).replace('.','');
+    _HP=_histRows(code,pt).filter(function(r){return !_ws||String(r[3])<_ws;});}
+  function histBlock(){
+    if(!_HP.length)return '';
+    var by={},ord=[];
+    _HP.forEach(function(r){var y=String(r[3]).slice(0,4);if(!by[y]){by[y]=[];ord.push(y);}by[y].push(r);});
+    var lo=String(_HP[_HP.length-1][3]),hi=String(_HP[0][3]);
+    function ym(s){return s.slice(0,4)+'.'+s.slice(4);}
+    var h2='<div class="deal" style="background:#f6f3ec;font-size:12.5px"><div><b>과거 매매</b><span class="meta"> · '
+      +ym(lo)+'~'+ym(hi)+' 계약 · 국토교통부</span></div><div class="pr" style="font-size:12.5px;color:#8a8071">'+_HP.length+'건</div></div>';
+    return h2+ord.map(function(y){
+      var rows=by[y],v=rows.filter(function(r){return !r[6]&&r[5]>0;}).map(function(r){return +r[5];}).sort(function(a,b){return a-b;});
+      var mid=v.length?v[Math.floor(v.length/2)]:0;
+      return '<details class="hist"><summary><span><b>'+y+'년</b><span class="meta"> · '+rows.length+'건'+(mid?' · 중위 '+eok(mid):'')+'</span></span></summary>'
+        +rows.map(function(r){var a=+r[1]||0,p=+r[5]||0,d=String(r[3]),dd=('0'+(r[4]||'')).slice(-2);
+          return '<div class="deal"><div><b>'+a+'㎡('+PY(a)+')</b><span class="meta">'+(r[2]||'-')+'층 · '+d.slice(2,4)+'.'+d.slice(4)+'.'+dd
+            +(r[6]?' · <span style="color:#b23a48">해제</span>':'')+'</span></div><div class="pr">'+eok(p)+'<span class="s">'+(a?comma(Math.round(p/a*3.305785))+'만/평':'')+'</span></div></div>';}).join('')
+        +'</details>';}).join('');
+  }
   function rd(t){
     var src=t==='mm'?mm:(t==='je'?je:wo), fn=t==='mm'?rMM:(t==='je'?rJE:rWO);
     var box=document.getElementById('dlist');
-    if(!src.length){box.innerHTML='<div class="deal">해당 유형 최근 거래 없음</div>';return;}
+    var tail=(t==='mm')?histBlock():'';
+    if(!src.length){box.innerHTML='<div class="deal">해당 유형 '+(_WIN||'최근')+' 거래 없음</div>'+tail;return;}
     /* 🔴 섞인 자리에서는 건물별로 묶는다(2026-08-20). 한 줄로 늘어놓으면 서로 다른
        건물의 값이 한 물건의 이력처럼 읽힌다. 지번을 못 찾은 거래는 맨 뒤에 따로 둔다. */
-    if(!_MIX){box.innerHTML=src.map(fn).join('');return;}
+    if(!_MIX){box.innerHTML=src.map(fn).join('')+tail;return;}
     var g={},ord=[];
     src.forEach(function(x){
       var h2=_txHit(pt,x), k=h2?h2.jb:'_';
