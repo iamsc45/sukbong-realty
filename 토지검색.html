@@ -254,7 +254,8 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
     var band=RD.band||'', nat=REDEV_NATURE[band]||null, stg=redevStageNote(n.stage);
     var dist=n.inside?'구역 안':(n.dist_m>=1000?(n.dist_m/1000).toFixed(1)+'km':n.dist_m+'m');
     var link='<a href="map.html?mode=redev&q='+encodeURIComponent(n.nm)+'" style="color:inherit;text-decoration:underline;text-underline-offset:3px">지도에서 구역 보기</a>';
-    var html='<b>'+esc(n.nm)+'</b>'+(n.cat?' '+esc(n.cat):'')+' · <b>'+dist+'</b>'+(band?' <span class="tag">'+esc(band)+'</span>':'')
+    /* 구역 안이면 「구역 안」만 — 밴드 태그 「구역내」까지 붙이면 「구역 안 구역내」로 겹친다(2026-09-05 라이브 신림동 382-21 실측) */
+    var html='<b>'+esc(n.nm)+'</b>'+(n.cat?' '+esc(n.cat):'')+' · <b>'+dist+'</b>'+((band&&!n.inside)?' <span class="tag">'+esc(band)+'</span>':'')
       +'<div style="font-size:12.5px;color:#5A6478;margin-top:2px">진행 단계 <b>'+esc(n.stage||'미확인')+'</b>'+(stg[0]?' ('+stg[0]+')':'')+' · '+link+'</div>';
     if(nat) html+='<div style="font-size:13px;margin-top:8px;padding-top:8px;border-top:1px dashed #E3E8F0">이 자리의 성격: <b>'+nat[0]+'</b>'
       +'<div style="font-size:12.5px;color:#5A6478;margin-top:2px">'+nat[1]+' 같은 거리대의 서울 실거래를 본 관찰이며, 이 필지의 판정이 아닙니다.</div></div>';
