@@ -530,13 +530,23 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
 .foot{font-size:13.5px;color:var(--nb-ink2);line-height:1.85;margin-top:36px;
   border-top:2.5px solid var(--nb-ink);padding-top:14px;word-break:keep-all}
 .hide{display:none}
+/* 플레이 화면 나가기 — 네오브루탈 톤. nav 아래 좌상단에 고정. */
+.sbexit{position:fixed;left:12px;top:64px;z-index:9500;background:var(--paper);color:var(--nb-ink);
+  border:var(--nb-line) solid var(--nb-ink);box-shadow:4px 4px 0 var(--nb-ink);padding:8px 13px;
+  font-family:Pretendard,sans-serif;font-weight:800;font-size:14px;cursor:pointer;line-height:1}
+.sbexit:active{transform:translate(4px,4px);box-shadow:none}
+@media(max-width:720px){.sbexit{top:58px;left:10px;padding:7px 11px;font-size:13.5px}}
 </style>
 </head>
 <body>
 
 <header class="site-header">
   <a class="brand" href="index.html">석봉 부동산 정보방</a>
-  <nav>
+  <!-- 🔴 플레이 화면 나가기(2026-09-06 석봉님 "뒤로 가기가 없어서 창을 꺼야 되는 상황").
+     다섯 게임 화면(play·bPlay·ePlay·tPlay·sPlay) 어디에도 나갈 길이 없었다. 섹션마다 심지 않고
+     **고정 버튼 하나**를 두고 show() 가 플레이 화면일 때만 보인다. 브라우저 뒤로가기도 같이 잡는다. -->
+<button type="button" id="sbExit" class="sbexit hide" aria-label="게임 나가기">← 나가기</button>
+<nav>
     <a href="index.html">홈</a>
     <a href="map.html">실거래지도</a>
     <a href="apply.html">청약</a>
@@ -1270,8 +1280,31 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
        그 전에는 over()·reveal() 이 각자 멈췄는데, 경로가 늘 때마다 빠뜨렸다.
        show() 는 모든 전환이 지나는 길목이라 여기서 한 번에 정한다. */
     if(window.SBBgm && PLAY_SCR.indexOf(which) < 0) SBBgm.stop();
+    /* 나가기 버튼은 **게임을 하는 화면에서만**. 결과·인트로에는 이미 「다른 놀이 해보기」가 있다.
+       ⚠️ ePlay(경제상식)는 곡이 없어 PLAY_SCR 에 없지만 나가기는 필요하다 — 따로 더한다. */
+    var exitBtn = document.getElementById("sbExit");
+    if(exitBtn) exitBtn.classList.toggle("hide", PLAY_SCR.indexOf(which) < 0 && which !== "ePlay");
+    /* 🔑 브라우저 뒤로가기 — 허브를 벗어날 때 history 를 **한 칸만** 쌓는다.
+       전환마다 쌓으면 뒤로가기를 여러 번 눌러야 허브가 나온다. 한 칸이면 어느 화면에서든
+       뒤로가기 한 번에 허브로 돌아간다(popstate 핸들러가 leaveGame 을 부른다). */
+    if(which === "hub"){ hubPushed = false; }
+    else if(!hubPushed){ try{ history.pushState({sbHub:1}, ""); hubPushed = true; }catch(e){} }
     window.scrollTo(0,0);
   }
+  var hubPushed = false;
+  /* 게임을 멈추고 허브로. 액션 게임은 stop() 이 있고, 퀴즈류는 타이머만 끄면 된다
+     (다음 판은 start() 가 새로 시작하므로 남은 상태를 따로 지울 필요가 없다). */
+  function leaveGame(){
+    try{ if(TAX && TAX.stop) TAX.stop(); }catch(e){}
+    try{ if(STACK && STACK.stop) STACK.stop(); }catch(e){}
+    try{ stopTimer(); }catch(e){}
+    show("hub");
+  }
+  document.getElementById("sbExit").addEventListener("click", leaveGame);
+  window.addEventListener("popstate", function(){
+    /* 뒤로가기로 우리 한 칸이 빠지면 허브로. hubPushed 를 먼저 내려야 show("hub") 가 또 안 쌓는다. */
+    if(hubPushed){ hubPushed = false; leaveGame(); }
+  });
   function drawSteps(){
     $("steps").innerHTML = set.map(function(_,i){
       return "<i class='"+(i<idx?"done":(i===idx?"on":""))+"'></i>";
