@@ -224,6 +224,43 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
   /* ---------- 표시 유틸 ---------- */
   function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
   function comma(n){return Number(n).toLocaleString('ko-KR');}
+
+  /* ── 정비구역 줄 (2026-09-05 · 석봉님 B안 확정 「성격 문구까지」) ──
+     서버 응답 d.redev = {scope:'seoul'|'none', ok, band, nearest:{nm,cat,stage,dist_m,inside}, list:[…3]}.
+     성격 문구는 정본 4-14-1 확정표(담보_E점수.py TABLE)의 「성격」 열을 그대로 옮긴 것이다 — 점수(수준·모멘텀·E)는
+     내부 심사용이라 화면에 안 올린다(2026-08-21 결정). 문구를 바꾸려면 담보_E점수.py 와 함께 바꿀 것.
+     단계 문구는 정본 4-10: 단계는 가격에 이미 반영돼 있고, 초기일수록 사업이 멈출 위험이 크다. */
+  var REDEV_NATURE={
+    '구역내':   ['수준·흐름 모두 강한 자리','구역 안 거래는 조합 설립·시공사 선정·관리처분마다 값이 다시 매겨집니다.'],
+    '0-300m':   ['값은 인근 대비 이미 높은 편, 최근 흐름은 완만','경계 밖 300m 안은 값이 먼저 올라 있어 최근 상승은 둔합니다(선반영).'],
+    '300-500m': ['고른 중간','수준도 흐름도 중간인 거리대입니다.'],
+    '500m-1km': ['값은 낮고 지금 따라잡는 자리','수준은 낮지만 최근 상승률이 높은 거리대입니다.'],
+    '1-2km':    ['약한 파급','정비구역 영향이 옅어지는 거리대입니다.'],
+    '2km+':     ['파급권 밖','2km 밖의 움직임은 정비구역이 아니라 그 동네 자체 흐름으로 봅니다.']};
+  function redevStageNote(st){
+    st=String(st||'');
+    if(!st) return ['',''];   /* 라벨이 이미 「미확인」이라 괄호 설명을 붙이지 않는다 */
+    if(/관리처분|철거|착공|분양|이주|준공/.test(st)) return ['후기 단계','관리처분 뒤라 사업이 멈출 위험은 낮은 편입니다.'];
+    if(/조합설립|사업시행|시행계획/.test(st)) return ['중기 단계','관리처분 전이라 일정이 밀릴 수 있습니다. 위 구간에 그 위험은 들어 있지 않습니다.'];
+    return ['초기 단계','추진위·구역지정 단계는 사업이 늦어지거나 멈출 수 있습니다. 위 구간에 그 위험은 들어 있지 않습니다.'];
+  }
+  function redevBlock(RD){
+    var wrap=function(inner){return '<div class="row" style="background:#F2F2EF;margin:8px -8px 0;padding:8px;border-radius:4px"><div class="k">정비구역</div><div class="v" style="font-size:13.5px">'+inner+'</div></div>';};
+    if(!RD) return '';   /* 옛 서버 응답(배포 전) — 줄 자체를 안 그린다 */
+    if(RD.scope==='none') return wrap('<span style="color:#5A6478">경기·인천 정비구역 자료는 준비 중입니다. 서울부터 제공합니다.</span>');
+    if(!RD.ok) return wrap('<span style="color:#5A6478">정비구역 거리를 불러오지 못했습니다. 아래 「주변 정비구역」에서 같은 동 목록은 볼 수 있습니다.</span>');
+    var n=RD.nearest;
+    if(!n) return wrap('<b>2km 안에 정비구역 없음</b><div style="font-size:12.5px;color:#5A6478;margin-top:2px">'+REDEV_NATURE['2km+'][1]+'</div>');
+    var band=RD.band||'', nat=REDEV_NATURE[band]||null, stg=redevStageNote(n.stage);
+    var dist=n.inside?'구역 안':(n.dist_m>=1000?(n.dist_m/1000).toFixed(1)+'km':n.dist_m+'m');
+    var link='<a href="map.html?mode=redev&q='+encodeURIComponent(n.nm)+'" style="color:inherit;text-decoration:underline;text-underline-offset:3px">지도에서 구역 보기</a>';
+    var html='<b>'+esc(n.nm)+'</b>'+(n.cat?' '+esc(n.cat):'')+' · <b>'+dist+'</b>'+(band?' <span class="tag">'+esc(band)+'</span>':'')
+      +'<div style="font-size:12.5px;color:#5A6478;margin-top:2px">진행 단계 <b>'+esc(n.stage||'미확인')+'</b>'+(stg[0]?' ('+stg[0]+')':'')+' · '+link+'</div>';
+    if(nat) html+='<div style="font-size:13px;margin-top:8px;padding-top:8px;border-top:1px dashed #E3E8F0">이 자리의 성격: <b>'+nat[0]+'</b>'
+      +'<div style="font-size:12.5px;color:#5A6478;margin-top:2px">'+nat[1]+' 같은 거리대의 서울 실거래를 본 관찰이며, 이 필지의 판정이 아닙니다.</div></div>';
+    if(stg[1]) html+='<div style="font-size:12.5px;margin-top:6px" class="warn">'+stg[1]+'</div>';
+    return wrap(html);
+  }
   function wonPy(perM2){ /* 원/㎡ → 평당, 1억 넘으면 억 단위 */
     var man=Math.round(perM2*PYUNG/10000);
     if(man>=10000){var e=Math.floor(man/10000),r=man%10000;
@@ -262,6 +299,7 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
     }
     var latest=(d.price||[]).slice().sort(function(a,b){return String(b.stdrYear).localeCompare(String(a.stdrYear));})[0];
     var ch=(d.characteristics||[]).slice().sort(function(a,b){return String(b.stdrYear).localeCompare(String(a.stdrYear));})[0];
+    window.__redev=d.redev||null;   /* 2026-09-05 정비구역 거리(서버 산출) — 구간 카드와 ⑤ 주변 정비구역이 읽는다 */
 
     /* ── 맨 위 한 줄 요약 (2026-08-24 석봉님 지시)
        "토지는 얼마고 건물은 얼마인데 정보가 많아 실무자가 아니면 헷갈린다" →
@@ -506,6 +544,11 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
         h.push('<div class="row"><div class="k warn">요인</div><div class="v" style="font-size:13.5px">'
           +_factors.join('<br>')+'<div style="font-size:12.5px;color:#5A6478;margin-top:3px">위 구간에는 반영돼 있지 않습니다. 감정에서는 이 요인으로 값이 달라집니다.</div></div></div>');
       }
+      /* ── 정비구역 (2026-09-05 · 석봉님 B안 「성격 문구까지」) ──
+         서버(land-lookup)가 필지 좌표 → 가장 가까운 정비구역 거리·밴드·단계를 준다(서울만).
+         여기 문구는 정본 4-14-1 확정표(담보_E점수.py)의 「성격」 열 그대로다. 점수는 안 올린다(2026-08-21 기준 비공개).
+         단계별 무산 위험 문구는 4-10(단계는 이미 가격에 반영 · 초기일수록 멈출 위험)에서 온다. */
+      h.push(redevBlock(d.redev));
       /* ── 검토 가격 대조 (2026-08-24 석봉님 지시 · 표현은 「위치만 관찰형」으로 확정)
          🔴 「비싸다/싸다」·「적정/부적정」을 쓰지 않는다. 값이 분포 어디에 있는지만 알려 준다.
             2026-08-17 석봉님 지시 — 「좋다고 좋은 것도, 나쁘다고 틀린 것도 아니다」를 함께 적는다.
@@ -1040,7 +1083,23 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
       catch(_e){ REDEV={}; }
     }
     var key=info.gu+' '+info.dong, rd=REDEV[key]||[];
-    if(rd.length){
+    /* 2026-09-05 — 서버가 필지 좌표 기준 거리순 목록(2km 안 3곳)을 주면 그것을 먼저 쓴다.
+       같은 동 목록은 「위치가 가깝다는 뜻은 아니다」였는데, 이건 실제 거리다. */
+    var RD=window.__redev||null;
+    if(RD&&RD.ok&&RD.list&&RD.list.length){
+      var rowsD=RD.list.map(function(x){
+        var dist=x.inside?'구역 안':(x.dist_m>=1000?(x.dist_m/1000).toFixed(1)+'km':x.dist_m+'m');
+        return '<div class="row"><div class="k">'+dist+'</div><div class="v">'+
+               '<a href="map.html?mode=redev&q='+encodeURIComponent(x.nm)+'" '+
+               'style="color:inherit;text-decoration:underline;text-underline-offset:3px">'+esc(x.nm)+'</a>'+
+               (x.cat?' · '+esc(x.cat):'')+' <span class="tag">'+esc(x.stage||'단계 미확인')+'</span></div></div>';
+      }).join('');
+      h.push(box('주변 정비구역', rowsD+
+        '<div class="note">이 필지에서 <b>가까운 순</b>으로 2km 안 3곳입니다(필지 중심에서 구역 경계까지). '+
+        '구역명을 누르면 지도에서 위치와 추진 단계를 볼 수 있습니다. 정비구역 자료는 서울만 있고 해제 이력은 포함돼 있지 않습니다.</div>'));
+    }else if(RD&&RD.ok&&RD.list&&!RD.list.length){
+      h.push(box('주변 정비구역', soon('이 필지 2km 안에는 등록된 정비구역이 없습니다(서울 정비구역 자료 기준).')));
+    }else if(rd.length){
       /* 2026-08-21 석봉님 지시 — 구역명을 지도 재개발 화면으로 딥링크.
          형식은 CLAUDE.md 확정본(`map.html?mode=redev&q=`)이고, 표본 2건을 실제로 열어
          구역 카드가 정확히 뜨는 것을 확인했다(가람아파트·개포우성7차). */
