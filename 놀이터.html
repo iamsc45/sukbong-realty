@@ -1,0 +1,1896 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>놀이터 · 석봉 부동산 정보방</title>
+<meta property="og:title" content="이 집, 얼마일까요?">
+<meta property="og:description" content="국토교통부에 신고된 진짜 거래 다섯 건. 오차 10% 안에 들면 정답입니다.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="석봉 부동산 정보방">
+<meta property="og:url" content="https://xn--2q1br1nnrasc92a76myvau64b.com/%EB%86%80%EC%9D%B4%ED%84%B0.html">
+<meta property="og:image" content="https://xn--2q1br1nnrasc92a76myvau64b.com/assets/og_quiz.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+/* ══════════════════════════════════════════════════════════════════════
+   놀이터 — A안 네오브루탈 (2026-09-01 석봉님 확정)
+
+   방향
+     성격      종이 위에 매직으로 그린 아케이드
+     레퍼런스  오락실 안내판 + 스티커북
+     과감한 선택  **모든 것이 눌린다** — 3px 먹선 + 블러 없는 5px 그림자,
+                 누르면 그림자가 사라지며 5px 내려앉는다
+     폰트 2종   제목 Black Han Sans / 본문 Pretendard
+
+   🔴 여기만 사이트 톤(B&W 에디토리얼)과 다르다. 놀이터는 「게임 코너」라
+      다른 옷을 입는 편이 맞다고 석봉님이 정하셨다. 다만 **머리글(site-header)은
+      그대로 두어** 같은 사이트임이 보이게 한다.
+   ⚠️ 클래스 이름은 하나도 바꾸지 않았다 — 이름을 건드리면 JS 가 조용히 깨진다.
+      (2026-09-01 시안에서 확인한 규칙을 그대로 옮긴 것이다)
+   ══════════════════════════════════════════════════════════════════════ */
+:root{
+  --paper:#FFFCF2;      /* 종이. 순백을 피해 살짝 따뜻하게 */
+  --nb-ink:#16130F;     /* 먹. 순검정을 피한다 */
+  --nb-ink2:#4A443A;    /* 본문(따뜻한 회색) */
+  --nb-mute:#8A8478;
+  --pop:#FF5C39;        /* 강조색 하나 */
+  --sun:#FFD84D;        /* 보조 — 지금 여기 보라는 표시 */
+  --nb-win:#2FBF71;
+  --nb-lose:#E23B2E;
+  --nb-line:3px;
+}
+body{background:var(--paper);color:var(--nb-ink)}
+/* 🔴 Black Han Sans 는 굵기가 **400 하나뿐**이다. 700 이상을 주면 브라우저가
+   합성 볼드로 획을 밖으로 밀어 「놀」·「뭐」 같은 글자의 속이 메워진다
+   (2026-09-01 실측 — h1 의 기본 굵기 800 때문에 제목이 검은 덩어리가 됐다).
+   그래서 이 폰트를 쓰는 선언마다 font-weight:400 을 못 박아 둔다. */
+
+.q-wrap{max-width:560px;margin:0 auto;padding:0 20px 72px}
+
+.eyebrow{display:inline-block;background:var(--nb-ink);color:var(--paper);font-size:12px;
+  font-weight:800;letter-spacing:.15em;padding:5px 10px;margin:34px 0 0;transform:rotate(-1.5deg)}
+h1.q{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:clamp(34px,9vw,50px);
+  letter-spacing:-.02em;margin:16px 0 10px;line-height:1.04}
+.lead{color:var(--nb-ink2);font-size:15.5px;line-height:1.8;margin:0 0 20px;word-break:keep-all}
+.rules{font-size:14px;color:var(--nb-ink2);background:#fff;border:2.5px dashed var(--nb-ink);
+  padding:13px 15px;margin:0 0 22px;line-height:1.85;word-break:keep-all}
+.rules b{font-weight:800;color:var(--nb-ink)}
+.mine-best{font-size:14.5px;font-weight:700;color:var(--nb-ink2);margin-top:14px}
+
+/* 버튼 — 이 화면에서 가장 중요한 부품. 누르면 종이가 눌리듯 내려앉는다 */
+.btn.full{display:block;width:100%;text-align:center;font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;
+  cursor:pointer;background:var(--pop);color:#fff;border:var(--nb-line) solid var(--nb-ink);
+  border-radius:0;box-shadow:5px 5px 0 var(--nb-ink);font-size:21px;letter-spacing:.01em;
+  padding:15px 0;transition:transform 90ms,box-shadow 90ms}
+button.btn{font-size:21px}
+/* ⚠️ site.css 의 `.btn:hover{opacity:.75}` 를 덮는다.
+   이 톤에서 버튼이 흐려지면 「비활성」으로 읽힌다 — 눌림이 곧 언어다.
+   (2026-09-01 라이브에서 시작 버튼이 연주황으로 나와 잡았다) */
+.btn.full:hover{opacity:1;box-shadow:6px 6px 0 var(--nb-ink);transform:translate(-1px,-1px)}
+.btn.full:active{transform:translate(5px,5px);box-shadow:0 0 0 var(--nb-ink);opacity:1}
+.btn.line{background:#fff;color:var(--nb-ink)}
+.btn+.btn{margin-top:12px}
+
+/* ── 문제 ──
+   ⚠️ 남은 시간은 눈에 확 띄어야 한다(2026-08-31 석봉님 "쫓기는 기분이 들도록").
+      숫자를 크게 키우고 5초 아래에서 붉게 바꾸며 맥박을 준다.
+      🔴맥박은 transform 으로만 준다 — opacity 를 건드리면 탭이 백그라운드일 때
+      시계가 멈춰 **숫자가 통째로 안 보인다**(같은 날 결과 화면에서 겪었다). */
+/* 진행 칸 · 소리 버튼 · 남은 시간이 한 줄에 선다.
+   ⚠️ 폰 폭에서 셋이 안 들어가 소리 버튼이 위로 떠올랐다 — 버튼을 오른쪽으로 밀어붙인다. */
+.meter{display:flex;align-items:flex-end;gap:10px;margin:26px 0 10px}
+.meter .tsnd{margin-left:auto;order:2}
+.meter .left{order:3;margin-left:10px}
+/* 진행 칸 — 채워지는 칸이라 몇 개 남았는지 한눈에 보인다 */
+.steps{display:flex;gap:5px;padding-bottom:7px}
+.steps i{width:24px;height:10px;border:2px solid var(--nb-ink);background:#fff;transition:background 200ms}
+.steps i.done{background:var(--pop)}
+.steps i.on{background:var(--sun)}
+.left{margin-left:auto;text-align:right;line-height:1}
+.left .cap{display:block;font-size:11.5px;letter-spacing:.12em;color:#6A6355;
+  font-weight:800;margin-bottom:4px}
+.left b{display:inline-block;font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:40px;
+  letter-spacing:-.01em;color:var(--nb-ink);font-variant-numeric:tabular-nums}
+.left .u{font-size:16px;font-weight:800;color:var(--nb-ink2);margin-left:2px}
+.left.warn b,.left.warn .u{color:var(--nb-lose)}
+.left.warn b{animation:tick .55s ease-in-out infinite}
+@keyframes tick{0%{transform:scale(1)}45%{transform:scale(1.22)}100%{transform:scale(1)}}
+.tline{height:12px;background:#fff;border:2.5px solid var(--nb-ink);margin-bottom:24px;overflow:hidden}
+.tline i{display:block;height:100%;width:100%;background:var(--nb-ink)}
+.tline.warn i{background:var(--nb-lose)}
+
+.place{font-size:15px;font-weight:700;color:var(--nb-ink2);margin-bottom:4px}
+.apt{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:29px;letter-spacing:-.02em;
+  line-height:1.22;margin:0 0 10px;word-break:keep-all}
+.spec{font-size:15px;color:var(--nb-ink2);line-height:1.8;margin-bottom:30px}
+
+/* 값 고르기 — 숫자를 노란 판 위에 올려 「지금 이걸 정한다」를 분명히 한다 */
+.guess{text-align:center;background:var(--sun);border:var(--nb-line) solid var(--nb-ink);
+  box-shadow:5px 5px 0 var(--nb-ink);padding:18px 16px 14px;margin-bottom:22px}
+/* ⚠️ 「8억 5,000만원」은 아홉 글자다. 폰 폭에서 36px 이면 두 줄로 접힌다
+   (2026-09-01 360px 로 좁혀 보고 잡았다). 최소치를 낮추고 한 줄로 못 박는다. */
+.guess .v{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:clamp(29px,8.2vw,46px);
+  letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.05;white-space:nowrap}
+.guess .l{font-size:14px;font-weight:700;color:#6A6355;margin:6px 0 16px}
+input[type=range]{width:100%;-webkit-appearance:none;background:transparent;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:6px;background:#fff;border:2.5px solid var(--nb-ink)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;border-radius:0;
+  background:var(--pop);border:3px solid var(--nb-ink);margin-top:-15px;cursor:pointer}
+input[type=range]::-moz-range-track{height:6px;background:#fff;border:2.5px solid var(--nb-ink)}
+input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;background:var(--pop);
+  border:3px solid var(--nb-ink)}
+.ends{display:flex;justify-content:space-between;font-size:13.5px;font-weight:800;color:#6A6355;margin:9px 0 0}
+.trail{font-size:14px;font-weight:700;color:var(--nb-ink2);line-height:1.85;margin-top:16px}
+
+/* ── 채점 대기 ── */
+.mid{text-align:center;padding:56px 0 20px}
+.mid h2{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:27px;letter-spacing:-.02em;margin:0 0 8px}
+.mid p{color:var(--nb-ink2);font-size:15px;margin:0 0 26px;word-break:keep-all}
+
+/* ── 결과 ── */
+.score{text-align:center;padding:26px 0 22px}
+.score .l{display:inline-block;background:var(--nb-ink);color:var(--sun);
+  font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:14px;letter-spacing:.08em;
+  padding:6px 13px;transform:rotate(-2deg)}
+.score .n{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:70px;letter-spacing:-.02em;
+  line-height:1.02;margin:14px 0 0;font-variant-numeric:tabular-nums;display:inline-block}
+.score .n em{font-style:normal;font-size:28px;color:var(--pop)}
+.score .tag{font-size:16px;font-weight:800;margin-top:10px;word-break:keep-all}
+.score .meta{font-size:14.5px;color:var(--nb-ink2);line-height:1.75;margin-top:8px;word-break:keep-all}
+
+/* 항목 — 카드 하나하나가 눌리는 종이. 맞힌 것만 노랑 띠를 두른다 */
+.row{background:#fff;border:2.5px solid var(--nb-ink);box-shadow:4px 4px 0 var(--nb-ink);
+  padding:14px 15px;margin-bottom:12px;cursor:pointer;animation:rise .3s ease;
+  transition:transform 90ms,box-shadow 90ms}
+.row:active{transform:translate(4px,4px);box-shadow:0 0 0 var(--nb-ink)}
+.row.hit{background:var(--sun)}
+@keyframes rise{from{transform:translateY(6px)}to{transform:none}}
+.row .a{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.row .nm{font-size:17px;font-weight:800;letter-spacing:-.02em;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.row .ans{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:19px;letter-spacing:-.01em;
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+.row .b{display:flex;justify-content:space-between;gap:10px;margin-top:6px;font-size:14.5px;color:var(--nb-ink2)}
+.row .b .when{white-space:nowrap}
+.row .c{font-size:14px;font-weight:700;color:var(--nb-ink2);margin-top:8px}
+.row .c .ok{color:var(--nb-win);font-weight:800}
+.row .c .no{color:var(--nb-ink2)}
+.det{display:none;margin-top:12px;padding-top:12px;border-top:2px dashed var(--nb-ink)}
+.det.open{display:block}
+.det dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:7px 14px;font-size:14px}
+.det dt{color:var(--nb-ink2);font-weight:700}
+.det dd{margin:0;text-align:right;font-weight:800;font-variant-numeric:tabular-nums}
+.det a{display:inline-block;margin-top:12px;font-size:14px;font-weight:800;color:#fff;
+  background:var(--nb-ink);text-decoration:none;padding:7px 12px}
+.tap{font-size:13px;font-weight:700;color:var(--nb-mute);margin:12px 0 26px}
+
+/* ── 랭킹 ── */
+.rank-cta{background:#fff;border:var(--nb-line) solid var(--nb-ink);box-shadow:5px 5px 0 var(--nb-ink);
+  padding:18px 17px;margin:28px 0 32px}
+.rank-cta h3{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:21px;letter-spacing:-.02em;
+  margin:0 0 7px;word-break:keep-all}
+.rank-cta p{font-size:14.5px;color:var(--nb-ink2);margin:0 0 15px;line-height:1.7;word-break:keep-all}
+.nickrow{display:flex;gap:9px;margin-bottom:11px}
+.nickrow input{flex:1 1 0;min-width:0;font-family:inherit;font-size:15.5px;font-weight:700;padding:12px 13px;
+  border:2.5px solid var(--nb-ink);border-radius:0;background:#fff;color:var(--nb-ink)}
+.nickrow input:focus{outline:none;box-shadow:3px 3px 0 var(--nb-ink)}
+.nickrow button{flex:0 0 auto;padding:12px 19px;border:2.5px solid var(--nb-ink);border-radius:0;
+  background:var(--nb-ink);color:var(--paper);font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;
+  font-size:16px;cursor:pointer;box-shadow:3px 3px 0 var(--nb-ink);
+  transition:transform 90ms,box-shadow 90ms}
+.nickrow button:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--nb-ink)}
+.nickrow button:disabled{opacity:.4}
+.nicknote{font-size:13px;color:var(--nb-mute);line-height:1.7;word-break:keep-all}
+/* ⚠️ 세 줄(이름·순위 / 최고 / 지역)이 들어가므로 줄 간격을 벌린다.
+   2026-09-02 석봉님 "너무 겹쳐 보인다" — 이 톤은 그림자가 5px 나와 있어
+   여백을 평소보다 넉넉히 줘야 붙어 보이지 않는다. */
+.mystat{font-size:15.5px;font-weight:800;margin-bottom:11px;word-break:keep-all;line-height:1.7}
+.mystat em{font-style:normal;color:var(--nb-ink2);font-weight:600;font-size:13.5px}
+/* 평소엔 눈에 안 띄게. 오타를 쳤거나 마음이 바뀐 사람만 찾으면 된다 */
+.renlink{font-size:13px;color:var(--nb-mute);text-decoration:underline;text-underline-offset:2px}
+
+/* 순위표 — 머리줄은 먹판, 내 줄은 노랑. 그 둘만 눈에 들어오면 된다 */
+.board{margin-top:10px;background:#fff;border:var(--nb-line) solid var(--nb-ink);
+  box-shadow:5px 5px 0 var(--nb-ink);padding:0 13px 6px}
+.board .h{display:grid;grid-template-columns:34px minmax(0,1fr) 44px 62px 52px;gap:8px;
+  font-size:12px;letter-spacing:.04em;color:var(--nb-mute);font-weight:800;
+  padding:11px 0 8px;border-bottom:2.5px solid var(--nb-ink)}
+.board .r{display:grid;grid-template-columns:34px minmax(0,1fr) 44px 62px 52px;gap:8px;
+  font-size:14.5px;padding:11px 0;border-bottom:1.5px dashed #DCD5C2;
+  font-variant-numeric:tabular-nums;align-items:center}
+.board .r:last-child{border-bottom:0}
+.board .r.me{background:var(--sun);margin:0 -13px;padding:11px 13px;font-weight:800;border-bottom:0}
+.board .r .nk{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:800}
+.board .r .n1{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:16px;color:var(--nb-mute)}
+.board .r:nth-child(2) .n1,.board .r:nth-child(3) .n1,.board .r:nth-child(4) .n1{color:var(--pop)}
+.board .num{text-align:right;font-weight:800}
+.board .empty{font-size:14.5px;color:var(--nb-ink2);padding:18px 0;text-align:center}
+
+/* 지역 대항전 — 개인 표와 같은 뼈대를 쓰되 칸을 셋으로 줄인다 */
+/* 🔴 세금 랭킹 표는 칸이 셋뿐이다(순위·이름·기록).
+   퀴즈 표(다섯 칸)의 격자를 그대로 쓰면 기록 칸이 좁아 「12년 4개월」이 두 줄로 접힌다.
+   그래서 이 표만 따로 잡는다 — 기록은 줄바꿈 없이 한 줄로. */
+#gBoard .h, #gBoard .r{grid-template-columns:30px minmax(0,1fr) auto}
+#gBoard .num{white-space:nowrap}
+#gBoard .h span:nth-child(n+4), #gBoard .r span:nth-child(n+4){display:none}
+.rboard .r{grid-template-columns:30px minmax(0,1fr) auto 46px}
+.rboard .num{white-space:nowrap}
+/* 퀴즈 지역표는 칸이 다섯(순위·지역·맞힌 수·평균 시간·인원) */
+#rboard .r{grid-template-columns:28px minmax(0,1fr) 54px 54px 44px;font-size:13.5px}
+/* 이름 옆의 지역 등수 — 「한강뷰(서울 2위)」 */
+.board .rg{font-size:12.5px;color:var(--nb-mute);font-weight:700;margin-left:3px}
+.rboard{margin-top:32px;background:#fff;border:var(--nb-line) solid var(--nb-ink);
+  box-shadow:5px 5px 0 var(--nb-ink);padding:0 13px 6px}
+.bhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+  font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:17px;letter-spacing:-.01em;
+  padding:0 0 6px;margin-top:6px}
+.bhead span{font-family:Pretendard,sans-serif;font-size:12.5px;color:var(--nb-mute);font-weight:700}
+/* 🔑 「개인 랭킹(전국)」 — 지역 순위와 나란히 놓이므로 **무엇의 순위인지** 밝힌다
+   (2026-09-02 석봉님 *"개인 랭킹 이라기 보다는 전국 랭킹 이라고 표현해주자"*).
+   ⚠️ `.bhead` 가 `space-between` 이라 제목과 「(전국)」을 형제로 두면 **가운데로 벌어진다**
+      — `<b>` 로 한 덩어리로 묶어야 붙는다(2026-09-02 라이브 화면에서 확인). */
+.bhead > b{font-weight:inherit;display:flex;align-items:baseline}
+.bhead .scope{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;
+  font-size:17px;color:var(--pop);letter-spacing:-.01em;margin-left:1px}
+.bhead .scope::before{content:"(" }
+.bhead .scope::after{content:")"}
+/* 보드가 옮겨 다니는 자리. 시작 화면과 결과 화면이 같은 보드를 나눠 쓴다. */
+.bslot{margin-top:22px}
+.rboard .rh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+  font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:17px;letter-spacing:-.01em;
+  padding:11px 0 8px;border-bottom:2.5px solid var(--nb-ink)}
+.rboard .rh span{font-family:Pretendard,sans-serif;font-size:12.5px;color:var(--nb-mute);font-weight:700}
+.rboard .r{display:grid;grid-template-columns:34px minmax(0,1fr) 62px 52px;gap:8px;
+  font-size:14.5px;padding:11px 0;border-bottom:1.5px dashed #DCD5C2;
+  font-variant-numeric:tabular-nums;align-items:center}
+.rboard .r:last-child{border-bottom:0}
+.rboard .r.me{background:var(--sun);margin:0 -13px;padding:11px 13px;font-weight:800;border-bottom:0}
+.rboard .r .nm{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rboard .r .n1{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:16px;color:var(--nb-mute)}
+.rboard .num{text-align:right;font-weight:800}
+.rboard .empty{font-size:14.5px;color:var(--nb-ink2);padding:18px 0;text-align:center}
+/* ── 지역 안 명단 (2026-09-02 석봉님 "지역내 순위는 어떻게 확인해?") ──
+   지역 줄을 누르면 그 지역 사람들이 펼쳐진다. 내 지역은 처음부터 펼쳐 둔다. */
+.rboard .rrow{cursor:pointer;user-select:none}
+.rboard .rrow .nm{display:flex;align-items:center;gap:5px}
+.caret{width:0;height:0;border-left:4.5px solid transparent;border-right:4.5px solid transparent;
+  border-top:5.5px solid var(--nb-mute);transition:transform .15s;flex:0 0 auto}
+.rboard .rrow.on .caret{transform:rotate(180deg)}
+.rboard .rrow.on{border-bottom:0}
+.rmem{background:var(--paper);border:2px solid var(--nb-ink);margin:0 0 9px;padding:7px 10px}
+/* ⚠️ 기록 칸을 58px 로 뒀더니 「1년 10개월」이 **두 줄로 꺾였다**(2026-09-02 라이브).
+   세금 피하기 기록은 「N년 NN개월」이라 한글 포함 8자까지 간다 — 넉넉히 주고
+   `nowrap` 으로 못 박는다. 대신 전국 칸을 줄여 폭을 맞췄다. */
+.mrow{display:grid;grid-template-columns:34px minmax(0,1fr) auto 54px;gap:7px;
+  align-items:baseline;padding:6px 2px;font-size:13.5px;
+  border-bottom:1px dotted var(--nb-mute)}
+.mrow:last-child{border-bottom:0}
+.mrow.me{background:var(--sun);margin:0 -10px;padding:6px 10px;font-weight:800}
+.mrow .ln{font-weight:800;color:var(--pop)}
+.mrow .mn{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mrow .ms{text-align:right;font-weight:800;white-space:nowrap}
+.mrow .mg{text-align:right;font-size:11.5px;color:var(--nb-mute);font-weight:700;white-space:nowrap}
+.mnone{font-size:13px;color:var(--nb-mute);padding:6px 2px}
+/* 전국 10위 밖인 내 줄 앞의 생략 표시 */
+.board .gap{text-align:center;color:var(--nb-mute);font-weight:800;letter-spacing:3px;
+  padding:2px 0 4px}
+.nickrow select{flex:1 1 0;min-width:0;font-family:inherit;font-size:15.5px;font-weight:700;padding:12px 13px;
+  border:2.5px solid var(--nb-ink);border-radius:0;background:#fff;color:var(--nb-ink);
+  -webkit-appearance:none;appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,var(--nb-ink) 50%),
+                   linear-gradient(135deg,var(--nb-ink) 50%,transparent 50%);
+  background-position:calc(100% - 19px) calc(50% + 1px),calc(100% - 14px) calc(50% + 1px);
+  background-size:6px 6px,6px 6px;background-repeat:no-repeat}
+.nickrow select:focus{outline:none;box-shadow:3px 3px 0 var(--nb-ink)}
+
+/* ── 허브: 탭 + 게시글 목록 (2026-08-31 석봉님 구상) ──
+   장르를 탭으로 가르고 그 안에 게임이 하나씩 쌓인다. 새 게임이 붙어도 구조가 안 흔들린다. */
+.hub-l{color:var(--nb-ink2);font-size:15.5px;line-height:1.8;margin:0 0 18px;word-break:keep-all}
+.hub-hint{color:var(--nb-mute);font-size:14px;font-weight:700}
+/* 🔴 2026-09-01 석봉님 "퀴즈하고 밸런스 게임이 안 보여".
+   화면에는 멀쩡히 있었다 — **탭이 눌러야 하는 버튼으로 안 읽힌 것**이다.
+   밑줄 방식은 고른 탭만 검고 나머지가 회색이라, 액션만 있는 페이지처럼 보인다.
+   그래서 **알약 버튼**으로 바꿨다. 고른 것은 검게 채우고 나머지는 테두리를 둘러
+   "여기도 누를 수 있다"가 한눈에 보이게 한다. */
+/* 탭 — 서류철처럼 붙는다. 고른 것만 노랑으로 올라오고 나머지는 뒤로 물러난다.
+   ⚠️ 알약 버튼에서 파일 탭으로 바꿨지만 **"여기도 누를 수 있다"가 보여야 한다**는
+      2026-09-01 지적은 그대로다 — 안 고른 탭도 같은 굵기의 먹선을 두른다. */
+.tabs{display:flex;gap:0;margin:18px 0 0;position:relative;z-index:2}
+.tabs button{flex:1 1 0;background:#EDE8DA;border:var(--nb-line) solid var(--nb-ink);border-bottom:0;
+  border-radius:0;font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;cursor:pointer;font-size:17px;
+  color:#7A7568;padding:11px 0 9px;letter-spacing:-.01em;margin-right:-3px;position:relative;top:3px}
+.tabs button:last-child{margin-right:0}
+.tabs button.on{background:var(--sun);color:var(--nb-ink);top:0;padding-bottom:12px;z-index:1}
+.tabs .cnt{font-family:Pretendard,sans-serif;font-size:12.5px;color:#8A8478;font-weight:700;margin-left:5px}
+.tabs button.on .cnt{color:#6A6355}
+
+.glist{border:var(--nb-line) solid var(--nb-ink);box-shadow:5px 5px 0 var(--nb-ink);background:#fff;
+  padding:13px 12px;margin-bottom:22px}
+.glist.hide{display:none}
+.gitem{display:flex;gap:13px;width:100%;text-align:left;background:var(--paper);
+  border:2.5px solid var(--nb-ink);box-shadow:4px 4px 0 var(--nb-ink);border-radius:0;
+  padding:11px;margin-bottom:11px;cursor:pointer;font-family:inherit;color:var(--nb-ink);
+  align-items:stretch;transition:transform 90ms,box-shadow 90ms}
+.gitem:last-child{margin-bottom:0}
+.gitem:active{transform:translate(4px,4px);box-shadow:0 0 0 var(--nb-ink)}
+.gitem .th{flex:0 0 86px;height:86px;border:2.5px solid var(--nb-ink);border-radius:0;overflow:hidden;
+  background:var(--nb-ink);display:grid;place-items:center}
+.gitem .th img{width:100%;height:100%;object-fit:cover}
+.gitem .tx{flex:1 1 0;min-width:0;display:flex;flex-direction:column;justify-content:center}
+.gitem .gt{display:block;font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:21px;
+  letter-spacing:-.01em;line-height:1.25;word-break:keep-all}
+.gitem .gs{display:block;font-size:13.5px;color:var(--nb-ink2);margin-top:5px;line-height:1.6;word-break:keep-all}
+.gitem .gm{display:block;font-size:12.5px;font-weight:700;color:var(--nb-mute);margin-top:7px}
+.gitem .gm b{color:var(--pop);font-weight:900}
+/* 새로 붙은 게임 표시 — 목록에서 눈이 먼저 가야 첫 판이 일어난다 */
+.badge{display:inline-block;background:var(--nb-lose);color:#fff;font-size:10.5px;font-weight:800;
+  padding:2px 6px;border:2px solid var(--nb-ink);margin-left:6px;vertical-align:3px;
+  font-family:Pretendard,sans-serif;letter-spacing:0}
+/* 세금 피하기 — 계기판을 노란 띠로 만들어 판 위에 얹는다. 점수와 판 둘만 남긴다 */
+.thud{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:var(--sun);border:var(--nb-line) solid var(--nb-ink);border-bottom:0;
+  padding:10px 13px;margin:16px 0 0}
+.thud .ts .k{display:block;font-size:11px;color:#6A6355;font-weight:800;letter-spacing:.12em}
+.thud .ts b{display:block;font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:31px;
+  letter-spacing:-.01em;line-height:1.1;margin-top:2px}
+.tnote{display:inline-block;margin-top:3px;color:#6A6355;font-size:12.5px;font-weight:700}
+/* 소리 시험 결과 — "안 들린다"의 원인을 화면에서 가른다(2026-09-01) */
+.tdiag{margin-top:12px;padding:13px 15px;border-radius:0;font-size:14px;line-height:1.7;
+     background:#fff;border:2.5px dashed var(--nb-ink);color:var(--nb-ink2);word-break:keep-all}
+.tdiag.bad{border-color:var(--nb-lose);border-style:solid;color:var(--nb-ink)}
+.tdiag b{font-weight:800;color:var(--nb-ink)}
+.tright{display:flex;align-items:center;gap:8px}
+.tsh{font-size:12px;font-weight:900;color:#fff;background:var(--pop);border:2.5px solid var(--nb-ink);
+     border-radius:0;padding:5px 10px;letter-spacing:-.01em;white-space:nowrap}
+/* 소리 끄기 — 게임 중에도 누를 수 있어야 해서 손가락이 닿는 크기로 둔다 */
+.tsnd{font-family:inherit;font-size:15px;font-weight:900;color:var(--nb-ink);background:#fff;
+     border:2.5px solid var(--nb-ink);border-radius:0;padding:6px 11px;cursor:pointer;
+     box-shadow:3px 3px 0 var(--nb-ink);letter-spacing:-.01em;white-space:nowrap;
+     transition:transform 90ms,box-shadow 90ms}
+.tsnd:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--nb-ink)}
+.tsnd.off{color:var(--nb-mute);background:#EDE8DA}
+/* ⚠️ 이 규칙이 위의 `.meter .tsnd` 보다 아래에 있어 이긴다 — 둘을 여기서 합친다.
+   center 로 두면 「남은 시간」 캡션 높이에 떠올라 줄이 어긋나 보인다(2026-09-01). */
+.meter .tsnd{align-self:flex-end;margin-left:auto;order:2}
+.brow{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.brow .qn{margin-bottom:0}
+/* 한마디 줄 — 판 바깥이라 떨어지는 세금을 가리지 않는다.
+   ⚠️ 빈 줄일 때도 자리를 지켜야 판이 위아래로 튀지 않는다.
+      그래서 visibility 로 숨긴다(display 로 지우면 판이 통째로 뛴다). */
+/* ⚠️ 빈 띠까지 진한 노랑이면 계기판과 이어져 **커다란 노란 덩어리**가 된다
+   (2026-09-01 라이브에서 확인). 평소엔 옅게 두고 글자가 붙을 때만 진해진다.
+   🔴 2026-09-02 석봉님 "이런 멘트가 눈에 잘 안 띄는데 띄도록 수정".
+      노랑 위의 검은 글씨는 노란 계기판 바로 아래라 **한 덩어리로 읽혔다.**
+      그래서 켜질 때 **먹판에 노란 글씨로 뒤집고**, 글자를 키우고, 살짝 튀어오르게 했다.
+      색이 반전되면 「방금 뭐가 떴다」가 눈에 걸린다. */
+.tsay{height:40px;display:flex;align-items:center;justify-content:center;
+  background:#FFF6D9;border-left:var(--nb-line) solid var(--nb-ink);
+  border-right:var(--nb-line) solid var(--nb-ink);border-bottom:2.5px solid var(--nb-ink);
+  font-size:15px;font-weight:800;letter-spacing:-.02em;color:var(--nb-ink);
+  padding:0 12px;text-align:center;word-break:keep-all;transition:background 120ms}
+/* 띠 자체는 늘 보인다 — 글자만 비었다 채워졌다 한다(JS 가 textContent 를 갈아 끼운다).
+   `.on` 은 글자가 있을 때 붙는다. 여기서 **색을 뒤집어** 눈에 걸리게 한다. */
+.tsay.on{background:var(--nb-ink);color:var(--sun);font-size:15.5px}
+/* 새 멘트가 올 때마다 JS 가 이 클래스를 다시 붙여 애니메이션을 재생한다.
+   ⚠️ 같은 클래스를 그냥 두면 두 번째 멘트부터 아무 일도 안 일어난다(그게 「안 띈다」의 절반이다). */
+.tsay.pop{animation:saypop 340ms cubic-bezier(.2,1.5,.4,1)}
+@keyframes saypop{
+  0%{transform:scale(.86);opacity:.35}
+  55%{transform:scale(1.06);opacity:1}
+  100%{transform:scale(1);opacity:1}
+}
+/* ⚠️ 테두리는 **판(.tstage)** 에 준다. 캔버스에 주면 CSS 폭 W 에 테두리 6px 이 더해져
+   위의 계기판·한마디 띠보다 6px 넓어진다(셋이 한 덩어리로 보여야 한다). */
+.tstage{display:flex;justify-content:center;background:var(--paper);
+     border:var(--nb-line) solid var(--nb-ink);border-top:0;box-shadow:5px 5px 0 var(--nb-ink)}
+.tstage canvas{border:0;border-radius:0;background:var(--paper);
+     touch-action:none;display:block}   /* touch-action 을 빼면 게임 중에 페이지가 스크롤된다 */
+/* 조작 안내 — 판 안에 그리던 것을 빼냈다(글자가 세금에 묻혔다).
+   2026-09-02: 「초록=무적」과 「방향키」를 여기서 늘 보이게 한다. */
+.tfoot{display:flex;align-items:center;justify-content:space-between;gap:8px;
+     margin-top:14px;font-size:12.5px;font-weight:700;color:var(--nb-ink2);word-break:keep-all}
+.tfoot .k{background:#fff;border:2px solid var(--nb-ink);padding:6px 9px;line-height:1.35}
+.tfoot .k b{font-weight:900;color:var(--nb-ink)}
+/* 「초록」이라는 낱말을 실제 초록으로 — 글자만으로는 어느 상자인지 안 와닿는다 */
+.tfoot .k:first-child b{color:#1E8A50}
+.ttip{background:#fff;border:2.5px solid var(--nb-ink);box-shadow:4px 4px 0 var(--nb-ink);
+     padding:13px 15px;margin:24px 0 6px;
+     font-size:15.5px;font-weight:700;line-height:1.7;color:var(--nb-ink2);word-break:keep-all}
+.tmascot{text-align:center;margin:2px 0 14px}
+.tmascot img{width:170px;height:auto}
+.tbest{text-align:center;font-size:15px;color:var(--nb-ink2);font-weight:800;margin:22px 0 4px}
+.tbest.rec{color:var(--pop);font-weight:900}
+.gempty{border:2.5px dashed var(--nb-ink);border-radius:0;padding:26px 18px;text-align:center;
+  color:var(--nb-mute);font-size:14.5px;line-height:1.7;word-break:keep-all}
+
+.backlink{display:inline-block;font-size:14px;font-weight:800;color:var(--nb-ink);text-decoration:none;
+  background:#fff;border:2.5px solid var(--nb-ink);box-shadow:3px 3px 0 var(--nb-ink);
+  padding:8px 13px;margin-top:22px}
+
+/* 인트로에 붙는 랭킹 미리보기 */
+.rankpeek{border:var(--nb-line) solid var(--nb-ink);border-radius:0;background:#fff;
+  box-shadow:5px 5px 0 var(--nb-ink);padding:14px 15px;margin:0 0 20px}
+.rankpeek .h{display:flex;justify-content:space-between;align-items:baseline;
+  border-bottom:2.5px solid var(--nb-ink);padding-bottom:7px;margin-bottom:6px}
+.rankpeek .h b{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:16px;letter-spacing:-.01em}
+.rankpeek .h span{font-size:12px;color:var(--nb-mute);font-weight:700}
+.rankpeek ol{margin:0;padding:0;list-style:none}
+.rankpeek li{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:10px;align-items:center;
+  font-size:14.5px;padding:7px 0;font-variant-numeric:tabular-nums}
+.rankpeek li + li{border-top:1.5px dashed #DCD5C2}
+.rankpeek li .r{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:16px;
+  color:var(--nb-mute);text-align:center}
+.rankpeek li .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:800}
+.rankpeek li .v{color:var(--nb-ink);font-size:13.5px;font-weight:800}
+.rankpeek li:first-child .r,.rankpeek li:nth-child(2) .r,.rankpeek li:nth-child(3) .r{color:var(--pop)}
+/* 🔴 빈 안내문은 격자에서 빼낸다(2026-09-01 석봉님 첨부).
+   `.rankpeek li` 가 grid 라 안내문이 **첫 칸(22px)에 갇혀 한 글자씩 세로로** 떨어졌다.
+   실측: 높이 611px. 줄이 하나뿐인 안내문은 그냥 블록이면 된다. */
+.rankpeek li.none{display:block;font-size:14px;color:var(--nb-mute);font-weight:700;
+  padding:8px 0;line-height:1.7;word-break:keep-all;border-top:0}
+/* 지역 순위 — 개인 랭킹과 같은 목록. 사이만 점선으로 가른다 */
+.rankpeek .rsub{margin-top:14px;padding-top:0;border-top:0}
+.rankpeek .rsub .h{margin-bottom:6px}
+.rankpeek li .me{color:var(--pop);font-weight:900}
+.rankpeek li .cnt{color:var(--nb-mute);font-weight:700;font-size:12.5px;margin-left:4px}
+
+/* ── 밸런스 게임 ── */
+.qn{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:13.5px;letter-spacing:.05em;
+  color:#6A6355;margin-bottom:8px}
+.qn b{color:var(--nb-ink);letter-spacing:-.01em;font-size:15px}
+.qt{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:28px;letter-spacing:-.02em;
+  line-height:1.28;margin:0 0 22px;word-break:keep-all}
+/* 🔑 두 장을 살짝 어긋나게 기울인다 — 스티커를 손으로 붙인 것처럼.
+   대칭으로 놓으면 표가 되고, 표는 고르고 싶은 마음이 안 든다. */
+.picks{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.pick{position:relative;border:var(--nb-line) solid var(--nb-ink);background:#fff;border-radius:0;
+  padding:34px 13px 24px;box-shadow:5px 5px 0 var(--nb-ink);text-align:center;cursor:pointer;
+  font-family:inherit;color:var(--nb-ink);transform:rotate(-.7deg);
+  transition:transform 90ms,box-shadow 90ms}
+/* A·B 딱지를 카드 모서리에 붙인다 — 어느 쪽을 고르는지 말이 아니라 기호로 보이게 */
+.pick::before{content:"A";position:absolute;left:-3px;top:-3px;width:30px;height:30px;
+  background:var(--nb-ink);color:var(--paper);font-family:'Black Han Sans',Pretendard,sans-serif;
+  font-weight:400;font-size:16px;display:grid;place-items:center}
+.pick:nth-child(2){transform:rotate(.6deg)}
+.pick:nth-child(2)::before{content:"B";background:var(--pop)}
+.pick:active,.pick:nth-child(2):active{transform:translate(5px,5px);box-shadow:0 0 0 var(--nb-ink)}
+.pick .t{display:block;font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:20px;
+  letter-spacing:-.01em;line-height:1.3;word-break:keep-all}
+.pick .s{display:block;font-size:13.5px;color:var(--nb-ink2);margin-top:7px;line-height:1.6;word-break:keep-all}
+.vs{text-align:center;font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:14px;
+  color:var(--nb-mute);letter-spacing:.1em;margin:14px 0 0}
+.bsteps{display:flex;gap:5px;margin:26px 0 20px}
+.bsteps i{flex:1 1 0;height:10px;border:2px solid var(--nb-ink);background:#fff}
+.bsteps i.done{background:var(--pop)}
+.bsteps i.on{background:var(--sun)}
+.qres{background:#fff;border:2.5px solid var(--nb-ink);box-shadow:4px 4px 0 var(--nb-ink);
+  padding:0;margin-bottom:16px}
+.qres .cq{background:var(--nb-ink);color:var(--paper);font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;
+  font-size:14px;letter-spacing:.05em;padding:8px 13px;margin-bottom:0}
+.qres .ct{font-size:17px;font-weight:800;letter-spacing:-.02em;margin:0;padding:13px 14px 12px;
+  word-break:keep-all;line-height:1.45}
+.bars{margin:0;padding:0 14px 12px}
+.bar{margin-bottom:14px}
+.bar:last-child{margin-bottom:0}
+.bar .lb{display:flex;justify-content:space-between;align-items:baseline;font-size:14.5px;margin-bottom:6px}
+.bar .lb b{font-size:15px;font-weight:800;letter-spacing:-.02em}
+.bar .lb .pc{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-variant-numeric:tabular-nums;font-size:19px}
+.bar .tr{height:20px;background:#fff;border:2.5px solid var(--nb-ink);border-radius:0;overflow:hidden}
+.bar .tr i{display:block;height:100%;background:#C6C0B2;border-radius:0;transition:width 400ms ease}
+.bar.mine .tr i{background:var(--pop)}
+.bar.mine .lb b:after{content:" 내 선택";font-size:12px;color:var(--nb-mute);font-weight:700;letter-spacing:0}
+.tot{font-size:13.5px;font-weight:700;color:var(--nb-ink2);margin:0;padding:0 14px 4px}
+/* 집계 기간 — 표가 언제 것인지 밝힌다(2026-09-01) */
+/* 4지선다 보기 — 손가락으로 누르는 자리라 넉넉하게. 네 장 전부 눌린다 */
+.opts{display:grid;gap:11px;margin-top:4px}
+.opt{display:grid;grid-template-columns:34px 1fr;align-items:center;gap:11px;width:100%;text-align:left;
+  background:#fff;border:2.5px solid var(--nb-ink);border-radius:0;box-shadow:4px 4px 0 var(--nb-ink);
+  padding:13px 13px;font-family:inherit;color:var(--nb-ink);cursor:pointer;
+  transition:transform 90ms,box-shadow 90ms}
+.opt:active{transform:translate(4px,4px);box-shadow:0 0 0 var(--nb-ink)}
+.opt .k{width:34px;height:34px;border-radius:0;background:var(--nb-ink);color:var(--paper);
+  font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:17px;display:grid;place-items:center}
+.opt .t{font-size:15.5px;font-weight:700;line-height:1.5;word-break:keep-all}
+/* 결과에서 보기 넷을 다시 보여 준다 — 무엇을 골랐고 무엇이 답이었나.
+   맞은 것은 초록으로 칠하고, 안 고른 보기는 점선으로 흐린다. */
+.eans{margin:0;padding:0 14px 12px;display:grid;gap:8px}
+.ea{display:grid;grid-template-columns:26px 1fr auto;align-items:center;gap:10px;
+  border:2px solid var(--nb-ink);padding:9px 10px;font-size:14px;color:var(--nb-ink2);background:#fff}
+.ea .k{width:26px;height:26px;border-radius:0;background:var(--nb-ink);color:var(--paper);
+  font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:13px;display:grid;place-items:center}
+.ea .t{word-break:keep-all;font-weight:700}
+.ea .m{font-size:11.5px;font-weight:900;white-space:nowrap}
+.ea.ok{background:var(--nb-win);border-color:var(--nb-ink);color:#fff}
+.ea.ok .k{background:#fff;color:var(--nb-win)}
+.ea.ok .m{color:#fff}
+.ea.no{border-style:dashed;color:var(--nb-mute)}
+.ea.no .k{background:#fff;color:var(--nb-mute);border:2px solid #DCD5C2}
+.ea.no .m{color:var(--nb-mute)}
+/* 안 고르고 안 맞은 보기 — 있는 듯 없는 듯 */
+.ea:not(.ok):not(.no){border-style:dashed;border-color:#DCD5C2}
+.ea:not(.ok):not(.no) .k{background:#fff;color:var(--nb-mute);border:2px solid #DCD5C2}
+.bperiod{font-size:13.5px;color:var(--nb-mute);margin:-10px 0 20px;font-weight:700}
+/* 해설 — 종이를 한 장 덧댄 것처럼 점선으로 두른다 */
+.fact{border:2.5px dashed var(--nb-ink);background:var(--paper);padding:11px 12px;margin:0 14px 14px}
+.fact .h{font-family:'Black Han Sans',Pretendard,sans-serif;font-weight:400;font-size:13px;letter-spacing:.06em;
+  color:#6A6355;margin-bottom:7px}
+.fact p{margin:0 0 9px;font-size:14.5px;line-height:1.8;color:var(--nb-ink2);word-break:keep-all}
+.fact p:last-of-type{margin-bottom:0}
+.fact a{display:inline-block;margin-top:11px;font-size:12.5px;font-weight:800;color:#fff;
+  background:var(--nb-ink);text-decoration:none;padding:6px 11px}
+
+.foot{font-size:13.5px;color:var(--nb-ink2);line-height:1.85;margin-top:36px;
+  border-top:2.5px solid var(--nb-ink);padding-top:14px;word-break:keep-all}
+.hide{display:none}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="brand" href="index.html">석봉 부동산 정보방</a>
+  <nav>
+    <a href="index.html">홈</a>
+    <a href="map.html">실거래지도</a>
+    <a href="apply.html">청약</a>
+    <a href="auction.html">경매·공매</a>
+    <a href="%EC%A7%80%ED%91%9C.html">금리·지표</a>
+    <a href="%EA%B8%80.html">리포트</a>
+  </nav>
+</header>
+
+<div class="q-wrap">
+
+  <!-- 허브 — 탭으로 장르를 고르고, 그 안에서 게임을 고른다 -->
+  <section id="hub" class="scr">
+    <div class="eyebrow">석봉 놀이터</div>
+    <h1 class="q">뭐 하고 놀까요?</h1>
+    <p class="hub-l">우리가 매일 받는 <b>진짜 실거래 자료</b>로 만듭니다.<br><span class="hub-hint">아래에서 <b>놀이 종류</b>를 골라 보세요.</span></p>
+
+    <div class="tabs">
+      <button id="tabTax" class="on">액션<span class="cnt">2</span></button>
+      <button id="tabQuiz">퀴즈<span class="cnt">1</span></button>
+      <button id="tabBal">밸런스<span class="cnt">1</span></button>
+    </div>
+
+    <div class="glist" id="listTax">
+      <button class="gitem" id="goTax">
+        <span class="th"><img src="assets/th_tax.png?v=2" alt=""></span>
+        <span class="tx">
+          <span class="gt">세금 피하기</span>
+          <span class="gs">취득세도 양도세도 위에서 떨어집니다. 집 한 채를 지켜 보세요.</span>
+          <span class="gm">한 손으로 · <b>얼마나 버티나</b></span>
+        </span>
+      </button>
+      <button class="gitem" id="goStack">
+        <span class="th"><img src="assets/th_stack.png?v=1" alt=""></span>
+        <span class="tx">
+          <span class="gt">층 올리기<span class="badge">NEW</span></span>
+          <span class="gs">좌우로 움직이는 층을 눌러 얹습니다. 어긋난 만큼 잘려 나갑니다.</span>
+          <span class="gm">탭 하나로 · <b>몇 층까지</b></span>
+        </span>
+      </button>
+      <div class="gempty">새로운 액션 게임을 준비하고 있습니다.</div>
+    </div>
+
+    <div class="glist hide" id="listQuiz">
+      <button class="gitem" id="goQuiz">
+        <span class="th"><img src="assets/th_quiz.png?v=2" alt=""></span>
+        <span class="tx">
+          <span class="gt">이 집, 얼마일까요?</span>
+          <span class="gs">신고된 진짜 거래 다섯 건. 얼마에 팔렸을지 맞혀 보세요.</span>
+          <span class="gm">5문제 · 문제당 20초 · <b>랭킹</b></span>
+        </span>
+      </button>
+      <button class="gitem" id="goEcon">
+        <span class="th"><img src="assets/th_econ.png?v=2" alt=""></span>
+        <span class="tx">
+          <span class="gt">부동산 경제상식</span>
+          <span class="gs">금리·제도·용어. 알 것 같은데 막상 헷갈리는 것들.</span>
+          <span class="gm" id="econMeta">4지선다 10문제 · <b>바로 채점</b></span>
+        </span>
+      </button>
+      <div class="gempty">새로운 퀴즈를 준비하고 있습니다.</div>
+    </div>
+
+    <div class="glist hide" id="listBal">
+      <!-- 카드는 세트 수만큼 JS 가 그린다(아래 인라인 스크립트) -->
+      <div class="gempty">밸런스 게임을 불러오는 중입니다.</div>
+    </div>
+  </section>
+
+  <!-- 시작 -->
+  <section id="intro" class="scr hide">
+    <div class="eyebrow">실거래가 맞히기</div>
+    <h1 class="q">이 집, 얼마일까요?</h1>
+    <p class="lead">국토교통부에 신고된 진짜 거래 다섯 건입니다.<br>얼마에 팔렸을지 맞혀 보세요.</p>
+    <div class="rules">
+      다섯 문제 · 오차 <b>10%</b> 안에 들면 정답 · 문제당 <b>20초</b><br>
+      정답은 다 푼 뒤에 한꺼번에 공개됩니다.
+    </div>
+
+    <!-- 이번 주 랭킹 미리보기 — 시작 전에 보여 줘야 도전할 마음이 생긴다 -->
+    <div class="rankpeek" id="peek">
+      <div class="h"><b>랭킹</b><span>역대 기록</span></div>
+      <ol id="peekList"><li class="none">불러오는 중…</li></ol>
+    </div>
+
+    <button class="btn full" id="start">시작하기</button>
+    <div class="mine-best" id="bestIntro"></div>
+    <div style="text-align:center"><a href="#" class="backlink toHub">다른 놀이 해보기</a></div>
+  </section>
+
+  <!-- 문제 -->
+  <section id="play" class="scr hide">
+    <div class="meter">
+      <div class="steps" id="steps"></div>
+      <button type="button" class="tsnd sndbtn" aria-pressed="true">♪ 소리 켜짐</button>
+      <span class="left" id="left"><span class="cap">남은 시간</span><b id="tsec">20</b><span class="u">초</span></span>
+    </div>
+    <div class="tline" id="tline"><i id="tfill"></i></div>
+
+    <div id="qbox">
+      <div class="place" id="place"></div>
+      <div class="apt" id="apt"></div>
+      <div class="spec" id="spec"></div>
+    </div>
+
+    <div class="guess">
+      <div class="v" id="val"></div>
+      <div class="l">내가 생각한 가격</div>
+      <input type="range" id="rng">
+      <div class="ends"><span id="lo"></span><span id="hi"></span></div>
+    </div>
+
+    <button class="btn full" id="submit">이 가격으로 확정</button>
+    <div class="trail" id="trail"></div>
+  </section>
+
+  <!-- 채점 대기 -->
+  <section id="wait" class="scr hide">
+    <div class="mid">
+      <h2>다섯 문제를 다 푸셨습니다</h2>
+      <p>이제 실제 거래가와 맞춰 보겠습니다.</p>
+      <button class="btn full" id="reveal">결과 확인하기</button>
+    </div>
+  </section>
+
+  <!-- 결과 -->
+  <section id="result" class="scr hide">
+    <div class="score">
+      <div class="l">결과</div>
+      <div class="n"><span id="hit">0</span><em> / 5</em></div>
+      <div class="tag" id="tag"></div>
+      <div class="meta" id="meta"></div>
+    </div>
+    <div id="list"></div>
+    <div class="tap" id="tap">항목을 누르면 그 단지의 최근 시세가 나옵니다</div>
+
+    <!-- 랭킹 -->
+    <div class="rank-cta" id="rankCta">
+      <h3 id="rankTitle">이 점수, 랭킹에 올리시겠어요?</h3>
+      <p id="rankDesc">주간 랭킹에서 다른 분들과 견줘 보세요. 닉네임만 있으면 됩니다.</p>
+
+      <div id="rankStep1">
+        <button class="btn full" id="rankGo">랭킹에 올리기</button>
+      </div>
+
+      <div id="rankStep2" class="hide">
+        <div class="mystat" id="rankMine"></div>
+        <div class="nickrow">
+          <input id="nick" type="text" maxlength="12" placeholder="랭킹에 올릴 이름" autocomplete="off">
+        </div>
+        <!-- 🔴 지역 대항전(2026-09-01 석봉님) — 개인 순위는 1등만 자랑하지만
+             지역 순위는 뒤처진 동네가 더 시끄럽다. 못하는 사람도 참여할 이유가 생긴다.
+             ⚠️ 닉네임과 마찬가지로 **첫 등록 때만** 받는다(잘 나온 판마다 지역을 갈아타면 순위가 흔들린다). -->
+        <div class="nickrow">
+          <select id="region">
+            <option value="">우리 지역 고르기</option>
+          </select>
+          <button id="nickOk">등록</button>
+        </div>
+        <div class="nicknote">2~12자 · 랭킹에는 이 이름과 점수, 지역만 보입니다.<br>
+          지역은 <b>한 번만</b> 고를 수 있습니다. 같은 지역끼리 평균 기록으로 겨룹니다.</div>
+      </div>
+
+      <div id="rankStep3" class="hide">
+        <div class="mystat" id="rankDone"></div>
+        <a href="#" id="renameGo" class="renlink">이름 바꾸기</a>
+      </div>
+    </div>
+
+    <div id="boardWrap" class="hide">
+      <div class="board" id="board"></div>
+      <div class="rboard" id="rboardWrap">
+        <div class="rh">지역 순위 <span>맞힌 개수 합계</span></div>
+        <div id="rboard"></div>
+      </div>
+    </div>
+
+    <button class="btn full line" id="share">결과 공유하기</button>
+    <button class="btn full line" id="again">다시 하기</button>
+    <a class="btn full line" href="map.html" style="text-decoration:none">전국 실거래가 지도에서 보기</a>
+    <div style="text-align:center"><a href="#" class="backlink toHub">다른 놀이 해보기</a></div>
+  </section>
+
+  <!-- ══ 밸런스 게임 (로직은 assets/game_balance.js) ══ -->
+  <section id="bIntro" class="scr hide">
+    <div class="eyebrow">부동산 밸런스 게임</div>
+    <h1 class="q">당신의 선택은?</h1>
+    <p class="lead">정답이 없는 질문 다섯 개입니다.<br>고르고 나면 다른 분들의 선택과 <b>실제 거래가 어땠는지</b>를 보여드립니다.</p>
+    <div class="rules">
+      <b>스무 개</b> 가운데 <b>다섯 개</b>가 나옵니다 · 한 번 고르면 바꿀 수 없습니다<br>
+      다시 하면 다른 질문이 나옵니다. 수치는 국토교통부 실거래 신고분에서 뽑았습니다.
+    </div>
+    <button class="btn full" id="bStart">시작하기</button>
+    <div style="text-align:center"><a href="#" class="backlink toHub">다른 놀이 해보기</a></div>
+  </section>
+
+  <section id="bPlay" class="scr hide">
+    <div class="bsteps" id="bSteps"></div>
+    <div class="brow">
+      <div class="qn"><b id="bSetName"></b> · <span id="bQi">1</span> / <span id="bQn">5</span></div>
+      <button type="button" class="tsnd sndbtn" aria-pressed="true">♪ 소리 켜짐</button>
+    </div>
+    <div class="qt" id="bQt"></div>
+    <div class="picks">
+      <button class="pick" id="bPickA"><span class="t"></span><span class="s"></span></button>
+      <button class="pick" id="bPickB"><span class="t"></span><span class="s"></span></button>
+    </div>
+    <div class="vs">둘 중 하나</div>
+  </section>
+
+  <section id="bWait" class="scr hide">
+    <div class="mid">
+      <h2>다섯 개 다 고르셨습니다</h2>
+      <p>다른 분들은 어떻게 골랐는지,<br>그리고 실제 거래는 어땠는지 보여드리겠습니다.</p>
+      <button class="btn full" id="bReveal">결과 보기</button>
+    </div>
+  </section>
+
+  <section id="bEnd" class="scr hide">
+    <div class="eyebrow">결과</div>
+    <h1 class="q">당신의 선택</h1>
+    <p class="lead" id="bEndLead"></p>
+    <div class="bperiod" id="bPeriod"></div>
+    <div id="bCards"></div>
+    <button class="btn full" id="bShare">결과 공유하기</button>
+    <button class="btn full line" id="bAgain">다시 하기</button>
+    <div style="text-align:center"><a href="#" class="backlink toHub">다른 놀이 해보기</a></div>
+  </section>
+
+  <!-- ── 부동산 경제상식 (4지선다) ────────────────────────── -->
+  <section id="eIntro" class="scr hide">
+    <div class="eyebrow">부 동 산   경 제 상 식</div>
+    <h1 class="q">얼마나 알고 계신가요?</h1>
+    <p class="lead">금리·제도·용어에서 열 문제입니다.<br>알 것 같은데 막상 헷갈리는 것들만 골랐습니다.</p>
+    <div class="rules">
+      4지선다 <b>10문제</b> · 시간 제한 없음<br>
+      정답과 해설은 다 푼 뒤에 한꺼번에 보여드립니다.
+    </div>
+    <button class="btn full" id="eStart">시작하기</button>
+    <div style="text-align:center"><a href="#" class="backlink toHub">다른 놀이 해보기</a></div>
+  </section>
+
+  <section id="ePlay" class="scr hide">
+    <div class="bsteps" id="eSteps"></div>
+    <div class="brow">
+      <div class="qn"><span id="eQi">1</span> / <span id="eQn">10</span></div>
+      <button type="button" class="tsnd sndbtn" aria-pressed="true">♪ 소리 켜짐</button>
+    </div>
+    <div class="qt" id="eQt"></div>
+    <div class="opts" id="eOpts"></div>
+  </section>
+
+  <section id="eEnd" class="scr hide">
+    <div class="score">
+      <div class="l">경 제 상 식</div>
+      <div class="n" id="eScore">0 <em>/ 10</em></div>
+      <div class="tag" id="eTag"></div>
+    </div>
+    <div id="eCards"></div>
+    <button class="btn full" id="eShare">결과 공유하기</button>
+    <button class="btn full line" id="eAgain">다시 하기</button>
+    <div style="text-align:center"><a href="#" class="backlink toHub">다른 놀이 해보기</a></div>
+  </section>
+
+  <!-- ── 세금 피하기 (액션) ───────────────────────────────── -->
+  <section id="tIntro" class="scr hide">
+    <div class="eyebrow">액 션</div>
+    <h1 class="q">세금 피하기</h1>
+    <p class="lead">위에서 취득세가, 양도세가, 재산세가 떨어집니다.<br>집 한 채를 지키며 얼마나 버티는지 보세요.</p>
+    <div class="rules">
+      화면 아무 데나 손가락을 대고 좌우로 움직입니다 · <b>비과세</b>·<b>장기보유</b>를 먹으면 잠깐 무적<br>
+      1초가 한 달입니다. 오래 버틸수록 오래 가진 셈입니다.<br>
+      <span class="tnote">소리가 안 들리면 아이폰은 <b>측면 무음 스위치</b>를, 안드로이드는 <b>미디어 음량</b>을 확인해 주세요.</span>
+    </div>
+    <!-- 마스코트가 여기서 처음 인사한다. 게임 캔버스에 들어가는 그 집이다. -->
+    <div class="tmascot"><img src="assets/mascot_house.png?v=1" alt="" width="170"></div>
+    <!-- 🔴 시작 화면에 랭킹(2026-09-01 석봉님). 남들 기록을 보고 나서 시작해야 도전할 마음이 생긴다.
+         지역「간」과 지역「내」를 같이 보여준다 — 전국 1등은 멀지만 우리 동네 1등은 해볼 만하다. -->
+    <button class="btn full" id="tStart">시작하기</button>
+    <div class="bslot" id="tPeekSlot"></div>
+    <div style="text-align:center"><a href="#" class="backlink toHub">다른 놀이 해보기</a></div>
+  </section>
+
+  <section id="tPlay" class="scr hide">
+    <div class="thud">
+      <div class="ts"><span class="k">보유 기간</span><b id="tScore">0개월</b></div>
+      <div class="tright">
+        <span class="tsh hide" id="tShield">무적</span>
+        <button type="button" id="tSnd" class="tsnd sndbtn" aria-pressed="true">♪ 소리 켜짐</button>
+      </div>
+    </div>
+    <div class="tsay" id="tSay"></div>
+    <div class="tstage"><canvas id="tCv"></canvas></div>
+    <!-- 🔴 2026-09-02 석봉님 "초록 상자 먹으면 무적이라고 안내 필요, 방향키 조작도".
+         시작 화면 규칙에는 적혀 있었지만 **게임 중에는 볼 수 없었다** — 규칙을 읽고
+         들어와도 판이 시작되면 잊는다. 판 아래에 늘 보이게 둔다. -->
+    <div class="tfoot">
+      <span class="k"><b>초록</b>을 먹으면 잠깐 무적</span>
+      <span class="k">화면을 누르거나 <b>← →</b> 방향키</span>
+    </div>
+  </section>
+
+  <!-- ── 층 올리기 (액션 2) ─────────────────────────────────
+       2026-09-02 석봉님 확정. 결과 화면은 **세금 피하기와 같은 `tEnd` 를 함께 쓴다** —
+       랭킹 UI·공유·다시하기가 이미 거기 있어서 복제하면 두 벌을 고쳐야 한다. -->
+  <section id="sIntro" class="scr hide">
+    <div class="eyebrow">액 션</div>
+    <h1 class="q">층 올리기</h1>
+    <p class="lead">좌우로 움직이는 층을 눌러 얹습니다.<br>어긋난 만큼 잘려 나가니, 몇 층까지 올리시겠어요?</p>
+    <div class="rules">
+      화면 아무 데나 누르면 그 자리에 <b>얹힙니다</b> · 스페이스바·방향키도 됩니다<br>
+      딱 맞추면 <b>「정확」</b>이 뜨고 폭이 조금 돌아옵니다. 연속으로 맞추면 더 돌아옵니다.<br>
+      <span class="tnote">20층부터는 바람이 불어 좌우로 미세하게 흔들립니다.</span>
+    </div>
+    <button class="btn full" id="sStart">시작하기</button>
+    <div class="bslot" id="sPeekSlot"></div>
+    <div style="text-align:center"><a href="#" class="backlink toHub">다른 놀이 해보기</a></div>
+  </section>
+
+  <section id="sPlay" class="scr hide">
+    <div class="thud">
+      <div class="ts"><span class="k">올 린 층</span><b id="sScore">1층</b></div>
+      <div class="tright">
+        <button type="button" id="sSnd" class="tsnd sndbtn" aria-pressed="true">♪ 소리 켜짐</button>
+      </div>
+    </div>
+    <div class="tsay" id="sSay"></div>
+    <div class="tstage"><canvas id="sCv"></canvas></div>
+    <div class="tfoot">
+      <span class="k">눌러서 <b>얹기</b> · <b>스페이스</b>도 됨</span>
+      <span class="k">딱 맞추면 폭이 <b>돌아옵니다</b></span>
+    </div>
+  </section>
+
+  <section id="tEnd" class="scr hide">
+    <div class="eyebrow">결과</div>
+    <h1 class="q" id="tRes">0개월</h1>
+    <p class="lead" id="tHit"></p>
+    <div class="ttip" id="tTip"></div>
+    <div class="tbest" id="tBest"></div>
+
+    <!-- 랭킹 — 퀴즈와 같은 동선(로그인 없이 게임 → 끝나고 도전 권유 → 카카오 → 닉네임·지역) -->
+    <div class="rank-cta" id="gCta">
+      <h3 id="gTitle">이 기록, 랭킹에 올리시겠어요?</h3>
+      <p id="gDesc">내 기록이 <b>우리 지역 합계</b>에 더해집니다. 짧아도 보탬이 됩니다.</p>
+      <div id="gStep1"><button class="btn full" id="gGo">랭킹에 올리기</button></div>
+      <div id="gStep2" class="hide">
+        <div class="mystat" id="gMine"></div>
+        <div class="nickrow">
+          <input id="gNick" type="text" maxlength="12" placeholder="랭킹에 올릴 이름" autocomplete="off">
+        </div>
+        <div class="nickrow" id="gRegionRow">
+          <select id="gRegion"><option value="">우리 지역 고르기</option></select>
+          <button id="gOk">등록</button>
+        </div>
+        <div class="nicknote">2~12자 · 지역은 <b>한 번만</b> 고를 수 있습니다.</div>
+      </div>
+      <div id="gStep3" class="hide"><div class="mystat" id="gDone"></div></div>
+    </div>
+
+    <div class="bslot" id="tEndSlot"></div>
+
+    <button class="btn full" id="tShare">결과 공유하기</button>
+    <button class="btn full line" id="tAgain">다시 하기</button>
+    <div style="text-align:center"><a href="#" class="backlink toHub">다른 놀이 해보기</a></div>
+  </section>
+
+  <!-- 🔑 랭킹 보드는 **한 벌뿐**이다(2026-09-02 석봉님 *"시작할때 나오는 랭킹순위도
+       끝날때 나오는 랭킹처럼 확인가능하게"*). 두 벌로 복제하면 지역 펼침·시드·표기를
+       고칠 때마다 두 군데를 고쳐야 하고, 한쪽을 빠뜨리면 조용히 어긋난다.
+       그래서 이 블록을 화면 바깥에 두고 `gMoveBoard()` 가 슬롯으로 **옮긴다**
+       (DOM 이동은 이벤트 리스너와 펼침 상태를 그대로 유지한다). -->
+    <div id="gBoardWrap" class="hide">
+      <!-- 🔴 랭킹은 끊기지 않는다 — **역대 하나**만 보여준다(2026-09-01 석봉님).
+           기간 버튼(역대·올해·이번 달)을 만들었다가 되돌렸다. 석봉님 뜻은
+           「월간·연간을 지금 만들자」가 아니라 「끊지 말고 계속 쌓자」였다.
+           ⚠️ 판 기록(`game_play`)은 그대로 쌓인다 — 월간·연간이 필요해지면
+              그때 `game_board(게임,'month')` 를 부르면 된다(서버는 이미 받는다). -->
+      <div class="bhead"><b>개인 랭킹<span class="scope">전국</span></b><span>상위 10위</span></div>
+      <div class="board" id="gBoard"></div>
+      <div class="rboard">
+        <div class="rh">지역 순위 <span>지역별 합계</span></div>
+        <div id="gRBoard"></div>
+      </div>
+    </div>
+
+  <div class="foot" id="foot"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets/sb_auth.js?v=8"></script>
+<script src="assets/sb_share.js?v=2"></script>
+<script src="data/quiz_price.js?v=4"></script>
+<script src="data/polls.js?v=6"></script>
+<script src="assets/game_balance.js?v=8"></script>
+<script src="assets/sb_bgm.js?v=10"></script>
+<script src="data/quiz_econ.js?v=3"></script>
+<script src="assets/game_econ.js?v=3"></script>
+<script src="assets/game_tax.js?v=25"></script>
+<script src="assets/game_stack.js?v=2"></script>
+<script>
+(function(){
+  "use strict";
+  var D = window.QUIZ_PRICE || {items:[]};
+  var POOL = D.items || [];
+  var N = 5;          // 한 세트 문제 수 (2026-08-30 석봉님 확정)
+  var HIT = 10;       // 오차 10% 안에 들면 정답 (2026-08-30 석봉님 확정)
+  var SEC = 20;       // 문제당 제한 시간 (2026-08-30 석봉님 지시)
+  var set = [], idx = 0, log = [];
+  var tStart = 0, tick = 0, away = 0, awayAt = 0;
+  var $ = function(id){ return document.getElementById(id); };
+
+  /* 다른 화면에 다녀온 시간을 잰다. 검색을 막을 수는 없지만 사실은 남는다 */
+  document.addEventListener("visibilitychange", function(){
+    if(document.hidden){ awayAt = Date.now(); }
+    else if(awayAt){ away += Date.now() - awayAt; awayAt = 0; }
+  });
+
+  function money(man){
+    var eok = Math.floor(man/10000), rest = man%10000;
+    if(eok && rest) return eok+"억 "+rest.toLocaleString()+"만원";
+    if(eok) return eok+"억원";
+    return man.toLocaleString()+"만원";
+  }
+  function ymd(q){
+    var p = (q.ymd || q.ym || "").split("-");
+    if(p.length >= 3) return p[0]+"년 "+(+p[1])+"월 "+(+p[2])+"일";
+    if(p.length === 2) return p[0]+"년 "+(+p[1])+"월";
+    return "";
+  }
+  function shuffle(a){
+    for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i];a[i]=a[j];a[j]=t; }
+    return a;
+  }
+  function grade(hit){
+    return ["다시 도전","다시 도전","조금 아쉽습니다","감이 좋으시네요","고수시네요","신의 눈"][hit];
+  }
+  /* 화면 전환 — 게임이 둘이라 섹션을 통째로 관리한다.
+     `.scr` 을 단 섹션 가운데 하나만 남기고 나머지를 숨긴다.
+     밸런스 모듈도 이 함수를 받아 쓴다(로직은 나뉘어 있어도 화면 관리는 한 곳). */
+  var PLAY_SCR = ["play", "bPlay", "tPlay", "sPlay"];   // 이 넷에서만 곡이 흐른다
+
+  /* 🔑 오디오 잠금 해제 — **페이지에서 처음 뭔가를 누르는 순간** 한 번 깨워 둔다.
+     폰 브라우저는 「사용자가 누른 그 코드 안에서」 시작한 재생만 허락한다.
+     게임 시작 버튼에서 처음 틀면 그 사이 준비 과정이 끼어 막히는 일이 있어,
+     그보다 앞선 손짓(탭·목록 카드)에서 미리 열어 둔다. 소리는 안 난다(음소거로 켰다 끈다). */
+  /* ⚠️ 2026-09-02 — 여기서 하던 「첫 손짓에 한 번만 unlock」을 **없앴다.**
+     곡이 아직 안 만들어졌으면 unlock 이 아무것도 안 하고 돌아가는데 리스너는 지워져
+     **잠금이 영영 안 풀렸다**(가격 퀴즈 무음의 원인). 지금은 `sb_bgm.js` 의
+     `armUnlock()` 이 풀릴 때까지 스스로 듣는다. 화면 쪽에서 할 일이 없다. */
+
+  /* ══ 세금 피하기 랭킹 ══════════════════════════════════════════
+     🔴 2026-09-01 석봉님 — 시작 화면에 랭킹을, 그리고 지역「간」·지역「내」를 같이.
+     퀴즈와 같은 동선을 쓴다: 로그인 없이 게임 → 끝나고 권유 → 카카오 → 닉네임·지역.
+     기록은 범용 표 `game_rank`(game='tax')에 들어간다 — 네 번째 게임이 붙어도 그대로 쓴다. */
+  var GACT = "taxrank", gPending = null, gMyNick = "", gMyRegion = "";
+  /* 🔑 랭킹 블록은 **게임 둘이 공용**으로 쓴다(2026-09-02 층 올리기를 붙이며 갈랐다).
+     `gGame` 은 game_rank 표의 키, `gFmt` 는 점수를 사람이 읽는 말로 바꾸는 함수다.
+     게임이 끝날 때 호스트가 이 둘을 갈아 끼운다. 네 번째 게임도 여기에 한 줄만 더하면 된다. */
+  var gGame = "tax";
+  var gFmt = function(v){ return gHeld(v); };
+  /* 게임별 점수 표기 — 시작 화면 랭킹이 「그 게임의 말」로 그리려면 이 표가 필요하다.
+     세금은 「3년 2개월」, 층 올리기는 「28층」. 같은 숫자라도 뜻이 다르다. */
+  var FMT = {
+    tax:   function(v){ return gHeld(v); },
+    stack: function(v){ return Math.round(v) + "층"; }
+  };
+
+  function gFillRegion(){
+    var sel = document.getElementById("gRegion");
+    if(!sel || sel.options.length > 1) return;
+    SIDO.forEach(function(v){
+      var o = document.createElement("option"); o.value = v; o.textContent = v;
+      sel.appendChild(o);
+    });
+  }
+
+  /* 초 → "3년 2개월". 게임 쪽과 같은 규칙(1초 = 한 달) */
+  function gHeld(sec){
+    var m = Math.floor(sec), y = Math.floor(m / 12), mm = m % 12;
+    if(y <= 0) return mm + "개월";
+    return y + "년" + (mm ? " " + mm + "개월" : "");
+  }
+
+  /* 시작 화면 랭킹 — 개인 다섯 줄 + 지역 대항전 한 줄 요약 */
+  /* 랭킹 보드를 슬롯으로 옮긴다 — 보드는 문서에 **한 벌뿐**이다.
+     ⚠️ `appendChild` 는 복사가 아니라 **이동**이라, 붙여 둔 클릭 리스너와 펼침 상태
+        (`gOpen`)가 그대로 따라온다. 그래서 시작 화면에서 지역을 펼쳐 두고 게임을 하면
+        결과 화면에도 펼쳐진 채로 나온다 — 의도한 동작이다.
+     `open` 이 true 면 바로 보여 준다(시작 화면). 결과 화면은 등록을 마친 뒤에만
+     `gLoadBoard()` 가 열기 때문에 여기서 열지 않는다. */
+  function gMoveBoard(slotId, open){
+    var slot = document.getElementById(slotId), b = document.getElementById("gBoardWrap");
+    if(!slot || !b) return;
+    if(b.parentNode !== slot) slot.appendChild(b);
+    if(open) b.classList.remove("hide");
+  }
+
+  function gShowNick(known){
+    gFillRegion();
+    document.getElementById("gStep1").classList.add("hide");
+    document.getElementById("gStep3").classList.add("hide");
+    document.getElementById("gStep2").classList.remove("hide");
+    document.getElementById("gRegionRow").classList.toggle("hide", !!(known && known.region));
+    document.getElementById("gTitle").textContent = "랭킹에 올릴 이름을 정해 주세요";
+    document.getElementById("gDesc").textContent = "이 이름과 기록, 지역만 랭킹에 보입니다.";
+    document.getElementById("gMine").innerHTML =
+      "이번 기록 <b>" + gFmt(gPending) + "</b>";
+    var nk = document.getElementById("gNick");
+    try{ if(window.SBAuth && SBAuth.nickname) nk.value = (SBAuth.nickname() || "").slice(0, 12); }catch(e){}
+    nk.focus();
+  }
+
+  function gSubmit(nk, uid, btn){
+    if(btn){ btn.disabled = true; btn.textContent = "등록 중"; }
+    var sel = document.getElementById("gRegion");
+    sbFetch("rpc/game_rank_submit", { method: "POST", body: JSON.stringify({
+        p_game: gGame, p_uid: uid, p_nick: nk, p_score: gPending,
+        p_cid: cid(), p_region: (sel ? sel.value : "") || null
+      })})
+      .then(function(r){ return r.json().then(function(d){
+        if(!r.ok) throw new Error(d && d.message ? d.message : "등록 실패"); return d; }); })
+      .then(function(d){
+        gMyNick = d.nick || nk;
+        if(d.region) gMyRegion = d.region;
+        /* 🔴 2026-09-02 석봉님 첨부 — 「랭킹에 올렸습니다」인데 **「랭킹에 올리기」 버튼이
+           그대로 남아** 있었다. gStep2 만 숨기고 **gStep1 을 안 숨긴 것**이다.
+           (닉네임 화면을 거치면 gShowNick 이 숨겨 주지만, 이미 이름이 있어 바로 등록되는
+            경로에서는 아무도 안 숨겼다) */
+        document.getElementById("gStep1").classList.add("hide");
+        document.getElementById("gStep2").classList.add("hide");
+        document.getElementById("gStep3").classList.remove("hide");
+        document.getElementById("gTitle").textContent =
+          d.improved ? "최고 기록을 새로 세웠습니다" : "랭킹에 올렸습니다";
+        document.getElementById("gDesc").textContent =
+          "랭킹은 끊기지 않고 계속 쌓입니다.";
+        /* ⚠️ 여기가 `gHeld` 로 박혀 있어 **층 올리기인데 「2년 10개월」**이 나왔다.
+           게임별 표기는 `gFmt` 를 쓴다(2026-09-02). */
+        document.getElementById("gDone").innerHTML =
+          "<b>" + esc(gMyNick) + "</b> · 전국 <b>" + d.rank + "위</b>" +
+          "<br><em>최고 " + gFmt(d.score) + "</em>" +
+          (d.region ? "<br><em>" + esc(d.region) + " 안에서 " + (d.local_rank || "-") + "위 · " +
+             "지역 순위 " + (d.region_rank || "-") + "위</em>" : "");
+        gLoadBoard();
+      })
+      .catch(function(e){
+        if(btn){ btn.disabled = false; btn.textContent = "등록"; }
+        alert(String(e.message || "등록하지 못했습니다. 잠시 후 다시 시도해 주세요."));
+      });
+  }
+
+  function gAfterLogin(){
+    var uid = null;
+    try{ if(window.SBAuth && SBAuth.uid) uid = SBAuth.uid() || null; }catch(e){}
+    if(!uid){ gShowNick(null); return; }
+    sbFetch("rpc/game_rank_me", { method: "POST",
+        body: JSON.stringify({ p_game: gGame, p_uid: uid }) })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(d){
+        if(d && d.region) gMyRegion = d.region;
+        if(d && d.nick) gSubmit(d.nick, uid);      // 이미 이름이 있다 → 바로
+        else gShowNick(d);
+      })
+      .catch(function(){ gShowNick(null); });
+  }
+
+  /* 결과 아래 두 표 — 개인, 그리고 지역 순위.
+     🔴 2026-09-01 석봉님 — 「이번 주」로 끊지 않는다. 역대가 기본이고 올해·이번 달을 고를 수 있다.
+        기록은 판마다 `game_play` 에 쌓이므로 어느 기간이든 뒤늦게도 뽑을 수 있다. */
+  function gRpc(fn, body){
+    return sbFetch("rpc/" + fn, { method: "POST", body: JSON.stringify(body) })
+      .then(function(r){ return r.ok ? r.json() : []; })
+      .catch(function(){ return []; });
+  }
+
+  /* 초기 랭킹은 **DB 에 직접 넣는다**(2026-09-02 석봉님 결정).
+     처음엔 화면에서만 합치고 「기준」 배지를 달았는데, 석봉님 지시로 실제 기록과
+     똑같이 취급하는 쪽으로 바꿨다. 등록·삭제는 `데이터관리/스크립트/놀이터_시드랭킹.py`.
+     🔑 uid 가 `seed_` 로 시작하므로 실제 이용자가 쌓이면 `--purge` 한 줄로 지운다
+        (`--keep N` 으로 상위 몇 개만 남기며 서서히 줄일 수도 있다).
+     🔑 region 을 비워 뒀기 때문에 **지역 합계에는 안 잡힌다** — 지역전에 가짜가 섞이면
+        「우리 지역은 이미 1등이네」가 되어 만든 목적과 반대가 된다. */
+  /* 🔑 한 번만 받아 두 곳에 쓴다. 상위 10줄과 「지역 안 명단」이 같은 자료라
+     따로 부르면 호출이 두 배가 되고, 두 화면의 순위가 어긋날 수도 있다. */
+  var gAll = [];
+
+  function gLoadBoard(){
+    document.getElementById("gBoardWrap").classList.remove("hide");
+    /* 🔴 개인 랭킹은 **10위까지**(2026-09-01 석봉님). 20줄은 스크롤만 길고 아무도 안 읽는다.
+       ⚠️ 지역 순위는 따로 자르지 않는다 — **고른 사람이 있는 지역만** 줄이 생기므로
+          17개를 다 채워도 열일곱 줄이고, 대부분은 그보다 짧다. */
+    gRpc("game_board", { p_game: gGame, p_period: "all", p_limit: 300 }).then(function(rows){
+      gAll = rows || [];
+      var box = document.getElementById("gBoard");
+      var h = "<div class='h'><span>순위</span><span>이름</span>" +
+              "<span class='num'>기록</span><span class='num'></span><span class='num'></span></div>";
+      if(!gAll.length){
+        box.innerHTML = "<div class='empty'>아직 등록된 기록이 없습니다.</div>";
+        return;
+      }
+      h += gAll.slice(0, 10).map(function(x){
+        var me = gMyNick && x.nick === gMyNick;
+        /* 🔑 「한강뷰(서울 2위)」 — 전국 등수 옆에 지역 안 등수를 같이 보여 준다(석봉님).
+           전국 20위여도 우리 동네 1위면 자랑할 거리가 된다. */
+        var rg = x.region ? "<span class='rg'>(" + esc(x.region) +
+                   (x.local_rank ? " " + x.local_rank + "위" : "") + ")</span>" : "";
+        return "<div class='r" + (me ? " me" : "") + "'>" +
+          "<span class='n1'>" + x.rank + "</span>" +
+          "<span class='nk'>" + esc(x.nick) + rg + "</span>" +
+          "<span class='num'>" + gFmt(x.score) + "</span><span></span><span></span></div>";
+      }).join("");
+      /* 전국 10위 밖이면 **내 줄을 따로 한 줄 더** 붙인다 — 안 그러면 등록하고 나서
+         자기 기록을 어디서도 못 본다(2026-09-02). */
+      var mine = gMyNick ? gAll.filter(function(x){ return x.nick === gMyNick; })[0] : null;
+      if(mine && mine.rank > 10){
+        h += "<div class='gap'>⋯</div>" +
+          "<div class='r me'><span class='n1'>" + mine.rank + "</span>" +
+          "<span class='nk'>" + esc(mine.nick) +
+            (mine.region ? "<span class='rg'>(" + esc(mine.region) + " " +
+               (mine.local_rank || "-") + "위)</span>" : "") + "</span>" +
+          "<span class='num'>" + gFmt(mine.score) + "</span><span></span><span></span></div>";
+      }
+      box.innerHTML = h;
+      gPaintRegion();          // 명단이 준비된 뒤에 지역판을 그린다
+    });
+
+    gRpc("game_region_rank", { p_game: gGame, p_period: "all", p_limit: 20 })
+      .then(function(rows){ gRegions = rows || []; gPaintRegion(); });
+  }
+
+  var gRegions = null;
+  var gOpen = {};              // 펼쳐 둔 지역
+
+  function gPaintRegion(){
+    if(gRegions === null) return;           // 아직 안 왔다
+    var box = document.getElementById("gRBoard");
+    if(!gRegions.length){
+      box.innerHTML = "<div class='empty'>아직 지역을 고른 분이 없습니다." +
+        "<br>지금 등록하면 <b>우리 지역 1호</b>가 됩니다.</div>"; return;
+    }
+    /* 🔴 합계다(2026-09-01 석봉님). 평균이면 고수 한 명 있는 지역이 1등이라
+       못하는 사람은 "내가 하면 평균 깎이겠네"가 된다 — 지역전을 만든 목적과 반대다.
+       합계면 1개월이라도 보태지고 "우리 지역 사람 더 모으자"가 나온다. */
+    var h = "<div class='r'><span class='n1'>순위</span><span class='nm'>지역</span>" +
+            "<span class='num'>합계</span><span class='num'>인원</span></div>";
+    /* 🔑 내 지역은 처음부터 펼쳐 둔다(2026-09-02 석봉님 *"지역내 순위는 어떻게 확인해?"*).
+       그 전에는 지역 안 등수를 **전국 10위 안에 든 사람과 등록 직후 화면**에서만 볼 수
+       있었다 — 지역 대항전을 만들어 놓고 「우리 동네 누가 잘하나」를 볼 데가 없었다. */
+    if(gMyRegion && gOpen[gMyRegion] === undefined) gOpen[gMyRegion] = true;
+    gRegions.forEach(function(x){
+      var me = gMyRegion && x.region === gMyRegion;
+      var on = !!gOpen[x.region];
+      h += "<div class='r rrow" + (me ? " me" : "") + (on ? " on" : "") +
+             "' data-rg='" + esc(x.region) + "'>" +
+        "<span class='n1'>" + x.rank + "</span>" +
+        "<span class='nm'>" + esc(x.region) + "<i class='caret'></i></span>" +
+        "<span class='num'>" + gFmt(x.total_score) + "</span>" +
+        "<span class='num'>" + x.n + "명</span></div>";
+      if(on){
+        var mem = gAll.filter(function(p){ return p.region === x.region; });
+        h += "<div class='rmem'>" + (mem.length
+          ? mem.map(function(p){
+              return "<div class='mrow" + (gMyNick && p.nick === gMyNick ? " me" : "") + "'>" +
+                "<span class='ln'>" + (p.local_rank || "-") + "위</span>" +
+                "<span class='mn'>" + esc(p.nick) + "</span>" +
+                "<span class='ms'>" + gFmt(p.score) + "</span>" +
+                "<span class='mg'>전국 " + p.rank + "위</span></div>";
+            }).join("")
+          : "<div class='mnone'>명단을 불러오는 중입니다.</div>") + "</div>";
+      }
+    });
+    box.innerHTML = h;
+  }
+
+  /* 지역 줄을 눌러 펼친다. 보드는 다시 그려지므로 위임으로 붙인다(한 번만). */
+  document.getElementById("gRBoard").addEventListener("click", function(e){
+    var row = e.target.closest ? e.target.closest(".rrow") : null;
+    if(!row) return;
+    var rg = row.getAttribute("data-rg");
+    gOpen[rg] = !gOpen[rg];
+    gPaintRegion();
+  });
+
+  function gResetRank(){
+    gPending = null;
+    gRegions = null; gAll = []; gOpen = {};   // 게임을 바꾸면 지역 명단도 새로 받는다
+    document.getElementById("gStep1").classList.remove("hide");
+    document.getElementById("gStep2").classList.add("hide");
+    document.getElementById("gStep3").classList.add("hide");
+    /* 결과 화면으로 보드를 되돌린다. 등록을 마치기 전까지는 숨겨 둔다
+       (시작 화면에서 열어 둔 채로 왔을 수 있다). */
+    gMoveBoard("tEndSlot", false);
+    document.getElementById("gBoardWrap").classList.add("hide");
+    document.getElementById("gTitle").textContent = "이 기록, 랭킹에 올리시겠어요?";
+    document.getElementById("gDesc").innerHTML = "내 기록이 <b>우리 지역 합계</b>에 더해집니다. 짧아도 보탬이 됩니다.";
+    var b = document.getElementById("gOk"); b.disabled = false; b.textContent = "등록";
+  }
+
+  document.getElementById("gGo").addEventListener("click", function(){
+    if(gPending == null){                 // 여기 걸리면 위 onEnd 순서를 의심할 것
+      alert("이번 기록을 찾지 못했습니다. 한 판 더 하신 뒤 눌러 주세요.");
+      return;
+    }
+    try{ if(window.SBAuth) SBAuth.setAct(GACT, { score: gPending }); }catch(e){}
+    if(window.SBAuth && SBAuth.isIn()){ gAfterLogin(); return; }
+    if(window.SBAuth && SBAuth.gate){
+      SBAuth.gate(null, function(){ gAfterLogin(); }, {
+        title: "랭킹은 회원 기능입니다",
+        desc: "카카오로 3초면 됩니다.<br>우리 지역 순위에도 이 기록이 더해집니다."
+      });
+      return;
+    }
+    gShowNick(null);
+  });
+  document.getElementById("gOk").addEventListener("click", function(){
+    var nk = (document.getElementById("gNick").value || "").trim();
+    if(nk.length < 2){ alert("이름은 2자 이상으로 적어 주세요."); return; }
+    var uid = null;
+    try{ if(window.SBAuth && SBAuth.uid) uid = SBAuth.uid() || null; }catch(e){}
+    if(!uid){ alert("로그인이 필요합니다."); return; }
+    gSubmit(nk, uid, this);
+  });
+  function show(which){
+    var all = document.querySelectorAll(".scr");
+    for(var i=0;i<all.length;i++) all[i].classList.toggle("hide", all[i].id !== which);
+    /* 게임판이 떠 있는 동안에는 각주를 접는다.
+       실거래 출처 문구는 퀴즈 것이라 액션 게임 화면에서는 말이 안 맞고,
+       판 아래로 페이지가 길어지면 손가락을 움직일 때 화면이 밀린다. */
+    $("foot").classList.toggle("hide", which === "tPlay");
+    /* 🔴 곡은 **게임을 하는 화면에서만** 흐른다(2026-09-01).
+       그 전에는 over()·reveal() 이 각자 멈췄는데, 경로가 늘 때마다 빠뜨렸다.
+       show() 는 모든 전환이 지나는 길목이라 여기서 한 번에 정한다. */
+    if(window.SBBgm && PLAY_SCR.indexOf(which) < 0) SBBgm.stop();
+    window.scrollTo(0,0);
+  }
+  function drawSteps(){
+    $("steps").innerHTML = set.map(function(_,i){
+      return "<i class='"+(i<idx?"done":(i===idx?"on":""))+"'></i>";
+    }).join("");
+  }
+
+  function render(){
+    var q = set[idx];
+    drawSteps();
+    $("place").textContent = q.sgg+" "+q.dong;
+    $("apt").textContent = q.apt;
+    $("spec").textContent =
+      "전용 "+q.m2+"㎡("+q.py+"평) · "+q.fl+"층 · "+q.yr+"년 준공 · "+
+      q.ym.split("-")[0]+"년 "+(+q.ym.split("-")[1])+"월 계약";
+
+    var r = $("rng");
+    r.min = q.lo; r.max = q.hi; r.step = q.st;
+    r.value = Math.round(((+q.lo + +q.hi)/2)/q.st)*q.st;
+    $("lo").textContent = money(q.lo);
+    $("hi").textContent = money(q.hi);
+    $("val").textContent = money(+r.value);
+
+    var box = $("qbox");
+    box.style.animation = "none"; void box.offsetWidth; box.style.animation = "rise .3s ease";
+    startTimer();
+  }
+
+  /* 남은 시간은 Date.now() 로 잰다. 탭이 백그라운드여도 시계는 정확하다 */
+  function startTimer(){
+    stopTimer();
+    tStart = Date.now();
+    var fill = $("tfill"), line = $("tline"), left = $("left"), sec = $("tsec");
+    fill.style.width = "100%";
+    line.classList.remove("warn"); left.classList.remove("warn");
+    sec.textContent = SEC;
+    tick = setInterval(function(){
+      var rem = SEC - (Date.now() - tStart)/1000;
+      if(rem <= 0){
+        stopTimer(); fill.style.width = "0%"; sec.textContent = 0;
+        submit(true); return;
+      }
+      fill.style.width = (rem/SEC*100).toFixed(1)+"%";
+      sec.textContent = Math.ceil(rem);
+      if(rem <= 5){ line.classList.add("warn"); left.classList.add("warn"); }
+    }, 100);
+  }
+  function stopTimer(){ if(tick){ clearInterval(tick); tick = 0; } }
+
+  $("rng").addEventListener("input", function(){
+    $("val").textContent = money(+this.value);
+  });
+
+  function submit(auto){
+    if(idx >= set.length) return;
+    stopTimer();
+    var q = set[idx], my = +$("rng").value;
+    var spent = Math.min((Date.now() - tStart)/1000, SEC);
+    log.push({q:q, my:my, err: Math.abs(my - q.ans)/q.ans*100, sec:spent, auto:!!auto});
+    $("trail").textContent = log.map(function(x, i){
+      return (i+1)+"번 "+money(x.my)+(x.auto ? " (시간 종료)" : "");
+    }).join("   ");
+    idx++;
+    if(idx >= set.length){ setTimeout(function(){ show("wait"); }, 220); }
+    else { render(); window.scrollTo({top:0, behavior:"smooth"}); }
+  }
+  $("submit").addEventListener("click", function(){ submit(false); });
+
+  function renderResult(){
+    if(window.SBBgm) SBBgm.stop();          // 결과를 읽는 화면에서는 조용히
+    var hit = 0, sum = 0, spent = 0, autos = 0;
+    log.forEach(function(x){
+      sum += x.err; spent += x.sec;
+      if(x.err <= HIT) hit++;
+      if(x.auto) autos++;
+    });
+    var avg = sum/log.length;
+
+    show("result");
+
+    /* 🔴 점수는 세어 올리지 않는다. 처음부터 정확한 값을 쓴다.
+       세는 연출이 0 에서 1 을 찍거나 도중 값에 멈춰 틀린 점수가 보인 적이 있다(2026-08-31). */
+    $("hit").textContent = hit;
+    $("tag").textContent = grade(hit);
+    $("meta").innerHTML = "평균 오차 "+avg.toFixed(1)+"% · 걸린 시간 "+Math.round(spent)+"초"+
+      (autos ? "<br>시간이 끝나 자동 제출된 문제 "+autos+"개" : "")+
+      (away > 3000 ? "<br>푸는 동안 다른 화면에 "+Math.round(away/1000)+"초 다녀오셨습니다" : "");
+
+    /* 항목은 전부 즉시 붙이고 움직임만 늦춘다(백그라운드에서 setTimeout 이 늘어진다) */
+    $("list").innerHTML = "";
+    log.forEach(function(x, i){ addRow(x, i); });
+    $("tap").style.display = "";
+    resetRank();
+
+    var prev = null;
+    try{
+      var raw = localStorage.getItem("sb_quiz_hit");
+      prev = raw === null ? null : parseInt(raw, 10);
+      if(prev === null || hit > prev){ localStorage.setItem("sb_quiz_hit", String(hit)); }
+    }catch(e){}
+    $("foot").innerHTML = footText() +
+      (prev !== null && hit > prev ? "<br><b>최고 기록을 새로 세웠습니다.</b>" : "");
+  }
+
+  function addRow(x, i){
+    var ok = x.err <= HIT;
+    var near = !ok && x.err <= 15;
+    var d = document.createElement("div");
+    d.className = "row"+(ok ? " hit" : "");
+    d.style.animationDelay = (0.05*i)+"s";
+    d.innerHTML =
+      "<div class='a'><span class='nm'>"+x.q.apt+"</span>"+
+        "<span class='ans'>"+money(x.q.ans)+"</span></div>"+
+      "<div class='b'><span>내 답 "+money(x.my)+"</span>"+
+        "<span class='when'>"+ymd(x.q)+" 거래</span></div>"+
+      "<div class='c'>"+x.q.sgg+" · 오차 "+x.err.toFixed(1)+"% · "+
+        (ok ? "<span class='ok'>정답</span>" : "<span class='no'>"+(near?"아깝습니다":"오답")+"</span>")+
+        " · "+(x.auto ? "시간 종료" : x.sec.toFixed(1)+"초")+"</div>"+
+      "<div class='det'><dl>"+
+        "<dt>최근 거래</dt><dd>"+x.q.n+"건</dd>"+
+        "<dt>중위 가격</dt><dd>"+money(x.q.med)+"</dd>"+
+        "<dt>평당가(전용)</dt><dd>"+x.q.ppy.toLocaleString()+"만원</dd>"+
+        "</dl><a href='map.html?q="+encodeURIComponent(x.q.q)+
+        "' target='_blank' rel='noopener'>이 단지 지도에서 보기</a></div>";
+    d.addEventListener("click", function(e){
+      if(e.target.closest("a")) return;
+      d.querySelector(".det").classList.toggle("open");
+    });
+    $("list").appendChild(d);
+  }
+
+  function begin(){
+    stopTimer();
+    set = shuffle(POOL.slice()).slice(0, N);
+    idx = 0; log = []; away = 0; awayAt = 0; $("trail").textContent = "";
+    show("play"); render();
+    if(window.SBBgm) SBBgm.play("quiz");     // 퀴즈에는 퀴즈 곡
+  }
+
+  /* 소리 켜고 끄기 — 게임이 셋이라 **한 곳에서** 관리한다.
+     각 화면이 자기 버튼을 따로 들고 있으면 한쪽에서 끈 것이 다른 쪽에 안 비친다. */
+  function wireSound(){
+    if(!window.SBBgm) return;
+    var bs = document.querySelectorAll(".sndbtn");
+    function paint(){
+      var v = SBBgm.on();
+      for(var i = 0; i < bs.length; i++){
+        bs[i].textContent = v ? "♪ 소리 켜짐" : "♪ 소리 꺼짐";
+        bs[i].classList.toggle("off", !v);
+        bs[i].setAttribute("aria-pressed", v ? "true" : "false");
+      }
+    }
+    for(var i = 0; i < bs.length; i++){
+      bs[i].addEventListener("click", function(e){
+        e.stopPropagation();
+        SBBgm.setOn(!SBBgm.on());
+        if(SBBgm.on()){ SBBgm.blip(); SBBgm.resume(); }
+        paint();
+      });
+    }
+    paint();
+  }
+  wireSound();
+  $("start").addEventListener("click", function(){
+    if(!POOL.length){ alert("문제를 불러오지 못했습니다."); return; }
+    begin();
+  });
+  $("again").addEventListener("click", begin);
+  $("reveal").addEventListener("click", renderResult);
+
+  /* 결과 공유 — 카카오톡이 되면 카카오톡으로, 안 되면 시스템 공유·복사로 물러선다.
+     카카오 JavaScript 키가 `assets/sb_share.js` 에 채워지면 그때부터 카카오톡 창이 뜬다. */
+  var SITE = "https://xn--2q1br1nnrasc92a76myvau64b.com/";
+  $("share").addEventListener("click", function(){
+    var btn = this;
+    var hit = log.filter(function(x){ return x.err <= HIT; }).length;
+    /* 🔴 공유 주소는 **ASCII 짧은 주소**를 쓴다(2026-09-01).
+       한글 파일명은 인코딩 단계가 한 번만 어긋나도 404 가 난다 — 실제로 두 번 겪었다.
+       `play.html` 이 진짜 놀이터로 보내 주므로 본배포 때도 이 줄은 그대로 둔다. */
+    var url = location.origin + "/play.html";
+    var o = {
+      title: "실거래가 맞히기 " + hit + " / 5",
+      desc: "국토교통부에 신고된 진짜 거래 다섯 건입니다. 당신은 몇 개나 맞히시겠어요?",
+      image: SITE + "assets/og_quiz.png",
+      url: url,
+      btn: "나도 해보기",
+      text: "실거래가 맞히기 다섯 문제 중 " + hit + "개를 맞혔습니다.\n당신도 해보세요.\n" + url
+    };
+    btn.disabled = true;
+    SBShare.any(o).then(function(how){
+      btn.disabled = false;
+      if(how === "clipboard") alert("결과를 복사했습니다. 붙여넣어 공유해 보세요.");
+      else if(!how) alert("공유를 지원하지 않는 환경입니다. 주소를 복사해 보내 주세요.");
+    });
+  });
+
+  try{
+    var b = localStorage.getItem("sb_quiz_hit");
+    if(b !== null) $("bestIntro").textContent = "내 최고 기록 "+b+"개";
+  }catch(e){}
+
+  /* ── 허브: 탭으로 장르를 고르고 목록에서 게임을 고른다 (2026-08-31 석봉님) ── */
+  var BAL = null, TAX = null, STACK = null;
+  /* 지금 어느 게임의 결과를 보고 있나 — 결과 화면을 둘이 함께 쓰므로 필요하다 */
+  var curGame = "tax";
+  /* 탭이 셋이 되면서 if 를 늘리지 않고 표로 돌린다. 넷째가 붙어도 한 줄만 는다. */
+  var TABS = [["tabTax","listTax"],["tabQuiz","listQuiz"],["tabBal","listBal"]];
+  function tab(which){
+    TABS.forEach(function(p){
+      $(p[0]).classList.toggle("on", p[0] === which);
+      $(p[1]).classList.toggle("hide", p[0] !== which);
+    });
+  }
+  TABS.forEach(function(p){
+    $(p[0]).addEventListener("click", function(){ tab(p[0]); });
+  });
+
+  /* 시작 화면의 랭킹 미리보기 — 남들 기록을 보고 나서 시작하게 한다 */
+  function loadPeek(){
+    sbFetch("quiz_rank_board?select=rank,nick,hit,avg_err&limit=5")
+      .then(function(r){ return r.ok ? r.json() : []; })
+      .catch(function(){ return []; })
+      .then(function(rows){
+        if(!rows || !rows.length){
+          $("peekList").innerHTML = "<li class='none'>아직 등록된 기록이 없습니다. 첫 주인공이 되어 보세요.</li>";
+          return;
+        }
+        $("peekList").innerHTML = rows.map(function(x){
+          return "<li><span class='r'>" + x.rank + "</span>" +
+                 "<span class='n'>" + esc(x.nick) + "</span>" +
+                 "<span class='v'>" + x.hit + "개 · 오차 " + (+x.avg_err).toFixed(1) + "%</span></li>";
+        }).join("");
+      });
+  }
+
+  $("goQuiz").addEventListener("click", function(){ show("intro"); loadPeek(); });
+  /* 밸런스는 세트가 다섯이라 카드가 JS 로 그려진다 — 배선도 그쪽(아래 BalanceGame 블록)에 있다 */
+  var backs = document.querySelectorAll(".toHub");
+  for(var i=0;i<backs.length;i++){
+    backs[i].addEventListener("click", function(e){ e.preventDefault(); stopTimer(); show("hub"); });
+  }
+  $("goTax").addEventListener("click", function(){
+    curGame = "tax"; gGame = "tax"; gFmt = FMT.tax;
+    /* 🔴 시작 화면에도 **결과 화면과 똑같은 랭킹**을 보여 준다(2026-09-02 석봉님).
+       전에는 상위 5줄짜리 요약이라 지역을 펼쳐 볼 수 없었다 — 같은 화면을 두 벌로
+       만들지 않고 보드 하나를 옮겨 쓴다. */
+    show("tIntro"); gMoveBoard("tPeekSlot", true); gLoadBoard();
+  });
+  $("goStack").addEventListener("click", function(){
+    curGame = "stack"; gGame = "stack"; gFmt = FMT.stack;
+    show("sIntro"); gMoveBoard("sPeekSlot", true); gLoadBoard();
+  });
+
+  /* 부동산 경제상식 — 4지선다(2026-09-01 석봉님 제안) */
+  var ECON = null;
+  if(window.EconQuiz){
+    ECON = window.EconQuiz.init({ show: show });
+    if(ECON){
+      $("goEcon").addEventListener("click", function(){ show("eIntro"); });
+      $("eStart").addEventListener("click", function(){ ECON.start(); });
+      $("econMeta").innerHTML = "한 판에 <b>" + ECON.pick + "문제</b> · 4지선다 · " +
+        "문제 " + ECON.count + "개 중에서 골라 나옵니다";
+      $("tabQuiz").querySelector(".cnt").textContent = "2";
+    }
+  }
+  /* ══ 층 올리기 ═══════════════════════════════════════════════
+     2026-09-02 신설. 결과 화면(tEnd)과 랭킹 UI 는 세금 피하기와 **함께 쓴다**. */
+  if(window.StackGame){
+    STACK = window.StackGame.init({ show: show, onEnd: function(n, info){
+      /* 🔴 순서 주의 — `gResetRank()` 안에서 `gPending = null` 을 한다.
+         기록을 먼저 넣고 초기화하면 방금 넣은 값이 지워진다(2026-09-01 사고). */
+      gResetRank();
+      curGame = "stack"; gGame = "stack"; gFmt = FMT.stack;
+      gPending = n;
+      $("tRes").textContent = n + "층";
+      $("tHit").innerHTML = esc(info.grade) +
+        (info.gap ? ".<br>마지막 층이 <b>" + info.gap + "px</b> 어긋났습니다." : ".");
+      $("tTip").textContent = "딱 맞추면 폭이 돌아옵니다. 연속으로 맞출수록 더 돌아옵니다.";
+      var b = +(localStorage.getItem("sb_stack_best") || 0);
+      if(n > b){ try{ localStorage.setItem("sb_stack_best", n); }catch(e){} }
+      $("tBest").textContent = n > b ? "최고 기록입니다" :
+        ("최고 " + b + "층 · " + Math.max(0, b - n + 1) + "층 남았습니다");
+      $("tBest").classList.toggle("rec", n > b);
+      show("tEnd");
+    } });
+    if(STACK){
+      $("sStart").addEventListener("click", function(){ STACK.start(); });
+      window.__stack = STACK;             // 검증용(숨은 탭에서는 화면으로 확인이 안 된다)
+    }
+  }
+  if(window.TaxGame){
+    TAX = window.TaxGame.init({ show: show, onEnd: function(sec){
+      /* 🔴 순서 주의(2026-09-01 사고) — `gResetRank()` 안에서 `gPending = null` 을 한다.
+         기록을 먼저 넣고 초기화하면 **방금 넣은 값이 지워져** 「랭킹에 올리기」가
+         아무 반응도 안 한다(석봉님 "작동 안 됨"). **초기화를 먼저, 기록을 나중에.** */
+      gResetRank();
+      curGame = "tax"; gGame = "tax"; gFmt = FMT.tax;
+      gPending = sec;
+    } });
+    if(TAX){
+      $("tStart").addEventListener("click", function(){ TAX.start(); });
+      window.__tax = TAX;                 // 검증용(숨은 탭에서는 화면으로 확인이 안 된다)
+    }
+  }
+
+  /* 🔑 결과 화면의 두 버튼은 **호스트가 잡는다** — 세금 피하기와 층 올리기가
+     같은 화면을 쓰기 때문에, 어느 게임의 결과인지는 여기서만 안다.
+     (게임 모듈이 자기 손으로 잡고 있으면 층 올리기 결과에서 세금이 다시 시작된다) */
+  $("tAgain").addEventListener("click", function(){
+    if(curGame === "stack" && STACK) STACK.start();
+    else if(TAX) TAX.start();
+  });
+  $("tShare").addEventListener("click", function(){
+    if(curGame === "stack"){
+      var n = gPending || 0, url = location.origin + "/play.html";
+      window.SBShare.any({
+        title: "층 올리기 " + n + "층",
+        desc: "좌우로 움직이는 층을 눌러 얹는 게임. 저는 " + n + "층까지 올렸습니다.",
+        image: "https://xn--2q1br1nnrasc92a76myvau64b.com/assets/og_tax.png",
+        url: url, btn: "나도 해보기",
+        text: "층 올리기에서 " + n + "층까지 올렸습니다.\n" + url
+      }).then(function(how){ if(how === "clipboard") alert("주소를 복사했습니다."); });
+    } else if(TAX && TAX.share) TAX.share();
+  });
+  if(window.BalanceGame){
+    BAL = window.BalanceGame.init({ show: show });
+    /* 밸런스 목록 — 세트가 다섯이라 카드를 손으로 적지 않고 그려 낸다.
+       세트를 늘리면 data/polls.js 만 고치면 목록이 따라온다. */
+    (function(){
+      var wrap = $("listBal"), sets = BAL.sets || [];
+      if(!wrap) return;
+      if(!sets.length){ wrap.innerHTML = "<div class='gempty'>질문을 불러오지 못했습니다.</div>"; return; }
+      wrap.innerHTML = sets.map(function(st){
+        return "<button class='gitem' data-set='" + esc(st.id) + "'>" +
+          "<span class='th'><img src='assets/th_balance.png?v=2' alt=''></span>" +
+          "<span class='tx'>" +
+            "<span class='gt'>" + esc(st.title) + "</span>" +
+            "<span class='gs'>" + esc(st.sub) + "</span>" +
+            /* 🔴 "6개 중 5문제 · 매번 다른 질문"이 무슨 말인지 모르겠다는 지적(2026-09-01).
+               세트가 문제를 몇 개 갖고 있고 한 판에 몇 개가 나오는지를 줄인 말이었는데,
+               읽는 사람에게는 암호였다. **한 판에 몇 문제인지**를 앞세우고 나머지는 풀어 쓴다. */
+            "<span class='gm'>한 판에 <b>" + st.pick + "문제</b> · " +
+              "문제 " + st.items.length + "개 중에서 골라 나옵니다</span>" +
+          "</span></button>";
+      }).join("") + "<div class='gempty'>새로운 밸런스 게임을 준비하고 있습니다.</div>";
+      wrap.addEventListener("click", function(e){
+        var b = e.target.closest && e.target.closest(".gitem[data-set]");
+        if(b) BAL.start(b.getAttribute("data-set"));
+      });
+      $("tabBal").querySelector(".cnt").textContent = sets.length;
+    })();
+  }
+
+  /* ───────────────────────── 랭킹 ─────────────────────────
+     동선: 퀴즈는 로그인 없이 → 결과 뒤에 「올리시겠어요?」 → 카카오 로그인 → 닉네임 → 등록.
+     🔑 로그인은 페이지를 떠났다 돌아온다. 그래서 **누르는 순간 결과를 맡겨 둔다**
+        (SBAuth.setAct/takeAct, 10분 유효). 돌아오면 꺼내서 이어서 진행한다.
+        이 장치는 sb_auth.js 에 이미 있던 것을 그대로 쓴다. */
+  var SB_URL = "https://bwgoufxonqamglbqsife.supabase.co";
+  var SB_KEY = "sb_publishable_kYd1gCyqCR2Qy8Ix6KE6og_FfJUImfR";   // 공개(anon) 키
+  var ACT = "quizrank";
+  var pending = null;          // 등록 대기 중인 점수
+
+  function cid(){
+    try{
+      var v = localStorage.getItem("sb_cid");
+      if(!v){ v = Math.random().toString(36).slice(2) + Date.now().toString(36);
+              localStorage.setItem("sb_cid", v); }
+      return v.slice(0, 32);
+    }catch(e){ return "nocid"; }
+  }
+  function sbFetch(path, opt){
+    opt = opt || {};
+    opt.headers = Object.assign({ apikey: SB_KEY, Authorization: "Bearer " + SB_KEY,
+      "Content-Type": "application/json" }, opt.headers || {});
+    return fetch(SB_URL + "/rest/v1/" + path, opt);
+  }
+
+  /* 🔴 지역 대항전 — 시·도 17개(2026-09-01 석봉님).
+     시군구 250개로 쪼개면 당분간 칸마다 1명씩이라 순위가 서지 않는다.
+     참여가 늘면 서울만 구 단위로 나누는 식으로 넓히면 된다. */
+  var SIDO = ["서울","경기","인천","부산","대구","광주","대전","울산","세종",
+              "강원","충북","충남","전북","전남","경북","경남","제주"];
+  /* 지역 칸 둘(퀴즈·세금)을 여기서 한 번에 채운다.
+     ⚠️ 등록 단계에서 채우면 **로그인 왕복이 끼었을 때 채우는 시점을 놓친다.**
+        옵션 17개는 가벼우니 처음부터 만들어 둔다. */
+  (function fillRegion(){
+    ["region", "gRegion"].forEach(function(id){
+      var sel = $(id);
+      if(!sel || sel.options.length > 1) return;
+      SIDO.forEach(function(v){
+        var o = document.createElement("option");
+        o.value = v; o.textContent = v;
+        sel.appendChild(o);
+      });
+    });
+  })();
+
+  function scoreOf(){
+    var hit = 0, sum = 0, spent = 0, autos = 0;
+    log.forEach(function(x){ sum += x.err; spent += x.sec; if(x.err <= HIT) hit++; if(x.auto) autos++; });
+    return { hit: hit, avg_err: +(sum/log.length).toFixed(2), secs: +spent.toFixed(1),
+             autos: autos, away_ms: Math.round(away) };
+  }
+
+  /* 다시 풀면 랭킹 섹션도 처음 상태로 되돌린다 */
+  function resetRank(){
+    pending = null;
+    $("rankStep1").classList.remove("hide");
+    $("rankStep2").classList.add("hide");
+    $("rankStep3").classList.add("hide");
+    $("boardWrap").classList.add("hide");
+    $("rankTitle").textContent = "이 점수, 랭킹에 올리시겠어요?";
+    $("rankDesc").textContent = "주간 랭킹에서 다른 분들과 견줘 보세요. 닉네임만 있으면 됩니다.";
+    var b = $("nickOk"); b.disabled = false; b.textContent = "등록";
+  }
+
+  function showNickStep(s, known){
+    pending = s;
+    /* 이미 지역을 고른 사람에게는 다시 묻지 않는다(첫 등록 때만 받는다) */
+    var rw = $("region") && $("region").parentNode;
+    if(rw) rw.classList.toggle("hide", !!(known && known.region));
+    $("rankStep1").classList.add("hide");
+    $("rankStep3").classList.add("hide");
+    $("rankStep2").classList.remove("hide");
+    $("rankTitle").textContent = "랭킹에 올릴 이름을 정해 주세요";
+    $("rankDesc").textContent = "이 이름과 점수만 랭킹에 보입니다.";
+    $("rankMine").innerHTML = "이번 기록 <b>" + s.hit + " / 5</b> " +
+      "<em>평균 오차 " + s.avg_err.toFixed(1) + "% · " + Math.round(s.secs) + "초</em>";
+    var nk = $("nick");
+    try{ if(window.SBAuth && SBAuth.nickname) nk.value = (SBAuth.nickname() || "").slice(0, 12); }catch(e){}
+    nk.focus();
+  }
+
+  /* 🔑 이름은 **첫 등록 때 한 번만** 정한다(2026-08-31 석봉님).
+     두 번째부터는 묻지 않고 바로 올린다 — 재도전마다 이름을 다시 받으면 손이 가고,
+     랭킹에서 같은 사람이 계속 다른 이름으로 보여 누가 누군지 알 수 없다.
+     바꾸고 싶은 사람은 결과 화면의 「이름 바꾸기」로. */
+  function afterLogin(s){
+    var uid = null;
+    try{ if(window.SBAuth && SBAuth.uid) uid = SBAuth.uid() || null; }catch(e){}
+    if(!uid){ showNickStep(s); return; }
+    sbFetch("rpc/quiz_rank_mynick", { method: "POST", body: JSON.stringify({ p_uid: uid }) })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(d){
+        if(d && d.region) myRegion = d.region;        // 내 지역을 알아 두면 표에서 굵게 보인다
+        if(d && d.nick) submitScore(s, d.nick, uid);   // 이미 이름이 있다 → 바로 등록
+        else showNickStep(s, d);                       // 첫 등록 → 이름과 지역을 받는다
+      })
+      .catch(function(){ showNickStep(s); });
+  }
+
+  $("rankGo").addEventListener("click", function(){
+    var s = scoreOf();
+    try{ if(window.SBAuth) SBAuth.setAct(ACT, s); }catch(e){}   // 로그인 왕복 대비
+    if(window.SBAuth && SBAuth.isIn()){ afterLogin(s); return; }
+    if(window.SBAuth && SBAuth.gate){
+      SBAuth.gate(null, function(){ afterLogin(s); }, {
+        title: "랭킹은 회원 기능입니다",
+        desc: "카카오로 3초면 됩니다.<br>주간 랭킹에 이름을 올리고 다음에 또 도전해 보세요.",
+        agree: "(필수) 개인정보 수집·이용 동의 · 카카오 계정 식별자·닉네임을 회원 식별과 랭킹 서비스 제공 목적으로 수집·이용합니다."
+      });
+    }else{
+      alert("로그인 기능을 불러오지 못했습니다. 새로고침 후 다시 시도해 주세요.");
+    }
+  });
+
+  $("nickOk").addEventListener("click", function(){
+    var nk = ($("nick").value || "").trim();
+    if(nk.length < 2 || nk.length > 12){ alert("이름은 2자에서 12자까지 쓸 수 있습니다."); return; }
+    if(!pending) return;
+    var uid = null;
+    try{ if(window.SBAuth && SBAuth.uid) uid = SBAuth.uid() || null; }catch(e){}
+    if(!uid){ alert("로그인 정보를 불러오지 못했습니다. 새로고침 후 다시 시도해 주세요."); return; }
+    submitScore(pending, nk, uid, this);
+  });
+
+  function submitScore(s, nk, uid, btn){
+    pending = s;
+    if(btn){ btn.disabled = true; btn.textContent = "등록 중"; }
+    /* 🔑 한 사람 한 줄. 등록은 서버 함수가 맡는다 —
+       검증·최고기록 판정·순위 계산이 한 곳에 모여 있어야 어긋나지 않는다.
+       (2026-08-31 석봉님 지적 — 닉네임만 바꾸면 계속 등록돼 혼자 랭킹을 도배할 수 있었다) */
+    sbFetch("rpc/quiz_rank_submit", { method: "POST", body: JSON.stringify({
+        p_nick: nk, p_uid: uid, p_hit: s.hit, p_err: s.avg_err,
+        p_secs: s.secs, p_autos: s.autos, p_away: s.away_ms, p_cid: cid(),
+        p_region: ($("region") ? $("region").value : "") || null
+      })})
+      .then(function(r){
+        return r.json().then(function(d){
+          if(!r.ok) throw new Error(d && d.message ? d.message : "등록 실패");
+          return d;
+        });
+      })
+      .then(function(d){
+        $("rankStep2").classList.add("hide");
+        $("rankStep3").classList.remove("hide");
+        if(d.region) myRegion = d.region;
+        $("rankTitle").textContent = d.improved ? "최고 기록을 새로 세웠습니다" : "랭킹에 올렸습니다";
+        $("rankDesc").textContent = d.improved
+          ? "한 분당 한 줄이 올라갑니다. 랭킹은 끊기지 않고 계속 쌓입니다."
+          : "지난 기록이 더 좋아 그대로 두었습니다. 한 분당 한 줄이 올라갑니다.";
+        myNick = d.nick || nk;
+        $("rankDone").innerHTML = "<b>" + esc(myNick) + "</b> · 현재 <b>" + d.rank + "위</b> " +
+          (d.region ? "<em>" + esc(d.region) +
+             (d.region_rank ? " 지역 " + d.region_rank + "위" : "") + "</em><br>" : "") +
+          "<em>최고 " + d.hit + " / 5 · 평균 오차 " + (+d.avg_err).toFixed(1) + "%</em>";
+        loadBoard(myNick);
+      })
+      .catch(function(e){
+        if(btn){ btn.disabled = false; btn.textContent = "등록"; }
+        alert(String(e.message || "등록하지 못했습니다. 잠시 후 다시 시도해 주세요."));
+      });
+  }
+
+  /* 이름 바꾸기 — 기록은 그대로 두고 이름만 고친다 */
+  var myNick = "";
+  $("renameGo").addEventListener("click", function(e){
+    e.preventDefault();
+    var uid = null;
+    try{ if(window.SBAuth && SBAuth.uid) uid = SBAuth.uid() || null; }catch(e2){}
+    if(!uid){ alert("로그인 정보를 불러오지 못했습니다."); return; }
+    var nk = prompt("랭킹에 보일 이름을 적어 주세요 (2~12자)", myNick || "");
+    if(nk === null) return;
+    nk = nk.trim();
+    if(nk.length < 2 || nk.length > 12){ alert("이름은 2자에서 12자까지 쓸 수 있습니다."); return; }
+    sbFetch("rpc/quiz_rank_rename", { method: "POST", body: JSON.stringify({ p_uid: uid, p_nick: nk }) })
+      .then(function(r){ return r.json().then(function(d){ if(!r.ok) throw new Error(d.message||"바꾸지 못했습니다"); return d; }); })
+      .then(function(){
+        myNick = nk;
+        $("rankDone").innerHTML = $("rankDone").innerHTML.replace(/^<b>[^<]*<\/b>/, "<b>" + esc(nk) + "</b>");
+        loadBoard(nk);
+      })
+      .catch(function(err){ alert(String(err.message)); });
+  });
+
+  function loadBoard(mine){
+    sbFetch("quiz_rank_board?select=rank,nick,hit,avg_err,secs,region,local_rank&limit=10")
+      .then(function(r){ return r.ok ? r.json() : []; })
+      .then(function(rows){
+        $("boardWrap").classList.remove("hide");
+        if(!rows.length){ $("board").innerHTML = "<div class='empty'>아직 등록된 기록이 없습니다.</div>"; return; }
+        var h = "<div class='h'><span>순위</span><span>이름</span><span class='num'>정답</span>" +
+                "<span class='num'>오차</span><span class='num'>시간</span></div>";
+        h += rows.map(function(x){
+          var me = mine && x.nick === mine;
+          return "<div class='r" + (me ? " me" : "") + "'>" +
+            "<span class='n1'>" + x.rank + "</span>" +
+            "<span class='nk'>" + esc(x.nick) +
+              (x.region ? "<span class='rg'>(" + esc(x.region) +
+                 (x.local_rank ? " " + x.local_rank + "위" : "") + ")</span>" : "") + "</span>" +
+            "<span class='num'>" + x.hit + "</span>" +
+            "<span class='num'>" + (+x.avg_err).toFixed(1) + "%</span>" +
+            "<span class='num'>" + Math.round(x.secs) + "초</span></div>";
+        }).join("");
+        $("board").innerHTML = h;
+      })
+      .catch(function(){});
+    loadRegionBoard();
+  }
+
+  /* 지역 대항전 표 — 평균 기록 순(석봉님 확정). 참여 인원은 곁에 보여만 준다.
+     ⚠️ 내 지역을 굵게 표시하려면 내가 어느 지역인지 알아야 한다 → myRegion 에 담아 둔다. */
+  var myRegion = "";
+  function loadRegionBoard(){
+    /* 🔴 2026-09-01 석봉님 — 7일로 끊지 않고 **누적**, 그리고 **맞힌 개수와 시간을 같이**.
+       뷰는 이미 기간 제한이 없다(합계 기준). 화면에서 total_hit·avg_secs 를 받아 쓴다. */
+    sbFetch("quiz_region_board?select=rank,region,n,total_hit,avg_hit,avg_secs&limit=20")
+      .then(function(r){ return r.ok ? r.json() : []; })
+      .then(function(rows){
+        var box = $("rboard");
+        if(!rows || !rows.length){
+          box.innerHTML = "<div class='empty'>아직 지역을 고른 분이 없습니다. 첫 주인공이 되어 보세요.</div>";
+          return;
+        }
+        var h = "<div class='r'><span class='n1'>순위</span><span class='nm'>지역</span>" +
+                "<span class='num'>맞힌 수</span><span class='num'>평균 시간</span>" +
+                "<span class='num'>인원</span></div>";
+        h += rows.map(function(x){
+          var me = myRegion && x.region === myRegion;
+          return "<div class='r" + (me ? " me" : "") + "'>" +
+            "<span class='n1'>" + x.rank + "</span>" +
+            "<span class='nm'>" + esc(x.region) + "</span>" +
+            "<span class='num'>" + x.total_hit + "개</span>" +
+            "<span class='num'>" + Math.round(x.avg_secs) + "초</span>" +
+            "<span class='num'>" + x.n + "명</span></div>";
+        }).join("");
+        box.innerHTML = h;
+      })
+      .catch(function(){});
+  }
+  function esc(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c];
+    });
+  }
+
+  /* 로그인하고 돌아왔을 때 — 맡겨 둔 점수를 꺼내 이어서 진행한다 */
+  function resumeRank(){
+    if(!window.SBAuth || !SBAuth.takeAct) return;
+    var s = null;
+    try{ s = SBAuth.takeAct(ACT); }catch(e){}
+    if(!s || typeof s.hit !== "number") return;
+    show("result");
+    $("hit").textContent = s.hit;
+    $("tag").textContent = grade(s.hit);
+    $("meta").textContent = "평균 오차 " + (+s.avg_err).toFixed(1) + "% · 걸린 시간 " + Math.round(s.secs) + "초";
+    $("list").innerHTML = "";
+    $("tap").style.display = "none";
+    showNickStep(s);
+  }
+  if(window.SBAuth && SBAuth.whenReady) SBAuth.whenReady(resumeRank);
+
+  function footText(){
+    return "원자료 국토교통부 실거래가 공개시스템 · 아파트 매매 신고분 (자료 기준일 "+(D.updated||"")+")<br>"+
+      "취소된 거래와 직거래는 문제에서 제외했습니다. 면적은 전용면적, 단가는 평당(전용) 기준입니다.<br>"+
+      "실제 시세는 층·향·수리 상태에 따라 달라집니다. 참고용입니다.";
+  }
+  $("foot").innerHTML = footText();
+})();
+</script>
+</body>
+</html>

@@ -48,6 +48,9 @@
          ⚠️ 아이콘 이름은 브라우저에서 실제로 렌더해 확인했다(tabler 3.24.0).
             CDN min.css 를 받아 grep 하면 잘려서 와 멀쩡한 이름도 「없음」으로 나온다. */
       {n:'땅값',i:'map-search',h:'%ED%86%A0%EC%A7%80%EA%B2%80%EC%83%89.html'},
+      /* 놀이터 — 2026-09-06 본배포. 부동산 공부하면서 실시간 랭킹·지역 대항전.
+         ⚠️ 아이콘은 tabler 3.24.0 에 있는 이름(device-gamepad-2)을 썼다. */
+      {n:'놀이터',i:'device-gamepad-2',h:'%EB%86%80%EC%9D%B4%ED%84%B0.html'},
       {n:'리포트',i:'file-text',h:G},
       {n:'블로그',i:'notebook',h:BLOG,blank:1},
       {n:'채널',i:'send',h:'channels.html'}]},
