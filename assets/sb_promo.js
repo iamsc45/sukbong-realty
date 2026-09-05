@@ -19,11 +19,17 @@
     href:  '%EB%86%80%EC%9D%B4%ED%84%B0.html?utm_source=site&utm_medium=promo&utm_campaign=playground_open'
   };
 
+  /* 🔴 「오늘」은 **현지 날짜**로 센다(2026-09-06 석봉님 "데스크탑에서 팝업이 안 뜬다").
+     처음엔 toISOString() 을 썼는데 그건 UTC 날짜다. 한국은 UTC+9 라 **아침 9시 전까지는
+     어제 날짜**가 나온다 — 전날 저녁에 닫은 배너가 다음 날 오전 내내 안 떴다. */
+  function today(){
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
   try{
     var path = decodeURIComponent(location.pathname);
     if(path.indexOf('놀이터') >= 0 || path.indexOf('play.html') >= 0) return;   // 자기 자신
-    var today = new Date().toISOString().slice(0,10);
-    if(localStorage.getItem(PROMO.key) === today) return;                        // 오늘 이미 닫았다
+    if(localStorage.getItem(PROMO.key) === today()) return;                      // 오늘 이미 닫았다
   }catch(e){ /* localStorage 가 막힌 환경 — 그냥 띄운다 */ }
 
   var css = document.createElement('style');
@@ -57,13 +63,13 @@
     '<a class="go" href="' + PROMO.href + '">' + PROMO.cta + ' →</a>';
 
   function dismiss(){
-    try{ localStorage.setItem(PROMO.key, new Date().toISOString().slice(0,10)); }catch(e){}
+    try{ localStorage.setItem(PROMO.key, today()); }catch(e){}
     box.classList.remove('on');
     setTimeout(function(){ box.remove(); }, 400);
   }
   box.querySelector('button.x').addEventListener('click', dismiss);
   box.querySelector('a.go').addEventListener('click', function(){
-    try{ localStorage.setItem(PROMO.key, new Date().toISOString().slice(0,10)); }catch(e){}
+    try{ localStorage.setItem(PROMO.key, today()); }catch(e){}
   });
 
   /* 페이지가 자리를 잡은 뒤 올라온다 — 첫 화면 렌더와 겹치면 깜빡인다 */

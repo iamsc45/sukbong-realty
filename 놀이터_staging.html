@@ -539,6 +539,12 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
   border:var(--nb-line) solid var(--nb-ink);box-shadow:4px 4px 0 var(--nb-ink);padding:8px 13px;
   font-family:Pretendard,sans-serif;font-weight:800;font-size:14px;cursor:pointer;line-height:1}
 .sbexit:active{transform:translate(4px,4px);box-shadow:none}
+/* 🔴 .hide 보다 뒤에 선언돼 display:inline-block 이 이겼다 — 허브에서도 버튼이 머리글 옆에 떠 있었다
+   (2026-09-06 석봉님 캡처). 같은 우선순위끼리는 뒤가 이기니 복합 선택자로 못 박는다. */
+.sbexit.hide{display:none}
+/* 플레이 중에는 하단 탭바를 걷는다 — 액션 게임이 innerHeight 로 판 높이를 재서 56px 을 먹으면 좁아진다 */
+body.sbplay #sbtab{display:none}
+body.sbplay{padding-bottom:0}
 </style>
 </head>
 <body>
@@ -548,7 +554,6 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
   <!-- 🔴 플레이 화면 나가기(2026-09-06 석봉님 "뒤로 가기가 없어서 창을 꺼야 되는 상황").
      다섯 게임 화면(play·bPlay·ePlay·tPlay·sPlay) 어디에도 나갈 길이 없었다. 섹션마다 심지 않고
      **고정 버튼 하나**를 두고 show() 가 플레이 화면일 때만 보인다. 브라우저 뒤로가기도 같이 잡는다. -->
-<button type="button" id="sbExit" class="sbexit hide" aria-label="게임 나가기">← 나가기</button>
 <nav>
     <a href="index.html">홈</a>
     <a href="map.html">실거래지도</a>
@@ -558,6 +563,7 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
     <a href="%EA%B8%80.html">리포트</a>
   </nav>
 </header>
+<button type="button" id="sbExit" class="sbexit hide" aria-label="게임 나가기">← 나가기</button>
 
 <div class="q-wrap">
 
@@ -950,6 +956,10 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
 <script src="assets/game_econ.js?v=3"></script>
 <script src="assets/game_tax.js?v=25"></script>
 <script src="assets/game_stack.js?v=2"></script>
+<!-- 다른 페이지와 같은 머리글 동작(2026-09-06 석봉님 "모바일에서 메뉴가 옆으로 스크롤이 안 돼").
+     이 둘이 빠져 있어 놀이터만 메뉴가 날것으로 늘어졌다. 탭바는 플레이 중엔 body.sbplay 로 감춘다. -->
+<script src="assets/sb_tabbar.js?v=11"></script>
+<script defer src="assets/sb_nav.js?v=4"></script>
 <script>
 (function(){
   "use strict";
@@ -1289,6 +1299,7 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
     var isPlay = PLAY_SCR.indexOf(which) >= 0 || which === "ePlay";
     if(exitBtn){
       exitBtn.classList.toggle("hide", !isPlay);
+      document.body.classList.toggle("sbplay", isPlay);
       /* 플레이 섹션 맨 위로 옮긴다(appendChild 계열은 복사가 아니라 이동 — 리스너 유지). */
       var sec = isPlay && document.getElementById(which);
       if(sec && sec.firstChild !== exitBtn) sec.insertBefore(exitBtn, sec.firstChild);
