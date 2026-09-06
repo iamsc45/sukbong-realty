@@ -84,6 +84,8 @@ window.StackGame = (function(){
     var box = cv.parentNode;
     W = Math.max(280, Math.min(520, box.clientWidth || 340));
     var room = (window.innerHeight || 700) - 250;
+    /* 스레드·인스타 인앱 브라우저의 하단 동작 막대 몫(세금 피하기와 같은 보정, 2026-09-06) */
+    if(/Barcelona|Instagram|FBAN|FBAV|FB_IAB/i.test(navigator.userAgent || "")) room -= 64;
     H = Math.max(380, Math.min(560, room));
     DPR = Math.min(2, window.devicePixelRatio || 1);
     cv.style.width = W + "px";

@@ -106,6 +106,9 @@ window.TaxGame = (function(){
   function say(t, sec){ toast = { t: t, left: sec || 1.9, all: sec || 1.9 }; }
 
   var cv, ctx, DPR = 1, W = 360, H = 520;
+  /* 스레드(Barcelona)·인스타그램·페이스북 인앱 브라우저. 세로 스와이프·가로 스와이프를
+     앱이 먼저 가로채서 touchmove 가 페이지에 안 온다(2026-09-06 석봉님 실측: 탭은 되는데 드래그가 안 됨). */
+  var IN_APP = /Barcelona|Instagram|FBAN|FBAV|FB_IAB/i.test(navigator.userAgent || "");
   var show = null, onEnd = null, raf = 0, running = false, lastT = 0;
   var elapsed = 0, blocks = [], px = 0, aimX = null, vx = 0;
   var shield = 0, spawnT = 0, itemT = 6, killedBy = null;
@@ -123,6 +126,9 @@ window.TaxGame = (function(){
     /* ⚠️ 폰은 주소창이 있어 실제로 보이는 높이가 innerHeight 보다 100px 남짓 작다.
        그 몫까지 빼 두지 않으면 게임판 아래가 잘려 스크롤해야 보인다. */
     var room = (window.innerHeight || 700) - 250;
+    /* 스레드·인스타 인앱 브라우저는 화면 아래에 자기 동작 막대(좋아요·댓글)를 얹는데
+       innerHeight 에는 그 높이가 빠져 있지 않다. 그만큼 더 빼 준다(2026-09-06 석봉님 캡처). */
+    if(IN_APP) room -= 64;
     H = Math.max(360, Math.min(540, room));
     DPR = Math.min(2, window.devicePixelRatio || 1);
     cv.style.width = W + "px";
@@ -488,6 +494,11 @@ window.TaxGame = (function(){
     show("tPlay");
     fit(); reset(); draw(); hud();
     running = true; lastT = 0;
+    /* 게임 중에는 문서 전체가 제스처를 넘기지 않게 한다 — 판 밖에서 시작한 드래그도 집을 끌어야
+       하고, 인앱 브라우저가 스와이프를 가져가는 것도 여기서 한 번 더 막는다(2026-09-06). */
+    document.documentElement.style.touchAction = "none";
+    document.documentElement.style.overscrollBehavior = "none";
+    if(window.__taxInApp && !window.__taxInAppShown){ window.__taxInAppShown = 1; setTimeout(window.__taxInApp, 900); }
     /* 소리는 여기서 시작한다 — 시작 버튼을 누른 직후라 브라우저가 허락한다.
        (사용자 동작 없이 미리 켜 두면 정책에 막혀 조용히 실패한다) */
     if(window.SBBgm){ SBBgm.setPace(0); SBBgm.play("tax"); }
@@ -496,6 +507,8 @@ window.TaxGame = (function(){
 
   function stop(){
     running = false; cancelAnimationFrame(raf);
+    document.documentElement.style.touchAction = "";
+    document.documentElement.style.overscrollBehavior = "";
     if(window.SBBgm) SBBgm.stop();
   }
 
@@ -508,22 +521,58 @@ window.TaxGame = (function(){
        판 안에서만 받으면 손가락을 판 위에 정확히 올려야 시작된다.
        그래서 **문서 전체**에서 받고, 게임 중일 때만 가로 위치를 판 좌표로 바꾼다.
        판 밖의 x 는 양 끝으로 붙는다(왼쪽 여백을 누르면 집이 왼쪽 끝으로). */
-    function at(e){
-      if(!running) return;
-      /* ⚠️ 버튼 위에서 시작된 터치는 건드리지 않는다.
-         여기서 preventDefault 를 걸면 그 뒤 click 이 안 나서 **소리 끄기 버튼이 죽는다**. */
-      if(e.target && e.target.closest && e.target.closest("button")) return;
+    function isBtn(e){ return e.target && e.target.closest && e.target.closest("button"); }
+    function aim(cx){
       var r = cv.getBoundingClientRect();
-      var cx = (e.touches && e.touches[0] ? e.touches[0].clientX : e.clientX);
-      if(cx == null) return;
       aimX = Math.max(0, Math.min(W, cx - r.left));
-      /* 게임 중에는 페이지가 따라 움직이면 안 된다. 게임이 아닐 때는 손대지 않는다 */
-      if(e.cancelable) e.preventDefault();
     }
-    document.addEventListener("touchstart", at, { passive: false });
-    document.addEventListener("touchmove",  at, { passive: false });
-    document.addEventListener("mousemove", at);
-    document.addEventListener("mousedown", at);
+    /* 🔴 2026-09-06 석봉님 실측 — 스레드 앱 안에서 링크를 열면 **탭은 되는데 드래그가 안 된다.**
+       원인: 인앱 브라우저(WebView)가 손가락이 움직이기 시작하면 그 제스처를 **앱이 먼저 가져간다**
+       (가로 스와이프 = 뒤로가기/닫기, 세로 = 스크롤·새로고침). 그러면 페이지에는 touchmove 가
+       끊기고 touchcancel 만 온다. touch-action:none 은 판(canvas)에만 걸려 있었고, 문서 전체에서
+       듣는 이 코드에는 그 선언이 미치지 않았다.
+       대책 셋: ①Pointer Events + setPointerCapture — 손가락을 판에 묶어 두면 WebView 가 덜 가로챈다
+       ②게임 중에는 html 전체에 touch-action:none / overscroll-behavior:none 을 건다(begin/stop)
+       ③그래도 pointercancel 이 오면(빼앗긴 것) 인앱 안내 문구를 띄운다 — 탭으로는 되니까. */
+    var stolen = false, pid = null;
+    function hintInApp(){
+      say("앱 안에선 드래그가 막혀요. 탭으로 자리를 찍거나 ⋯에서 브라우저로 열기", 3.2);
+    }
+    if(window.PointerEvent){
+      document.addEventListener("pointerdown", function(e){
+        if(!running || isBtn(e)) return;
+        if(e.pointerType === "mouse" && e.button !== 0) return;
+        pid = e.pointerId; aim(e.clientX);
+        try{ cv.setPointerCapture(e.pointerId); }catch(_){}
+        if(e.cancelable) e.preventDefault();
+      }, { passive: false });
+      document.addEventListener("pointermove", function(e){
+        if(!running || isBtn(e)) return;
+        /* 마우스는 누르지 않아도 따라온다(예전 mousemove 와 같게). 손가락은 누른 것만. */
+        if(e.pointerType !== "mouse" && pid !== e.pointerId) return;
+        aim(e.clientX);
+        if(e.cancelable) e.preventDefault();
+      }, { passive: false });
+      document.addEventListener("pointerup", function(e){ if(e.pointerId === pid) pid = null; });
+      document.addEventListener("pointercancel", function(e){
+        if(e.pointerId === pid) pid = null;
+        if(running && !stolen){ stolen = true; hintInApp(); }
+      });
+    }else{
+      /* 구형 브라우저 — 예전 방식 그대로 */
+      function at(e){
+        if(!running || isBtn(e)) return;
+        var cx = (e.touches && e.touches[0] ? e.touches[0].clientX : e.clientX);
+        if(cx == null) return;
+        aim(cx);
+        if(e.cancelable) e.preventDefault();
+      }
+      document.addEventListener("touchstart", at, { passive: false });
+      document.addEventListener("touchmove",  at, { passive: false });
+      document.addEventListener("mousemove", at);
+      document.addEventListener("mousedown", at);
+    }
+    if(IN_APP) window.__taxInApp = hintInApp;   /* begin() 이 첫 판에 한 번 보여 준다 */
     document.addEventListener("keydown", function(e){
       if(!running) return;
       if(e.key === "ArrowLeft"){ aimX = null; vx = -1; }
