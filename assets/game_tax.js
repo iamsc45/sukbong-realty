@@ -524,6 +524,8 @@ window.TaxGame = (function(){
     /* 게임 중에는 문서 전체가 제스처를 넘기지 않게 한다 — 판 밖에서 시작한 드래그도 집을 끌어야
        하고, 인앱 브라우저가 스와이프를 가져가는 것도 여기서 한 번 더 막는다(2026-09-06). */
     lockGestures(true);
+    if(IN_APP && !window.__taxFlickHint){ window.__taxFlickHint = 1;
+      setTimeout(function(){ say("앱 안에선 밀어 주면 그쪽으로 계속 가요. 멈추려면 탭", 3.2); }, 900); }
     /* 진단용 — 주소에 ?dbg=1 을 붙이면 어느 브라우저로 들어왔는지 판 위에 띄운다
        (인앱 UA 문자열을 여기서 볼 수 없어 석봉님 폰에서 읽어 오기 위한 것, 2026-09-06) */
     if(/[?&]dbg=1/.test(location.search)) setTimeout(showUA, 1200);
@@ -570,6 +572,11 @@ window.TaxGame = (function(){
        📌 교훈 둘: ①고친 직후의 「안 됐다」는 캐시부터 의심한다(`max-age=600`)
                  ②사람이 보고한 증상만으로 원인을 추측해 고치지 말고, 신호를 기록해 보고 고친다. */
     var pid = null;
+    /* ── 6차(2026-09-06 19:41 판 기록으로 확정) — 인앱은 움직임을 **두세 번 흘려보내다 cancel 로 끊는다**:
+       `d mmmmm c · d m c · d mmmm c …`. 앱이 제스처로 인식하는 순간 가져가는 것이라 페이지에서 막을 수 없다.
+       그래서 **끊기기 직전에 움직이던 방향으로 계속 간다**(튕기기). 새로 누르면 그 자리로(aim) 가며 멈춘다.
+       이건 인앱(IN_APP)에서만 켠다 — 일반 브라우저는 cancel 이 거의 안 오고, 오면 그냥 손을 뗀 것이다. */
+    var lastX = null, lastDx = 0;
     /* 포인터 이벤트 흐름 기록(d/m/u/c) — 점수 등록 때 UA 뒤에 붙는다. 다음 조작 문제 때 바로 쓴다. */
     var EV = []; function ev(c){ if(EV.length < 60) EV.push(c); }
     window.__taxEv = function(){ return EV.join(""); };
@@ -579,7 +586,7 @@ window.TaxGame = (function(){
       document.addEventListener("pointerdown", function(e){
         if(!running || isBtn(e)) return;
         if(e.pointerType === "mouse" && e.button !== 0) return;
-        ev("d"); pid = e.pointerId;
+        ev("d"); pid = e.pointerId; lastX = e.clientX; lastDx = 0; vx = 0;
         aim(e.clientX);
         try{ cv.setPointerCapture(e.pointerId); }catch(_){}
         if(e.cancelable) e.preventDefault();
@@ -589,10 +596,21 @@ window.TaxGame = (function(){
         if(e.pointerType === "mouse"){ aim(e.clientX); return; }   /* 마우스는 누르지 않아도 따라온다 */
         if(pid !== e.pointerId) return;
         ev("m"); aim(e.clientX);
+        if(lastX != null && Math.abs(e.clientX - lastX) >= 2) lastDx = e.clientX - lastX;
+        lastX = e.clientX;
         if(e.cancelable) e.preventDefault();
       }, { passive: false });
-      document.addEventListener("pointerup", function(e){ ev("u"); if(e.pointerId === pid) release(); });
-      document.addEventListener("pointercancel", function(e){ ev("c"); if(e.pointerId === pid) release(); });
+      document.addEventListener("pointerup", function(e){
+        ev("u"); if(e.pointerId !== pid) return;
+        release(); if(IN_APP) vx = 0;        /* 손을 뗐으면 튕김도 멈춘다 */
+      });
+      document.addEventListener("pointercancel", function(e){
+        ev("c");
+        if(e.pointerId !== pid) return;
+        release();
+        /* 인앱이 가져갔다 — 움직이던 방향으로 튕겨 보낸다(다음 누름·판 끝·벽에서 멈춤) */
+        if(IN_APP && running && lastDx !== 0){ aimX = null; vx = lastDx > 0 ? 1 : -1; }
+      });
     }else{
       /* 구형 브라우저 — 예전 방식 그대로 */
       function at(e){
