@@ -961,7 +961,7 @@ body.sbplay{padding-bottom:0!important} /* 탭바가 인라인 style 로 50px �
 <script src="assets/sb_bgm.js?v=10"></script>
 <script src="data/quiz_econ.js?v=3"></script>
 <script src="assets/game_econ.js?v=3"></script>
-<script src="assets/game_tax.js?v=28"></script>
+<script src="assets/game_tax.js?v=29"></script>
 <script src="assets/game_stack.js?v=3"></script>
 <!-- 다른 페이지와 같은 머리글 동작(2026-09-06 석봉님 "모바일에서 메뉴가 옆으로 스크롤이 안 돼").
      이 둘이 빠져 있어 놀이터만 메뉴가 날것으로 늘어졌다. 탭바는 플레이 중엔 body.sbplay 로 감춘다. -->
@@ -1309,6 +1309,8 @@ body.sbplay{padding-bottom:0!important} /* 탭바가 인라인 style 로 50px �
     if(exitBtn){
       exitBtn.classList.toggle("hide", !isPlay);
       document.body.classList.toggle("sbplay", isPlay);
+      /* 게임 쪽이 풀지 못한 제스처 잠금이 남아 있어도 플레이 화면을 벗어나면 여기서 푼다(2026-09-06) */
+      if(!isPlay){ document.documentElement.style.touchAction = ""; document.documentElement.style.overscrollBehavior = ""; }
       /* 플레이 섹션 맨 위로 옮긴다(appendChild 계열은 복사가 아니라 이동 — 리스너 유지). */
       var sec = isPlay && document.getElementById(which);
       if(sec && sec.firstChild !== exitBtn) sec.insertBefore(exitBtn, sec.firstChild);

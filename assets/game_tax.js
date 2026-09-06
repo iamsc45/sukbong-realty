@@ -472,8 +472,17 @@ window.TaxGame = (function(){
     }catch(e){ return v || 0; }
   }
 
+  /* 게임 중 문서 전체 제스처 잠금. 🔴 begin 에서 걸고 **stop 에서만 풀었더니** 게임이 스스로
+     끝난(over) 뒤 결과 화면이 스크롤이 안 됐다 — 인앱 브라우저에서는 그 드래그가 페이지 대신
+     **브라우저 창 전체를 밀어 올렸다**(2026-09-06 석봉님 캡처 "화면 전체가 움직여").
+     잠금은 running 과 같이 움직여야 한다: 거는 곳 하나, 푸는 곳은 running 이 false 되는 모든 곳. */
+  function lockGestures(on){
+    document.documentElement.style.touchAction = on ? "none" : "";
+    document.documentElement.style.overscrollBehavior = on ? "none" : "";
+  }
+
   function over(){
-    running = false;
+    running = false; lockGestures(false);
     cancelAnimationFrame(raf);
     if(window.SBBgm) SBBgm.stop();
     var sec = elapsed, prev = best(null), rec = sec > prev;
@@ -496,8 +505,7 @@ window.TaxGame = (function(){
     running = true; lastT = 0;
     /* 게임 중에는 문서 전체가 제스처를 넘기지 않게 한다 — 판 밖에서 시작한 드래그도 집을 끌어야
        하고, 인앱 브라우저가 스와이프를 가져가는 것도 여기서 한 번 더 막는다(2026-09-06). */
-    document.documentElement.style.touchAction = "none";
-    document.documentElement.style.overscrollBehavior = "none";
+    lockGestures(true);
     if(window.__taxInApp && !window.__taxInAppShown){ window.__taxInAppShown = 1; setTimeout(window.__taxInApp, 900); }
     /* 진단용 — 주소에 ?dbg=1 을 붙이면 어느 브라우저로 들어왔는지 판 위에 띄운다
        (인앱 UA 문자열을 여기서 볼 수 없어 석봉님 폰에서 읽어 오기 위한 것, 2026-09-06) */
@@ -513,8 +521,7 @@ window.TaxGame = (function(){
 
   function stop(){
     running = false; cancelAnimationFrame(raf);
-    document.documentElement.style.touchAction = "";
-    document.documentElement.style.overscrollBehavior = "";
+    lockGestures(false);
     if(window.SBBgm) SBBgm.stop();
   }
 
