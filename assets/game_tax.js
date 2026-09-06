@@ -476,6 +476,25 @@ window.TaxGame = (function(){
      끝난(over) 뒤 결과 화면이 스크롤이 안 됐다 — 인앱 브라우저에서는 그 드래그가 페이지 대신
      **브라우저 창 전체를 밀어 올렸다**(2026-09-06 석봉님 캡처 "화면 전체가 움직여").
      잠금은 running 과 같이 움직여야 한다: 거는 곳 하나, 푸는 곳은 running 이 false 되는 모든 곳. */
+  /* 어느 브라우저로 들어왔는지 판 위에 띄운다. ?dbg=1 로도, **「보유 기간」 칸을 2초 안에 5번
+     탭해도** 뜬다 — 스레드 인앱 브라우저는 주소창을 못 만져서 URL 에 붙일 수가 없다
+     (2026-09-06 석봉님 "주소창이 확인이 안되네"). */
+  function showUA(){
+    var ua = navigator.userAgent;
+    var m = ua.match(/(Barcelona|Instagram|FBAN|FBAV|FB_IAB|Threads|wv|Chrome\/[\d.]+|Safari\/[\d.]+|Android [\d.]+)[^ ;)]*/g);
+    say("UA: " + (m ? m.join(" · ") : ua.slice(-70)) + (IN_APP ? " · 인앱" : " · 일반") + (HOLD_STATE() ? " · 누르기" : " · 끌기"), 9);
+  }
+  var HOLD_STATE = function(){ return false; };
+  (function(){
+    var box = document.getElementById("tScore"); box = box && box.parentNode;
+    if(!box) return;
+    var n = 0, t = 0;
+    box.addEventListener("click", function(){
+      var now = Date.now(); n = (now - t < 2000) ? n + 1 : 1; t = now;
+      if(n >= 5){ n = 0; showUA(); }
+    });
+  })();
+
   function lockGestures(on){
     document.documentElement.style.touchAction = on ? "none" : "";
     document.documentElement.style.overscrollBehavior = on ? "none" : "";
@@ -509,10 +528,7 @@ window.TaxGame = (function(){
     if(window.__taxInApp && !window.__taxInAppShown){ window.__taxInAppShown = 1; setTimeout(window.__taxInApp, 900); }
     /* 진단용 — 주소에 ?dbg=1 을 붙이면 어느 브라우저로 들어왔는지 판 위에 띄운다
        (인앱 UA 문자열을 여기서 볼 수 없어 석봉님 폰에서 읽어 오기 위한 것, 2026-09-06) */
-    if(/[?&]dbg=1/.test(location.search)){
-      var ua = navigator.userAgent, m = ua.match(/(Barcelona|Instagram|FBAN|FBAV|FB_IAB|Chrome\/[\d.]+|Safari\/[\d.]+)[^ )]*/g);
-      setTimeout(function(){ say("UA: " + (m ? m.join(" · ") : ua.slice(-60)) + (IN_APP ? " · 인앱" : " · 일반"), 8); }, 1200);
-    }
+    if(/[?&]dbg=1/.test(location.search)) setTimeout(showUA, 1200);
     /* 소리는 여기서 시작한다 — 시작 버튼을 누른 직후라 브라우저가 허락한다.
        (사용자 동작 없이 미리 켜 두면 정책에 막혀 조용히 실패한다) */
     if(window.SBBgm){ SBBgm.setPace(0); SBBgm.play("tax"); }
@@ -619,6 +635,7 @@ window.TaxGame = (function(){
     }
     if(IN_APP) window.__taxInApp = hintInApp;   /* begin() 이 첫 판에 한 번 보여 준다 */
     window.__taxDbg = function(){ return { hold: HOLD, inapp: IN_APP, ua: navigator.userAgent }; };
+    HOLD_STATE = function(){ return HOLD; };
     document.addEventListener("keydown", function(e){
       if(!running) return;
       if(e.key === "ArrowLeft"){ aimX = null; vx = -1; }
