@@ -1087,7 +1087,10 @@ body.sbplay{padding-bottom:0!important} /* 탭바가 인라인 style 로 50px �
     var sel = document.getElementById("gRegion");
     sbFetch("rpc/game_rank_submit", { method: "POST", body: JSON.stringify({
         p_game: gGame, p_uid: uid, p_nick: nk, p_score: gPending,
-        p_cid: cid(), p_region: (sel ? sel.value : "") || null
+        p_cid: cid(), p_region: (sel ? sel.value : "") || null,
+        /* 어느 브라우저에서 했나 — 스레드 인앱 드래그 문제 진단용(2026-09-06). 폰에서 UA 를
+           읽어 올 방법이 없어(주소창 불가·5탭도 불가) 점수 등록 때 함께 보낸다. */
+        p_ua: (navigator.userAgent || "").slice(0, 300)
       })})
       .then(function(r){ return r.json().then(function(d){
         if(!r.ok) throw new Error(d && d.message ? d.message : "등록 실패"); return d; }); })
