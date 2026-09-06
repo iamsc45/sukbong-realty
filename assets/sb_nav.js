@@ -27,6 +27,11 @@
   'use strict';
 
   /* href 조각 → 어느 묶음인가. 인코딩된 한글 주소도 있으니 조각으로 찾는다. */
+  /* 묶음 색(2026-09-06 석봉님 지시) — 모바일 전체 메뉴 시트와 **같은 색**을 쓴다.
+     정본은 `sb_tabbar.js` 의 MENU 표지만, 그 파일은 720px 이하에서만 돌아(early return)
+     PC 에서는 읽을 수 없다. 그래서 두 값만 여기 적는다.
+     ⚠️ 시트 쪽 색을 고치면 여기도 같이 고칠 것 — 지금은 데이터·도구 초록 / 콘텐츠 벽돌색이다. */
+  var GCOL = { '데이터': '#0F6E56', '콘텐츠': '#C0562E' };
   var GROUP = [
     ['데이터', [
       ['apply.html', '청약'],
@@ -71,9 +76,15 @@
       '  background:#fff;border:1px solid #E3E8F0;border-radius:10px;padding:6px 0;',
       '  box-shadow:0 10px 26px rgba(20,20,20,.13)}',
       '.sbg:hover>.sbgm,.sbg.open>.sbgm{display:block}',
-      '.sbg>.sbgm a{display:block;padding:7px 15px;white-space:nowrap;font-size:13px}',
-      '.sbg>.sbgm a:hover{background:#EEF3FB}',
+      /* 왼쪽에 묶음 색 띠를 둔다(2026-09-06) — 어느 갈래를 펼친 것인지 눈으로 알게 */
+      '.sbg>.sbgm a{display:block;padding:7px 15px;white-space:nowrap;font-size:13px;',
+      '  border-left:3px solid transparent}',
+      '.sbg>.sbgm a:hover{background:#F5F5F2}',
       '.sbg .darr{font-size:10px;margin-left:2px;opacity:.6}',
+      /* ⚠️ 묶음 표시에 점을 쓰지 않는다 — 점 하나가 12px 을 먹어 상단 nav 가 넘친다
+         (2026-09-06 홈에서 1280px 가로 10px 넘침을 화면점검이 잡았다).
+         폭을 한 픽셀도 안 쓰는 밑줄로 넣는다. */
+      '.sbg>.sbgt{box-shadow:inset 0 -2px 0 var(--sbgc,transparent)}',
       /* 좁은 화면에서는 하단 탭바가 길잡이라 상단 메뉴 자체가 감춰진다 */
       '@media(max-width:720px){.sbg{display:none}}'
     ].join('');
@@ -109,17 +120,22 @@
         });
       });
       if (found.length < 2) return;               /* 접을 만큼 없으면 그냥 둔다 */
+      var col = GCOL[name] || '';
       var box = document.createElement('span');
       box.className = 'sbg';
       var t = document.createElement('a');
       t.className = 'sbgt'; t.href = found[0].getAttribute('href');
+      if (col) t.style.setProperty('--sbgc', col);
       t.innerHTML = name + '<span class="darr">▾</span>';
       var m = document.createElement('div');
       m.className = 'sbgm';
       box.appendChild(t); box.appendChild(m);
       /* 첫 항목 자리에 묶음을 꽂고, 원래 링크들을 그 안으로 옮긴다(지우지 않는다) */
       nav.insertBefore(box, found[0]);
-      found.forEach(function (a) { m.appendChild(a); });
+      found.forEach(function (a) {
+        if (col) a.style.borderLeftColor = col;
+        m.appendChild(a);
+      });
       /* 지금 보고 있는 페이지가 이 묶음 안이면 묶음 이름에 표시 */
       if (found.some(function (a) { return a.classList.contains('on'); })) t.classList.add('on');
       if (slot && slot.parentNode === nav) nav.insertBefore(box, slot);

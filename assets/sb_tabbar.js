@@ -28,16 +28,28 @@
       USE='%EC%9D%B4%EC%9A%A9%EC%95%88%EB%82%B4.html', LOAN='%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html',
       APP='%EC%95%B1%EC%84%A4%EC%B9%98.html',
       BLOG='https://blog.naver.com/seokbongnews';
+  /* 🎨 묶음마다 색을 하나씩 준다(2026-09-06 석봉님 지시).
+       「메뉴들이 다 똑같은 디자인이어서 헷갈린다. 색깔이라도 다르게 해서 구분되게.」
+       흰 타일 18개가 3열로 늘어서 있어 무엇이 어느 갈래인지 눈으로 안 갈렸다.
+     ⚠️ 새 색을 지어내지 않았다 — 다섯 색 모두 이미 홈 허브 타일(index.html HUB)에서
+        쓰던 값이다(파랑 실거래지도 · 초록 경매공매/땅값 · 벽돌 재개발 · 금색 관심단지 ·
+        보라 대출문의). 새 색조를 더하면 갈래가 하나 더 늘 뿐이다.
+     🔴 **이 표가 색의 정본이다.** index.html 의 허브 타일도 같은 값을 쓰는데,
+        sb_tabbar.js 는 720px 이하에서만 돌아(17행 early return) PC 허브에는 닿지 못한다.
+        그래서 index.html 이 제 몫을 따로 들고 있고, **값이 어긋나면 콘솔 오류로 알린다**
+        (index.html 의 `[허브 색 불일치]` 검사. 문서로 적어 두면 반드시 갈린다). */
   var MENU=[
-    {g:'지도·데이터',items:[
+    {g:'지도·실거래',c:'#2554E0',bg:'#EEF3FB',bd:'#C9D8F5',items:[
       {n:'실거래지도',i:'map-2',h:'map.html'},
       {n:'재개발·재건축',i:'building-community',h:'map.html?mode=redev'},
       {n:'실시간 인기',i:'flame',h:'hot.html'},
-      {n:'금리·지표',i:'chart-histogram',h:JIPYO},
       /* 자료실(실거래·호가 엑셀 내려받기) — 2026-08-21 개통. 위 땅값 사고와 같은 이유로
          새 화면을 만들면 반드시 여기에도 넣는다(모바일 길잡이는 상단 nav 가 아니라 이 시트다). */
       {n:'자료실',i:'table-export',h:'%EC%9E%90%EB%A3%8C%EC%8B%A4.html'}]},
-    {g:'콘텐츠',items:[
+    /* 🔴 2026-09-06 재분류 — 청약·경매·LH·땅값이 「콘텐츠」에 들어 있었다.
+       데스크톱 상단 nav(sb_nav.js)는 같은 넷을 「데이터」로 묶고 있어 **두 화면이 서로 달랐다.**
+       읽을거리(리포트·블로그)와 찾아보는 자료를 한 묶음에 두면 색을 입혀도 안 갈린다. */
+    {g:'데이터·도구',c:'#0F6E56',bg:'#E8F4EE',bd:'#BFDFD0',items:[
       {n:'청약',i:'ticket',h:'apply.html'},
       {n:'경매·공매',i:'gavel',h:'auction.html'},
       {n:'LH 매입',i:'building-estate',h:LH},
@@ -48,16 +60,18 @@
          ⚠️ 아이콘 이름은 브라우저에서 실제로 렌더해 확인했다(tabler 3.24.0).
             CDN min.css 를 받아 grep 하면 잘려서 와 멀쩡한 이름도 「없음」으로 나온다. */
       {n:'땅값',i:'map-search',h:'%ED%86%A0%EC%A7%80%EA%B2%80%EC%83%89.html'},
+      {n:'금리·지표',i:'chart-histogram',h:JIPYO}]},
+    {g:'콘텐츠',c:'#C0562E',bg:'#FBEFE8',bd:'#F0CDBD',items:[
       /* 놀이터 — 2026-09-06 본배포. 부동산 공부하면서 실시간 랭킹·지역 대항전.
          ⚠️ 아이콘은 tabler 3.24.0 에 있는 이름(device-gamepad-2)을 썼다. */
       {n:'놀이터',i:'device-gamepad-2',h:'%EB%86%80%EC%9D%B4%ED%84%B0.html'},
       {n:'리포트',i:'file-text',h:G},
       {n:'블로그',i:'notebook',h:BLOG,blank:1},
       {n:'채널',i:'send',h:'channels.html'}]},
-    {g:'내 것',items:[
+    {g:'내 것',c:'#A6790A',bg:'#FBF4E1',bd:'#EBD8A3',items:[
       {n:'관심단지',i:'star',h:'favorites.html'},
       {n:'내 정보',i:'user',h:'%EB%82%B4%EC%A0%95%EB%B3%B4.html'}]},
-    {g:'안내',items:[
+    {g:'안내·문의',c:'#5B4A9E',bg:'#F1EEFA',bd:'#D4CCEE',items:[
       {n:'홈',i:'home',h:'index.html'},
       {n:'홈 화면에 추가',i:'device-mobile-down',h:APP},
       {n:'이용안내',i:'help-circle',h:USE},
@@ -69,6 +83,11 @@
      햄버거에는 땅값·자료실·실시간 인기·재개발이 아예 없었다. 새 화면을 만들 때마다
      세 곳을 다 고쳐야 하는데 그럴 리가 없다. **여기 하나를 정본으로 삼고 햄버거가 읽어 간다.** */
   window.SBMENU = MENU;
+  /* 색표만 따로도 내보낸다 — sb_feedback.js 의 「의견」 묶음이 같은 규격으로 그리려고 읽는다.
+     cls 는 아래 css() 가 만드는 묶음별 클래스 이름이다(sbg0…sbg4). */
+  window.SBMENUC = MENU.map(function(s,i){
+    return {g:s.g, c:s.c, bg:s.bg, bd:s.bd, cls:'sbg'+i};
+  });
   try{ window.dispatchEvent(new Event('sbmenu')); }catch(e){}
 
   /* 하단 탭 5칸(석봉님 확정). 지도를 첫 칸에 둔다 — 우리 지표는 지도 체류·재방문이다. */
@@ -148,11 +167,21 @@
   +'#sbsheet .hd{display:flex;align-items:center;justify-content:space-between;padding:15px 18px 11px;'
   +'position:sticky;top:0;background:#fff;border-bottom:1px solid #F1EEE6;font-size:15px;font-weight:800}'
   +'#sbsheet .hd button{border:0;background:none;font-size:22px;line-height:1;color:#9A938A;cursor:pointer}'
-  +'#sbsheet .gp{font-size:11px;font-weight:800;color:#9A938A;letter-spacing:.04em;padding:14px 18px 6px}'
+  +'#sbsheet .gp{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:800;'
+  +'color:#9A938A;letter-spacing:.02em;padding:15px 18px 7px}'
+  +'#sbsheet .gp .gdot{width:8px;height:8px;border-radius:50%;flex:0 0 auto}'
   +'#sbsheet .gd{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 14px}'
   +'#sbsheet a{display:flex;flex-direction:column;align-items:center;gap:5px;padding:13px 4px;'
   +'border:1px solid #EFEBE2;border-radius:12px;text-decoration:none;color:#2B2B28;'
   +'font-size:12px;font-weight:700;letter-spacing:-.02em;text-align:center;line-height:1.3}'
+  /* 묶음 색(2026-09-06) — 위 MENU 표에서 만든다. ⚠️`.on` 규칙보다 **앞에** 둔다:
+     `#sbsheet a.on` 과 `#sbsheet a.sbg0` 은 특정도가 같아 나중 규칙이 이긴다.
+     지금 보고 있는 화면 표시(.on)가 묶음 색에 묻히면 안 된다. */
+  +MENU.map(function(s,i){
+      return '#sbsheet a.sbg'+i+'{background:'+s.bg+';border-color:'+s.bd+'}'
+           + '#sbsheet a.sbg'+i+' i{color:'+s.c+'}'
+           + '#sbsheet .gp.sbg'+i+'{color:'+s.c+'}';
+    }).join('')
   +'#sbsheet a i{font-size:21px;color:#12203A}'
   +'#sbsheet a.on{border-color:#12203A;background:#F5F7FB}'
   /* 청약·경매 미니 선택 */
@@ -222,10 +251,13 @@
   /* ── 전체 메뉴 시트 ───────────────────────────────────────── */
   var sheet=document.createElement('div'); sheet.id='sbsheet';
   sheet.innerHTML='<div class="in"><div class="hd">전체 메뉴<button type="button" aria-label="닫기">✕</button></div>'
-    +MENU.map(function(s){
-      return '<div class="gp">'+s.g+'</div><div class="gd">'+s.items.map(function(m){
+    +MENU.map(function(s,gi){
+      return '<div class="gp sbg'+gi+'"><span class="gdot" style="background:'+s.c+'"></span>'+s.g+'</div>'
+        +'<div class="gd">'+s.items.map(function(m){
         var on=(m.h||'').toLowerCase().indexOf(page)===0&&page!=='index.html';
-        return '<a href="'+href(m.h)+'"'+(m.blank?' target="_blank" rel="noopener"':'')+(on?' class="on"':'')+'>'
+        /* 묶음 색 클래스를 늘 붙이고, 현재 화면이면 `on` 을 뒤에 덧붙인다(CSS 에서 on 이 이긴다) */
+        return '<a href="'+href(m.h)+'"'+(m.blank?' target="_blank" rel="noopener"':'')
+          +' class="sbg'+gi+(on?' on':'')+'">'
           +'<i class="ti ti-'+m.i+'" aria-hidden="true"></i>'+m.n+'</a>';
       }).join('')+'</div>';
     }).join('')+'</div>';

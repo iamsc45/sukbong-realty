@@ -146,9 +146,17 @@
     if (!sh) { if (n < 40) setTimeout(function () { mountSheet(n + 1); }, 150); return; }
     if (document.getElementById('sbFbSheet')) return;
     var box = sh.querySelector('.in'); if (!box) return;
-    var gp = document.createElement('div'); gp.className = 'gp'; gp.textContent = '의견';
+    /* 묶음 색은 `sb_tabbar.js` 의 SBMENUC 에서 읽어 온다(2026-09-06). 여기서 색을 새로 정하면
+       시트에 여섯 번째 색이 생겨 「색으로 갈래를 안다」는 규칙이 그 자리에서 깨진다.
+       ⚠️ 의견은 안내·문의와 같은 색을 쓴다 — 둘 다 「메뉴가 아니라 창구」다.
+       ⚠️ 못 읽어도 그냥 그린다(옛 캐시의 sb_tabbar.js 에는 SBMENUC 가 없다). */
+    var GC = (window.SBMENUC || []).filter(function (x) { return x.g === '안내·문의'; })[0];
+    var gp = document.createElement('div'); gp.className = 'gp' + (GC ? ' ' + GC.cls : '');
+    if (GC) gp.innerHTML = '<span class="gdot" style="background:' + GC.c + '"></span>의견';
+    else gp.textContent = '의견';
     var gd = document.createElement('div'); gd.className = 'gd';
-    gd.innerHTML = '<a href="#" id="sbFbSheet"><i class="ti ti-message-2" aria-hidden="true"></i>피드백 주기</a>';
+    gd.innerHTML = '<a href="#" id="sbFbSheet"' + (GC ? ' class="' + GC.cls + '"' : '') + '>'
+      + '<i class="ti ti-message-2" aria-hidden="true"></i>피드백 주기</a>';
     /* ⚠️ 맨 뒤에 붙였더니 시트 아래쪽(844px 화면에서 top 980)이라 **스크롤해야 보였다**.
        「당분간 피드백을 받는다」는 뜻에 맞게 맨 앞에 둔다(2026-08-21 실측 후 수정). */
     var hd = box.querySelector('.hd');

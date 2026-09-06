@@ -69,6 +69,14 @@ a{color:inherit}
 .dmenu a:first-child{border-top:1px solid #e3e0d8;border-radius:12px 12px 0 0}
 .dmenu a:last-child{border-radius:0 0 12px 12px;box-shadow:0 10px 24px rgba(0,0,0,.10)}
 .dmenu a:hover{background:#f4f2ec}
+/* 🎨 상단 드롭다운도 전체 메뉴와 같은 묶음 색을 쓴다(2026-09-06).
+   왼쪽 색 띠 + 이름 앞 점만 준다 — 배경까지 칠하면 흰 드롭다운이 무거워진다.
+   ⚠️ 홈은 `nav.nav` 라 `assets/sb_nav.js` 가 손대지 않는다(그 파일 boot() 첫 줄).
+      그래서 홈 몫은 여기 CSS 로 둔다. 색값은 아래 GCOL 과 같아야 한다. */
+.drop .dmenu a{border-left:3px solid var(--gc,transparent)}
+/* ⚠️ 묶음 표시를 **점으로 넣었더니 상단 nav 가 1280px 에서 10px 넘쳤다**(2026-09-06 화면점검이 잡음).
+   점 하나가 12px 씩 먹는데 nav 는 이미 꽉 차 있다. 폭을 한 픽셀도 안 쓰는 밑줄(box-shadow)로 바꿨다. */
+.drop>.lnk{box-shadow:inset 0 -2px 0 var(--gc,transparent)}
 /* ── 모바일 햄버거 메뉴(2026-08-08): 평탄화 가로 스크롤 폐기.
    11개를 옆으로 늘어놓으니 nav 내용폭이 981px가 됐고, 카카오톡 인앱 브라우저가
    그 폭에 맞춰 페이지 전체를 축소하는 사고가 났다(석봉님 캡처 제보).
@@ -89,8 +97,9 @@ a{color:inherit}
     padding:6px 16px 18px;z-index:300;
     max-height:calc(100dvh - 72px - var(--sbtab-h,56px));overflow-y:auto;
     -webkit-overflow-scrolling:touch;overscroll-behavior:contain}
-  .m-nav-panel .mg{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;
-    color:var(--g3);margin:16px 2px 7px}
+  .m-nav-panel .mg{display:flex;align-items:center;gap:6px;font-size:10.5px;letter-spacing:.16em;
+    text-transform:uppercase;font-weight:700;color:var(--g3);margin:16px 2px 7px}
+  .m-nav-panel .mg .gdot{width:7px;height:7px;border-radius:50%;flex:0 0 auto}
   .m-nav-panel .ml{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   .m-nav-panel .ml a{display:block;font-size:14.5px;font-weight:700;color:var(--g1);text-decoration:none;
     border:1px solid var(--hair);border-radius:12px;padding:11px 14px;background:var(--bg,#fff)}
@@ -392,6 +401,17 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
 .tile:hover{background:var(--blk);color:#fff}
 .tile:hover .td{color:#B9B9B4}
 .tile:hover .num{color:#8A8A85}
+/* 🎨 묶음 색(2026-09-06 석봉님 지시 「색깔이라도 다르게 해서 구분되게」).
+   색값은 타일마다 인라인 변수(--gbg/--gc)로 들어온다 — 여기 하드코딩하지 않는다.
+   🔴 값의 정본은 `assets/sb_tabbar.js` 의 MENU 표다. 그 파일은 720px 이하에서만 돌아
+      PC 허브에는 닿지 못하므로 아래 JS 가 제 몫을 따로 들고 있고,
+      두 벌이 어긋나면 콘솔 오류 `[허브 색 불일치]` 로 알린다(모바일에서 검사된다).
+   ⚠️ `:hover` 를 함께 적어야 한다 — 안 그러면 특정도가 같아 검정 hover 가 죽는다. */
+.tile[data-g]{background:var(--gbg)}
+.tile[data-g] .num{color:var(--gc);letter-spacing:.02em}
+.tile[data-g]:hover{background:var(--blk)}
+.tile[data-g]:hover .num{color:#8A8A85}
+.tile-m[data-g]{background:var(--gbg)}
 .tile .ic{font-size:22px;line-height:1}
 .tile .tn{font-size:15px;font-weight:800;letter-spacing:-0.01em}
 .tile .td{font-size:11px;color:var(--g2);line-height:1.4}
@@ -709,7 +729,8 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
   <!-- 🔴 자료실은 **최상위**다(2026-08-22). 다른 페이지 nav 는 `sb_nav.js` 가 최상위로 올려
        주는데 홈만 드롭다운 안에 있어 자리가 달랐다. 정본(`sb_tabbar.js` 의 MENU)과 맞춘다. -->
   <a class="lnk" href="%EC%9E%90%EB%A3%8C%EC%8B%A4.html">자료실</a>
-  <div class="drop">
+  <!-- --gc 는 묶음 색(2026-09-06). 데이터·도구=초록 / 콘텐츠=벽돌색 — 전체 메뉴 시트와 같다. -->
+  <div class="drop" style="--gc:#0F6E56">
     <a class="lnk" href="%EC%A7%80%ED%91%9C.html">데이터 <span class="darr">▾</span></a>
     <div class="dmenu">
       <a href="apply.html">청약</a>
@@ -718,7 +739,7 @@ footer .fine{margin-top:6px;line-height:1.7;color:#6E6E6A}
       <a href="lh_%EC%A7%84%EB%8B%A8.html">LH매입</a><a href="%ED%86%A0%EC%A7%80%EA%B2%80%EC%83%89.html">땅값</a>
     </div>
   </div>
-  <div class="drop">
+  <div class="drop" style="--gc:#C0562E">
     <a class="lnk" href="%EA%B8%80.html">콘텐츠 <span class="darr">▾</span></a>
     <div class="dmenu">
       <a href="%EB%86%80%EC%9D%B4%ED%84%B0.html">놀이터</a>
@@ -788,10 +809,13 @@ document.addEventListener('click',function(e){if(n.classList.contains('m-open')&
         return h!=='index.html';                 /* 홈은 위 바로가기에 있다 */
       });
       if(!rows.length)return;
-      html+='<div class="mg">'+g.g+'</div><div class="ml">'
+      /* 묶음 색은 SBMENU 가 들고 온다(2026-09-06). 없으면 예전처럼 파랑 아이콘으로 그린다. */
+      var c=g.c||'var(--blue)', bg=g.bg||'', bd=g.bd||'';
+      var st=bg?(' style="background:'+bg+';border-color:'+bd+'"'):'';
+      html+='<div class="mg">'+(g.c?'<span class="gdot" style="background:'+g.c+'"></span>':'')+g.g+'</div><div class="ml">'
         +rows.map(function(m){
-          return '<a href="'+m.h+'"'+(m.blank?' target="_blank" rel="noopener"':'')+'>'
-            +'<i class="ti ti-'+m.i+'" aria-hidden="true" style="margin-right:6px;color:var(--blue);font-size:16px;vertical-align:-2px"></i>'
+          return '<a href="'+m.h+'"'+(m.blank?' target="_blank" rel="noopener"':'')+st+'>'
+            +'<i class="ti ti-'+m.i+'" aria-hidden="true" style="margin-right:6px;color:'+c+';font-size:16px;vertical-align:-2px"></i>'
             +m.n+'</a>';
         }).join('')+'</div>';
     });
@@ -1012,41 +1036,59 @@ document.addEventListener('click',function(e){if(n.classList.contains('m-open')&
 
 <script>
 (function(){
+  /* 🎨 묶음 색(2026-09-06 석봉님 지시) — 모바일 전체 메뉴 시트와 **같은 다섯 색**.
+     🔴 정본은 `assets/sb_tabbar.js` 의 MENU 표다. 그 파일이 720px 이하에서만 돌아
+        PC 에서는 읽을 수 없어 여기 한 벌을 더 둔다. **어긋나면 아래 검사가 콘솔로 알린다.**
+     ⚠️ 타일마다 있던 제각각의 색(#D85A30·#0FA98A·#E8A13A·#7A5AF8…)은 걷어냈다.
+        열여덟 칸이 저마다 다른 색이면 색이 아무 뜻도 못 가진다 — 그게 이번 지적의 원인이다. */
+  var GCOL=[
+    {g:'지도·실거래',c:'#2554E0',bg:'#EEF3FB',bd:'#C9D8F5'},
+    {g:'데이터·도구',c:'#0F6E56',bg:'#E8F4EE',bd:'#BFDFD0'},
+    {g:'콘텐츠',    c:'#C0562E',bg:'#FBEFE8',bd:'#F0CDBD'},
+    {g:'내 것',     c:'#A6790A',bg:'#FBF4E1',bd:'#EBD8A3'},
+    {g:'안내·문의', c:'#5B4A9E',bg:'#F1EEFA',bd:'#D4CCEE'}
+  ];
+  var GMAP={}; GCOL.forEach(function(x,i){GMAP[x.g]=x;GMAP[x.g].idx=i;});
+  /* 🔴 순서는 묶음별로 모은다(2026-09-06). 전에는 갈래가 섞여 있어 색을 입혀도
+     같은 색이 화면 여기저기 흩어졌다. PC 는 5칸 x 4줄 = 20 으로 딱 떨어진다. */
   var HUB=[
-    {n:'실거래지도',d:'건물별 실거래가',i:'map-2',c:'#2554E0',h:'map.html'},
-    {n:'재개발·재건축',d:'정비구역·시세추이',i:'building-community',c:'#c0562e',h:'map.html?mode=redev'},
-    {n:'실시간 인기',d:'거래 급증·가격 급등',i:'flame',c:'#D85A30',h:'hot.html'},
-    {n:'경매·공매',d:'낙찰률·낙찰가율',i:'gavel',c:'#0F6E56',h:'auction.html'},
-    {n:'청약',d:'분양 일정·경쟁률',i:'ticket',c:'#185FA5',h:'apply.html'},
-    {n:'시세·통계',d:'평당가·전세가율',i:'chart-histogram',c:'#0FA98A',h:'#dash',dash:true},
-    {n:'상가·빌딩',d:'상업용 실거래',i:'building-store',c:'#E8A13A',h:'map.html?t=comm'},
+    /* ── 지도·실거래 ── */
+    {g:'지도·실거래',n:'실거래지도',d:'건물별 실거래가',i:'map-2',h:'map.html'},
+    {g:'지도·실거래',n:'재개발·재건축',d:'정비구역·시세추이',i:'building-community',h:'map.html?mode=redev'},
+    {g:'지도·실거래',n:'실시간 인기',d:'거래 급증·가격 급등',i:'flame',h:'hot.html'},
+    {g:'지도·실거래',n:'시세·통계',d:'평당가·전세가율',i:'chart-histogram',h:'#dash',dash:true},
+    {g:'지도·실거래',n:'상가·빌딩',d:'상업용 실거래',i:'building-store',h:'map.html?t=comm'},
+    /* 🔴 자료실·땅값·LH·채널은 2026-08-22 석봉님 지시로 채운 것들이다 — 「허브타일도 전체 메뉴랑 똑같이」.
+       전체 메뉴(SBMENU)에는 있는데 홈 타일에만 빠져 있던 화면들이다. 아래 CHECK 가 감시한다. */
+    {g:'지도·실거래',n:'자료실',d:'실거래·호가 엑셀',i:'table-export',h:'%EC%9E%90%EB%A3%8C%EC%8B%A4.html'},
+    /* ── 데이터·도구 ── */
+    {g:'데이터·도구',n:'경매·공매',d:'낙찰률·낙찰가율',i:'gavel',h:'auction.html'},
+    {g:'데이터·도구',n:'청약',d:'분양 일정·경쟁률',i:'ticket',h:'apply.html'},
     /* 금리·지표(2026-08-11 석봉님 지시). 전체 메뉴에만 있고 홈 타일에는 빠져 있었다.
        담보대출 주선이 본업이라 금리는 첫 화면에서 바로 닿아야 한다. */
-    {n:'금리·지표',d:'기준금리·대출금리',i:'percentage',c:'#7A5AF8',h:'%EC%A7%80%ED%91%9C.html'},
-    {n:'리포트',d:'우리가 쓴 분석 글',i:'file-text',c:'#6E6E6A',h:'%EA%B8%80.html'},
+    {g:'데이터·도구',n:'금리·지표',d:'기준금리·대출금리',i:'percentage',h:'%EC%A7%80%ED%91%9C.html'},
+    {g:'데이터·도구',n:'땅값',d:'공시지가·토지 실거래',i:'map-search',h:'%ED%86%A0%EC%A7%80%EA%B2%80%EC%83%89.html'},
+    {g:'데이터·도구',n:'LH 매입',d:'매입약정 진단·실적',i:'building-estate',h:'lh_%EC%A7%84%EB%8B%A8.html'},
+    /* ── 콘텐츠 ── */
+    {g:'콘텐츠',n:'리포트',d:'우리가 쓴 분석 글',i:'file-text',h:'%EA%B8%80.html'},
     /* 놀이터(2026-09-06 석봉님 "홈화면 타일 버튼에 놀이터 추가"). 전체 메뉴·상단 nav 에는 있었는데
-       홈 타일에만 빠져 있었다(아래 CHECK 가 콘솔 오류로 잡고 있었다). 색은 놀이터의 강조색. */
-    {n:'놀이터',d:'부동산 퀴즈·랭킹 게임',i:'device-gamepad-2',c:'#FF5C39',h:'%EB%86%80%EC%9D%B4%ED%84%B0.html'},
-    /* 모바일에서는 뺀다(deskOnly) — 아래 채널 버튼(텔레그램·오픈채팅·블로그)에 이미 있어 중복이고,
-       금리·지표를 넣으면서 4칸 격자가 한 칸 어긋나던 것도 이걸로 맞는다(2026-08-11). */
-    {n:'블로그',d:'네이버 블로그',i:'notebook',c:'#03C75A',h:'https://blog.naver.com/seokbongnews',blank:true,deskOnly:true},
-    /* 🔴 아래 넷은 2026-08-22 석봉님 지시로 채웠다 — 「허브타일도 전체 메뉴랑 똑같이」.
-       전체 메뉴(SBMENU)에는 있는데 홈 타일에만 빠져 있던 화면들이다. 아래 CHECK 가 감시한다. */
-    {n:'자료실',d:'실거래·호가 엑셀',i:'table-export',c:'#1B3F7A',h:'%EC%9E%90%EB%A3%8C%EC%8B%A4.html'},
-    {n:'땅값',d:'공시지가·토지 실거래',i:'map-search',c:'#0F6E56',h:'%ED%86%A0%EC%A7%80%EA%B2%80%EC%83%89.html'},
-    {n:'LH 매입',d:'매입약정 진단·실적',i:'building-estate',c:'#12264A',h:'lh_%EC%A7%84%EB%8B%A8.html'},
-    {n:'이용안내',d:'처음 오셨나요',i:'help-circle',c:'#8A8A85',h:'%EC%9D%B4%EC%9A%A9%EC%95%88%EB%82%B4.html'},
-    /* 채널은 모바일 홈에 텔레그램·오픈채팅·블로그 버튼이 따로 있어 겹친다(deskOnly) */
-    {n:'채널',d:'텔레그램·오픈채팅',i:'send',c:'#2AABEE',h:'channels.html',deskOnly:true},
-    {n:'관심단지',d:'내가 찜한 단지',i:'star',c:'#D9A514',h:'favorites.html'},
-    {n:'대출 문의',d:'담보 조건 상담 연결',i:'building-bank',c:'#5B4A9E',h:'%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html?ctx=home'},
+       홈 타일에만 빠져 있었다(아래 CHECK 가 콘솔 오류로 잡고 있었다). */
+    {g:'콘텐츠',n:'놀이터',d:'부동산 퀴즈·랭킹 게임',i:'device-gamepad-2',h:'%EB%86%80%EC%9D%B4%ED%84%B0.html'},
+    /* 모바일에서는 뺀다(deskOnly) — 아래 채널 버튼(텔레그램·오픈채팅·블로그)에 이미 있어 중복이다 */
+    {g:'콘텐츠',n:'블로그',d:'네이버 블로그',i:'notebook',h:'https://blog.naver.com/seokbongnews',blank:true,deskOnly:true},
+    {g:'콘텐츠',n:'채널',d:'텔레그램·오픈채팅',i:'send',h:'channels.html',deskOnly:true},
+    /* ── 내 것 ── */
+    {g:'내 것',n:'관심단지',d:'내가 찜한 단지',i:'star',h:'favorites.html'},
+    /* ── 안내·문의 ── */
+    {g:'안내·문의',n:'이용안내',d:'처음 오셨나요',i:'help-circle',h:'%EC%9D%B4%EC%9A%A9%EC%95%88%EB%82%B4.html'},
+    {g:'안내·문의',n:'대출 문의',d:'담보 조건 상담 연결',i:'building-bank',h:'%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html?ctx=home'},
     /* 앱 설치(2026-08-11 석봉님 지시). 모바일에서는 마지막 줄을 통째로 쓰는 띠로 그린다 —
-       4칸 격자에 열세 번째 타일 하나만 덩그러니 남으면 보기 싫고, 설치는 휴대폰에서
+       4칸 격자에 타일 하나만 덩그러니 남으면 보기 싫고, 설치는 휴대폰에서
        가장 필요한 일이라 눈에 띄는 편이 맞다. */
-    {n:'앱 다운로드',d:'홈 화면에 추가',i:'download',c:'#2554E0',h:'%EC%95%B1%EC%84%A4%EC%B9%98.html',wide:true},
-    /* 준비중 자리표시는 모바일에서 뺀다(deskOnly) — 놀이터가 들어오면서 4칸 격자가 한 칸 남게 됐고,
-       눌러도 아무 일 없는 칸이 폰에서 자리를 차지할 이유가 없다(2026-09-06). PC 는 5칸 x 4줄 = 20 으로 딱 맞는다. */
-    {n:'커뮤니티',d:'동네 이야기',i:'messages',c:'#8A8A85',soon:true,deskOnly:true}
+    {g:'안내·문의',n:'앱 다운로드',d:'홈 화면에 추가',i:'download',h:'%EC%95%B1%EC%84%A4%EC%B9%98.html',wide:true},
+    /* 준비중 자리표시는 모바일에서 뺀다(deskOnly) — 눌러도 아무 일 없는 칸이 폰에서
+       자리를 차지할 이유가 없다(2026-09-06). */
+    {g:'안내·문의',n:'커뮤니티',d:'동네 이야기',i:'messages',soon:true,deskOnly:true}
   ];
   /* 🔴 허브 타일과 전체 메뉴가 또 갈리지 않게 감시한다(2026-08-22).
      메뉴가 세 곳에 흩어져 있어 새 화면이 계속 누락됐다(땅값·자료실이 실제로 그랬다).
@@ -1073,23 +1115,44 @@ document.addEventListener('click',function(e){if(n.classList.contains('m-open')&
       });});
       if(miss.length) console.error('[허브 타일 누락] 전체 메뉴에는 있는데 홈 타일에 없다: '+miss.join(', ')
         +' — index.html 의 HUB 에 넣거나 HUB_SKIP 에 이유를 적으세요.');
+      /* 🔴 색표가 갈리는 것도 같이 잡는다(2026-09-06 신설).
+         묶음 색의 정본은 `assets/sb_tabbar.js` 의 MENU 인데, 그 파일이 720px 이하에서만
+         돌아 PC 허브는 위 GCOL 한 벌을 따로 들고 있다. **두 벌은 반드시 같아야 한다** —
+         문서로 적어 두면 반드시 갈린다는 것을 8/22 메뉴 세 곳에서 이미 겪었다.
+         ⚠️ 이 검사는 SBMENUC 가 있는 좁은 화면에서만 돈다(화면점검이 390px 로 연다). */
+      var C=window.SBMENUC;
+      if(C&&C.length){
+        var mine={}; GCOL.forEach(function(x){mine[x.g]=x;});
+        var dif=[];
+        C.forEach(function(s){
+          var m=mine[s.g];
+          if(!m){dif.push(s.g+'(허브에 없는 묶음)');return;}
+          if(m.c!==s.c||m.bg!==s.bg||m.bd!==s.bd)dif.push(s.g+'('+m.c+'/'+m.bg+' ↔ 시트 '+s.c+'/'+s.bg+')');
+        });
+        if(dif.length)console.error('[허브 색 불일치] 전체 메뉴 시트와 홈 타일의 묶음 색이 다르다: '
+          +dif.join(', ')+' — index.html 의 GCOL 을 assets/sb_tabbar.js 의 MENU 에 맞추세요.');
+      }
     })(0);
   }catch(e){}
   function tile(t,idx,mob){
     var cls=(mob?'tile-m':'tile')+(t.soon?' soon':'')+(t.wide&&mob?' wide':'');
-    var num=('0'+(idx+1)).slice(-2);
+    var G=GMAP[t.g]||null;
+    /* 🔴 번호(01·02…) 자리에 **묶음 이름**을 넣는다(2026-09-06). 순번은 읽는 사람에게
+       아무 뜻이 없었고, 지금 필요한 것은 「이게 어느 갈래냐」다. 모바일은 이 칸이 숨겨져 있다. */
+    var num=G?G.g:('0'+(idx+1)).slice(-2);
+    var gattr=G?(' data-g="'+G.idx+'" style="--gbg:'+G.bg+';--gc:'+G.c+'"'):'';
     var inner='<span class="num">'+num+'</span>'
-      +'<i class="ti ti-'+t.i+' ic" aria-hidden="true" style="color:'+t.c+'"></i>'
+      +'<i class="ti ti-'+t.i+' ic" aria-hidden="true" style="color:'+(G?G.c:'#6E6E6A')+'"></i>'
       +'<span class="tn">'+t.n+'</span>'
       +(mob?'':'<span class="td">'+t.d+'</span>')
       +(t.soon?'<span class="badge">'+(mob?'':'준비중')+'</span>':'');
-    if(t.soon)return '<a class="'+cls+'" href="#" onclick="return false" title="준비 중입니다">'+inner+'</a>';
+    if(t.soon)return '<a class="'+cls+'"'+gattr+' href="#" onclick="return false" title="준비 중입니다">'+inner+'</a>';
     var tgt=t.blank?' target="_blank" rel="noopener"':'';
     /* 🔴'시세·통계'는 #dash로 보내는데 **모바일에서 .dash가 display:none**이라 눌러도
        아무 일도 없었다(2026-08-11 석봉님 제보). 모바일에는 접이식 대시보드(#mdash)가
        따로 있으므로 그쪽으로 보내고, 없으면 대시보드를 펼친 뒤 이동한다. */
-    if(t.dash)return '<a class="'+cls+'" href="#dash" data-dash="1">'+inner+'</a>';
-    return '<a class="'+cls+'" href="'+t.h+'"'+tgt+'>'+inner+'</a>';
+    if(t.dash)return '<a class="'+cls+'"'+gattr+' href="#dash" data-dash="1">'+inner+'</a>';
+    return '<a class="'+cls+'"'+gattr+' href="'+t.h+'"'+tgt+'>'+inner+'</a>';
   }
   var hd=document.getElementById('hubDesk'); if(hd)hd.innerHTML=HUB.map(function(t,i){return tile(t,i,false);}).join('');
   /* 모바일은 4칸 격자라 폭을 다 쓰는 타일(앱 다운로드)이 중간에 끼면 줄이 깨진다. 맨 뒤로 보낸다.
@@ -1663,7 +1726,7 @@ else window.addEventListener("load",function(){setTimeout(build,400);});
 <!-- 헤더 로그인/내정보 버튼(2026-08-09 석봉님 지시: 모든 페이지 상시 노출).
      홈은 그동안 sb_auth를 안 실었는데, 로그인 버튼을 모든 페이지에 두기로 하면서 싣는다. -->
 <script src="assets/sb_auth.js?v=8"></script>
-<script src="assets/sb_tabbar.js?v=11"></script>
+<script src="assets/sb_tabbar.js?v=12"></script>
 <script src="assets/sb_promo.js?v=2" defer></script>
-<script defer src="assets/sb_feedback.js?v=4"></script>
+<script defer src="assets/sb_feedback.js?v=5"></script>
 </body></html>
