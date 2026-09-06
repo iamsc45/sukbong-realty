@@ -251,8 +251,10 @@ window.TaxGame = (function(){
     if(aimX != null){
       var d = aimX - px;
       px += d * Math.min(1, dt * 16);
+      /* 누르고 있기: 손가락 자리에 닿았는데 아직 눌려 있으면(vx≠0) 그 방향으로 계속 간다 */
+      if(Math.abs(d) < 2 && vx !== 0) aimX = null;
     } else {
-      px += vx * dt * 420;                 // 키보드
+      px += vx * dt * 420;                 // 키보드 · 누르고 있기
     }
     px = Math.max(PW/2 + 4, Math.min(W - PW/2 - 4, px));
 
@@ -521,7 +523,7 @@ window.TaxGame = (function(){
   function begin(){
     show("tPlay");
     fit(); reset(); draw(); hud();
-    running = true; lastT = 0;
+    running = true; lastT = 0; if(window.__taxEvReset) window.__taxEvReset();
     /* 게임 중에는 문서 전체가 제스처를 넘기지 않게 한다 — 판 밖에서 시작한 드래그도 집을 끌어야
        하고, 인앱 브라우저가 스와이프를 가져가는 것도 여기서 한 번 더 막는다(2026-09-06). */
     lockGestures(true);
@@ -572,13 +574,20 @@ window.TaxGame = (function(){
        움직임이 안 오는 곳(cancel 이 오거나, 눌린 뒤 350ms 안에 move 가 한 번도 없으면)은 누르고 있기.
        판정은 한 번 내려지면 그 판 동안 유지한다(HOLD). */
     var HOLD = IN_APP, pid = null, downX = 0, downT = 0, moved = false, holdTimer = null;
+    /* 포인터 이벤트 흐름을 남긴다(d=down m=move u=up c=cancel). 점수 등록 때 UA 뒤에 붙여 보낸다 —
+       인앱 WebView 가 실제로 무엇을 보내는지 여기서는 볼 수 없어서(2026-09-06 3차). */
+    var EV = []; function ev(c){ if(EV.length < 60) EV.push(c); }
+    window.__taxEv = function(){ return EV.join(""); };
+    window.__taxEvReset = function(){ EV.length = 0; };
     function hintInApp(){
       say("왼쪽·오른쪽을 누르고 있으면 그쪽으로 가요", 3.2);
     }
     function holdFrom(x){
-      /* 손가락이 집보다 어느 쪽인가로 방향을 정한다. 집 바로 위(±18px)는 멈춤. */
+      /* 🔴 3차(2026-09-06 저녁) — 누르고 있기만 두면 **앱이 곧바로 cancel 을 보내 vx 가 0 이 되어**
+         집이 한 발도 안 움직일 수 있다(3.4초에 끝난 판). 그래서 **탭 = 그 자리로(aim)** 를 먼저 살리고,
+         손가락이 남아 있으면 그 방향으로 계속 간다. 취소가 와도 최소한 탭한 자리까지는 간다. */
       var r = cv.getBoundingClientRect(), lx = x - r.left;
-      aimX = null;
+      aimX = Math.max(0, Math.min(W, lx));
       vx = lx < px - 18 ? -1 : (lx > px + 18 ? 1 : 0);
     }
     function release(){ if(HOLD){ vx = 0; } clearTimeout(holdTimer); holdTimer = null; pid = null; }
@@ -586,7 +595,7 @@ window.TaxGame = (function(){
       document.addEventListener("pointerdown", function(e){
         if(!running || isBtn(e)) return;
         if(e.pointerType === "mouse" && e.button !== 0) return;
-        pid = e.pointerId; downX = e.clientX; downT = Date.now(); moved = false;
+        ev("d"); pid = e.pointerId; downX = e.clientX; downT = Date.now(); moved = false;
         if(HOLD && e.pointerType !== "mouse"){ holdFrom(e.clientX); }
         else {
           aim(e.clientX);
@@ -607,13 +616,15 @@ window.TaxGame = (function(){
         if(!running || isBtn(e)) return;
         if(e.pointerType === "mouse"){ aim(e.clientX); return; }   /* 마우스는 예전처럼 따라온다 */
         if(pid !== e.pointerId) return;
+        ev("m");
         if(Math.abs(e.clientX - downX) > 3) moved = true;
         if(HOLD){ holdFrom(e.clientX); }      /* 누르고 있기 모드에서도 손가락이 반대편으로 넘어가면 방향 바꿈 */
         else { aim(e.clientX); }
         if(e.cancelable) e.preventDefault();
       }, { passive: false });
-      document.addEventListener("pointerup", function(e){ if(e.pointerId === pid) release(); });
+      document.addEventListener("pointerup", function(e){ ev("u"); if(e.pointerId === pid) release(); });
       document.addEventListener("pointercancel", function(e){
+        ev("c");
         if(e.pointerId !== pid) return;
         /* 앱이 제스처를 가져갔다 — 이번 판부터 누르고 있기로 */
         if(running && !HOLD){ HOLD = true; hintInApp(); }
