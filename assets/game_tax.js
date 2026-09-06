@@ -550,7 +550,7 @@ window.TaxGame = (function(){
        판정은 한 번 내려지면 그 판 동안 유지한다(HOLD). */
     var HOLD = IN_APP, pid = null, downX = 0, downT = 0, moved = false, holdTimer = null;
     function hintInApp(){
-      say("드래그가 막히면 집의 왼쪽·오른쪽을 누르고 있어 보세요", 3.2);
+      say("왼쪽·오른쪽을 누르고 있으면 그쪽으로 가요", 3.2);
     }
     function holdFrom(x){
       /* 손가락이 집보다 어느 쪽인가로 방향을 정한다. 집 바로 위(±18px)는 멈춤. */
