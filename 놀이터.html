@@ -544,6 +544,9 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:0;backg
 .sbexit.hide{display:none}
 /* 플레이 중에는 하단 탭바를 걷는다 — 액션 게임이 innerHeight 로 판 높이를 재서 56px 을 먹으면 좁아진다 */
 body.sbplay #sbtab{display:none}
+/* 공용 푸터(sb_footer.js)도 플레이 중엔 감춘다(2026-09-06). 허브·인트로·결과 화면에서만 보인다 —
+   결과 화면은 캡처해 공유하는 곳이라 ⓒ 줄이 여기 있어야 한다. */
+body.sbplay .site-footer{display:none}
 body.sbplay{padding-bottom:0!important} /* 탭바가 인라인 style 로 50px 을 박아서 !important 가 필요하다 */
 </style>
 </head>
@@ -858,7 +861,7 @@ body.sbplay{padding-bottom:0!important} /* 탭바가 인라인 style 로 50px �
          들어와도 판이 시작되면 잊는다. 판 아래에 늘 보이게 둔다. -->
     <div class="tfoot">
       <span class="k"><b>초록</b>을 먹으면 잠깐 무적</span>
-      <span class="k">화면을 누르거나 <b>← →</b> 방향키</span>
+      <span class="k">손가락 따라가기 · 안 되면 <b>왼쪽·오른쪽 누르고 있기</b> · <b>← →</b></span>
     </div>
   </section>
 
@@ -958,10 +961,12 @@ body.sbplay{padding-bottom:0!important} /* 탭바가 인라인 style 로 50px �
 <script src="assets/sb_bgm.js?v=10"></script>
 <script src="data/quiz_econ.js?v=3"></script>
 <script src="assets/game_econ.js?v=3"></script>
-<script src="assets/game_tax.js?v=26"></script>
+<script src="assets/game_tax.js?v=27"></script>
 <script src="assets/game_stack.js?v=3"></script>
 <!-- 다른 페이지와 같은 머리글 동작(2026-09-06 석봉님 "모바일에서 메뉴가 옆으로 스크롤이 안 돼").
      이 둘이 빠져 있어 놀이터만 메뉴가 날것으로 늘어졌다. 탭바는 플레이 중엔 body.sbplay 로 감춘다. -->
+<!-- 공용 푸터(저작권·채널). ⚠️sb_tabbar.js 보다 먼저 — 탭바가 .site-footer 를 찾아 하단 여백을 맞춘다(2026-09-06). -->
+<script src="assets/sb_footer.js?v=1"></script>
 <script src="assets/sb_tabbar.js?v=12"></script>
 <script defer src="assets/sb_nav.js?v=6"></script>
 <script>

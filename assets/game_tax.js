@@ -499,6 +499,12 @@ window.TaxGame = (function(){
     document.documentElement.style.touchAction = "none";
     document.documentElement.style.overscrollBehavior = "none";
     if(window.__taxInApp && !window.__taxInAppShown){ window.__taxInAppShown = 1; setTimeout(window.__taxInApp, 900); }
+    /* 진단용 — 주소에 ?dbg=1 을 붙이면 어느 브라우저로 들어왔는지 판 위에 띄운다
+       (인앱 UA 문자열을 여기서 볼 수 없어 석봉님 폰에서 읽어 오기 위한 것, 2026-09-06) */
+    if(/[?&]dbg=1/.test(location.search)){
+      var ua = navigator.userAgent, m = ua.match(/(Barcelona|Instagram|FBAN|FBAV|FB_IAB|Chrome\/[\d.]+|Safari\/[\d.]+)[^ )]*/g);
+      setTimeout(function(){ say("UA: " + (m ? m.join(" · ") : ua.slice(-60)) + (IN_APP ? " · 인앱" : " · 일반"), 8); }, 1200);
+    }
     /* 소리는 여기서 시작한다 — 시작 버튼을 누른 직후라 브라우저가 허락한다.
        (사용자 동작 없이 미리 켜 두면 정책에 막혀 조용히 실패한다) */
     if(window.SBBgm){ SBBgm.setPace(0); SBBgm.play("tax"); }
@@ -534,29 +540,61 @@ window.TaxGame = (function(){
        대책 셋: ①Pointer Events + setPointerCapture — 손가락을 판에 묶어 두면 WebView 가 덜 가로챈다
        ②게임 중에는 html 전체에 touch-action:none / overscroll-behavior:none 을 건다(begin/stop)
        ③그래도 pointercancel 이 오면(빼앗긴 것) 인앱 안내 문구를 띄운다 — 탭으로는 되니까. */
-    var stolen = false, pid = null;
+    /* ── 2026-09-06 2차 — 1차(포인터 캡처)로도 스레드 앱 안에서 드래그가 안 됐다(석봉님 재확인).
+       인앱 브라우저는 손가락이 움직이면 그 자리에서 제스처를 가져가 **움직임 자체가 페이지에
+       안 온다.** 손가락을 따라가는 조작은 원리적으로 불가능하다. 그래서 움직임 없이도 되는
+       조작을 하나 더 둔다 — **「누르고 있기」**: 집보다 왼쪽을 누르고 있으면 왼쪽으로, 오른쪽을
+       누르고 있으면 오른쪽으로 계속 간다(touchstart·touchend 만 있으면 된다).
+       두 조작은 자동으로 갈린다. 움직임(pointermove)이 오는 브라우저는 손가락 따라가기,
+       움직임이 안 오는 곳(cancel 이 오거나, 눌린 뒤 350ms 안에 move 가 한 번도 없으면)은 누르고 있기.
+       판정은 한 번 내려지면 그 판 동안 유지한다(HOLD). */
+    var HOLD = IN_APP, pid = null, downX = 0, downT = 0, moved = false, holdTimer = null;
     function hintInApp(){
-      say("앱 안에선 드래그가 막혀요. 탭으로 자리를 찍거나 ⋯에서 브라우저로 열기", 3.2);
+      say("드래그가 막히면 집의 왼쪽·오른쪽을 누르고 있어 보세요", 3.2);
     }
+    function holdFrom(x){
+      /* 손가락이 집보다 어느 쪽인가로 방향을 정한다. 집 바로 위(±18px)는 멈춤. */
+      var r = cv.getBoundingClientRect(), lx = x - r.left;
+      aimX = null;
+      vx = lx < px - 18 ? -1 : (lx > px + 18 ? 1 : 0);
+    }
+    function release(){ if(HOLD){ vx = 0; } clearTimeout(holdTimer); holdTimer = null; pid = null; }
     if(window.PointerEvent){
       document.addEventListener("pointerdown", function(e){
         if(!running || isBtn(e)) return;
         if(e.pointerType === "mouse" && e.button !== 0) return;
-        pid = e.pointerId; aim(e.clientX);
+        pid = e.pointerId; downX = e.clientX; downT = Date.now(); moved = false;
+        if(HOLD && e.pointerType !== "mouse"){ holdFrom(e.clientX); }
+        else {
+          aim(e.clientX);
+          if(e.pointerType !== "mouse"){
+            /* 350ms 안에 move 가 한 번도 안 오면 움직임을 못 받는 환경으로 본다 → 누르고 있기 */
+            clearTimeout(holdTimer);
+            holdTimer = setTimeout(function(){
+              if(pid === e.pointerId && !moved && running){
+                HOLD = true; holdFrom(downX); hintInApp();
+              }
+            }, 350);
+          }
+        }
         try{ cv.setPointerCapture(e.pointerId); }catch(_){}
         if(e.cancelable) e.preventDefault();
       }, { passive: false });
       document.addEventListener("pointermove", function(e){
         if(!running || isBtn(e)) return;
-        /* 마우스는 누르지 않아도 따라온다(예전 mousemove 와 같게). 손가락은 누른 것만. */
-        if(e.pointerType !== "mouse" && pid !== e.pointerId) return;
-        aim(e.clientX);
+        if(e.pointerType === "mouse"){ aim(e.clientX); return; }   /* 마우스는 예전처럼 따라온다 */
+        if(pid !== e.pointerId) return;
+        if(Math.abs(e.clientX - downX) > 3) moved = true;
+        if(HOLD){ holdFrom(e.clientX); }      /* 누르고 있기 모드에서도 손가락이 반대편으로 넘어가면 방향 바꿈 */
+        else { aim(e.clientX); }
         if(e.cancelable) e.preventDefault();
       }, { passive: false });
-      document.addEventListener("pointerup", function(e){ if(e.pointerId === pid) pid = null; });
+      document.addEventListener("pointerup", function(e){ if(e.pointerId === pid) release(); });
       document.addEventListener("pointercancel", function(e){
-        if(e.pointerId === pid) pid = null;
-        if(running && !stolen){ stolen = true; hintInApp(); }
+        if(e.pointerId !== pid) return;
+        /* 앱이 제스처를 가져갔다 — 이번 판부터 누르고 있기로 */
+        if(running && !HOLD){ HOLD = true; hintInApp(); }
+        release();
       });
     }else{
       /* 구형 브라우저 — 예전 방식 그대로 */
@@ -573,6 +611,7 @@ window.TaxGame = (function(){
       document.addEventListener("mousedown", at);
     }
     if(IN_APP) window.__taxInApp = hintInApp;   /* begin() 이 첫 판에 한 번 보여 준다 */
+    window.__taxDbg = function(){ return { hold: HOLD, inapp: IN_APP, ua: navigator.userAgent }; };
     document.addEventListener("keydown", function(e){
       if(!running) return;
       if(e.key === "ArrowLeft"){ aimX = null; vx = -1; }
