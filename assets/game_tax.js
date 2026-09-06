@@ -251,10 +251,8 @@ window.TaxGame = (function(){
     if(aimX != null){
       var d = aimX - px;
       px += d * Math.min(1, dt * 16);
-      /* 누르고 있기: 손가락 자리에 닿았는데 아직 눌려 있으면(vx≠0) 그 방향으로 계속 간다 */
-      if(Math.abs(d) < 2 && vx !== 0) aimX = null;
     } else {
-      px += vx * dt * 420;                 // 키보드 · 누르고 있기
+      px += vx * dt * 420;                 // 키보드
     }
     px = Math.max(PW/2 + 4, Math.min(W - PW/2 - 4, px));
 
@@ -484,9 +482,8 @@ window.TaxGame = (function(){
   function showUA(){
     var ua = navigator.userAgent;
     var m = ua.match(/(Barcelona|Instagram|FBAN|FBAV|FB_IAB|Threads|wv|Chrome\/[\d.]+|Safari\/[\d.]+|Android [\d.]+)[^ ;)]*/g);
-    say("UA: " + (m ? m.join(" · ") : ua.slice(-70)) + (IN_APP ? " · 인앱" : " · 일반") + (HOLD_STATE() ? " · 누르기" : " · 끌기"), 9);
+    say("UA: " + (m ? m.join(" · ") : ua.slice(-70)) + (IN_APP ? " · 인앱" : " · 일반"), 9);
   }
-  var HOLD_STATE = function(){ return false; };
   (function(){
     var box = document.getElementById("tScore"); box = box && box.parentNode;
     if(!box) return;
@@ -527,7 +524,6 @@ window.TaxGame = (function(){
     /* 게임 중에는 문서 전체가 제스처를 넘기지 않게 한다 — 판 밖에서 시작한 드래그도 집을 끌어야
        하고, 인앱 브라우저가 스와이프를 가져가는 것도 여기서 한 번 더 막는다(2026-09-06). */
     lockGestures(true);
-    if(window.__taxInApp && !window.__taxInAppShown){ window.__taxInAppShown = 1; setTimeout(window.__taxInApp, 900); }
     /* 진단용 — 주소에 ?dbg=1 을 붙이면 어느 브라우저로 들어왔는지 판 위에 띄운다
        (인앱 UA 문자열을 여기서 볼 수 없어 석봉님 폰에서 읽어 오기 위한 것, 2026-09-06) */
     if(/[?&]dbg=1/.test(location.search)) setTimeout(showUA, 1200);
@@ -565,65 +561,38 @@ window.TaxGame = (function(){
        대책 셋: ①Pointer Events + setPointerCapture — 손가락을 판에 묶어 두면 WebView 가 덜 가로챈다
        ②게임 중에는 html 전체에 touch-action:none / overscroll-behavior:none 을 건다(begin/stop)
        ③그래도 pointercancel 이 오면(빼앗긴 것) 인앱 안내 문구를 띄운다 — 탭으로는 되니까. */
-    /* ── 2026-09-06 2차 — 1차(포인터 캡처)로도 스레드 앱 안에서 드래그가 안 됐다(석봉님 재확인).
-       인앱 브라우저는 손가락이 움직이면 그 자리에서 제스처를 가져가 **움직임 자체가 페이지에
-       안 온다.** 손가락을 따라가는 조작은 원리적으로 불가능하다. 그래서 움직임 없이도 되는
-       조작을 하나 더 둔다 — **「누르고 있기」**: 집보다 왼쪽을 누르고 있으면 왼쪽으로, 오른쪽을
-       누르고 있으면 오른쪽으로 계속 간다(touchstart·touchend 만 있으면 된다).
-       두 조작은 자동으로 갈린다. 움직임(pointermove)이 오는 브라우저는 손가락 따라가기,
-       움직임이 안 오는 곳(cancel 이 오거나, 눌린 뒤 350ms 안에 move 가 한 번도 없으면)은 누르고 있기.
-       판정은 한 번 내려지면 그 판 동안 유지한다(HOLD). */
-    var HOLD = IN_APP, pid = null, downX = 0, downT = 0, moved = false, holdTimer = null;
-    /* 포인터 이벤트 흐름을 남긴다(d=down m=move u=up c=cancel). 점수 등록 때 UA 뒤에 붙여 보낸다 —
-       인앱 WebView 가 실제로 무엇을 보내는지 여기서는 볼 수 없어서(2026-09-06 3차). */
+    /* ── 결론(2026-09-06 저녁, 5차) — 스레드 인앱에서도 **움직임(pointermove)은 정상적으로 온다.**
+       점수 등록에 실어 보낸 이벤트 기록이 증거다: `d mmmmmm u d mmmmmmmmmmmmmmmmmmm u d mm u d mmmm ccc u`.
+       앱이 드래그를 가로채는 게 아니었다. 1차(포인터 이벤트 + setPointerCapture)가 실제로는 먹혔는데,
+       그 직후 확인이 **HTML 10분 캐시 때문에 옛 버전**으로 됐고, 그걸 「안 됐다」로 믿고 얹은
+       「누르고 있기」가 오히려 집을 손가락 너머로 밀어 3~4초에 끝나게 했다(2·3·4차 회귀).
+       그래서 **손가락 따라가기 하나로 되돌린다.** cancel 은 그냥 손을 뗀 것으로 본다.
+       📌 교훈 둘: ①고친 직후의 「안 됐다」는 캐시부터 의심한다(`max-age=600`)
+                 ②사람이 보고한 증상만으로 원인을 추측해 고치지 말고, 신호를 기록해 보고 고친다. */
+    var pid = null;
+    /* 포인터 이벤트 흐름 기록(d/m/u/c) — 점수 등록 때 UA 뒤에 붙는다. 다음 조작 문제 때 바로 쓴다. */
     var EV = []; function ev(c){ if(EV.length < 60) EV.push(c); }
     window.__taxEv = function(){ return EV.join(""); };
     window.__taxEvReset = function(){ EV.length = 0; };
-    function hintInApp(){
-      say("왼쪽·오른쪽을 누르고 있으면 그쪽으로 가요", 3.2);
-    }
-    function holdFrom(x){
-      /* 🔴 3차(2026-09-06 저녁) — 누르고 있기만 두면 **앱이 곧바로 cancel 을 보내 vx 가 0 이 되어**
-         집이 한 발도 안 움직일 수 있다(3.4초에 끝난 판). 그래서 **탭 = 그 자리로(aim)** 를 먼저 살리고,
-         손가락이 남아 있으면 그 방향으로 계속 간다. 취소가 와도 최소한 탭한 자리까지는 간다. */
-      var r = cv.getBoundingClientRect(), lx = x - r.left;
-      aimX = Math.max(0, Math.min(W, lx));
-      vx = lx < px - 18 ? -1 : (lx > px + 18 ? 1 : 0);
-    }
-    function release(){ if(HOLD){ vx = 0; } clearTimeout(holdTimer); holdTimer = null; pid = null; }
+    function release(){ pid = null; }
     if(window.PointerEvent){
       document.addEventListener("pointerdown", function(e){
         if(!running || isBtn(e)) return;
         if(e.pointerType === "mouse" && e.button !== 0) return;
-        ev("d"); pid = e.pointerId; downX = e.clientX; downT = Date.now(); moved = false;
-        /* 일반 브라우저는 예전 그대로 손가락 따라가기. 누르고 있기(HOLD)로 넘어가는 길은 둘뿐이다 —
-           ①UA 로 스레드·인스타 인앱이 확인된 경우(IN_APP) ②앱이 터치를 가로챈 신호(pointercancel).
-           ⚠️ 「350ms 안에 move 가 없으면 인앱」 추측 판정은 **뺐다**(2026-09-06 석봉님 "일반 브라우저에서는
-           잘되고 있으니까") — 일반 브라우저에서 손가락을 가만히 대고 있어도 걸릴 수 있는 규칙이었다.
-           스레드 UA(Barcelona)가 실측으로 확인돼 추측이 필요 없어졌다. */
-        if(HOLD && e.pointerType !== "mouse"){ holdFrom(e.clientX); }
-        else { aim(e.clientX); }
+        ev("d"); pid = e.pointerId;
+        aim(e.clientX);
         try{ cv.setPointerCapture(e.pointerId); }catch(_){}
         if(e.cancelable) e.preventDefault();
       }, { passive: false });
       document.addEventListener("pointermove", function(e){
         if(!running || isBtn(e)) return;
-        if(e.pointerType === "mouse"){ aim(e.clientX); return; }   /* 마우스는 예전처럼 따라온다 */
+        if(e.pointerType === "mouse"){ aim(e.clientX); return; }   /* 마우스는 누르지 않아도 따라온다 */
         if(pid !== e.pointerId) return;
-        ev("m");
-        if(Math.abs(e.clientX - downX) > 3) moved = true;
-        if(HOLD){ holdFrom(e.clientX); }      /* 누르고 있기 모드에서도 손가락이 반대편으로 넘어가면 방향 바꿈 */
-        else { aim(e.clientX); }
+        ev("m"); aim(e.clientX);
         if(e.cancelable) e.preventDefault();
       }, { passive: false });
       document.addEventListener("pointerup", function(e){ ev("u"); if(e.pointerId === pid) release(); });
-      document.addEventListener("pointercancel", function(e){
-        ev("c");
-        if(e.pointerId !== pid) return;
-        /* 앱이 제스처를 가져갔다 — 이번 판부터 누르고 있기로 */
-        if(running && !HOLD){ HOLD = true; hintInApp(); }
-        release();
-      });
+      document.addEventListener("pointercancel", function(e){ ev("c"); if(e.pointerId === pid) release(); });
     }else{
       /* 구형 브라우저 — 예전 방식 그대로 */
       function at(e){
@@ -638,9 +607,7 @@ window.TaxGame = (function(){
       document.addEventListener("mousemove", at);
       document.addEventListener("mousedown", at);
     }
-    if(IN_APP) window.__taxInApp = hintInApp;   /* begin() 이 첫 판에 한 번 보여 준다 */
-    window.__taxDbg = function(){ return { hold: HOLD, inapp: IN_APP, ua: navigator.userAgent }; };
-    HOLD_STATE = function(){ return HOLD; };
+    window.__taxDbg = function(){ return { inapp: IN_APP, ua: navigator.userAgent }; };
     document.addEventListener("keydown", function(e){
       if(!running) return;
       if(e.key === "ArrowLeft"){ aimX = null; vx = -1; }
