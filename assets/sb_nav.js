@@ -57,7 +57,22 @@
   /* 최상위에 그대로 두는 것 — 자주 쓰거나 사업에 직결되는 것만 남긴다 */
   var TOP = ['index.html', 'map.html', '%EC%9E%90%EB%A3%8C%EC%8B%A4', 'favorites.html',
              '%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98'];
-  var DATA_HREF = '%EC%9E%90%EB%A3%8C%EC%8B%A4.html';
+
+  /* 🔴 페이지 nav 에 링크가 없으면 **여기서 만들어 넣는다**(2026-09-06 확장).
+     왜 — 이 스크립트는 **이미 있는 `<a>` 를 묶기만** 한다. 그래서 새 화면을 만들어도
+          그 링크를 각 페이지 nav 에 손으로 넣지 않으면 드롭다운에서 통째로 빠진다.
+          실제로 **놀이터(9/6 본배포)가 루트 33장 중 30장에서 안 보였다**(석봉님 제보).
+          정적 상세 3.4만 장까지 합치면 손으로 넣는 건 애초에 불가능하다.
+     ⚠️ `group` 이 있으면 **그 묶음의 다른 링크가 하나라도 있을 때만** 만든다.
+        안 그러면 묶음이 안 만들어지는 페이지에서 최상위에 링크 하나가 덩그러니 붙어
+        nav 가 넓어진다(9/6 에 점 하나로 1280px 가 10px 넘친 적이 있다).
+     📌 **새 화면을 만들면 여기 한 줄 + `sb_tabbar.js` 의 MENU 한 줄.** 그 둘이면 전 화면에 깔린다. */
+  var ENSURE = [
+    {frag: '%EC%9E%90%EB%A3%8C%EC%8B%A4', href: '%EC%9E%90%EB%A3%8C%EC%8B%A4.html',
+     label: '자료실', after: 'map.html', group: null},                 // 최상위
+    {frag: '%EB%86%80%EC%9D%B4%ED%84%B0.html', href: '%EB%86%80%EC%9D%B4%ED%84%B0.html',
+     label: '놀이터', after: null, group: '콘텐츠'}
+  ];
 
   function has(href, frag) { return String(href || '').indexOf(frag) >= 0; }
   function topIdx(href) {
@@ -97,16 +112,29 @@
     var links = [].slice.call(nav.querySelectorAll('a'));
     if (links.length < 6) return;                 /* 이미 접혀 있거나 메뉴가 아니다 */
 
-    /* 자료실이 없으면 만들어 둔다(옛 페이지에는 링크가 없다) */
-    var hasData = links.some(function (a) { return has(a.getAttribute('href'), '%EC%9E%90%EB%A3%8C%EC%8B%A4'); });
-    if (!hasData) {
+    /* 없는 링크를 만들어 넣는다(위 ENSURE 참고). 옛 페이지·정적 상세에는 링크가 없다. */
+    ENSURE.forEach(function (e) {
+      if (links.some(function (a) { return has(a.getAttribute('href'), e.frag); })) return;
+      if (e.group) {
+        /* 그 묶음의 **다른** 항목이 하나라도 있어야 만든다 — 없으면 묶음이 안 생겨
+           최상위에 링크만 하나 늘고 nav 가 넓어진다. */
+        var want = [];
+        GROUP.forEach(function (g) { if (g[0] === e.group) want = g[1]; });
+        var kin = want.some(function (w) {
+          return w[0] !== e.frag
+              && links.some(function (a) { return has(a.getAttribute('href'), w[0]); });
+        });
+        if (!kin) return;
+      }
       var a = document.createElement('a');
-      a.href = DATA_HREF; a.textContent = '자료실';
-      var mapA = links.filter(function (x) { return has(x.getAttribute('href'), 'map.html'); })[0];
-      if (mapA && mapA.parentNode === nav) nav.insertBefore(a, mapA.nextSibling);
+      a.href = e.href; a.textContent = e.label;
+      var anchor = e.after
+        ? links.filter(function (x) { return has(x.getAttribute('href'), e.after); })[0]
+        : null;
+      if (anchor && anchor.parentNode === nav) nav.insertBefore(a, anchor.nextSibling);
       else nav.insertBefore(a, links[0].nextSibling);
       links = [].slice.call(nav.querySelectorAll('a'));
-    }
+    });
 
     css();
     var slot = nav.querySelector('#sbAuthBtn');   /* 로그인 자리 — 묶음은 그 앞에 둔다 */
