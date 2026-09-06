@@ -596,19 +596,13 @@ window.TaxGame = (function(){
         if(!running || isBtn(e)) return;
         if(e.pointerType === "mouse" && e.button !== 0) return;
         ev("d"); pid = e.pointerId; downX = e.clientX; downT = Date.now(); moved = false;
+        /* 일반 브라우저는 예전 그대로 손가락 따라가기. 누르고 있기(HOLD)로 넘어가는 길은 둘뿐이다 —
+           ①UA 로 스레드·인스타 인앱이 확인된 경우(IN_APP) ②앱이 터치를 가로챈 신호(pointercancel).
+           ⚠️ 「350ms 안에 move 가 없으면 인앱」 추측 판정은 **뺐다**(2026-09-06 석봉님 "일반 브라우저에서는
+           잘되고 있으니까") — 일반 브라우저에서 손가락을 가만히 대고 있어도 걸릴 수 있는 규칙이었다.
+           스레드 UA(Barcelona)가 실측으로 확인돼 추측이 필요 없어졌다. */
         if(HOLD && e.pointerType !== "mouse"){ holdFrom(e.clientX); }
-        else {
-          aim(e.clientX);
-          if(e.pointerType !== "mouse"){
-            /* 350ms 안에 move 가 한 번도 안 오면 움직임을 못 받는 환경으로 본다 → 누르고 있기 */
-            clearTimeout(holdTimer);
-            holdTimer = setTimeout(function(){
-              if(pid === e.pointerId && !moved && running){
-                HOLD = true; holdFrom(downX); hintInApp();
-              }
-            }, 350);
-          }
-        }
+        else { aim(e.clientX); }
         try{ cv.setPointerCapture(e.pointerId); }catch(_){}
         if(e.cancelable) e.preventDefault();
       }, { passive: false });
