@@ -182,6 +182,13 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
         알려 주는 장치**이고, 진짜 상한은 서버가 센다(둘 다 있어야 한다). */
   var ANON_FREE = 3;
   var AK = 'sb_land_free';
+  /* ⚠️ 2026-09-08 실측 — 「하루」가 **UTC 기준**이다(서버·화면 둘 다 toISOString()).
+     둘이 같은 기준이라 어긋나지는 않지만, 한국에서는 **오전 9시에 리셋**된다.
+     밤에 3회를 쓴 사람은 다음 날 오전 9시까지 못 쓴다. 지금은 그대로 둔다 —
+     3회를 다 쓰는 사람 자체가 드물고, 고치려면 Edge Function 재배포(석봉님 배치)가
+     한 번 더 필요하다. 함수를 다음에 고칠 일이 생기면 그때 KST 로 함께 옮길 것
+     (양쪽을 `new Date(Date.now()+9*3600*1000)` 로 **동시에** 바꿔야 한다. 한쪽만 바꾸면
+     화면과 서버의 「오늘」이 9시간 어긋나 카운터가 서로 다른 값을 센다). */
   function anonUsed(){
     try{
       var o = JSON.parse(localStorage.getItem(AK) || '{}');
