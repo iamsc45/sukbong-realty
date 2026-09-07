@@ -1,16 +1,6 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<!-- 홈 화면 앱(PWA) — 데이터관리/스크립트/앱메타_주입.py 가 넣습니다 -->
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#F2F2EF">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="석봉부동산">
-<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
-<link rel="icon" href="/icons/favicon-32.png" sizes="32x32">
-<script>if('serviceWorker' in navigator){addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}</script>
 <title>전국 동네별 공시지가·땅값 시세 · 석봉 부동산 정보방</title>
 <meta name="description" content="전국 4,987개 법정동의 지목별·용도지역별 공시지가와 실거래 배율. 2026년 공시 기준.">
 <link rel="canonical" href="https://xn--2q1br1nnrasc92a76myvau64b.com/%ED%86%A0%EC%A7%80.html">
@@ -38,6 +28,9 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
 .note{color:var(--muted);font-size:12.5px;line-height:1.65;margin:10px 0 0}
 .tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:100px;border:1px solid var(--hair);color:var(--muted);margin-left:6px}
 .cta{display:flex;gap:10px;flex-wrap:wrap;margin:28px 0 0}
+/* 요약 바로 아래에 놓는 버튼 줄 (2026-09-08) — 아래 여백을 줄여 본문과 붙인다 */
+.cta.ctatop{margin:18px 0 0}
+.ctanote{font-size:13px;color:var(--text2);margin:8px 0 4px;line-height:1.6}
 .cta a{display:inline-block;padding:13px 24px;border-radius:100px;text-decoration:none;font-size:14px;font-weight:700}
 .cta a.p{background:var(--text);color:#fff}
 .cta a.l{border:1px solid var(--hair);color:var(--text);background:var(--soft)}
@@ -368,7 +361,7 @@ summary{cursor:pointer;font-size:16px;font-weight:700;padding:6px 0}
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/sb_auth.js?v=8"></script>
-<script defer src="assets/sb_tabbar.js?v=12"></script>
-<script src="assets/sb_promo.js?v=2" defer></script>
-<script defer src="assets/sb_feedback.js?v=5"></script>
+<script defer src="assets/sb_tabbar.js?v=10"></script>
+<script defer src="assets/sb_feedback.js?v=4"></script>
+<script defer src="assets/sb_nav.js?v=3"></script>
 </body></html>

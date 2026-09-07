@@ -31,6 +31,10 @@ h1{font-size:26px;letter-spacing:-.02em;margin:0 0 4px}
 .search input:focus{outline:none;border-color:var(--text)}
 .search button{padding:14px 28px;font:inherit;font-weight:700;cursor:pointer;background:var(--text);color:#fff;border:0;border-radius:4px}
 .search button:disabled{opacity:.5;cursor:default}
+/* 최근 거래 지번 칩 (2026-09-08) — 지번을 모르는 사람이 누를 것 */
+.jb{font:inherit;font-size:13px;padding:3px 9px;margin:2px 1px;border:1px solid var(--hair);
+    background:var(--soft);color:var(--text);border-radius:100px;cursor:pointer}
+.jb:hover{background:var(--text);color:#fff;border-color:var(--text)}
 .hint{color:var(--muted);font-size:12.5px;margin:8px 0 0;line-height:1.6}
 .gate{background:var(--soft);border:1px solid var(--hair);border-radius:6px;padding:34px 24px;text-align:center;margin:22px 0}
 .gate b{display:block;font-size:16px;margin-bottom:6px}
@@ -102,7 +106,17 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
 </div>
 <div class="hint" id="shint" style="display:none">
   시도는 생략해도 됩니다(<b>강남구 역삼동 737</b>). 읍·면 지역은 <b>리</b>까지 넣으세요(<b>김포시 통진읍 옹정리 281-1</b>).
-  임야는 <b>산 12-3</b>, 부번은 <b>737-1</b>처럼 넣으세요. 하루 20회까지 조회할 수 있습니다.
+  임야는 <b>산 12-3</b>, 부번은 <b>737-1</b>처럼 넣으세요.
+  <span id="quotaLine"></span>
+</div>
+<!-- 🔴 2026-09-08 — 지번을 모르는 사람에게 길을 낸다.
+     땅값 동 페이지에서 들어온 사람의 질문은 「우리 동네 땅값이 얼마인가」인데
+     이 화면은 「지번을 대세요」를 요구한다. 그 사이를 지도가 메운다.
+     ⚠️ `?d=` 로 들어오면 그 동 지도로, 아니면 지도 첫 화면으로 보낸다. -->
+<div class="hint" id="nojibun" style="display:none">
+  지번을 모르시나요? <a id="noJibunMap" href="map.html">지도에서 눌러 확인하기</a>
+  <span id="recentWrap" style="display:none"> · 이 동네 최근 거래 지번:
+  <span id="recentJibun"></span></span>
 </div>
 
 <div class="gate" id="gate">
@@ -160,20 +174,96 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
      ⚠️정부 API 를 부르는 Edge Function 은 익명 호출을 401 로 막는다(하루 20회 상한이
        회원 단위라 익명을 열면 상한을 걸 수 없다). 그래서 미리보기는 **이미 공개된
        정적 자료(data/land_dong/*.json)만** 쓴다. 서버를 새로 열지 않는다. */
+  /* 🔴 2026-09-08 — 비회원에게 하루 ANON_FREE 회까지 결과를 그대로 보여준다(석봉님 결정).
+     왜: 땅값 동 페이지로 651세션이 들어오는데 이 화면까지 온 사람이 27명(4.1%)이고,
+     그 27명마저 로그인 벽을 만났다. 벽이 회원을 만드는 게 아니라 이탈을 만들고 있었다.
+     ⚠️ 서버(Edge Function)도 익명을 열어야 한다 — 여기만 고치면 401 이 온다.
+     ⚠️ localStorage 는 우회가 쉽다. 이건 남용 방지 장치가 아니라 **사용자에게 남은 횟수를
+        알려 주는 장치**이고, 진짜 상한은 서버가 센다(둘 다 있어야 한다). */
+  var ANON_FREE = 3;
+  var AK = 'sb_land_free';
+  function anonUsed(){
+    try{
+      var o = JSON.parse(localStorage.getItem(AK) || '{}');
+      var t = new Date().toISOString().slice(0,10);
+      return (o.d === t) ? (o.n || 0) : 0;
+    }catch(_e){ return 0; }
+  }
+  function anonBump(){
+    try{
+      var t = new Date().toISOString().slice(0,10);
+      localStorage.setItem(AK, JSON.stringify({d:t, n:anonUsed()+1}));
+    }catch(_e){}
+  }
+  function ev(name, props){
+    try{ if(typeof gtag === 'function') gtag('event', name, props||{}); }catch(_e){}
+  }
+
   function setUI(user){
     $('gate').style.display = 'none';          /* 검색창은 늘 보인다 */
     $('sbox').style.display = 'flex';
     $('shint').style.display = '';
-    if(user) $('addr').focus();
+    $('nojibun').style.display = '';
+    var q = $('quotaLine');
+    if(user){
+      if(q) q.innerHTML = '하루 20회까지 조회할 수 있습니다.';
+      $('addr').focus();
+    }else{
+      var left = Math.max(0, ANON_FREE - anonUsed());
+      if(q) q.innerHTML = left > 0
+        ? '로그인 없이 <b>오늘 ' + left + '회</b> 더 보실 수 있습니다.'
+        : '오늘 무료 조회를 다 쓰셨습니다. 카카오 로그인하시면 하루 20회까지 됩니다.';
+    }
+  }
+
+  /* ---------- 다른 화면에서 넘어온 맥락 (2026-09-08) ----------
+     땅값 동 페이지의 버튼이 `?q=<주소>&c=<법정동코드>` 로 보낸다.
+       q → 검색창을 미리 채운다(사용자는 번지만 치면 된다)
+       c → 그 동의 최근 거래 지번을 칩으로 띄운다(지번을 모르는 사람의 진입로)
+     ⚠️ 전에는 파라미터를 하나도 읽지 않아, 가회동을 보다가 눌러도 **빈 검색창**이 떴다. */
+  function fromParams(){
+    var sp;
+    try{ sp = new URLSearchParams(location.search); }catch(_e){ return; }
+    var q = (sp.get('q') || '').trim(), c = (sp.get('c') || '').replace(/\D/g,'');
+    if(q){
+      $('addr').value = q + ' ';
+      try{ $('addr').focus(); $('addr').setSelectionRange(q.length+1, q.length+1); }catch(_e){}
+      ev('land_from_dong', {search_term:q});
+      var m = $('noJibunMap');
+      if(m) m.href = 'map.html?q=' + encodeURIComponent(q);
+    }
+    if(c && c.length === 10) showRecent(c);
+  }
+  /* 그 동의 최근 거래 지번 — 누르면 그대로 조회된다. 자료는 이미 공개된 land_dong 이다. */
+  async function showRecent(code){
+    try{
+      var r = await fetch(_D('data/land_dong/' + code + '.json'));
+      if(!r.ok) return;
+      var d = await r.json();
+      var rows = (d && d.d) ? d.d.slice(0, 5) : [];
+      if(!rows.length) return;
+      var base = ($('addr').value || '').trim();
+      $('recentJibun').innerHTML = rows.map(function(x){
+        return '<button type="button" class="jb" data-j="' + x[0] + '">' + x[0] + '</button>';
+      }).join(' ');
+      $('recentWrap').style.display = '';
+      Array.prototype.forEach.call($('recentJibun').querySelectorAll('.jb'), function(b){
+        b.addEventListener('click', function(){
+          $('addr').value = (base ? base + ' ' : '') + b.getAttribute('data-j');
+          ev('land_recent_pick', {search_term:b.getAttribute('data-j')});
+          lookup();
+        });
+      });
+    }catch(_e){ /* 없으면 그냥 안 보여 준다 */ }
   }
   /* sb_auth.js 공개 API는 whenReady/onChange/login. 토큰은 같은 URL·KEY로 만든
      보조 클라이언트에서 꺼낸다(localStorage 세션을 공유하므로 로그인 상태가 같다). */
   var SB_URL='https://bwgoufxonqamglbqsife.supabase.co';
   var SB_KEY='sb_publishable_kYd1gCyqCR2Qy8Ix6KE6og_FfJUImfR';
   var myClient=window.supabase?window.supabase.createClient(SB_URL,SB_KEY):null;
-  SBAuth.whenReady(function(u){setUI(u);});
+  SBAuth.whenReady(function(u){setUI(u); fromParams();});
   SBAuth.onChange(function(u){setUI(u);});
-  $('loginBtn').addEventListener('click',function(){SBAuth.login();});
+  $('loginBtn').addEventListener('click',function(){ev('land_login_click',{from:'top'});SBAuth.login();});
 
   /* ---------- 주소 → PNU (토지조회.py to_pnu 이식) ---------- */
   function toPnu(addr){
@@ -836,6 +926,7 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
     $('out').innerHTML=h;
     var b=document.getElementById('lockGo');
     if(b) b.onclick=function(){
+      ev('land_login_click',{from:'lockbox'});
       if(window.SBAuth&&SBAuth.isIn()){ lookup(); return; }
       if(window.SBAuth) SBAuth.gate(null, function(){ lookup(); }, {
         title:'회원에게 필지 상세를 보여드립니다',
@@ -1193,10 +1284,14 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
     try{
       var sess=await myClient.auth.getSession();
       var token=sess.data&&sess.data.session?sess.data.session.access_token:null;
-      /* 비로그인 — 여기서 끝내지 않고 **찾은 필지와 그 동네 요약까지** 보여준 뒤 잠근다.
-         정부 API 는 회원만 부를 수 있으므로(하루 20회 상한이 회원 단위) 미리보기는
-         이미 공개된 정적 자료로만 만든다. */
-      if(!token){ await preview(p); return; }
+      /* 🔴 2026-09-08 개정 — 비로그인도 **하루 3회는 결과를 그대로** 본다(석봉님 결정).
+         옛 주석: "정부 API 는 회원만 부를 수 있으므로 미리보기는 정적 자료로만".
+         그 전제가 오늘 바뀌었다 — Edge Function 이 익명을 열었다(하루 3회, IP 해시로 셈).
+         4회째부터는 예전처럼 미리보기 + 로그인 유도로 간다. */
+      if(!token && anonUsed() >= ANON_FREE){
+        ev('land_gate_view', {reason:'anon_quota'});
+        await preview(p); return;
+      }
       /* 🔴🔴 x-region 을 빼지 마라 (2026-08-19 실측으로 원인 확정).
          VWorld 는 **해외 IP를 막는다.** Supabase Edge Function 은 요청마다
          서울(ap-northeast-2) 또는 도쿄에서 나가는데, 도쿄로 나가면 연결 자체가
@@ -1207,12 +1302,25 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
          ⚠️함수 재시도로는 못 고친다. 같은 실행 안에서는 같은 IP를 쓴다.
          ⚠️서버의 Access-Control-Allow-Headers 에도 x-region 이 있어야 한다
            (없으면 브라우저 preflight 에서 막힌다). */
-      var res=await fetch(FN,{method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer '+token,
-                 'x-region':'ap-northeast-2'},
+      var hd={'Content-Type':'application/json','x-region':'ap-northeast-2'};
+      if(token) hd['Authorization']='Bearer '+token;
+      var res=await fetch(FN,{method:'POST',headers:hd,
         body:JSON.stringify({pnu:p.pnu,gu:p.gu})});
       var d=await res.json();
-      if(!d.ok){$('state').className='err';$('state').textContent=d.error||'조회하지 못했습니다.';return;}
+      if(!d.ok){
+        if(!token && (res.status===401 || res.status===429)){
+          /* 401 = 서버가 아직 익명을 안 연 것(함수 배포 전). 무료 횟수를 깎지 않는다.
+             429 = 서버가 센 익명 한도를 넘긴 것. 이때만 화면 카운터를 맞춘다.
+             ⚠️ 둘을 같이 다루면 함수 배포 전에 사용자의 오늘 무료 3회가 통째로 날아간다. */
+          if(res.status===429){
+            try{localStorage.setItem(AK,JSON.stringify({d:new Date().toISOString().slice(0,10),n:ANON_FREE}));}catch(_e){}
+            setUI(null);
+          }
+          ev('land_gate_view',{reason:'server_'+res.status});
+          await preview(p); return;
+        }
+        $('state').className='err';$('state').textContent=d.error||'조회하지 못했습니다.';return;}
+      if(!token){ anonBump(); setUI(null); }
       $('state').textContent=p.label;
       /* 지도 링크를 조회한 동네로 연결 — 동명만 넘기면 동명이동(신사동 등)으로 샐 수 있어
          시도 약칭+시군구를 반드시 붙인다(dongs.js가 동명 하나에 한 곳만 담는 한계). */
@@ -1225,7 +1333,8 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
       var mapDong=p.eup||p.dong;
       $('mapLink').href='map.html?q='+encodeURIComponent(ss+' '+p.gu+' '+mapDong);
       $('mapLink').textContent=mapDong+' 실거래지도 보기';
-      try{if(typeof gtag==='function')gtag('event','land_lookup',{search_term:p.label});}catch(_e){}
+      /* 회원·비회원을 갈라 센다 — 2주 뒤 판정 지표가 이것이다(석봉님 확정) */
+      ev('land_lookup',{search_term:p.label, member: token ? 'y' : 'n'});
       render(d,p);
     }catch(e){
       $('state').className='err';$('state').textContent='서버와 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요.';
