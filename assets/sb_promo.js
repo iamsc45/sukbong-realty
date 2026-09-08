@@ -62,10 +62,33 @@
     '<p>' + PROMO.body + '</p>' +
     '<a class="go" href="' + PROMO.href + '">' + PROMO.cta + ' →</a>';
 
+  /* 🔴 2026-09-08 — 배너가 «자리를 차지하지 않아» 화면 맨 아래 내용을 덮고 있었다.
+     토지 담당 세션 제보 → 375px 라이브 실측: 배너 높이 199px 가 `토지검색.html` 하단
+     CTA(담보 상담 문의·동네별 땅값·실거래지도) 위에 떠 있었다. `position:fixed` 라 문서
+     흐름에서 빠지는데 body 하단 여백은 **탭바 몫 50px 뿐**이라 그만큼이 통째로 가려진다.
+     그래서 배너가 떠 있는 동안만 그 높이만큼 여백을 늘리고 닫으면 되돌린다.
+     ⚠️ 탭바(`sb_tabbar.js`)가 body 에 인라인 `padding-bottom` 을 박는다. 계산값으로 덮으면
+        탭바 여백이 사라지므로 **원본 문자열을 기억했다가 그대로 복원**한다.
+     ⚠️ `padBase` 는 한 번만 잰다 — 다시 재면 내가 넣은 값을 또 더해 여백이 계속 자란다. */
+  var padOrig = null, padBase = 0;
+  function reserveSpace(){
+    if(!box.isConnected) return;
+    if(padOrig === null){
+      padOrig = document.body.style.paddingBottom;                     // '' 일 수 있다
+      padBase = parseFloat(getComputedStyle(document.body).paddingBottom) || 0;
+    }
+    var gap = (window.innerWidth <= 720 ? 70 : 14);                    // 위 CSS 의 bottom 과 같은 값
+    document.body.style.paddingBottom = (padBase + box.offsetHeight + gap + 12) + 'px';
+  }
+  function releaseSpace(){
+    if(padOrig !== null){ document.body.style.paddingBottom = padOrig; padOrig = null; }
+  }
+  window.addEventListener('resize', reserveSpace);
+
   function dismiss(){
     try{ localStorage.setItem(PROMO.key, today()); }catch(e){}
     box.classList.remove('on');
-    setTimeout(function(){ box.remove(); }, 400);
+    setTimeout(function(){ box.remove(); releaseSpace(); }, 400);
   }
   box.querySelector('button.x').addEventListener('click', dismiss);
   box.querySelector('a.go').addEventListener('click', function(){
@@ -75,7 +98,8 @@
   /* 페이지가 자리를 잡은 뒤 올라온다 — 첫 화면 렌더와 겹치면 깜빡인다 */
   function show(){
     document.body.appendChild(box);
-    requestAnimationFrame(function(){ setTimeout(function(){ box.classList.add('on'); }, 900); });
+    reserveSpace();                                   // 올라오기 전에 자리부터 비운다
+    requestAnimationFrame(function(){ setTimeout(function(){ box.classList.add('on'); reserveSpace(); }, 900); });
   }
   if(document.readyState === 'complete') show();
   else window.addEventListener('load', show);
