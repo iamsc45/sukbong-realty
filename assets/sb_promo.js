@@ -49,6 +49,9 @@
     '#sbPromo button.x{position:absolute;top:8px;right:8px;width:30px;height:30px;border:0;background:transparent;' +
     'font-size:22px;line-height:1;color:#8A8478;cursor:pointer}' +
     '#sbPromo button.x:hover{color:#16130F}' +
+    /* 배너가 떠 있는 동안 body 하단에 그만큼 자리를 비운다(2026-09-08).
+       ⚠️`!important` 가 있어야 `sb_tabbar.js` 가 박는 인라인 padding-bottom 을 이긴다. */
+    'body.sbpromo-on{padding-bottom:var(--sbpromo-pad) !important}' +
     '@media(max-width:720px){#sbPromo{bottom:70px}}';   // 하단 탭바 위
   document.head.appendChild(css);
 
@@ -67,21 +70,23 @@
      CTA(담보 상담 문의·동네별 땅값·실거래지도) 위에 떠 있었다. `position:fixed` 라 문서
      흐름에서 빠지는데 body 하단 여백은 **탭바 몫 50px 뿐**이라 그만큼이 통째로 가려진다.
      그래서 배너가 떠 있는 동안만 그 높이만큼 여백을 늘리고 닫으면 되돌린다.
-     ⚠️ 탭바(`sb_tabbar.js`)가 body 에 인라인 `padding-bottom` 을 박는다. 계산값으로 덮으면
-        탭바 여백이 사라지므로 **원본 문자열을 기억했다가 그대로 복원**한다.
-     ⚠️ `padBase` 는 한 번만 잰다 — 다시 재면 내가 넣은 값을 또 더해 여백이 계속 자란다. */
-  var padOrig = null, padBase = 0;
+     🔴🔴 **인라인 style 로 고치면 안 된다(2026-09-08 실패에서 배움).** 처음엔
+       `document.body.style.paddingBottom` 에 직접 넣었는데 **라이브에서 그대로 50px 이었다.**
+       `sb_tabbar.js` 가 body 에 인라인 `padding-bottom:50px` 을 박고, 그게 내 뒤에 실행되면
+       같은 인라인 선언을 통째로 덮는다(`!important` 를 붙여도 나중 인라인 대입이 이긴다).
+       그래서 **스타일시트 규칙 + 클래스**로 건다 — 시트의 `!important` 는 남의 인라인을 이긴다.
+       기준값은 매번 `body.style.paddingBottom`(= 탭바가 박은 값)에서 새로 읽는다.
+       내 몫은 클래스에 있으니 둘이 안 섞이고, 여러 번 불러도 여백이 자라지 않는다. */
   function reserveSpace(){
     if(!box.isConnected) return;
-    if(padOrig === null){
-      padOrig = document.body.style.paddingBottom;                     // '' 일 수 있다
-      padBase = parseFloat(getComputedStyle(document.body).paddingBottom) || 0;
-    }
-    var gap = (window.innerWidth <= 720 ? 70 : 14);                    // 위 CSS 의 bottom 과 같은 값
-    document.body.style.paddingBottom = (padBase + box.offsetHeight + gap + 12) + 'px';
+    var base = parseFloat(document.body.style.paddingBottom) || 0;     // 탭바 몫(없으면 0)
+    var gap  = (window.innerWidth <= 720 ? 70 : 14);                   // 위 CSS 의 bottom 과 같은 값
+    document.body.style.setProperty('--sbpromo-pad', (base + box.offsetHeight + gap + 12) + 'px');
+    document.body.classList.add('sbpromo-on');
   }
   function releaseSpace(){
-    if(padOrig !== null){ document.body.style.paddingBottom = padOrig; padOrig = null; }
+    document.body.classList.remove('sbpromo-on');
+    document.body.style.removeProperty('--sbpromo-pad');
   }
   window.addEventListener('resize', reserveSpace);
 
