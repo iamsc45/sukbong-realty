@@ -36,6 +36,18 @@ h1{font-size:26px;letter-spacing:-.02em;margin:0 0 4px}
     background:var(--soft);color:var(--text);border-radius:100px;cursor:pointer}
 .jb:hover{background:var(--text);color:#fff;border-color:var(--text)}
 .hint{color:var(--muted);font-size:12.5px;margin:8px 0 0;line-height:1.6}
+/* 🔴 2026-09-08 — 「지번을 모르시나요?」 줄이 12.5px 회색 한 줄이라 아무도 안 봤다.
+   이 줄은 **검색창에 아무것도 못 넣는 사람의 유일한 길**이라 눈에 띄어야 한다
+   (땅값 동 페이지에서 온 사람 대부분이 자기 땅 지번을 모른다).
+   글자를 키우고 링크를 버튼 모양으로 세운다. 석봉님 지시 「눈에 띄도록」. */
+.nojb{background:#fff;border:1px solid var(--hair);border-left:3px solid var(--text);
+  border-radius:4px;padding:14px 16px;margin:12px 0 0;font-size:13.5px;color:var(--text2)}
+.nojb b{display:block;font-size:15px;color:var(--text);margin:0 0 9px}
+.nojb .nbtn{display:inline-block;padding:8px 15px;margin:0 7px 5px 0;font-size:13.5px;
+  font-weight:700;text-decoration:none;color:var(--text);
+  border:1px solid var(--text);border-radius:100px;background:#fff}
+.nojb .nbtn:hover{background:var(--text);color:#fff}
+.nojb .rc{display:block;margin:10px 0 0;font-size:12.5px;color:var(--muted);line-height:2.1}
 .gate{background:var(--soft);border:1px solid var(--hair);border-radius:6px;padding:34px 24px;text-align:center;margin:22px 0}
 .gate b{display:block;font-size:16px;margin-bottom:6px}
 .gate p{color:var(--muted);font-size:13.5px;margin:0 0 16px;line-height:1.7}
@@ -113,10 +125,11 @@ table.t2{width:100%;border-collapse:collapse;font-size:14px}
      땅값 동 페이지에서 들어온 사람의 질문은 「우리 동네 땅값이 얼마인가」인데
      이 화면은 「지번을 대세요」를 요구한다. 그 사이를 지도가 메운다.
      ⚠️ `?d=` 로 들어오면 그 동 지도로, 아니면 지도 첫 화면으로 보낸다. -->
-<div class="hint" id="nojibun" style="display:none">
-  지번을 모르시나요? <a id="noJibunMap" href="map.html">지도에서 눌러 확인하기</a>
-  · <a id="dongListTop" href="%ED%86%A0%EC%A7%80.html">동네별 땅값 보기</a>
-  <span id="recentWrap" style="display:none"> · 이 동네 최근 거래 지번:
+<div class="nojb" id="nojibun" style="display:none">
+  <b>지번을 모르셔도 괜찮습니다</b>
+  <a class="nbtn" id="noJibunMap" href="map.html">지도에서 눌러 확인</a>
+  <a class="nbtn" id="dongListTop" href="%ED%86%A0%EC%A7%80.html">동네별 땅값 보기</a>
+  <span class="rc" id="recentWrap" style="display:none">이 동네 최근 거래 지번 &mdash; 눌러 보세요<br>
   <span id="recentJibun"></span></span>
 </div>
 <!-- 🔴 2026-09-08 — 「동네별 땅값」(토지.html) 으로 가는 길이 **사이트 어디에도 없었다.**
