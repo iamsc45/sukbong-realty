@@ -100,12 +100,34 @@
     try{ localStorage.setItem(PROMO.key, today()); }catch(e){}
   });
 
+  /* 🔴 2026-09-09 — **모달이 떠 있는 동안에는 올라오지 않는다.**
+     주간 동선점검 라이브 실측(390px): 첫 방문자에게 홈은 안내 팝업(#guidePop)과 이 배너가
+     **겹친 채** 동시에 떴고(overlap=true), 지도는 피드백 인사 팝업(#sbFbIntro)과 나란히 떴다.
+     창 두 개가 한꺼번에 뜨면 「다음에 뭘 눌러야 하나」가 사라진다 — 이 파일 머리에 적어 둔
+     "지도·청약처럼 바로 쓰러 온 사람을 가로막지 않는다"는 설계가 그 자리에서 깨진다.
+     👉 모달이 닫힐 때까지 기다렸다가 올라온다. 끝내 안 닫으면 이번 페이지에서는 포기한다
+        (읽는 중인 분을 방해하지 않는다. 다음 화면에서 뜬다).
+     ⚠️ `sb_feedback.js` 를 고치지 않는다 — 그쪽은 이미 #guidePop 을 피하는 규칙을 갖고 있고,
+        건드리면 3.4만 장의 `?v=` 가 딸려 온다. 나중에 실행되는 이 파일이 비켜서는 편이 싸다. */
+  function modalOpen(){
+    var g = document.getElementById('guidePop');
+    if(g && getComputedStyle(g).display !== 'none') return true;
+    if(document.querySelector('#sbFbIntro.on, #sbFbBg.on')) return true;
+    return false;
+  }
+
   /* 페이지가 자리를 잡은 뒤 올라온다 — 첫 화면 렌더와 겹치면 깜빡인다 */
-  function show(){
+  function show(n){
+    if(modalOpen()){
+      if((n || 0) >= 60) return;                      // 30초까지 기다려 본다
+      setTimeout(function(){ show((n || 0) + 1); }, 500);
+      return;
+    }
     document.body.appendChild(box);
     reserveSpace();                                   // 올라오기 전에 자리부터 비운다
     requestAnimationFrame(function(){ setTimeout(function(){ box.classList.add('on'); reserveSpace(); }, 900); });
   }
-  if(document.readyState === 'complete') show();
-  else window.addEventListener('load', show);
+  function boot(){ setTimeout(function(){ show(0); }, 2200); }   // 피드백 인사 팝업(1.7초)보다 뒤에 판정한다
+  if(document.readyState === 'complete') boot();
+  else window.addEventListener('load', boot);
 })();
