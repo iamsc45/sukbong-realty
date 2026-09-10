@@ -1097,6 +1097,32 @@ mkChips('uchips',[['all','전체'],['매매','매매'],['전세','전세'],['월
   function _regionMismatch(){
     if(curSgg==='all'&&curSido==='all')return false;
     var c=map.getCenter(), best=null, bd=1e18;
+    /* 🔴 2026-09-10 — 판단 기준을 «가장 가까운 시군구 중심» 에서 «가장 가까운 동» 으로 바꿨다.
+       시군구는 254개뿐이라 중심점이 성기다. 그래서 **구의 가장자리 동에서 옆 구로 오판**했다 —
+       관악구 남현동(37.4737, 126.9777)은 관악구 중심보다 **서초구 중심이 더 가깝다**(라이브 실측).
+       그 결과 `?q=남현동` 딥링크가 지역 필터를 관악구로 제대로 걸어 놓고도, 260ms 뒤
+       `_regionRelaxIfBlocking()` 이 「지역 선택이 이 화면과 달라」며 **스스로 풀어 버렸다**.
+       위치·마커는 맞는데 시도·시군구만 `all` 로 돌아가는 «반쪽 딥링크» 가 이것이다
+       (원고 세션 제보 2026-09-10 → 같은 날 라이브 재현. 신림동·봉천동은 구 중심에 가까워 멀쩡했다).
+       동은 수천 개라 훨씬 촘촘하고 **각 동이 자기 시군구 코드를 갖고 있다**(`SB.dongs[동]=[코드,위도,경도]`).
+       ⚠️`SB.dongs` 가 아직 안 왔으면 **예전 방식으로 되돌아간다** — 없는 근거로 필터를 풀지 않는다. */
+    try{
+      var D=window.SB&&SB.dongs, bcode=null;
+      if(D){
+        for(var k in D){
+          var v=D[k];
+          if(!v||v.length<3||!v[1])continue;
+          var ax=v[1]-c.lat, ay=(v[2]-c.lng)*0.79, ad=ax*ax+ay*ay;
+          if(ad<bd){bd=ad;bcode=v[0];}
+        }
+      }
+      if(bcode){
+        if(curSgg!=='all')return bcode!==curSgg;
+        var rg=SB.summary.regions.find(function(x){return x.code===bcode;});
+        return !!rg&&rg.sido!==curSido;
+      }
+    }catch(e){}
+    bd=1e18;
     try{
       SB.summary.regions.forEach(function(r){
         if(!r.lat)return;
