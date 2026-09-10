@@ -18,8 +18,22 @@
     } catch (e) { return ""; }
   }
 
+  /* 자동화 브라우저는 기록하지 않는다 (2026-09-11 신설).
+     우리가 돌리는 화면점검·동선점검이 남긴 검색이 그대로 홈 '인기 지역' 칩에 올라왔다.
+     실측: 8/19 한 시간 안에 아홉 개 브라우저가 '안양 에버포레'를, 8/15 삼십일 분 안에
+     아홉 개가 오타 '짬실아파트'를 쳤다. 전부 우리 시험이다. 방문자가 적을수록
+     시험 몇 번이 순위를 통째로 뒤집는다.
+     navigator.webdriver 는 Playwright·puppeteer·Selenium 에서 true 가 된다. */
+  function isBot() {
+    try {
+      if (navigator.webdriver) return true;
+      return /HeadlessChrome|Playwright|puppeteer|bot|crawler|spider/i.test(navigator.userAgent || "");
+    } catch (e) { return false; }
+  }
+
   window.SBLog = function (q, src) {
     try {
+      if (isBot()) return;
       q = String(q == null ? "" : q).trim();
       if (!q || q.length > 40) return;
       fetch(URL, {
