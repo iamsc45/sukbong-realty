@@ -1,1 +1,1 @@
-window.SB=window.SB||{};SB.chips={"updated":"2026-09-09","win":"2026-08-27~2026-09-09","items":[{"t":"은평구","n":186,"src":"trade"},{"t":"도봉구","n":150,"src":"trade"},{"t":"중랑구","n":149,"src":"trade"},{"t":"구로구","n":135,"src":"trade"},{"t":"노원구","n":132,"src":"trade"}],"note":"DB 직접 조회"};
+window.SB=window.SB||{};SB.chips={"updated":"2026-09-10","win":"2026-08-28~2026-09-10","items":[{"t":"은평구","n":189,"src":"trade"},{"t":"노원구","n":157,"src":"trade"},{"t":"도봉구","n":150,"src":"trade"},{"t":"중랑구","n":146,"src":"trade"},{"t":"구로구","n":138,"src":"trade"}],"note":"DB 직접 조회"};
