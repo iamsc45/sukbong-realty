@@ -985,12 +985,14 @@ h1.pg{font-size:clamp(28px,4.4vw,44px);letter-spacing:-0.04em;font-weight:800;ma
           **법정동 단위 비중**이 정직하게 말할 수 있는 전부이고, 화면에도 그렇게 적는다.
           산비탈·축산특화거리·위험시설 이격은 이 자료로 못 본다 — 있는 척하지 않는다.
        문턱은 지어내지 않았다. 전국 분포에서 뽑은 값을 빌더가 파일에 함께 실어 준다
-       (`LHBADCUT`, 퍼밀). 2026-08-21 기준 중위 1.2% · 상위 10% 9.0% · 상위 5% 16.2%. */
+       (`LHBADCUT`, 퍼밀). 2026-09-12 재생성 기준 중위 1.1% · 상위 10% 8.1% · 상위 5% 15.2%
+       (건축물대장 594만 행 · 판정 대상 17,296곳. 8/21 대비 전남광주 2,707곳이 새로 들어왔다).
+       ⚠️폴백 상수는 파일 로드 실패 때만 쓰인다 — 빌더를 다시 돌리면 이 줄도 같이 맞출 것. */
     var BR=(window.LHBAD||{})[String(code||'').slice(0,2)];
     var brRec=(BR&&cd&&cd.dong)?BR[cd.code+'|'+cd.dong]:null;
     if(brRec&&brRec[1]){
       var brP=brRec[0]/brRec[1], brMil=Math.round(brP*1000);
-      var CUT=window.LHBADCUT||{p50:12,p90:90,p95:162};
+      var CUT=window.LHBADCUT||{p50:11,p90:81,p95:152};
       var brWhere=(brMil>=CUT.p95)?'상위 5% 안':((brMil>=CUT.p90)?'상위 10% 안':
                   ((brMil>=CUT.p50)?'전국 중위보다 높음':'전국 중위보다 낮음'));
       var brBad=(brMil>=CUT.p90);
