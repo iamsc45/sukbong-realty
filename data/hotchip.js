@@ -1,1 +1,1 @@
-window.SB=window.SB||{};SB.chips={"updated":"2026-09-12","win":"2026-08-14~2026-09-12","items":[{"t":"은마","n":2,"src":"log"},{"t":"은평구","n":181,"src":"trade"},{"t":"강서구","n":161,"src":"trade"},{"t":"도봉구","n":156,"src":"trade"},{"t":"노원구","n":153,"src":"trade"}],"note":"REST 집계 뷰"};
+window.SB=window.SB||{};SB.chips={"updated":"2026-09-13","win":"2026-08-15~2026-09-13","items":[{"t":"은마","n":2,"src":"log"},{"t":"은평구","n":173,"src":"trade"},{"t":"강서구","n":151,"src":"trade"},{"t":"도봉구","n":147,"src":"trade"},{"t":"노원구","n":130,"src":"trade"}],"note":"REST 집계 뷰"};
