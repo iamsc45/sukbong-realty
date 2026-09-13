@@ -394,7 +394,11 @@ table.t2 td b,.kpi .n{font-variant-numeric:tabular-nums}
     }
 
     /* ── 다음 걸음 */
-    var mapQ=(B?(B[1].slice(0,2)+' '+B[2]+' '+B[3]):'');
+    /* 🔴 2026-09-13: 빈 칸을 그대로 이어 붙이면 검색어가 망가진다.
+       `land_bjd.js` 에 없는 코드면 B 가 null 이라 mapQ 가 통째로 빈 문자열이 되고,
+       세종처럼 시군구가 없는 시(B[2]==='')는 「세종  원리」처럼 공백이 둘이 된다.
+       빈 조각은 빼고 잇는다. 없는 지명을 지어내지는 않는다. */
+    var mapQ=(B?[B[1].slice(0,2),B[2],B[3]].filter(Boolean).join(' ').trim():'');
     /* 🔴「지도에서 주변 보기」가 **동 전체**로 가서 너무 넓었다(2026-08-24 석봉님 제보).
        지역 검색(`?q=서울 성동구 홍익동`)이라 그 동을 통째로 잡는다. 이 필지가 어디인지
        알면 그 자리로 보내야 한다 — 좌표는 우리가 이미 그리는 **필지 폴리곤**에 있다.
@@ -405,7 +409,13 @@ table.t2 td b,.kpi .n{font-variant-numeric:tabular-nums}
       /* 🔴`t=land` 필수(2026-08-23 석봉님 제보 「주변 보기 누르면 갑자기 아파트가 뜬다」) —
          딥링크(q)가 있으면 지도는 「보던 화면」을 복원하지 않으므로 상품이 기본값(아파트)으로
          떨어진다. 토지 상세에서 나갔으니 토지를 보여 줘야 한다. */
-      '<a class="l" id="goMapNear" href="map.html?t=land&q='+encodeURIComponent(mapQ)+'">지도에서 주변 보기</a>'+
+      /* ⚠️검색어가 없으면 버튼을 «숨겨 둔다»(2026-09-13) — `?q=` 를 빈 채로 내보내면
+         버튼은 멀쩡히 보이는데 눌러도 지도가 아무 데도 안 가는 «막다른 길»이 된다.
+         지우지 않고 숨기는 이유: 폴리곤이 있으면 아래 `mapAtFromPoly` 가 이 a 를 찾아
+         좌표 링크로 되살리고 다시 보이게 한다(지울 경우 그 길까지 같이 막힌다). */
+      '<a class="l" id="goMapNear"'+(mapQ?' href="map.html?t=land&q='+encodeURIComponent(mapQ)+'"'
+                                          :' href="#" style="display:none"')+
+      '>지도에서 주변 보기</a>'+
       '<a class="l" href="%EB%8C%80%EC%B6%9C%EB%AC%B8%EC%9D%98.html">담보 대출 상담</a>'+
       '</div>');
     h.push('<div class="disc">이 화면은 우리가 모아 둔 자료로 만든 참고 정보입니다. '+
@@ -435,6 +445,7 @@ table.t2 td b,.kpi .n{font-variant-numeric:tabular-nums}
                  +'&code='+encodeURIComponent(String(code10).slice(0,5))
                  +'&jb='+encodeURIComponent(jbun)+'&c10='+encodeURIComponent(code10);
           a.textContent='이 필지 자리에서 주변 보기 →';
+          a.style.display='';   /* 검색어가 없어 숨겨 뒀던 경우 여기서 되살린다(2026-09-13) */
           return;
         }
       })
